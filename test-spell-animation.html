@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spell Animation Test</title>
+    <style>
+        body {
+            margin: 20px;
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .instructions {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        h1 { color: #C9AD6A; }
+        ol { line-height: 1.8; }
+        code {
+            background: #444;
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: #C9AD6A;
+        }
+    </style>
+</head>
+<body>
+    <h1>MapMaker Spell Animation Testing Guide</h1>
+
+    <div class="instructions">
+        <h2>✅ What Was Fixed</h2>
+        <p>The spell animations were not appearing because Konva.Animation wasn't triggering React re-renders.
+        The solution was to switch to React state updates with requestAnimationFrame in ProjectileSpellSimple.tsx</p>
+    </div>
+
+    <div class="instructions">
+        <h2>📋 Test Steps</h2>
+        <ol>
+            <li>Open the MapMaker application at <code>http://localhost:3000</code></li>
+            <li>Create a new map or load an existing one</li>
+            <li>Place at least two tokens on the map (for source and target)</li>
+            <li>Start combat using the Combat Tracker</li>
+            <li>Open the Event Editor (clock icon in timeline)</li>
+            <li>Create a new spell event:
+                <ul>
+                    <li>Select event type: <code>Spell</code></li>
+                    <li>Choose a spell category (e.g., <code>projectile</code> or <code>projectile-burst</code>)</li>
+                    <li>Select source token (caster)</li>
+                    <li>Select target token or position</li>
+                    <li>Configure spell properties (color, size, speed)</li>
+                    <li>Set the round when spell should trigger</li>
+                </ul>
+            </li>
+            <li>Save the event</li>
+            <li>Advance to the round where the spell is scheduled</li>
+            <li><strong>Expected Result:</strong> The spell animation should play immediately when the round is reached</li>
+        </ol>
+    </div>
+
+    <div class="instructions">
+        <h2>🎨 Animation Behavior</h2>
+        <ul>
+            <li><strong>Projectile:</strong> Moves from source to target with particle trail</li>
+            <li><strong>Projectile-Burst:</strong> Projectile + explosion effect at target</li>
+            <li><strong>Ray:</strong> Instant beam from source to target</li>
+            <li><strong>Area:</strong> Area effect at target position</li>
+            <li><strong>Burst:</strong> Explosion effect at target</li>
+        </ul>
+    </div>
+
+    <div class="instructions">
+        <h2>🐛 Troubleshooting</h2>
+        <p>If animations still don't appear:</p>
+        <ol>
+            <li>Check browser console for errors</li>
+            <li>Look for console logs starting with "ProjectileSpell"</li>
+            <li>Verify spell object is being rendered (check for "Found spell object to render" log)</li>
+            <li>Ensure combat is active and rounds are advancing</li>
+            <li>Try refreshing the page and creating a new spell event</li>
+        </ol>
+    </div>
+
+    <div class="instructions">
+        <h2>🔍 Console Commands for Debugging</h2>
+        <pre>
+// Check if there are spell objects on the map
+const store = window.useMapStore?.getState()
+const spells = store?.currentMap?.objects.filter(o => o.type === 'spell')
+console.log('Spells on map:', spells)
+
+// Clear all spells from map
+spells?.forEach(s => store.deleteObject(s.id))
+
+// Check timeline events
+const timeline = window.useTimelineStore?.getState()
+console.log('Timeline events:', timeline?.events)
+        </pre>
+    </div>
+</body>
+</html>

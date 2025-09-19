@@ -1,14 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    vanillaExtractPlugin()
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -26,93 +22,14 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
-    // Optimize chunk size
-    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        // Improved file naming for better caching
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.')
-          const extType = info[info.length - 1]
-          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
-            return `assets/images/[name]-[hash][extname]`
-          }
-          if (/woff2?|eot|ttf|otf/i.test(extType)) {
-            return `assets/fonts/[name]-[hash][extname]`
-          }
-          return `assets/[name]-[hash][extname]`
-        },
-        manualChunks: (id) => {
-          // Core React ecosystem
-          if (id.includes('node_modules/react') ||
-              id.includes('node_modules/react-dom')) {
-            return 'react-vendor'
-          }
-
-          // Canvas rendering library
-          if (id.includes('node_modules/konva') ||
-              id.includes('node_modules/react-konva')) {
-            return 'konva-vendor'
-          }
-
-          // UI component libraries
-          if (id.includes('node_modules/@radix-ui') ||
-              id.includes('node_modules/@vanilla-extract')) {
-            return 'ui-vendor'
-          }
-
-          // State management
-          if (id.includes('node_modules/zustand') ||
-              id.includes('node_modules/immer')) {
-            return 'state-vendor'
-          }
-
-          // Icon library (optimized)
-          if (id.includes('node_modules/lucide-react')) {
-            return 'icons-vendor'
-          }
-
-          // Utilities
-          if (id.includes('node_modules/uuid') ||
-              id.includes('node_modules/nanoid') ||
-              id.includes('node_modules/file-saver')) {
-            return 'utils-vendor'
-          }
-
-          // Feature-based chunking for app code
-          if (id.includes('/src/components/Timeline/')) {
-            return 'timeline-feature'
-          }
-          if (id.includes('/src/components/Collaboration/')) {
-            return 'collaboration-feature'
-          }
-          if (id.includes('/src/components/Tools/')) {
-            return 'tools-feature'
-          }
-          if (id.includes('/src/components/Export/') ||
-              id.includes('/src/components/Import/')) {
-            return 'file-operations-feature'
-          }
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'konva-vendor': ['konva', 'react-konva'],
+          'ui-vendor': ['@radix-ui/react-toolbar', '@radix-ui/react-select'],
         },
       },
     },
-    // Enhanced production optimization
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.logs in production
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info'], // Remove specific console methods
-      },
-      mangle: {
-        safari10: true, // Fix Safari 10 issues
-      },
-    },
-    // Enable modern browser optimizations
-    target: 'es2020',
-    // Increase chunk size limit for better compression
-    chunkSizeWarningLimit: 1000,
   },
 })
