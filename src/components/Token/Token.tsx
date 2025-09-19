@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Circle, Text, Group, Rect } from 'react-konva';
 import Konva from 'konva';
 import { Token as TokenType, TokenSize } from '@/types/token';
@@ -13,7 +13,7 @@ const SIZE_MAP: Record<TokenSize, number> = {
   gargantuan: 4,
 };
 
-interface TokenProps {
+type TokenProps = {
   token: TokenType;
   gridSize: number;
   isSelected?: boolean;
@@ -24,7 +24,7 @@ interface TokenProps {
   isDraggable?: boolean;
 }
 
-export const Token: React.FC<TokenProps> = ({
+const TokenComponent: React.FC<TokenProps> = ({
   token,
   gridSize,
   isSelected = false,
@@ -50,6 +50,7 @@ export const Token: React.FC<TokenProps> = ({
 
   return (
     <Group
+      id={token.id}
       x={token.position.x}
       y={token.position.y}
       rotation={token.rotation}
@@ -178,6 +179,9 @@ export const Token: React.FC<TokenProps> = ({
   );
 };
 
+export const Token = memo(TokenComponent);
+Token.displayName = 'Token';
+
 // Helper function for condition colors
 function getConditionColor(condition: string): string {
   const colors: Record<string, string> = {
@@ -192,3 +196,4 @@ function getConditionColor(condition: string): string {
   };
   return colors[condition] || '#FF0000';
 }
+export default Token;

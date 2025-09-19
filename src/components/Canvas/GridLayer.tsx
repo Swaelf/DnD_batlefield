@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { Line, Group } from 'react-konva'
 
-interface GridLayerProps {
+type GridLayerProps = {
   width: number
   height: number
   gridSize: number
@@ -126,4 +126,34 @@ const GridLayer: React.FC<GridLayerProps> = ({
   )
 }
 
-export default React.memo(GridLayer)
+// Custom comparison to prevent re-renders during smooth panning/zooming
+const arePropsEqual = (prevProps: GridLayerProps, nextProps: GridLayerProps): boolean => {
+  // Always re-render if visibility changes
+  if (prevProps.visible !== nextProps.visible) return false
+
+  // Don't re-render if grid is not visible
+  if (!nextProps.visible) return true
+
+  // Check if grid structure would actually change
+  const significantChange =
+    prevProps.width !== nextProps.width ||
+    prevProps.height !== nextProps.height ||
+    prevProps.gridSize !== nextProps.gridSize ||
+    prevProps.gridColor !== nextProps.gridColor ||
+    prevProps.viewportWidth !== nextProps.viewportWidth ||
+    prevProps.viewportHeight !== nextProps.viewportHeight
+
+  if (significantChange) return false
+
+  // For scale and position, only re-render if change is significant
+  // This prevents re-renders during smooth animations
+  const scaleDiff = Math.abs(prevProps.scale - nextProps.scale)
+  const positionDiff =
+    Math.abs(prevProps.stagePosition.x - nextProps.stagePosition.x) +
+    Math.abs(prevProps.stagePosition.y - nextProps.stagePosition.y)
+
+  // Only re-render if scale changed by more than 5% or position by more than gridSize
+  return scaleDiff < prevProps.scale * 0.05 && positionDiff < prevProps.gridSize
+}
+
+export default React.memo(GridLayer, arePropsEqual)

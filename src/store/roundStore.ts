@@ -166,6 +166,22 @@ const useRoundStore = create<RoundStore>()(
       const round = timeline.rounds.find(r => r.number === roundNumber)
       if (!round || round.executed) return
 
+      // Execute each event by adding it to the map for animation
+      for (const event of round.events) {
+        // Get mapStore methods - we'll need to import this properly
+        const mapStore = (await import('./mapStore')).default.getState()
+
+        switch (event.type) {
+          case 'spell':
+            mapStore.addSpellEffect(event.data as any)
+            break
+          case 'attack':
+            mapStore.addAttackEffect(event.data as any)
+            break
+          // Add other event types here as needed
+        }
+      }
+
       // Mark events as being executed
       set((state) => {
         const roundIndex = state.timeline!.rounds.findIndex(r => r.number === roundNumber)

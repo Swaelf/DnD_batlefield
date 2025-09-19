@@ -22,14 +22,50 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    // Optimize chunk size
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'konva-vendor': ['konva', 'react-konva'],
-          'ui-vendor': ['@radix-ui/react-toolbar', '@radix-ui/react-select'],
+        manualChunks: (id) => {
+          // Core React ecosystem
+          if (id.includes('node_modules/react') ||
+              id.includes('node_modules/react-dom')) {
+            return 'react-vendor'
+          }
+
+          // Canvas rendering library
+          if (id.includes('node_modules/konva') ||
+              id.includes('node_modules/react-konva')) {
+            return 'konva-vendor'
+          }
+
+          // UI component libraries
+          if (id.includes('node_modules/@radix-ui') ||
+              id.includes('node_modules/@stitches')) {
+            return 'ui-vendor'
+          }
+
+          // State management
+          if (id.includes('node_modules/zustand') ||
+              id.includes('node_modules/immer')) {
+            return 'state-vendor'
+          }
+
+          // Icon library
+          if (id.includes('node_modules/lucide-react')) {
+            return 'icons-vendor'
+          }
+
+          // Utilities
+          if (id.includes('node_modules/uuid') ||
+              id.includes('node_modules/nanoid') ||
+              id.includes('node_modules/file-saver')) {
+            return 'utils-vendor'
+          }
         },
       },
     },
+    // Optimize for production
+    minify: 'terser',
   },
 })

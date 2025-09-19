@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { Pipette } from 'lucide-react';
 
-interface ColorPickerProps {
+type ColorPickerProps = {
   color: string;
   onChange: (color: string) => void;
   label?: string;

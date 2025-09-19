@@ -8,7 +8,7 @@ export type Position = Point
 
 export type MapObject = {
   id: string
-  type: 'token' | 'shape' | 'tile' | 'text' | 'spell'
+  type: 'token' | 'shape' | 'tile' | 'text' | 'spell' | 'attack'
   position: Position
   rotation: number
   layer: number
@@ -21,6 +21,10 @@ export type MapObject = {
   isSpellEffect?: boolean
   roundCreated?: number
   spellDuration?: number // in rounds
+
+  // Attack-specific
+  isAttackEffect?: boolean
+  attackData?: any // Will be properly typed later
 }
 
 export type Shape = MapObject & {

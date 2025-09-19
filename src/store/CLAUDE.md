@@ -81,6 +81,7 @@ const useStore = create<Store>()(
 - `createNewMap(name, width?, height?)`: Create new map
 - `loadMap(map)`: Load existing map
 - `addObject(object)`: Add object to map
+- `addAttackEffect(attack)`: Add attack animation to map with auto-cleanup
 - `updateObject(id, updates)`: Update object properties
 - `deleteObject(id)`: Remove object
 - `selectObject(id)`: Select single object

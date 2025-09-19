@@ -1,67 +1,108 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { Grid3x3, Magnet, Eye, EyeOff } from 'lucide-react'
 import useMapStore from '@/store/mapStore'
-import clsx from 'clsx'
+import { Box, Button, Text } from '@/components/ui'
+import { styled } from '@/styles/theme.config'
 
-export const GridControls: React.FC = () => {
-  const { currentMap, toggleGridSnap, toggleGridVisibility } = useMapStore()
+const GridControlsContainer = styled(Box, {
+  position: 'absolute',
+  top: '$4',
+  left: '$4',
+  zIndex: 10,
+  backgroundColor: '$dndBlack/80',
+  borderRadius: '$lg',
+  padding: '$2',
+  backdropFilter: 'blur(4px)',
+})
+
+const GridButton = styled(Button, {
+  padding: '$2',
+  borderRadius: '$lg',
+  transition: '$fast',
+  '&:hover': {
+    backgroundColor: '$gray700',
+  },
+
+  variants: {
+    active: {
+      true: {
+        backgroundColor: '$gray700',
+        color: '$secondary',
+      },
+      false: {
+        backgroundColor: '$gray800',
+        color: '$gray500',
+      },
+    },
+  },
+})
+
+const SnapIndicator = styled(Box, {
+  marginLeft: '$2',
+  paddingX: '$2',
+  paddingY: '$1',
+  borderRadius: '$md',
+  backgroundColor: '$gray800',
+  fontSize: '$xs',
+})
+
+const GridControlsComponent: React.FC = () => {
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentMap = useMapStore(state => state.currentMap)
+  const toggleGridSnap = useMapStore(state => state.toggleGridSnap)
+  const toggleGridVisibility = useMapStore(state => state.toggleGridVisibility)
 
   if (!currentMap) return null
 
   const { grid } = currentMap
 
   return (
-    <div className="absolute top-4 left-4 z-10 bg-dnd-black/80 rounded-lg p-2 backdrop-blur-sm">
-      <div className="flex items-center gap-2">
+    <GridControlsContainer>
+      <Box display="flex" alignItems="center" gap="2">
         {/* Grid Label */}
-        <div className="flex items-center gap-1 text-xs text-gray-400 mr-2">
-          <Grid3x3 className="h-4 w-4" />
-          <span>Grid</span>
-        </div>
+        <Box display="flex" alignItems="center" gap="1" css={{ marginRight: '$2' }}>
+          <Grid3x3 size={16} color="#9CA3AF" />
+          <Text size="xs" color="gray400">Grid</Text>
+        </Box>
 
         {/* Toggle Grid Visibility */}
-        <button
+        <GridButton
           onClick={toggleGridVisibility}
-          className={clsx(
-            'p-2 rounded-lg transition-all',
-            'hover:bg-dnd-gray-700',
-            grid.visible
-              ? 'bg-dnd-gray-700 text-dnd-gold'
-              : 'bg-dnd-gray-800 text-gray-500'
-          )}
+          active={grid.visible}
           title={grid.visible ? 'Hide Grid (G)' : 'Show Grid (G)'}
+          variant="ghost"
+          size="icon"
         >
           {grid.visible ? (
-            <Eye className="h-4 w-4" />
+            <Eye size={16} />
           ) : (
-            <EyeOff className="h-4 w-4" />
+            <EyeOff size={16} />
           )}
-        </button>
+        </GridButton>
 
         {/* Toggle Grid Snap */}
-        <button
+        <GridButton
           onClick={toggleGridSnap}
-          className={clsx(
-            'p-2 rounded-lg transition-all',
-            'hover:bg-dnd-gray-700',
-            grid.snap
-              ? 'bg-dnd-gray-700 text-dnd-gold'
-              : 'bg-dnd-gray-800 text-gray-500'
-          )}
+          active={grid.snap}
           title={grid.snap ? 'Disable Snap (Shift+G)' : 'Enable Snap (Shift+G)'}
+          variant="ghost"
+          size="icon"
         >
-          <Magnet className="h-4 w-4" />
-        </button>
+          <Magnet size={16} />
+        </GridButton>
 
         {/* Snap Indicator */}
-        <div className="ml-2 px-2 py-1 rounded bg-dnd-gray-800 text-xs">
+        <SnapIndicator>
           {grid.snap ? (
-            <span className="text-dnd-gold">Snap: ON</span>
+            <Text size="xs" color="secondary">Snap: ON</Text>
           ) : (
-            <span className="text-gray-500">Snap: OFF</span>
+            <Text size="xs" color="gray500">Snap: OFF</Text>
           )}
-        </div>
-      </div>
-    </div>
+        </SnapIndicator>
+      </Box>
+    </GridControlsContainer>
   )
 }
+
+export const GridControls = memo(GridControlsComponent)
+GridControls.displayName = 'GridControls'

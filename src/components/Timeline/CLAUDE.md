@@ -64,7 +64,7 @@ interface Round {
 
 ### Event Types
 ```typescript
-export type EventType = 'move' | 'appear' | 'disappear' | 'spell'
+export type EventType = 'move' | 'appear' | 'disappear' | 'spell' | 'attack' | 'interaction' | 'environmental' | 'sequence'
 ```
 
 #### 1. Move Events (`move`)
@@ -97,6 +97,46 @@ export type EventType = 'move' | 'appear' | 'disappear' | 'spell'
 **Use Cases**: All D&D spells with appropriate visual effects
 **Properties**: *See [Spell System Documentation](../Spells/CLAUDE.md)*
 
+#### 5. Attack Events (`attack`)
+**Purpose**: Combat actions with weapon animations
+**Use Cases**: Melee attacks, ranged attacks, special weapon abilities
+**Properties**:
+- `weaponName` - Weapon type and name
+- `attackType` - Melee, ranged, or special
+- `fromPosition` - Attacker location
+- `toPosition` - Target location
+- `damage` - Damage dice and modifiers
+- `hit` - Whether the attack succeeded
+
+#### 6. Interaction Events (`interaction`)
+**Purpose**: Object manipulation and skill checks
+**Use Cases**: Opening doors, searching containers, using items
+**Properties**:
+- `interactionType` - Type of interaction (door, chest, lever, etc.)
+- `action` - Specific action being performed
+- `skill` - Required skill check
+- `dc` - Difficulty class
+- `success` - Result of the interaction
+
+#### 7. Environmental Events (`environmental`)
+**Purpose**: Weather and terrain effects
+**Use Cases**: Fog, rain, earthquakes, magical terrain changes
+**Properties**:
+- `environmentalType` - Weather, terrain, or magical effect
+- `intensity` - Effect strength (light, moderate, heavy)
+- `area` - Affected area size
+- `duration` - How long the effect lasts
+
+#### 8. Sequence Events (`sequence`)
+**Purpose**: Complex multi-action combinations
+**Use Cases**: Charge attacks, spell combos, coordinated maneuvers
+**Properties**: *See [Actions System Documentation](../Actions/CLAUDE.md)*
+- `sequenceName` - Descriptive name for the sequence
+- `sequenceType` - Execution pattern (simple, conditional, parallel, loop, branch)
+- `actions` - Array of coordinated actions
+- `conditions` - Success/failure criteria
+- `templateId` - Reference to pre-built template
+
 ### Event Data Structure
 ```typescript
 export interface RoundEvent {
@@ -109,7 +149,7 @@ export interface RoundEvent {
   order?: number // For sequencing events within a round
 }
 
-export type EventData = MoveEventData | AppearEventData | DisappearEventData | SpellEventData
+export type EventData = MoveEventData | AppearEventData | DisappearEventData | SpellEventData | AttackEventData | InteractionEventData | EnvironmentalEventData | SequenceEventData
 ```
 
 ## Store Architecture

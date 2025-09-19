@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, lazy, Suspense } from 'react'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
 import { useCanvas } from '@hooks/useCanvas'
@@ -6,19 +6,82 @@ import { useKeyboardShortcuts } from '@hooks/useKeyboardShortcuts'
 import { useAutoSave } from '@hooks/useAutoSave'
 import MapCanvas from './components/Canvas/MapCanvas'
 import Toolbar from './components/Toolbar/Toolbar'
-import { PropertiesPanel } from './components/Properties/PropertiesPanel'
-import { TokenLibrary } from './components/Token/TokenLibrary'
+import PropertiesPanel from './components/Properties/PropertiesPanel'
+import TokenLibrary from './components/Token/TokenLibrary'
 import { StaticObjectLibrary } from './components/StaticObject/StaticObjectLibrary'
-import { SpellEffectsPanel } from './components/SpellEffect/SpellEffectsPanel'
+// Lazy load heavy components for better initial load performance
+const SpellEffectsPanel = lazy(() => import('./components/SpellEffect/SpellEffectsPanel').then(m => ({ default: m.SpellEffectsPanel })))
 import { FileMenu } from './components/Menu/FileMenu'
-import { StatusBar } from './components/StatusBar/StatusBar'
-import { HelpDialog } from './components/HelpDialog/HelpDialog'
-import { CombatTracker } from './components/Timeline/CombatTracker'
+import StatusBar from './components/StatusBar/StatusBar'
+const HelpDialog = lazy(() => import('./components/HelpDialog/HelpDialog').then(m => ({ default: m.HelpDialog })))
+const CombatTracker = lazy(() => import('./components/Timeline/CombatTracker').then(m => ({ default: m.CombatTracker })))
 import { Save, HelpCircle } from 'lucide-react'
+import { Box, Text, Button } from '@/components/ui'
+import { styled } from '@/styles/theme.config'
+
+// Move styled components outside to prevent re-creation on every render
+const AppContainer = styled(Box, {
+  height: '100vh',
+  width: '100vw',
+  backgroundColor: '$background',
+  color: '$gray100',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+})
+
+const AppHeader = styled(Box, {
+  height: '$toolButtonSize',
+  backgroundColor: '$dndBlack',
+  borderBottom: '1px solid $gray800',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  paddingX: '$4',
+})
+
+const AppTitle = styled(Text, {
+  fontSize: '$lg',
+  fontWeight: '$semibold',
+  color: '$secondary',
+  fontFamily: '$dnd',
+})
+
+const AppBody = styled(Box, {
+  display: 'flex',
+  flex: 1,
+  overflow: 'hidden',
+})
+
+const CanvasArea = styled(Box, {
+  flex: 1,
+  backgroundColor: '$gray800',
+  position: 'relative',
+})
+
+const AutoSaveIndicator = styled(Box, {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '$2',
+  fontSize: '$xs',
+  color: '$gray500',
+
+  '&[data-saving="true"]': {
+    '& svg': {
+      animation: 'pulse 1s infinite',
+    },
+  },
+
+  '&[data-saved="true"]': {
+    color: '$success',
+  },
+})
 
 function App() {
-  const { createNewMap, currentMap } = useMapStore()
-  const { currentTool } = useToolStore()
+  // Use specific selectors to prevent unnecessary re-renders
+  const createNewMap = useMapStore(state => state.createNewMap)
+  const currentMap = useMapStore(state => state.currentMap)
+  const currentTool = useToolStore(state => state.currentTool)
   const { containerRef, canvasSize } = useCanvas()
   const stageRef = useRef<any>(null)
   const { lastSaved, isSaving } = useAutoSave()
@@ -40,60 +103,58 @@ function App() {
   }, [])
 
   useEffect(() => {
-    // Create default map on load
+    // Create default map on load - only run when currentMap changes from null
     if (!currentMap) {
       createNewMap('Untitled Map')
     }
-  }, [currentMap, createNewMap])
+  }, [currentMap]) // Removed createNewMap as zustand actions are stable
 
   return (
-    <div className="h-screen w-screen bg-dnd-gray-900 text-white overflow-hidden flex flex-col">
+    <AppContainer>
       {/* Header */}
-      <div className="h-12 bg-dnd-black border-b border-dnd-gray-800 flex items-center justify-between px-4">
-        <div className="flex items-center gap-4">
-          <h1 className="text-lg font-semibold text-dnd-gold">D&D Map Maker</h1>
+      <AppHeader>
+        <Box display="flex" alignItems="center" gap="4">
+          <AppTitle>D&D Map Maker</AppTitle>
           {currentMap && (
-            <span className="text-sm text-gray-400">
+            <Text size="sm" color="gray400">
               {currentMap.name} ({currentMap.width}x{currentMap.height})
-            </span>
+            </Text>
           )}
-        </div>
+        </Box>
 
-        <div className="flex items-center gap-4">
+        <Box display="flex" alignItems="center" gap="4">
           {/* Auto-save indicator */}
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            {isSaving ? (
-              <>
-                <Save className="h-3 w-3 animate-pulse" />
-                <span>Saving...</span>
-              </>
-            ) : lastSaved ? (
-              <>
-                <Save className="h-3 w-3 text-green-500" />
-                <span>Saved</span>
-              </>
-            ) : null}
-          </div>
+          <AutoSaveIndicator
+            data-saving={isSaving}
+            data-saved={!!lastSaved && !isSaving}
+          >
+            <Save size={12} />
+            <Text size="xs">
+              {isSaving ? 'Saving...' : 'Saved'}
+            </Text>
+          </AutoSaveIndicator>
 
           {/* File Menu */}
           <FileMenu stageRef={stageRef} />
 
           {/* Help Button */}
-          <button
+          <Button
             onClick={() => setShowHelp(true)}
-            className="p-2 hover:bg-gray-800 rounded transition-colors"
-            title="Keyboard Shortcuts (?)">
-            <HelpCircle className="h-4 w-4 text-gray-400" />
-          </button>
-        </div>
-      </div>
+            variant="ghost"
+            size="icon"
+            title="Keyboard Shortcuts (?)"
+          >
+            <HelpCircle size={16} />
+          </Button>
+        </Box>
+      </AppHeader>
 
-      <div className="flex flex-1 overflow-hidden">
+      <AppBody>
         {/* Toolbar */}
         <Toolbar />
 
         {/* Canvas Area */}
-        <div ref={containerRef} className="flex-1 bg-dnd-gray-800 relative">
+        <CanvasArea ref={containerRef}>
           <MapCanvas
             width={canvasSize.width}
             height={canvasSize.height}
@@ -103,8 +164,10 @@ function App() {
           />
 
           {/* Combat Tracker */}
-          <CombatTracker />
-        </div>
+          <Suspense fallback={<Box css={{ position: 'absolute', bottom: 0, left: 0 }} />}>
+            <CombatTracker />
+          </Suspense>
+        </CanvasArea>
 
         {/* Sidebar - Show appropriate panel based on current tool */}
         {currentTool === 'token' ? (
@@ -112,18 +175,22 @@ function App() {
         ) : currentTool === 'staticObject' ? (
           <StaticObjectLibrary />
         ) : currentTool === 'spellEffect' ? (
-          <SpellEffectsPanel />
+          <Suspense fallback={<Box css={{ width: 320, backgroundColor: '$dndBlack' }} />}>
+            <SpellEffectsPanel />
+          </Suspense>
         ) : (
           <PropertiesPanel />
         )}
-      </div>
+      </AppBody>
 
       {/* Status Bar */}
       <StatusBar mousePosition={mousePosition} zoom={zoom} />
 
       {/* Help Dialog */}
-      <HelpDialog isOpen={showHelp} onClose={() => setShowHelp(false)} />
-    </div>
+      <Suspense fallback={null}>
+        <HelpDialog isOpen={showHelp} onClose={() => setShowHelp(false)} />
+      </Suspense>
+    </AppContainer>
   )
 }
 

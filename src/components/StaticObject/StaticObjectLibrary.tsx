@@ -18,8 +18,19 @@ import {
   Gem
 } from 'lucide-react'
 import useToolStore from '@/store/toolStore'
+import {
+  Panel,
+  PanelHeader,
+  PanelTitle,
+  PanelBody,
+  PanelSection,
+  Button,
+  Grid,
+  Box,
+  Text
+} from '@/components/ui'
 
-interface StaticObjectTemplate {
+type StaticObjectTemplate = {
   id: string
   name: string
   category: 'structures' | 'nature' | 'furniture' | 'dungeon'
@@ -68,10 +79,10 @@ const staticObjectTemplates: StaticObjectTemplate[] = [
 ]
 
 const categories = [
-  { id: 'structures', name: 'Structures', icon: <Home className="h-4 w-4" /> },
-  { id: 'nature', name: 'Nature', icon: <Trees className="h-4 w-4" /> },
-  { id: 'furniture', name: 'Furniture', icon: <Package className="h-4 w-4" /> },
-  { id: 'dungeon', name: 'Dungeon', icon: <Shield className="h-4 w-4" /> }
+  { id: 'structures', name: 'Structures', icon: <Home size={16} /> },
+  { id: 'nature', name: 'Nature', icon: <Trees size={16} /> },
+  { id: 'furniture', name: 'Furniture', icon: <Package size={16} /> },
+  { id: 'dungeon', name: 'Dungeon', icon: <Shield size={16} /> }
 ]
 
 export const StaticObjectLibrary: React.FC = () => {
@@ -79,7 +90,8 @@ export const StaticObjectLibrary: React.FC = () => {
     new Set(['structures', 'nature', 'furniture', 'dungeon'])
   )
   const [selectedTemplate, setSelectedTemplate] = useState<StaticObjectTemplate | null>(null)
-  const { setTool } = useToolStore()
+  // Use specific selectors to prevent unnecessary re-renders
+  const setTool = useToolStore(state => state.setTool)
 
   const toggleCategory = (categoryId: string) => {
     const newExpanded = new Set(expandedCategories)
@@ -101,20 +113,18 @@ export const StaticObjectLibrary: React.FC = () => {
 
 
   return (
-    <div className="w-80 bg-gray-900 border-l border-gray-800 flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-800">
-        <h2 className="text-lg font-bold text-d20-gold flex items-center gap-2">
-          <Home className="h-5 w-5" />
-          Static Objects
-        </h2>
-        <p className="text-xs text-gray-500 mt-1">
+    <Panel size="sidebar" css={{ borderLeft: '1px solid $gray800' }}>
+      <PanelHeader>
+        <Box display="flex" alignItems="center" gap="2">
+          <Home size={20} />
+          <PanelTitle>Static Objects</PanelTitle>
+        </Box>
+        <Text size="xs" color="gray500" css={{ marginTop: '$1' }}>
           Click an object then click on the map to place
-        </p>
-      </div>
+        </Text>
+      </PanelHeader>
 
-      {/* Object List */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <PanelBody>
         {categories.map(category => {
           const categoryObjects = staticObjectTemplates.filter(
             obj => obj.category === category.id
@@ -122,74 +132,99 @@ export const StaticObjectLibrary: React.FC = () => {
           const isExpanded = expandedCategories.has(category.id)
 
           return (
-            <div key={category.id} className="mb-4">
-              <button
+            <PanelSection key={category.id} css={{ marginBottom: '$4' }}>
+              <Button
                 onClick={() => toggleCategory(category.id)}
-                className="w-full flex items-center justify-between p-2 hover:bg-gray-800 rounded transition-colors"
+                variant="ghost"
+                fullWidth
+                css={{
+                  justifyContent: 'space-between',
+                  padding: '$2',
+                  '&:hover': {
+                    backgroundColor: '$gray800',
+                  },
+                }}
               >
-                <div className="flex items-center gap-2">
+                <Box display="flex" alignItems="center" gap="2">
                   {category.icon}
-                  <span className="text-sm font-semibold text-gray-300">
+                  <Text size="sm" weight="semibold" color="gray300">
                     {category.name}
-                  </span>
-                  <span className="text-xs text-gray-500">
+                  </Text>
+                  <Text size="xs" color="gray500">
                     ({categoryObjects.length})
-                  </span>
-                </div>
+                  </Text>
+                </Box>
                 {isExpanded ? (
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                  <ChevronDown size={16} color="#6B7280" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-gray-500" />
+                  <ChevronRight size={16} color="#6B7280" />
                 )}
-              </button>
+              </Button>
 
               {isExpanded && (
-                <div className="grid grid-cols-3 gap-2 mt-2">
+                <Grid columns={3} gap={2} css={{ marginTop: '$2' }}>
                   {categoryObjects.map(template => (
-                    <button
+                    <Button
                       key={template.id}
                       onClick={() => handleSelectTemplate(template)}
-                      className={`
-                        p-3 rounded-lg border-2 transition-all
-                        ${selectedTemplate?.id === template.id
-                          ? 'border-d20-gold bg-gray-800'
-                          : 'border-gray-700 hover:border-gray-600 hover:bg-gray-800'
-                        }
-                      `}
+                      variant="ghost"
+                      css={{
+                        height: 'auto',
+                        padding: '$3',
+                        flexDirection: 'column',
+                        gap: '$1',
+                        border: '2px solid',
+                        borderColor: selectedTemplate?.id === template.id
+                          ? '$secondary'
+                          : '$gray700',
+                        backgroundColor: selectedTemplate?.id === template.id
+                          ? '$gray800'
+                          : 'transparent',
+                        '&:hover': {
+                          borderColor: selectedTemplate?.id === template.id
+                            ? '$secondary'
+                            : '$gray600',
+                          backgroundColor: '$gray800',
+                        },
+                      }}
                       title={template.name}
                     >
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="text-gray-400">
+                      <Box display="flex" flexDirection="column" alignItems="center" gap="1">
+                        <Box css={{ color: '$gray400' }}>
                           {template.icon}
-                        </div>
-                        <span className="text-xs text-gray-400 text-center break-words">
+                        </Box>
+                        <Text size="xs" color="gray400" align="center" css={{ wordBreak: 'break-words' }}>
                           {template.name}
-                        </span>
-                      </div>
-                    </button>
+                        </Text>
+                      </Box>
+                    </Button>
                   ))}
-                </div>
+                </Grid>
               )}
-            </div>
+            </PanelSection>
           )
         })}
-      </div>
+      </PanelBody>
 
       {/* Selected Object Info */}
       {selectedTemplate && (
-        <div className="p-4 border-t border-gray-800 bg-gray-800/50">
-          <div className="text-sm">
-            <div className="font-semibold text-d20-gold mb-2">
+        <PanelSection divider css={{ backgroundColor: '$gray800/50' }}>
+          <Box display="flex" flexDirection="column" gap="2">
+            <Text size="sm" weight="semibold" color="secondary">
               {selectedTemplate.name}
-            </div>
-            <div className="text-xs text-gray-400 space-y-1">
-              <div>Size: {selectedTemplate.width}x{selectedTemplate.height || selectedTemplate.width}</div>
-              <div>Click on the map to place</div>
-            </div>
-          </div>
-        </div>
+            </Text>
+            <Box display="flex" flexDirection="column" gap="1">
+              <Text size="xs" color="gray400">
+                Size: {selectedTemplate.width}x{selectedTemplate.height || selectedTemplate.width}
+              </Text>
+              <Text size="xs" color="gray400">
+                Click on the map to place
+              </Text>
+            </Box>
+          </Box>
+        </PanelSection>
       )}
-    </div>
+    </Panel>
   )
 }
 

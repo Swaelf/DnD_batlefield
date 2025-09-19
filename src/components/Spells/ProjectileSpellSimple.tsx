@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Circle, Group, Line, RegularPolygon } from 'react-konva'
 import { SpellEventData } from '@/types/timeline'
 
-interface ProjectileSpellProps {
+type ProjectileSpellProps = {
   spell: SpellEventData
   isAnimating: boolean
   onAnimationComplete?: () => void
@@ -180,7 +180,7 @@ export const ProjectileSpell: React.FC<ProjectileSpellProps> = ({
           <Circle
             x={spell.toPosition.x}
             y={spell.toPosition.y}
-            radius={spell.burstRadius * burstScale}
+            radius={Math.max(1, (spell.burstRadius || 30) * burstScale)}
             fill={spell.color || '#FF6B6B'}
             opacity={Math.max(0.1, 1 - burstScale * 0.8)}
             shadowColor={spell.color || '#FF6B6B'}
@@ -191,7 +191,7 @@ export const ProjectileSpell: React.FC<ProjectileSpellProps> = ({
           <Circle
             x={spell.toPosition.x}
             y={spell.toPosition.y}
-            radius={spell.burstRadius * burstScale * 0.5}
+            radius={Math.max(1, (spell.burstRadius || 30) * burstScale * 0.5)}
             fill={spell.secondaryColor || '#FFFF00'}
             opacity={Math.max(0.1, 1 - burstScale * 0.6)}
           />

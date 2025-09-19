@@ -1,8 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent, useMemo, useCallback } from 'react';
 import { TokenSize } from '@/types/token';
 import useToolStore from '@/store/toolStore';
+import {
+  Panel,
+  PanelHeader,
+  PanelTitle,
+  PanelBody,
+  PanelSection,
+  Button,
+  Input,
+  Select,
+  SelectOption,
+  ColorInput,
+  Field,
+  FieldLabel,
+  Grid,
+  Box,
+  Text
+} from '@/components/ui';
 
-interface TokenTemplate {
+type TokenTemplate = {
   name: string;
   size: TokenSize;
   color: string;
@@ -44,26 +61,32 @@ const SIZE_LABELS: Record<TokenSize, string> = {
   gargantuan: 'Gargantuan (20ft+)',
 };
 
-export const TokenLibrary: React.FC = () => {
+const TokenLibrary: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'player' | 'enemy' | 'npc' | 'object'>('all');
   const [customName, setCustomName] = useState('');
   const [customSize, setCustomSize] = useState<TokenSize>('medium');
   const [customColor, setCustomColor] = useState('#FF0000');
   const [customShape, setCustomShape] = useState<'circle' | 'square'>('circle');
 
-  const { currentTool } = useToolStore();
+  // Use specific selector to prevent unnecessary re-renders
+  const currentTool = useToolStore(state => state.currentTool);
+  const setTool = useToolStore(state => state.setTool);
+  const setTokenTemplate = useToolStore(state => state.setTokenTemplate);
 
-  const filteredTokens = selectedCategory === 'all'
-    ? DEFAULT_TOKENS
-    : DEFAULT_TOKENS.filter(t => t.category === selectedCategory);
+  const filteredTokens = useMemo(
+    () => selectedCategory === 'all'
+      ? DEFAULT_TOKENS
+      : DEFAULT_TOKENS.filter(t => t.category === selectedCategory),
+    [selectedCategory]
+  );
 
-  const handleTokenClick = (template: TokenTemplate) => {
+  const handleTokenClick = useCallback((template: TokenTemplate) => {
     if (currentTool !== 'token') {
-      useToolStore.getState().setTool('token');
+      setTool('token');
     }
 
     // Store the template for placement
-    useToolStore.getState().setTokenTemplate({
+    setTokenTemplate({
       ...template,
       showLabel: true,
       labelPosition: 'bottom',
@@ -71,9 +94,9 @@ export const TokenLibrary: React.FC = () => {
       borderColor: '#000000',
       borderWidth: 2,
     });
-  };
+  }, [currentTool, setTool, setTokenTemplate]);
 
-  const createCustomToken = () => {
+  const createCustomToken = useCallback(() => {
     if (!customName.trim()) return;
 
     const template = {
@@ -89,144 +112,187 @@ export const TokenLibrary: React.FC = () => {
       borderWidth: 2,
     };
 
-    useToolStore.getState().setTool('token');
-    useToolStore.getState().setTokenTemplate(template);
+    setTool('token');
+    setTokenTemplate(template);
 
     // Reset form
     setCustomName('');
     setCustomSize('medium');
     setCustomColor('#FF0000');
     setCustomShape('circle');
-  };
+  }, [customName, customSize, customColor, customShape, setTool, setTokenTemplate]);
 
   if (currentTool !== 'token') return null;
 
   return (
-    <div className="bg-gray-900 border-l border-gray-800 p-4 h-full overflow-y-auto">
-      <h3 className="text-lg font-bold text-d20-gold mb-4">Token Library</h3>
+    <Panel data-test-id="token-library" display="flex" flexDirection="column" size="sidebar" css={{ borderLeft: '1px solid $gray800' }}>
+      <PanelHeader>
+        <PanelTitle>Token Library</PanelTitle>
+      </PanelHeader>
 
-      {/* Category Filter */}
-      <div className="mb-4">
-        <div className="flex flex-wrap gap-2">
-          {(['all', 'player', 'enemy', 'npc', 'object'] as const).map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                selectedCategory === cat
-                  ? 'bg-d20-red text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
-              }`}
-            >
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Token Grid */}
-      <div className="grid grid-cols-3 gap-2 mb-6">
-        {filteredTokens.map((token, index) => (
-          <button
-            key={index}
-            onClick={() => handleTokenClick(token)}
-            className="bg-gray-800 hover:bg-gray-700 p-3 rounded-lg transition-colors group"
-            title={`${token.name} (${SIZE_LABELS[token.size]})`}
-          >
-            <div className="flex flex-col items-center">
-              <div
-                className={`w-10 h-10 ${token.shape === 'square' ? 'rounded' : 'rounded-full'} mb-2 border-2 border-black group-hover:border-d20-gold transition-colors`}
-                style={{ backgroundColor: token.color }}
-              />
-              <span className="text-xs text-gray-300 text-center">{token.name}</span>
-              <span className="text-xs text-gray-500">{token.size}</span>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Custom Token Creator */}
-      <div className="border-t border-gray-800 pt-4">
-        <h4 className="text-sm font-bold text-d20-gold mb-3">Create Custom Token</h4>
-
-        <div className="space-y-3">
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Name</label>
-            <input
-              type="text"
-              value={customName}
-              onChange={(e) => setCustomName(e.target.value)}
-              placeholder="Token name"
-              className="w-full px-2 py-1 bg-gray-800 text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-d20-gold"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Size</label>
-            <select
-              value={customSize}
-              onChange={(e) => setCustomSize(e.target.value as TokenSize)}
-              className="w-full px-2 py-1 bg-gray-800 text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-d20-gold"
-            >
-              {Object.entries(SIZE_LABELS).map(([size, label]) => (
-                <option key={size} value={size}>{label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Color</label>
-            <div className="flex gap-2">
-              <input
-                type="color"
-                value={customColor}
-                onChange={(e) => setCustomColor(e.target.value)}
-                className="h-8 w-16 bg-gray-800 rounded cursor-pointer"
-              />
-              <input
-                type="text"
-                value={customColor}
-                onChange={(e) => setCustomColor(e.target.value)}
-                className="flex-1 px-2 py-1 bg-gray-800 text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-d20-gold"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Shape</label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCustomShape('circle')}
-                className={`flex-1 px-3 py-1 rounded text-sm ${
-                  customShape === 'circle'
-                    ? 'bg-d20-red text-white'
-                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                }`}
+      <PanelBody data-test-id="token-library-inner" display="flex" flexDirection="column">
+        {/* Category Filter */}
+        <PanelSection data-test-id="token-library-category-filter" css={{ marginBottom: '$4' }}>
+          <Box display="flex" css={{ flexWrap: 'wrap', gap: '$2' }}>
+            {(['all', 'player', 'enemy', 'npc', 'object'] as const).map((cat) => (
+              <Button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                variant={selectedCategory === cat ? 'primary' : 'outline'}
+                size="sm"
+                css={{
+                  textTransform: 'capitalize',
+                  flex: '1 1 auto',
+                  minWidth: '60px',
+                }}
               >
-                Circle
-              </button>
-              <button
-                onClick={() => setCustomShape('square')}
-                className={`flex-1 px-3 py-1 rounded text-sm ${
-                  customShape === 'square'
-                    ? 'bg-d20-red text-white'
-                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                }`}
-              >
-                Square
-              </button>
-            </div>
-          </div>
+                {cat}
+              </Button>
+            ))}
+          </Box>
+        </PanelSection>
 
-          <button
-            onClick={createCustomToken}
-            disabled={!customName.trim()}
-            className="w-full py-2 bg-d20-red text-white rounded text-sm font-medium hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Create Token
-          </button>
-        </div>
-      </div>
-    </div>
+        {/* Token Grid */}
+        <PanelSection data-test-id="token-library-token-grid" css={{ marginBottom: '$6' }}>
+          <Grid columns={3} gap={2}>
+            {filteredTokens.map((token, index) => (
+              <TokenItem key={index} token={token} onClick={handleTokenClick} />
+            ))}
+          </Grid>
+        </PanelSection>
+
+        {/* Custom Token Creator */}
+        <PanelSection data-test-id="token-library-custom-token-creator" display="flex" flexDirection="column" divider>
+          <Text size="sm" weight="semibold" color="secondary" css={{ marginBottom: '$3' }}>
+            Create Custom Token
+          </Text>
+
+          <Box display="flex" flexDirection="column" gap="3">
+            <Field>
+              <FieldLabel>Name</FieldLabel>
+              <Input
+                value={customName}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setCustomName(e.target.value)}
+                placeholder="Token name"
+                fullWidth
+                size="sm"
+              />
+            </Field>
+
+            <Field>
+              <FieldLabel>Size</FieldLabel>
+              <Select
+                value={customSize}
+                onValueChange={(value) => setCustomSize(value as TokenSize)}
+                size="sm"
+                fullWidth
+              >
+                {Object.entries(SIZE_LABELS).map(([size, label]) => (
+                  <SelectOption key={size} value={size}>
+                    {label}
+                  </SelectOption>
+                ))}
+              </Select>
+            </Field>
+
+            <Field>
+              <FieldLabel>Color</FieldLabel>
+              <Box display="flex" gap="2">
+                <ColorInput
+                  value={customColor}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setCustomColor(e.target.value)}
+                  css={{ width: '64px', flexShrink: 0 }}
+                />
+                <Input
+                  value={customColor}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setCustomColor(e.target.value)}
+                  size="sm"
+                  css={{ flex: 1 }}
+                />
+              </Box>
+            </Field>
+
+            <Field>
+              <FieldLabel>Shape</FieldLabel>
+              <Box display="flex" gap="2">
+                <Button
+                  onClick={() => setCustomShape('circle')}
+                  variant={customShape === 'circle' ? 'primary' : 'outline'}
+                  size="sm"
+                  fullWidth
+                >
+                  Circle
+                </Button>
+                <Button
+                  onClick={() => setCustomShape('square')}
+                  variant={customShape === 'square' ? 'primary' : 'outline'}
+                  size="sm"
+                  fullWidth
+                >
+                  Square
+                </Button>
+              </Box>
+            </Field>
+
+            <Button
+              onClick={createCustomToken}
+              disabled={!customName.trim()}
+              variant="primary"
+              fullWidth
+              size="sm"
+            >
+              Create Token
+            </Button>
+          </Box>
+        </PanelSection>
+      </PanelBody>
+    </Panel>
   );
 };
+
+// Memoize token item to prevent re-renders
+const TokenItem = React.memo(({ token, onClick }: { token: TokenTemplate; onClick: (token: TokenTemplate) => void }) => (
+  <Button
+    onClick={() => onClick(token)}
+    variant="ghost"
+    css={{
+      height: 'auto',
+      padding: '$3',
+      flexDirection: 'column',
+      gap: '$2',
+      backgroundColor: '$gray800',
+      '&:hover': {
+        backgroundColor: '$gray700',
+      },
+    }}
+    title={`${token.name} (${SIZE_LABELS[token.size]})`}
+  >
+    <Box
+      display="block"
+      css={{
+        width: '40px',
+        height: '40px',
+        borderRadius: token.shape === 'square' ? '$md' : '$round',
+        backgroundColor: token.color,
+        border: '2px solid $black',
+        transition: '$fast',
+
+        'button:hover &': {
+          borderColor: '$secondary',
+        },
+      }}
+    />
+    <Box display="flex" flexDirection="column" alignItems="center">
+      <Text size="xs" color="gray300" align="center">
+        {token.name}
+      </Text>
+      <Text size="xs" color="gray500">
+        {token.size}
+      </Text>
+    </Box>
+  </Button>
+));
+
+TokenItem.displayName = 'TokenItem';
+
+export default React.memo(TokenLibrary);

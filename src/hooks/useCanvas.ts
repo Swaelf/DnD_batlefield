@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 
-interface CanvasSize {
+type CanvasSize = {
   width: number
   height: number
 }

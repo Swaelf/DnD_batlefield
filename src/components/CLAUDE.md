@@ -6,6 +6,7 @@ This directory contains all React components for the MapMaker application. Compo
 ## Directory Structure
 ```
 components/
+├── Actions/          # Advanced action sequencing and coordination
 ├── Canvas/           # Core canvas rendering components
 ├── ContextMenu/      # Right-click context menus
 ├── HelpDialog/       # Help and documentation dialogs

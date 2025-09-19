@@ -4,13 +4,20 @@ import Konva from 'konva'
 import useToolStore from '@store/toolStore'
 import { Token } from '../Token/Token'
 
-interface DrawingLayerProps {
+type DrawingLayerProps = {
   stageRef: React.RefObject<Konva.Stage>
   gridSize?: number
 }
 
 const DrawingLayer: React.FC<DrawingLayerProps> = ({ gridSize = 50 }) => {
-  const { currentTool, drawingState, fillColor, strokeColor, strokeWidth, opacity, tokenTemplate } = useToolStore()
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentTool = useToolStore(state => state.currentTool)
+  const drawingState = useToolStore(state => state.drawingState)
+  const fillColor = useToolStore(state => state.fillColor)
+  const strokeColor = useToolStore(state => state.strokeColor)
+  const strokeWidth = useToolStore(state => state.strokeWidth)
+  const opacity = useToolStore(state => state.opacity)
+  const tokenTemplate = useToolStore(state => state.tokenTemplate)
 
   // Show token preview when token tool is active but not drawing
   if (currentTool === 'token' && tokenTemplate && !drawingState.isDrawing) {

@@ -4,27 +4,27 @@ import useRoundStore from '@/store/roundStore'
 import useMapStore from '@/store/mapStore'
 import { EventType } from '@/types/timeline'
 
-interface TimelineProps {
+type TimelineProps = {
   onAddEvent?: (type: EventType) => void
   onEditEvents?: () => void
 }
 
 export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
   const [isExpanded] = useState(false)
-  const {
-    timeline,
-    currentRound,
-    isInCombat,
-    animationSpeed,
-    startCombat,
-    endCombat,
-    nextRound,
-    previousRound,
-    goToRound,
-    setAnimationSpeed
-  } = useRoundStore()
+  // Use specific selectors to prevent unnecessary re-renders
+  const timeline = useRoundStore(state => state.timeline)
+  const currentRound = useRoundStore(state => state.currentRound)
+  const isInCombat = useRoundStore(state => state.isInCombat)
+  const animationSpeed = useRoundStore(state => state.animationSpeed)
+  const startCombat = useRoundStore(state => state.startCombat)
+  const endCombat = useRoundStore(state => state.endCombat)
+  const nextRound = useRoundStore(state => state.nextRound)
+  const previousRound = useRoundStore(state => state.previousRound)
+  const goToRound = useRoundStore(state => state.goToRound)
+  const setAnimationSpeed = useRoundStore(state => state.setAnimationSpeed)
 
-  const { currentMap } = useMapStore()
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentMap = useMapStore(state => state.currentMap)
   const [isAnimating, setIsAnimating] = useState(false)
 
   const handleStartCombat = () => {

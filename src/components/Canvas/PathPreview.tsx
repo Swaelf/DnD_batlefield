@@ -1,16 +1,19 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { Line, Circle, Arrow, Text } from 'react-konva'
 import useEventCreationStore from '@/store/eventCreationStore'
 import useAnimationStore from '@/store/animationStore'
 // Removed unused useRoundStore import
 
-interface PathPreviewProps {
+type PathPreviewProps = {
   gridSize: number
 }
 
-export const PathPreview: React.FC<PathPreviewProps> = ({ gridSize }) => {
-  const { isPicking, fromPosition, toPosition } = useEventCreationStore()
-  const { activePaths } = useAnimationStore()
+const PathPreviewComponent: React.FC<PathPreviewProps> = ({ gridSize }) => {
+  // Use specific selectors to prevent unnecessary re-renders
+  const isPicking = useEventCreationStore(state => state.isPicking)
+  const fromPosition = useEventCreationStore(state => state.fromPosition)
+  const toPosition = useEventCreationStore(state => state.toPosition)
+  const activePaths = useAnimationStore(state => state.activePaths)
   // Removed unused timeline and currentRound
 
   // Calculate distance in grid squares
@@ -164,5 +167,8 @@ export const PathPreview: React.FC<PathPreviewProps> = ({ gridSize }) => {
     </>
   )
 }
+
+export const PathPreview = memo(PathPreviewComponent)
+PathPreview.displayName = 'PathPreview'
 
 export default PathPreview

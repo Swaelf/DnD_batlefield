@@ -11,6 +11,9 @@ export type BaseComponentProps = {
   children?: React.ReactNode
 }
 
+// Component props type alias for consistency
+export type ComponentProps = BaseComponentProps
+
 // Canvas Component Types
 export type MapCanvasProps = {
   width: number

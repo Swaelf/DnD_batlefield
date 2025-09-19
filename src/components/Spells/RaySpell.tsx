@@ -3,7 +3,7 @@ import { Line, Group, Circle } from 'react-konva'
 import Konva from 'konva'
 import { SpellEventData } from '@/types/timeline'
 
-interface RaySpellProps {
+type RaySpellProps = {
   spell: SpellEventData
   isAnimating: boolean
   onAnimationComplete?: () => void
@@ -24,9 +24,23 @@ export const RaySpell: React.FC<RaySpellProps> = ({
     const impact = impactRef.current
 
     // Calculate ray path
-    const dx = spell.toPosition.x - spell.fromPosition.x
-    const dy = spell.toPosition.y - spell.fromPosition.y
-    // Distance calculation removed as it was unused
+    let dx = spell.toPosition.x - spell.fromPosition.x
+    let dy = spell.toPosition.y - spell.fromPosition.y
+    let distance = Math.sqrt(dx * dx + dy * dy)
+
+    // Limit range if specified
+    if (spell.range && distance > spell.range) {
+      const ratio = spell.range / distance
+      dx *= ratio
+      dy *= ratio
+      distance = spell.range
+    }
+
+    // Calculate actual target position (may be limited by range)
+    const actualTarget = {
+      x: spell.fromPosition.x + dx,
+      y: spell.fromPosition.y + dy
+    }
 
     // Set initial state
     ray.points([
@@ -38,7 +52,7 @@ export const RaySpell: React.FC<RaySpellProps> = ({
     ray.visible(true)
 
     if (impact) {
-      impact.position(spell.toPosition)
+      impact.position(actualTarget)
       impact.visible(false)
     }
 
@@ -49,23 +63,24 @@ export const RaySpell: React.FC<RaySpellProps> = ({
       const duration = spell.duration || 500
       const progress = Math.min(frame.time / duration, 1)
 
-      // Extend ray
-      const currentEndX = spell.fromPosition.x + (dx * progress)
-      const currentEndY = spell.fromPosition.y + (dy * progress)
-
+      // Extend ray instantly (rays are instant in D&D)
       ray.points([
         spell.fromPosition.x,
         spell.fromPosition.y,
-        currentEndX,
-        currentEndY
+        actualTarget.x,
+        actualTarget.y
       ])
 
-      // Pulse effect
-      const pulseScale = 1 + Math.sin(frame.time * 0.01) * 0.2
-      ray.strokeWidth(spell.size * pulseScale)
+      // Keep consistent width, no pulse
+      ray.strokeWidth(spell.size)
 
-      // Show impact at end
-      if (progress >= 1 && impact) {
+      // Fade in/out effect for the ray
+      const fadeIn = Math.min(frame.time / 100, 1) // Quick fade in
+      const fadeOut = frame.time > duration - 200 ? Math.max(0, 1 - (frame.time - (duration - 200)) / 200) : 1
+      ray.opacity(0.9 * fadeIn * fadeOut)
+
+      // Show impact immediately (rays are instant)
+      if (frame.time > 50 && impact && !impact.visible()) {
         impact.visible(true)
 
         // Animate impact
@@ -149,8 +164,8 @@ export const RaySpell: React.FC<RaySpellProps> = ({
       {/* Impact effect */}
       <Circle
         ref={impactRef}
-        x={spell.toPosition.x}
-        y={spell.toPosition.y}
+        x={0}
+        y={0}
         radius={0}
         fill={spell.color}
         opacity={1}

@@ -3,7 +3,7 @@ import { Circle, Group, Star, Ring } from 'react-konva'
 import Konva from 'konva'
 import { SpellEventData } from '@/types/timeline'
 
-interface BurstSpellProps {
+type BurstSpellProps = {
   spell: SpellEventData
   isAnimating: boolean
   onAnimationComplete?: () => void

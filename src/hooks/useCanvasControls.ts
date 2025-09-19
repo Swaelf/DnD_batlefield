@@ -1,7 +1,7 @@
 import { useState, useCallback, RefObject } from 'react'
 import Konva from 'konva'
 
-interface CanvasControls {
+type CanvasControls = {
   scale: number
   position: { x: number; y: number }
   isDragging: boolean

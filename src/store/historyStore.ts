@@ -4,14 +4,14 @@ import { BattleMap } from '@/types/map'
 
 const MAX_HISTORY_SIZE = 50
 
-interface HistoryState {
+type HistoryState = {
   past: BattleMap[]
   future: BattleMap[]
   canUndo: boolean
   canRedo: boolean
 }
 
-interface HistoryStore extends HistoryState {
+type HistoryStore = HistoryState & {
   // Actions
   pushState: (state: BattleMap) => void
   undo: () => BattleMap | null

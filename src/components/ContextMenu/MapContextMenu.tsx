@@ -14,7 +14,7 @@ import useMapStore from '@/store/mapStore'
 import useToolStore from '@/store/toolStore'
 import { nanoid } from 'nanoid'
 
-interface MapContextMenuProps {
+type MapContextMenuProps = {
   position: { x: number; y: number }
   canvasPosition: { x: number; y: number }
   onClose: () => void
@@ -25,8 +25,15 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
   canvasPosition,
   onClose
 }) => {
-  const { currentMap, addObject, toggleGridVisibility, toggleGridSnap } = useMapStore()
-  const { setTool, fillColor, strokeColor, strokeWidth } = useToolStore()
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentMap = useMapStore(state => state.currentMap)
+  const addObject = useMapStore(state => state.addObject)
+  const toggleGridVisibility = useMapStore(state => state.toggleGridVisibility)
+  const toggleGridSnap = useMapStore(state => state.toggleGridSnap)
+  const setTool = useToolStore(state => state.setTool)
+  const fillColor = useToolStore(state => state.fillColor)
+  const strokeColor = useToolStore(state => state.strokeColor)
+  const strokeWidth = useToolStore(state => state.strokeWidth)
 
   const handleAddRectangle = () => {
     const rect = {

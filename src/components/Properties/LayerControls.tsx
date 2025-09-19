@@ -3,12 +3,14 @@ import useMapStore from '@/store/mapStore';
 import { MapObject } from '@/types/map';
 import { ArrowUp, ArrowDown, ArrowUpToLine, ArrowDownToLine } from 'lucide-react';
 
-interface LayerControlsProps {
+type LayerControlsProps = {
   selectedObject: MapObject;
 }
 
 export const LayerControls: React.FC<LayerControlsProps> = ({ selectedObject }) => {
-  const { currentMap, updateObject } = useMapStore();
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentMap = useMapStore(state => state.currentMap);
+  const updateObject = useMapStore(state => state.updateObject);
 
   if (!currentMap) return null;
 

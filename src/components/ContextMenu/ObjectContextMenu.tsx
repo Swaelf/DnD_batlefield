@@ -15,7 +15,7 @@ import useMapStore from '@/store/mapStore'
 import { Token } from '@/types/token'
 import { nanoid } from 'nanoid'
 
-interface ObjectContextMenuProps {
+type ObjectContextMenuProps = {
   position: { x: number; y: number }
   objectId: string
   onClose: () => void
@@ -26,7 +26,12 @@ export const ObjectContextMenu: React.FC<ObjectContextMenuProps> = ({
   objectId,
   onClose
 }) => {
-  const { currentMap, updateObject, deleteSelected, selectObject, addObject } = useMapStore()
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentMap = useMapStore(state => state.currentMap)
+  const updateObject = useMapStore(state => state.updateObject)
+  const deleteSelected = useMapStore(state => state.deleteSelected)
+  const selectObject = useMapStore(state => state.selectObject)
+  const addObject = useMapStore(state => state.addObject)
 
   const object = currentMap?.objects.find(obj => obj.id === objectId)
   if (!object) return null

@@ -139,7 +139,7 @@ describe('Spell System', () => {
       mapResult.current.createNewMap('Test Map')
     })
 
-    // Add a spell with no duration (should be removed immediately)
+    // Add a spell with no duration (instant spells are kept, handled by animation)
     act(() => {
       mapResult.current.addSpellEffect({
         id: 'temp-spell-1',
@@ -164,11 +164,11 @@ describe('Spell System', () => {
       mapResult.current.cleanupExpiredSpells(2)
     })
 
-    // Check spell was removed (duration 0 = instant)
+    // Instant spells (duration 0) are kept - handled by animation timeout
     spellObject = mapResult.current.currentMap?.objects.find(
       obj => obj.id === 'temp-spell-1'
     )
-    expect(spellObject).toBeUndefined()
+    expect(spellObject).toBeDefined() // Should still be there
   })
 
   it('should preserve persistent area spells across rounds', () => {

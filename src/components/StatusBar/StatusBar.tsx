@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { shallow } from 'zustand/shallow'
 import useMapStore from '@/store/mapStore'
 import useToolStore from '@/store/toolStore'
 import { useHistoryStore } from '@/store/historyStore'
@@ -11,16 +12,118 @@ import {
   Redo2,
   Package
 } from 'lucide-react'
+import { styled } from '@/styles/theme.config'
+import { Box, Text, Button } from '@/components/primitives'
 
-interface StatusBarProps {
+type StatusBarProps = {
   mousePosition?: { x: number; y: number }
   zoom?: number
 }
 
-export const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
-  const { currentMap, selectedObjects } = useMapStore()
-  const { currentTool } = useToolStore()
-  const { canUndo, canRedo, getHistoryInfo } = useHistoryStore()
+const StatusBarContainer = styled(Box, {
+  height: '24px',
+  backgroundColor: '$gray900',
+  borderTop: '1px solid $gray800',
+  display: 'flex',
+  alignItems: 'center',
+  paddingX: '$2',
+  fontSize: '$xs',
+})
+
+const StatusSection = styled(Box, {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '$4',
+
+  variants: {
+    align: {
+      left: { flex: 1, justifyContent: 'flex-start' },
+      center: { justifyContent: 'center' },
+      right: { flex: 1, justifyContent: 'flex-end' },
+    },
+  },
+})
+
+const StatusItem = styled(Box, {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '$1',
+  color: '$gray400',
+})
+
+const StatusText = styled(Text, {
+  fontFamily: '$mono',
+  fontSize: '$xs',
+  color: 'inherit',
+
+  variants: {
+    highlight: {
+      true: {
+        color: '$white',
+        fontWeight: '$medium',
+      },
+    },
+    warning: {
+      true: {
+        color: '$error',
+      },
+    },
+    success: {
+      true: {
+        color: '$success',
+      },
+    },
+    accent: {
+      true: {
+        color: '$secondary',
+      },
+    },
+  },
+})
+
+const StatusButton = styled(Button, {
+  height: '20px',
+  minWidth: 'auto',
+  padding: '$1',
+  fontSize: '$xs',
+  borderRadius: '$sm',
+  gap: '$1',
+
+  variants: {
+    variant: {
+      status: {
+        backgroundColor: 'transparent',
+        color: '$gray400',
+        border: 'none',
+        '&:hover': {
+          backgroundColor: '$gray800',
+          color: '$white',
+        },
+        '&:disabled': {
+          color: '$gray600',
+          '&:hover': {
+            backgroundColor: 'transparent',
+            color: '$gray600',
+          },
+        },
+      },
+    },
+  },
+
+  defaultVariants: {
+    variant: 'status',
+    size: 'xs',
+  },
+})
+
+const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentMap = useMapStore(state => state.currentMap)
+  const selectedObjects = useMapStore(state => state.selectedObjects, shallow)
+  const currentTool = useToolStore(state => state.currentTool)
+  const canUndo = useHistoryStore(state => state.canUndo)
+  const canRedo = useHistoryStore(state => state.canRedo)
+  const getHistoryInfo = useHistoryStore(state => state.getHistoryInfo)
   const [fps, setFps] = useState(60)
 
   // FPS counter
@@ -46,14 +149,15 @@ export const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 })
     return () => cancelAnimationFrame(animationId)
   }, [])
 
-  const formatCoords = (pos?: { x: number; y: number }) => {
+  // Memoize formatting functions to prevent recreating them
+  const formatCoords = useCallback((pos?: { x: number; y: number }) => {
     if (!pos) return 'X: -- Y: --'
     return `X: ${Math.round(pos.x)} Y: ${Math.round(pos.y)}`
-  }
+  }, [])
 
-  const formatZoom = (z: number) => `${Math.round(z * 100)}%`
+  const formatZoom = useCallback((z: number) => `${Math.round(z * 100)}%`, [])
 
-  const getToolName = (tool: string) => {
+  const getToolName = useCallback((tool: string) => {
     const names: Record<string, string> = {
       select: 'Select',
       rectangle: 'Rectangle',
@@ -65,100 +169,114 @@ export const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 })
       eraser: 'Eraser'
     }
     return names[tool] || tool
-  }
+  }, [])
 
-  const historyInfo = getHistoryInfo()
+  // Memoize computed values
+  const historyInfo = useMemo(() => getHistoryInfo(), [getHistoryInfo])
+
+  const gridCell = useMemo(() => {
+    if (!currentMap?.grid.snap || !mousePosition) return null
+    return {
+      x: Math.floor(mousePosition.x / currentMap.grid.size),
+      y: Math.floor(mousePosition.y / currentMap.grid.size)
+    }
+  }, [currentMap?.grid.snap, currentMap?.grid.size, mousePosition])
 
   return (
-    <div className="h-6 bg-gray-900 border-t border-gray-800 flex items-center px-2 text-xs">
+    <StatusBarContainer>
       {/* Left side - Cursor and tool info */}
-      <div className="flex items-center gap-4 flex-1">
+      <StatusSection align="left">
         {/* Cursor position */}
-        <div className="flex items-center gap-1 text-gray-400">
-          <MousePointer2 className="h-3 w-3" />
-          <span className="font-mono min-w-[120px]">{formatCoords(mousePosition)}</span>
-        </div>
+        <StatusItem>
+          <MousePointer2 size={12} />
+          <StatusText css={{ minWidth: '120px' }}>{formatCoords(mousePosition)}</StatusText>
+        </StatusItem>
 
         {/* Grid cell (if snapping) */}
-        {currentMap?.grid.snap && mousePosition && (
-          <div className="flex items-center gap-1 text-gray-400">
-            <Grid3x3 className="h-3 w-3" />
-            <span className="font-mono">
-              Cell [{Math.floor(mousePosition.x / currentMap.grid.size)},
-              {Math.floor(mousePosition.y / currentMap.grid.size)}]
-            </span>
-          </div>
+        {gridCell && (
+          <StatusItem>
+            <Grid3x3 size={12} />
+            <StatusText>
+              Cell [{gridCell.x}, {gridCell.y}]
+            </StatusText>
+          </StatusItem>
         )}
 
         {/* Current tool */}
-        <div className="flex items-center gap-1 text-gray-400">
-          <span>Tool:</span>
-          <span className="text-white font-medium">{getToolName(currentTool)}</span>
-        </div>
-      </div>
+        <StatusItem>
+          <StatusText>Tool:</StatusText>
+          <StatusText highlight>{getToolName(currentTool)}</StatusText>
+        </StatusItem>
+      </StatusSection>
 
       {/* Center - Object info */}
-      <div className="flex items-center gap-4">
+      <StatusSection align="center">
         {/* Selected objects count */}
         {selectedObjects.length > 0 && (
-          <div className="flex items-center gap-1 text-yellow-500">
-            <Package className="h-3 w-3" />
-            <span>{selectedObjects.length} selected</span>
-          </div>
+          <StatusItem css={{ color: '$secondary' }}>
+            <Package size={12} />
+            <StatusText accent>{selectedObjects.length} selected</StatusText>
+          </StatusItem>
         )}
 
         {/* Total objects */}
-        <div className="flex items-center gap-1 text-gray-400">
-          <Layers className="h-3 w-3" />
-          <span>{currentMap?.objects.length || 0} objects</span>
-        </div>
-      </div>
+        <StatusItem>
+          <Layers size={12} />
+          <StatusText>{currentMap?.objects.length || 0} objects</StatusText>
+        </StatusItem>
+      </StatusSection>
 
       {/* Right side - System info */}
-      <div className="flex items-center gap-4 flex-1 justify-end">
+      <StatusSection align="right">
         {/* History status */}
-        <div className="flex items-center gap-2">
-          <button
+        <StatusItem css={{ gap: '$2' }}>
+          <StatusButton
             disabled={!canUndo}
-            className={`flex items-center gap-1 ${
-              canUndo ? 'text-gray-400 hover:text-white' : 'text-gray-600'
-            }`}
             title={`Undo (${historyInfo.undoCount} available)`}
           >
-            <Undo2 className="h-3 w-3" />
-            <span>{historyInfo.undoCount}</span>
-          </button>
-          <button
+            <Undo2 size={12} />
+            <StatusText>{historyInfo.undoCount}</StatusText>
+          </StatusButton>
+          <StatusButton
             disabled={!canRedo}
-            className={`flex items-center gap-1 ${
-              canRedo ? 'text-gray-400 hover:text-white' : 'text-gray-600'
-            }`}
             title={`Redo (${historyInfo.redoCount} available)`}
           >
-            <Redo2 className="h-3 w-3" />
-            <span>{historyInfo.redoCount}</span>
-          </button>
-        </div>
+            <Redo2 size={12} />
+            <StatusText>{historyInfo.redoCount}</StatusText>
+          </StatusButton>
+        </StatusItem>
 
         {/* Zoom level */}
-        <div className="flex items-center gap-1 text-gray-400">
-          <ZoomIn className="h-3 w-3" />
-          <span className="font-mono min-w-[50px]">{formatZoom(zoom)}</span>
-        </div>
+        <StatusItem>
+          <ZoomIn size={12} />
+          <StatusText css={{ minWidth: '50px' }}>{formatZoom(zoom)}</StatusText>
+        </StatusItem>
 
         {/* Grid size */}
         {currentMap && (
-          <div className="flex items-center gap-1 text-gray-400">
-            <Grid3x3 className="h-3 w-3" />
-            <span>{currentMap.grid.size}px</span>
-          </div>
+          <StatusItem>
+            <Grid3x3 size={12} />
+            <StatusText>{currentMap.grid.size}px</StatusText>
+          </StatusItem>
         )}
 
         {/* FPS counter */}
-        <div className={`flex items-center gap-1 ${fps < 30 ? 'text-red-500' : 'text-gray-500'}`}>
-          <span className="font-mono">{fps} FPS</span>
-        </div>
-      </div>
-    </div>
+        <StatusItem>
+          <StatusText warning={fps < 30}>{fps} FPS</StatusText>
+        </StatusItem>
+      </StatusSection>
+    </StatusBarContainer>
   )
 }
+
+// Custom comparison function for optimized re-rendering
+const arePropsEqual = (prevProps: StatusBarProps, nextProps: StatusBarProps): boolean => {
+  // Only re-render if mouse position or zoom actually changed
+  const mouseChanged = prevProps.mousePosition?.x !== nextProps.mousePosition?.x ||
+                       prevProps.mousePosition?.y !== nextProps.mousePosition?.y
+  const zoomChanged = prevProps.zoom !== nextProps.zoom
+
+  return !mouseChanged && !zoomChanged
+}
+
+export default React.memo(StatusBar, arePropsEqual)

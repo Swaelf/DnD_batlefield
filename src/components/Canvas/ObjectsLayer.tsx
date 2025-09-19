@@ -6,10 +6,12 @@ import { Token as TokenType } from '@/types/token'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
 import useEventCreationStore from '@store/eventCreationStore'
+import useAnimationStore from '@store/animationStore'
 import { Token } from '../Token/Token'
 import { snapToGrid } from '@/utils/grid'
 import { ProjectileSpell, RaySpell, AreaSpell, BurstSpell } from '../Spells'
-import { SpellEventData } from '@/types/timeline'
+import { AttackRenderer } from '../Actions/ActionRenderer/AttackRenderer'
+import { SpellEventData, AttackEventData } from '@/types/timeline'
 
 // Type guard for token
 function isToken(obj: MapObject): obj is TokenType {
@@ -31,16 +33,28 @@ function isSpell(obj: MapObject): obj is MapObject & { type: 'spell'; spellData?
   return obj.type === 'spell'
 }
 
-interface ObjectsLayerProps {
+// Type guard for attack
+function isAttack(obj: MapObject): obj is MapObject & { type: 'attack'; attackData?: AttackEventData } {
+  return obj.type === 'attack'
+}
+
+type ObjectsLayerProps = {
   onObjectClick?: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void
   onObjectDragEnd?: (id: string, newPosition: { x: number; y: number }) => void
 }
 
 const ObjectsLayer: React.FC<ObjectsLayerProps> = ({ onObjectClick, onObjectDragEnd }) => {
-  const { currentMap, selectedObjects, deleteObject, mapVersion } = useMapStore()
-  const { currentTool } = useToolStore()
-  const { isPicking, setSelectedToken } = useEventCreationStore()
-  // Removed unused activeAnimations state
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentMap = useMapStore(state => state.currentMap)
+  const selectedObjects = useMapStore(state => state.selectedObjects) as string[]
+  const deleteObject = useMapStore(state => state.deleteObject)
+  const mapVersion = useMapStore(state => state.mapVersion)
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentTool = useToolStore(state => state.currentTool)
+  const isPicking = useEventCreationStore(state => state.isPicking)
+  const setSelectedToken = useEventCreationStore(state => state.setSelectedToken)
+  // Animation store to check which tokens are currently animating
+  const activePaths = useAnimationStore(state => state.activePaths)
 
   // Use mapVersion to force re-render when positions change
   React.useEffect(() => {
@@ -63,6 +77,8 @@ const ObjectsLayer: React.FC<ObjectsLayerProps> = ({ onObjectClick, onObjectDrag
       return renderText(obj, isSelected)
     } else if (isSpell(obj)) {
       return renderSpell(obj)
+    } else if (isAttack(obj)) {
+      return renderAttack(obj)
     }
     return null
   }
@@ -171,6 +187,9 @@ const ObjectsLayer: React.FC<ObjectsLayerProps> = ({ onObjectClick, onObjectDrag
   const renderToken = (token: TokenType, isSelected: boolean) => {
     const gridSize = currentMap.grid.size
 
+    // Check if this token is currently animating
+    const isAnimating = activePaths.some(path => path.tokenId === token.id && path.isAnimating)
+
     // Force re-render by using position values directly as props
     return (
       <Group
@@ -179,7 +198,7 @@ const ObjectsLayer: React.FC<ObjectsLayerProps> = ({ onObjectClick, onObjectDrag
         x={token.position.x}
         y={token.position.y}
         rotation={token.rotation}
-        draggable={!token.locked && currentTool !== 'eraser'}
+        draggable={!token.locked && currentTool !== 'eraser' && !isAnimating} // Disable dragging during animation
         onDragMove={(e) => {
           if (currentMap?.grid.snap) {
             const node = e.target
@@ -308,6 +327,30 @@ const ObjectsLayer: React.FC<ObjectsLayerProps> = ({ onObjectClick, onObjectDrag
     }
   }
 
+  const renderAttack = (attack: MapObject & { type: 'attack'; attackData?: AttackEventData }) => {
+    if (!attack.attackData) {
+      return null
+    }
+
+    // Attacks should always animate when they appear on the map
+    const isAnimating = true
+    const handleAnimationComplete = () => {
+      // Remove the attack after animation completes
+      setTimeout(() => {
+        deleteObject(attack.id)
+      }, 100) // Small delay to ensure animation finishes
+    }
+
+    return (
+      <AttackRenderer
+        key={attack.id}
+        attack={attack.attackData}
+        isAnimating={isAnimating}
+        onAnimationComplete={handleAnimationComplete}
+      />
+    )
+  }
+
   return (
     <Group>
       {currentMap.objects.map(renderObject)}
@@ -315,4 +358,16 @@ const ObjectsLayer: React.FC<ObjectsLayerProps> = ({ onObjectClick, onObjectDrag
   )
 }
 
-export default React.memo(ObjectsLayer)
+// Custom comparison function to prevent unnecessary re-renders
+const arePropsEqual = (
+  prevProps: ObjectsLayerProps,
+  nextProps: ObjectsLayerProps
+): boolean => {
+  // Only re-render if the callback functions actually change
+  return (
+    prevProps.onObjectClick === nextProps.onObjectClick &&
+    prevProps.onObjectDragEnd === nextProps.onObjectDragEnd
+  )
+}
+
+export default React.memo(ObjectsLayer, arePropsEqual)

@@ -1,18 +1,144 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback, useMemo, lazy, Suspense } from 'react'
 import useToolStore from '@store/toolStore'
 import useRoundStore from '@store/roundStore'
 import { TOOLS, ToolType } from '@/types/tools'
 import ToolButton from './ToolButton'
 import { Calendar } from 'lucide-react'
-import { EventEditor } from '../Timeline/EventEditor'
+// Lazy load EventEditor for better initial load performance
+const EventEditor = lazy(() => import('../Timeline/EventEditor').then(m => ({ default: m.EventEditor })))
+import { styled } from '@/styles/theme.config'
+import { Box, Text, Button } from '@/components/primitives'
+
+const ToolbarContainer = styled(Box, {
+  width: '$leftToolbarWidth',
+  backgroundColor: '$dndBlack',
+  borderRight: '1px solid $gray800',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  paddingY: '$2',
+})
+
+const ToolbarTitle = styled(Text, {
+  fontSize: '$xs',
+  color: '$gray500',
+  marginBottom: '$3',
+  textAlign: 'center',
+})
+
+const ToolsGrid = styled(Box, {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '$1',
+  width: '100%',
+  paddingX: '$2',
+})
+
+const ToolbarDivider = styled(Box, {
+  width: '100%',
+  paddingX: '$2',
+  marginY: '$3',
+
+  '&::before': {
+    content: '""',
+    display: 'flex',
+    borderTop: '1px solid $gray800',
+    width: '100%',
+  },
+})
+
+const EventButton = styled(Button, {
+  width: '$toolButtonSize',
+  height: '$toolButtonSize',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '$md',
+  backgroundColor: 'transparent',
+  color: '$secondary',
+  border: '1px solid $gray700',
+  transition: '$fast',
+  padding: 0,
+
+  '&:hover': {
+    backgroundColor: '$gray800',
+    borderColor: '$gray600',
+  },
+})
+
+const EventButtonText = styled(Text, {
+  fontSize: '$xs',
+  marginTop: '2px',
+  lineHeight: '$tight',
+})
+
+const ColorIndicatorsContainer = styled(Box, {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '$2',
+  paddingX: '$2',
+})
+
+const ColorIndicator = styled(Box, {
+  position: 'relative',
+
+  variants: {
+    type: {
+      fill: {},
+      stroke: {},
+    },
+  },
+})
+
+const ColorSwatch = styled(Box, {
+  width: '40px',
+  height: '40px',
+  borderRadius: '$md',
+  border: '2px solid $gray700',
+  cursor: 'pointer',
+  transition: '$fast',
+  boxSizing: 'border-box',
+
+  '&:hover': {
+    borderColor: '$gray600',
+  },
+
+  variants: {
+    type: {
+      fill: {},
+      stroke: {
+        backgroundColor: 'transparent',
+      },
+    },
+  },
+})
+
+const ColorLabel = styled(Box, {
+  position: 'absolute',
+  top: '-4px',
+  right: '-4px',
+  width: '12px',
+  height: '12px',
+  backgroundColor: '$gray800',
+  borderRadius: '$round',
+  fontSize: '$xs',
+  color: '$gray400',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '1px solid $gray700',
+})
 
 const Toolbar: React.FC = () => {
-  const { currentTool, setTool } = useToolStore()
-  const { isInCombat } = useRoundStore()
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentTool = useToolStore(state => state.currentTool)
+  const setTool = useToolStore(state => state.setTool)
+  const isInCombat = useRoundStore(state => state.isInCombat)
   const [showEventEditor, setShowEventEditor] = useState(false)
 
-  // Define which tools to show in the toolbar
-  const visibleTools: ToolType[] = [
+  // Memoize the tools list since it never changes
+  const visibleTools = useMemo<ToolType[]>(() => [
     'select',
     'rectangle',
     'circle',
@@ -23,13 +149,26 @@ const Toolbar: React.FC = () => {
     'measure',
     'text',
     'eraser'
-  ]
+  ], [])
+
+  // Memoize callbacks to prevent child re-renders
+  const handleToolClick = useCallback((toolId: ToolType) => {
+    setTool(toolId)
+  }, [setTool])
+
+  const handleOpenEventEditor = useCallback(() => {
+    setShowEventEditor(true)
+  }, [])
+
+  const handleCloseEventEditor = useCallback(() => {
+    setShowEventEditor(false)
+  }, [])
 
   return (
-    <div className="w-16 bg-dnd-black border-r border-dnd-gray-800 flex flex-col items-center py-2">
-      <div className="text-xs text-gray-500 mb-3">Tools</div>
+    <ToolbarContainer>
+      <ToolbarTitle>Tools</ToolbarTitle>
 
-      <div className="flex flex-col gap-1 w-full px-2">
+      <ToolsGrid>
         {visibleTools.map((toolId) => {
           const tool = TOOLS[toolId]
           return (
@@ -37,76 +176,82 @@ const Toolbar: React.FC = () => {
               key={tool.id}
               tool={tool}
               isActive={currentTool === tool.id}
-              onClick={() => setTool(tool.id)}
+              onClick={() => handleToolClick(tool.id)}
             />
           )
         })}
-      </div>
+      </ToolsGrid>
 
-      {/* Divider */}
-      <div className="w-full px-2 my-3">
-        <div className="border-t border-dnd-gray-800" />
-      </div>
+      <ToolbarDivider />
 
       {/* Event Management Button (only in combat) */}
       {isInCombat && (
         <>
-          <button
-            onClick={() => setShowEventEditor(true)}
-            className="w-12 h-12 flex flex-col items-center justify-center rounded hover:bg-dnd-gray-800 transition-colors text-dnd-gold"
+          <EventButton
+            onClick={handleOpenEventEditor}
             title="Manage Events"
           >
-            <Calendar className="w-5 h-5" />
-            <span className="text-xs mt-1">Events</span>
-          </button>
+            <Calendar size={20} />
+            <EventButtonText>Events</EventButtonText>
+          </EventButton>
 
-          <div className="w-full px-2 my-3">
-            <div className="border-t border-dnd-gray-800" />
-          </div>
+          <ToolbarDivider />
         </>
       )}
 
       {/* Color indicators */}
-      <div className="flex flex-col gap-2 px-2">
-        <ColorIndicator type="fill" />
-        <ColorIndicator type="stroke" />
-      </div>
+      <ColorIndicatorsContainer>
+        <ColorIndicatorComponent type="fill" />
+        <ColorIndicatorComponent type="stroke" />
+      </ColorIndicatorsContainer>
 
       {/* Event Editor Dialog */}
-      <EventEditor
-        isOpen={showEventEditor}
-        onClose={() => setShowEventEditor(false)}
-      />
-    </div>
+      <Suspense fallback={null}>
+        <EventEditor
+          isOpen={showEventEditor}
+          onClose={handleCloseEventEditor}
+        />
+      </Suspense>
+    </ToolbarContainer>
   )
 }
 
-const ColorIndicator: React.FC<{ type: 'fill' | 'stroke' }> = ({ type }) => {
-  const { fillColor, strokeColor } = useToolStore()
+// Memoize the color indicator to prevent unnecessary re-renders
+const ColorIndicatorComponent: React.FC<{ type: 'fill' | 'stroke' }> = React.memo(({ type }) => {
+  // Use specific selectors for better performance
+  const fillColor = useToolStore(state => state.fillColor)
+  const strokeColor = useToolStore(state => state.strokeColor)
   const color = type === 'fill' ? fillColor : strokeColor
 
   return (
-    <div className="relative group">
-      <div
-        className="w-10 h-10 rounded border-2 border-dnd-gray-700 cursor-pointer hover:border-dnd-gray-600 transition-colors"
-        style={{ backgroundColor: type === 'fill' ? color : 'transparent' }}
+    <ColorIndicator type={type}>
+      <ColorSwatch
+        type={type}
+        css={{
+          backgroundColor: type === 'fill' ? color : 'transparent',
+        }}
         title={type === 'fill' ? 'Fill Color' : 'Stroke Color'}
       >
         {type === 'stroke' && (
-          <div
-            className="w-full h-full rounded"
-            style={{
+          <Box
+            css={{
+              width: '100%',
+              height: '100%',
+              borderRadius: '$md',
               border: `3px solid ${color}`,
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
             }}
           />
         )}
-      </div>
-      <div className="absolute -top-1 -right-1 w-3 h-3 bg-dnd-gray-800 rounded-full text-xs text-gray-400 flex items-center justify-center">
+      </ColorSwatch>
+      <ColorLabel>
         {type === 'fill' ? 'F' : 'S'}
-      </div>
-    </div>
+      </ColorLabel>
+    </ColorIndicator>
   )
-}
+})
 
-export default Toolbar
+// Add display name for debugging
+ColorIndicatorComponent.displayName = 'ColorIndicatorComponent'
+
+export default React.memo(Toolbar)

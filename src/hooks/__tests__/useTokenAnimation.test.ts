@@ -6,62 +6,54 @@ import useMapStore from '@/store/mapStore'
 import Konva from 'konva'
 
 // Mock the stores
-// Mock the stores with proper Zustand store structure
-const mockRoundStore: any = {
-  timeline: {
-    id: 'test-timeline',
-    mapId: 'test-map',
-    rounds: [
-      {
-        id: 'round-1',
-        number: 1,
-        timestamp: Date.now(),
-        events: [] as any[],
-        executed: false
-      },
-      {
-        id: 'round-2',
-        number: 2,
-        timestamp: Date.now(),
-        events: [] as any[],
-        executed: false
-      }
-    ],
-    currentRound: 1,
-    isActive: true,
-    history: []
-  },
-  currentRound: 1,
-  isInCombat: false,
-  animationSpeed: 1,
-  getState: vi.fn(),
-  setState: vi.fn(),
-  subscribe: vi.fn().mockImplementation(() => vi.fn()),
-  destroy: vi.fn()
-}
-
-// Set up the getState mock after declaration
-mockRoundStore.getState.mockReturnValue(mockRoundStore)
-
-const mockMapStore: any = {
-  currentMap: null,
-  addSpellEffect: vi.fn(),
-  deleteObject: vi.fn(),
-  getState: vi.fn(),
-  setState: vi.fn(),
-  subscribe: vi.fn().mockImplementation(() => vi.fn()),
-  destroy: vi.fn()
-}
-
-// Set up the getState mock after declaration
-mockMapStore.getState.mockReturnValue(mockMapStore)
-
 vi.mock('@/store/roundStore', () => ({
-  useRoundStore: mockRoundStore
+  default: () => ({
+    timeline: {
+      id: 'test-timeline',
+      mapId: 'test-map',
+      rounds: [
+        {
+          id: 'round-1',
+          number: 1,
+          timestamp: Date.now(),
+          events: [] as any[],
+          executed: false
+        },
+        {
+          id: 'round-2',
+          number: 2,
+          timestamp: Date.now(),
+          events: [] as any[],
+          executed: false
+        }
+      ],
+      currentRound: 1,
+      isActive: true,
+      history: []
+    },
+    currentRound: 1,
+    isInCombat: false,
+    animationSpeed: 1,
+    updateEvent: vi.fn()
+  })
 }))
 
 vi.mock('@/store/mapStore', () => ({
-  useMapStore: mockMapStore
+  default: () => ({
+    currentMap: null,
+    addSpellEffect: vi.fn(),
+    deleteObject: vi.fn(),
+    updateObjectPosition: vi.fn()
+  })
+}))
+
+vi.mock('@/store/animationStore', () => ({
+  default: () => ({
+    activePaths: [],
+    startAnimation: vi.fn(),
+    updateProgress: vi.fn(),
+    endAnimation: vi.fn()
+  })
 }))
 
 describe('useTokenAnimation', () => {

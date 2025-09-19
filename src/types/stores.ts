@@ -1,5 +1,5 @@
 import { BattleMap, MapObject, Position, StaticObjectTemplate } from './map'
-import { Timeline, RoundEvent, EventType, EventData } from './timeline'
+import { Timeline, RoundEvent, EventType, EventData, AttackEventData } from './timeline'
 import { ToolType, DrawingState } from './tools'
 import { TokenTemplate } from './token'
 import { SpellEffectTemplate } from './spells'
@@ -126,6 +126,7 @@ export type MapStore = {
   loadMap: (map: BattleMap) => void
   addObject: (object: MapObject) => void
   addSpellEffect: (spell: MapObject & { roundCreated: number; spellDuration: number }) => void
+  addAttackEffect: (attack: AttackEventData) => void
   selectObject: (id: string) => void
   selectMultiple: (ids: string[]) => void
   clearSelection: () => void

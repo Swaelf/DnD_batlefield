@@ -3,7 +3,7 @@ import { Circle, Group, RegularPolygon, Ring } from 'react-konva'
 import Konva from 'konva'
 import { SpellEventData } from '@/types/timeline'
 
-interface AreaSpellProps {
+type AreaSpellProps = {
   spell: SpellEventData
   isAnimating: boolean
   onAnimationComplete?: () => void
@@ -17,7 +17,7 @@ export const AreaSpell: React.FC<AreaSpellProps> = ({
   const areaRef = useRef<Konva.Group>(null)
   const pulseRef = useRef<Konva.Ring>(null)
   const hasStartedRef = useRef(false)
-  const currentAnimationRef = useRef<Konva.Animation | null>(null)
+  const animationsRef = useRef<Set<Konva.Animation>>(new Set())
 
   // Reset flag when animation should start fresh
   useEffect(() => {
@@ -55,20 +55,22 @@ export const AreaSpell: React.FC<AreaSpellProps> = ({
 
         if (progress >= 1) {
           fadeInAnim.stop()
-          currentAnimationRef.current = null
+          animationsRef.current.delete(fadeInAnim)
           // Stay visible - no animation complete callback yet
           // The spell will be removed by the cleanup system after persistDuration
         }
       })
 
-      currentAnimationRef.current = fadeInAnim
+      animationsRef.current.add(fadeInAnim)
       fadeInAnim.start()
 
+      // Cleanup function
       return () => {
-        if (currentAnimationRef.current) {
-          currentAnimationRef.current.stop()
-          currentAnimationRef.current = null
-        }
+        animationsRef.current.forEach(anim => {
+          anim.stop()
+          anim.destroy()
+        })
+        animationsRef.current.clear()
       }
     } else {
       // For instant area effects: original pulsing animation
@@ -104,6 +106,7 @@ export const AreaSpell: React.FC<AreaSpellProps> = ({
 
               if (pulseFrame.time >= pulseDuration) {
                 pulseAnim.stop()
+                animationsRef.current.delete(pulseAnim)
 
                 // Fade out
                 const fadeOutAnim = new Konva.Animation((fadeFrame) => {
@@ -114,28 +117,33 @@ export const AreaSpell: React.FC<AreaSpellProps> = ({
 
                   if (fadeProgress >= 1) {
                     fadeOutAnim.stop()
+                    animationsRef.current.delete(fadeOutAnim)
                     area.visible(false)
                     onAnimationComplete?.()
                   }
                 })
 
+                animationsRef.current.add(fadeOutAnim)
                 fadeOutAnim.start()
               }
             })
 
+            animationsRef.current.add(pulseAnim)
             pulseAnim.start()
           }
         }
       })
 
-      currentAnimationRef.current = fadeInAnim
+      animationsRef.current.add(fadeInAnim)
       fadeInAnim.start()
 
+      // Cleanup function
       return () => {
-        if (currentAnimationRef.current) {
-          currentAnimationRef.current.stop()
-          currentAnimationRef.current = null
-        }
+        animationsRef.current.forEach(anim => {
+          anim.stop()
+          anim.destroy()
+        })
+        animationsRef.current.clear()
       }
     }
   }, [isAnimating, spell.toPosition, spell.persistDuration, spell.duration, spell.size])
@@ -176,7 +184,7 @@ export const AreaSpell: React.FC<AreaSpellProps> = ({
         x={0}
         y={0}
         sides={sides}
-        radius={spell.size * 0.7}
+        radius={Math.max(1, spell.size * 0.7)}
         fill={spell.secondaryColor || spell.color}
         opacity={spell.persistDuration && spell.persistDuration > 0 ? 0.4 : 0.3}
       />
@@ -205,7 +213,7 @@ export const AreaSpell: React.FC<AreaSpellProps> = ({
             key={i}
             x={x}
             y={y}
-            radius={spell.size * 0.05}
+            radius={Math.max(1, spell.size * 0.05)}
             fill={spell.secondaryColor || '#ffffff'}
             opacity={0.8}
           />

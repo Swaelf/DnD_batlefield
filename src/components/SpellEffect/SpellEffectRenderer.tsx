@@ -4,7 +4,7 @@ import Konva from 'konva'
 import { SpellEffect } from '@/types/spells'
 import useRoundStore from '@/store/roundStore'
 
-interface SpellEffectRendererProps {
+type SpellEffectRendererProps = {
   spell: SpellEffect
   gridSize?: number
   onRemove?: (id: string) => void
@@ -15,7 +15,8 @@ export const SpellEffectRenderer: React.FC<SpellEffectRendererProps> = ({
   // gridSize: unused parameter
   onRemove
 }) => {
-  const { currentRound } = useRoundStore()
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentRound = useRoundStore(state => state.currentRound)
   const [animationPhase, setAnimationPhase] = useState<'entering' | 'active' | 'exiting'>('entering')
   const [scale, setScale] = useState(0)
   const [opacity, setOpacity] = useState(0)

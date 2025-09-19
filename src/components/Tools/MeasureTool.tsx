@@ -2,12 +2,14 @@ import React from 'react'
 import { Group, Line, Text, Circle } from 'react-konva'
 import useToolStore from '@/store/toolStore'
 
-interface MeasureToolProps {
+type MeasureToolProps = {
   gridSize: number
 }
 
 const MeasureTool: React.FC<MeasureToolProps> = ({ gridSize }) => {
-  const { currentTool, drawingState } = useToolStore()
+  // Use specific selectors to prevent unnecessary re-renders
+  const currentTool = useToolStore(state => state.currentTool)
+  const drawingState = useToolStore(state => state.drawingState)
 
   if (currentTool !== 'measure' || !drawingState.isDrawing) {
     return null

@@ -1,12 +1,13 @@
 import React from 'react'
-import { X, Keyboard } from 'lucide-react'
+import { Modal, ModalBody, ModalFooter, Button, Box, Text, Heading } from '@/components/ui'
+import { Kbd } from '@/components/ui/Kbd'
 
-interface HelpDialogProps {
+type HelpDialogProps = {
   isOpen: boolean
   onClose: () => void
 }
 
-interface ShortcutGroup {
+type ShortcutGroup = {
   title: string
   shortcuts: {
     keys: string[]
@@ -73,85 +74,82 @@ const shortcutGroups: ShortcutGroup[] = [
 ]
 
 export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null
-
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/50 z-50 animate-fadeIn"
-        onClick={onClose}
-      />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="lg"
+      title="Keyboard Shortcuts"
+      showCloseButton
+    >
+      <ModalBody scrollable>
+        <Box display="flex" flexDirection="column" gap="6">
+          {shortcutGroups.map((group) => (
+            <Box key={group.title}>
+              <Heading
+                level={4}
+                css={{
+                  color: '$secondary',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  marginBottom: '$3',
+                  fontSize: '$sm',
+                  fontWeight: '$bold'
+                }}
+              >
+                {group.title}
+              </Heading>
+              <Box display="flex" flexDirection="column" gap="2">
+                {group.shortcuts.map((shortcut, index) => (
+                  <Box
+                    key={index}
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="between"
+                    css={{
+                      paddingY: '$2',
+                      paddingX: '$3',
+                      borderRadius: '$md',
+                      '&:hover': {
+                        backgroundColor: 'rgba($colors$gray800, 0.5)',
+                      },
+                      transition: '$fast',
+                    }}
+                  >
+                    <Box display="flex" alignItems="center" gap="2">
+                      {shortcut.keys.map((key, keyIndex) => (
+                        <React.Fragment key={keyIndex}>
+                          {keyIndex > 0 && (
+                            <Text size="xs" color="gray500">+</Text>
+                          )}
+                          <Kbd>{key}</Kbd>
+                        </React.Fragment>
+                      ))}
+                    </Box>
+                    <Text size="sm" color="gray400" css={{ marginLeft: '$4' }}>
+                      {shortcut.description}
+                    </Text>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      </ModalBody>
 
-      {/* Dialog */}
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] max-h-[80vh] bg-gray-900 border border-gray-700 rounded-lg shadow-2xl z-50 overflow-hidden animate-slideIn">
-        {/* Header */}
-        <div className="bg-gray-800 px-6 py-4 flex items-center justify-between border-b border-gray-700">
-          <div className="flex items-center gap-3">
-            <Keyboard className="h-5 w-5 text-d20-gold" />
-            <h2 className="text-xl font-bold text-white">Keyboard Shortcuts</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-700 rounded transition-colors"
-          >
-            <X className="h-5 w-5 text-gray-400" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(80vh-80px)]">
-          <div className="space-y-6">
-            {shortcutGroups.map((group) => (
-              <div key={group.title}>
-                <h3 className="text-sm font-bold text-d20-gold uppercase tracking-wider mb-3">
-                  {group.title}
-                </h3>
-                <div className="space-y-2">
-                  {group.shortcuts.map((shortcut, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between py-1.5 px-3 rounded hover:bg-gray-800/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        {shortcut.keys.map((key, keyIndex) => (
-                          <React.Fragment key={keyIndex}>
-                            {keyIndex > 0 && (
-                              <span className="text-gray-500 text-xs">+</span>
-                            )}
-                            <kbd className="px-2 py-1 bg-gray-800 border border-gray-700 rounded text-xs font-mono text-gray-300">
-                              {key}
-                            </kbd>
-                          </React.Fragment>
-                        ))}
-                      </div>
-                      <span className="text-sm text-gray-400 ml-4">
-                        {shortcut.description}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="bg-gray-800 px-6 py-3 border-t border-gray-700">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-500">
-              Press <kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-xs">?</kbd> anytime to show this help
-            </p>
-            <button
-              onClick={onClose}
-              className="px-4 py-1.5 bg-d20-red hover:bg-red-800 text-white text-sm rounded transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
+      <ModalFooter>
+        <Box display="flex" alignItems="center" justifyContent="between" width="full">
+          <Box display="flex" alignItems="center" gap="2">
+            <Text size="xs" color="gray500">
+              Press <Kbd size="sm">?</Kbd> anytime to show this help
+            </Text>
+          </Box>
+          <Button onClick={onClose} variant="primary">
+            Close
+          </Button>
+        </Box>
+      </ModalFooter>
+    </Modal>
   )
 }
 

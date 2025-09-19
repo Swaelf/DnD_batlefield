@@ -1,13 +1,25 @@
 import React from 'react'
 import * as Icons from 'lucide-react'
 import { Tool } from '@/types/tools'
-import clsx from 'clsx'
+import { ToolButton as StyledToolButton } from '@/components/primitives'
+import { styled } from '@/styles/theme.config'
 
-interface ToolButtonProps {
+type ToolButtonProps = {
   tool: Tool
   isActive: boolean
   onClick: () => void
 }
+
+const ShortcutLabel = styled('span', {
+  position: 'absolute',
+  bottom: '2px',
+  right: '2px',
+  fontSize: '9px',
+  color: '$gray500',
+  fontFamily: '$mono',
+  pointerEvents: 'none',
+  userSelect: 'none',
+})
 
 const ToolButton: React.FC<ToolButtonProps> = ({ tool, isActive, onClick }) => {
   // Dynamically get the icon component
@@ -19,23 +31,29 @@ const ToolButton: React.FC<ToolButtonProps> = ({ tool, isActive, onClick }) => {
   }
 
   return (
-    <button
+    <StyledToolButton
       onClick={onClick}
       title={tool.tooltip}
-      className={clsx(
-        'relative w-12 h-12 rounded-lg flex items-center justify-center transition-all',
-        'hover:bg-dnd-gray-800',
-        isActive ? 'bg-dnd-gray-700 text-dnd-gold' : 'text-gray-400 hover:text-gray-300'
-      )}
+      active={isActive}
+      css={{
+        position: 'relative',
+      }}
     >
       <IconComponent size={20} />
       {tool.shortcut && (
-        <span className="absolute bottom-0 right-0 text-[9px] text-gray-500 font-mono">
+        <ShortcutLabel>
           {tool.shortcut}
-        </span>
+        </ShortcutLabel>
       )}
-    </button>
+    </StyledToolButton>
   )
 }
 
-export default ToolButton
+// Memoize to prevent re-renders when tool state doesn't change
+export default React.memo(ToolButton, (prevProps, nextProps) => {
+  return (
+    prevProps.tool.id === nextProps.tool.id &&
+    prevProps.isActive === nextProps.isActive &&
+    prevProps.onClick === nextProps.onClick
+  )
+})

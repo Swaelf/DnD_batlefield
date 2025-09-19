@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { MapStore } from '../types'
-import { MapObject } from '../types'
+import { MapObject, AttackEventData } from '../types'
 
 const useMapStore = create<MapStore>()(
   immer((set) => ({
@@ -94,6 +94,24 @@ const useMapStore = create<MapStore>()(
         // Force re-render
         state.mapVersion += 1
 
+      }
+    }),
+
+    addAttackEffect: (attack: AttackEventData) => set((state) => {
+      if (state.currentMap) {
+        // Add attack with animation data
+        const attackObject: MapObject = {
+          id: crypto.randomUUID(),
+          type: 'attack' as const,
+          position: attack.fromPosition,
+          rotation: 0,
+          layer: 9, // Attacks render below spells but above other objects
+          isAttackEffect: true,
+          attackData: attack
+        }
+        state.currentMap.objects.push(attackObject)
+        // Force re-render
+        state.mapVersion += 1
       }
     }),
 
