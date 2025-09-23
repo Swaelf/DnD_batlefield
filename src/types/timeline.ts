@@ -68,6 +68,7 @@ export type DisappearEventData = {
 
 export type SpellEventData = {
   type: 'spell'
+  id?: string               // Unique identifier for this spell instance
   spellName: string
   category: SpellCategory
   fromPosition: Position      // Caster position (or void token position)
@@ -81,6 +82,24 @@ export type SpellEventData = {
   burstRadius?: number      // Burst effect radius in pixels
   persistDuration?: number  // Rounds for area effects
   particleEffect?: boolean  // Enable particle effects
+
+  // Enhanced animation properties for projectile_burst and other complex spells
+  trailLength?: number      // Number of trail segments
+  trailFade?: number        // Trail opacity decay rate
+  burstDuration?: number    // Duration of burst explosion phase
+  burstColor?: string       // Color for burst explosion
+  persistColor?: string     // Color for lingering effects
+  persistOpacity?: number   // Opacity of lingering effects
+
+  // Curved projectile path properties
+  curved?: boolean          // Enable curved projectile path
+  curveHeight?: number      // Height of the curve in pixels
+  curveDirection?: 'up' | 'down' | 'auto'  // Direction of curve
+  curveRandomSeed?: number  // Random seed (0-1) for varying curves per dart
+
+  // Target tracking properties
+  targetTokenId?: string    // Token ID to track and follow
+  trackTarget?: boolean     // Enable dynamic target tracking
 }
 
 // Attack event data for weapon attacks

@@ -13,6 +13,7 @@ import ObjectsLayer from './ObjectsLayer'
 import DrawingLayer from '../Tools/DrawingLayer'
 import MeasureTool from '../Tools/MeasureTool'
 import PathPreview from './PathPreview'
+import SpellPreview from './SpellPreviewOptimized'
 import { GridControls } from './GridControls'
 import { CanvasControls } from './CanvasControls'
 import { Box, Text } from '@/components/ui'
@@ -30,7 +31,7 @@ const InstructionsPanel = styled(Box, {
   position: 'absolute',
   bottom: '96px',
   left: '$4',
-  zIndex: 10,
+  zIndex: 50,
   backgroundColor: '$dndBlack/80',
   borderRadius: '$lg',
   padding: '$2',
@@ -73,6 +74,9 @@ const MapCanvasComponent: React.FC<MapCanvasProps> = ({
   const spellEffectTemplate = useToolStore(state => state.spellEffectTemplate)
 
   const isPicking = useEventCreationStore(state => state.isPicking)
+  const selectedSpell = useEventCreationStore(state => state.selectedSpell)
+  const selectedTokenId = useEventCreationStore(state => state.selectedTokenId)
+  const getTokenExpectedPosition = useEventCreationStore(state => state.getTokenExpectedPosition)
   const setPosition = useEventCreationStore(state => state.setPosition)
   const completePositionPicking = useEventCreationStore(state => state.completePositionPicking)
 
@@ -116,6 +120,9 @@ const MapCanvasComponent: React.FC<MapCanvasProps> = ({
     staticObjectTemplate,
     spellEffectTemplate,
     isPicking,
+    selectedSpell,
+    selectedTokenId,
+    getTokenExpectedPosition,
     drawingState,
     setDrawingState,
     addObject,
@@ -243,6 +250,8 @@ const MapCanvasComponent: React.FC<MapCanvasProps> = ({
         <Layer>
           {/* Measurement tool overlay */}
           <MeasureTool gridSize={currentMap.grid.size} />
+          {/* Spell preview with range and area visualization */}
+          <SpellPreview gridSize={currentMap.grid.size} />
           {/* Path preview for event creation and animations */}
           <PathPreview gridSize={currentMap.grid.size} />
         </Layer>

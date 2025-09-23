@@ -34,12 +34,15 @@ const TokenComponent: React.FC<TokenProps> = ({
   onDragEnd,
   isDraggable = true,
 }) => {
-  const sizeInSquares = SIZE_MAP[token.size];
-  const radius = (gridSize * sizeInSquares) / 2;
+  // Validate gridSize to prevent NaN
+  const safeGridSize = isNaN(gridSize) || !isFinite(gridSize) || !gridSize ? 50 : gridSize;
 
-  // Calculate label position and size
+  const sizeInSquares = SIZE_MAP[token.size] || 1;
+  const radius = (safeGridSize * sizeInSquares) / 2;
+
+  // Calculate label position and size with safety checks
   const fontSize = Math.max(12, radius / 3);
-  const labelY = token.labelPosition === 'bottom' ? radius + 10 : -radius - 10 - fontSize;
+  const labelY = isNaN(radius) ? 0 : (token.labelPosition === 'bottom' ? radius + 10 : -radius - 10 - fontSize);
 
   const handleClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true;
@@ -94,10 +97,10 @@ const TokenComponent: React.FC<TokenProps> = ({
         <>
           {/* Square token variant */}
           <Rect
-            width={gridSize * sizeInSquares}
-            height={gridSize * sizeInSquares}
-            offsetX={(gridSize * sizeInSquares) / 2}
-            offsetY={(gridSize * sizeInSquares) / 2}
+            width={safeGridSize * sizeInSquares}
+            height={safeGridSize * sizeInSquares}
+            offsetX={(safeGridSize * sizeInSquares) / 2}
+            offsetY={(safeGridSize * sizeInSquares) / 2}
             fill={token.color}
             stroke={token.borderColor || '#000000'}
             strokeWidth={token.borderWidth || 2}
@@ -111,10 +114,10 @@ const TokenComponent: React.FC<TokenProps> = ({
           {/* Selection indicator for square */}
           {isSelected && (
             <Rect
-              width={gridSize * sizeInSquares + 8}
-              height={gridSize * sizeInSquares + 8}
-              offsetX={(gridSize * sizeInSquares + 8) / 2}
-              offsetY={(gridSize * sizeInSquares + 8) / 2}
+              width={safeGridSize * sizeInSquares + 8}
+              height={safeGridSize * sizeInSquares + 8}
+              offsetX={(safeGridSize * sizeInSquares + 8) / 2}
+              offsetY={(safeGridSize * sizeInSquares + 8) / 2}
               stroke="#C9AD6A"
               strokeWidth={3}
               dash={[8, 4]}

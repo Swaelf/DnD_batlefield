@@ -8,7 +8,7 @@ export type Position = Point
 
 export type MapObject = {
   id: string
-  type: 'token' | 'shape' | 'tile' | 'text' | 'spell' | 'attack'
+  type: 'token' | 'shape' | 'tile' | 'text' | 'spell' | 'attack' | 'persistent-area'
   position: Position
   rotation: number
   layer: number
@@ -25,6 +25,16 @@ export type MapObject = {
   // Attack-specific
   isAttackEffect?: boolean
   attackData?: any // Will be properly typed later
+
+  // Persistent area-specific
+  persistentAreaData?: {
+    position: Position
+    radius: number
+    color: string
+    opacity: number
+    spellName: string
+    roundCreated: number
+  }
 }
 
 export type Shape = MapObject & {

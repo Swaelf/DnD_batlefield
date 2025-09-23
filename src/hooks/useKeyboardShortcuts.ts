@@ -78,6 +78,12 @@ export const useKeyboardShortcuts = () => {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space' && !e.repeat) {
+        // Don't intercept space if user is typing in an input field
+        const target = e.target as HTMLElement
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true')) {
+          return
+        }
+
         e.preventDefault()
         previousTool = currentTool
         setTool('pan')
@@ -85,6 +91,12 @@ export const useKeyboardShortcuts = () => {
     }
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      // Don't intercept space if user is typing in an input field
+      const target = e.target as HTMLElement
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true')) {
+        return
+      }
+
       if (e.code === 'Space') {
         e.preventDefault()
         if (currentTool === 'pan') {

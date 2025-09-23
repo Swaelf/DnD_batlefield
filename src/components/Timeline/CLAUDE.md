@@ -60,7 +60,43 @@ interface Round {
 }
 ```
 
-## Event System
+## Unified Action System
+
+### Overview
+The Timeline system has been upgraded with a **Unified Action System** that consolidates spells, attacks, interactions, and movement into a single, cohesive architecture. This replaces the previous event-based system with a more flexible template-driven approach.
+
+### Unified Action Architecture
+```typescript
+export interface UnifiedAction {
+  id: string
+  type: 'spell' | 'attack' | 'interaction' | 'move'
+  category: string // fire, ice, sword, bow, door, etc.
+  name: string
+  source: Position
+  target: Position
+  timestamp: number
+  animation: AnimationConfig
+  metadata: ActionMetadata
+}
+```
+
+### Action Templates
+Pre-built action templates are organized by type:
+- **Spell Templates** (`/data/unifiedActions/spellTemplates.ts`) - D&D 5e spells with authentic effects
+- **Attack Templates** (`/data/unifiedActions/attackTemplates.ts`) - Weapon-based combat actions
+- **Interaction Templates** (`/data/unifiedActions/interactionTemplates.ts`) - Environmental interactions
+- **Movement Templates** (`/data/unifiedActions/moveTemplates.ts`) - Character positioning
+
+### Custom Action System
+Users can customize any spell or attack template through the **ActionCustomizationModal**:
+- **Name & Description**: Rename spells/attacks with custom descriptions
+- **Animation Properties**: Adjust color, size, duration, and effects
+- **Damage & Mechanics**: Modify damage dice, types, and bonuses
+- **Range & Area**: Configure spell range and area of effect
+
+### Event System (Legacy Integration)
+
+During the transition period, unified actions are converted to legacy events for animation compatibility.
 
 ### Event Types
 ```typescript
@@ -253,21 +289,48 @@ interface AnimationPath {
 />
 ```
 
-### EventEditor.tsx
-**Purpose**: Event creation and editing interface
+### UnifiedEventEditor.tsx
+**Purpose**: Unified action creation and timeline management interface
 **Features**:
-- Event type selection (move/appear/disappear/spell)
-- Interactive position/token picking
-- Spell configuration with presets
-- Event preview and validation
-- Batch event operations
+- **Modern Layout**: Redesigned UI with improved action button placement
+- **Unified Action Selection**: Browse and select from spell, attack, interaction, and movement templates
+- **Action Customization**: Edit button integration for spells and attacks
+- **Interactive Picking**: Position and token selection with visual feedback
+- **Real-time Preview**: Dynamic action preview with animation details
+- **Event Timeline**: Sidebar showing scheduled events for next round
 
-**Event Creation Flow**:
-1. **Token Selection** - Pick token to animate
-2. **Event Type** - Choose event category
-3. **Configuration** - Set positions, timing, effects
-4. **Preview** - Test event animation
-5. **Commit** - Add to timeline round
+**Updated UI Layout**:
+- **Header**: Compact title with prominent "Add Action Event" button
+- **Main Form**: Token selection, position picking, and action configuration
+- **Action Display**: Rich action cards with type indicators and edit access
+- **Preview Panel**: Animation details and action descriptions
+- **Events Sidebar**: Live timeline of scheduled events
+
+**Action Creation Flow**:
+1. **Token Selection** - Choose which character performs the action
+2. **Position Selection** - Pick target location with visual feedback
+3. **Action Selection** - Browse unified action templates by category
+4. **Customization** (Optional) - Edit spell/attack properties via modal
+5. **Preview** - Review animation settings and action details
+6. **Add Event** - Schedule action for next combat round
+
+### ActionSelectionModal.tsx
+**Purpose**: Unified action template browser and selection interface
+**Features**:
+- **Category Filtering**: Filter by spell, attack, interaction, movement types
+- **Search Functionality**: Real-time search across all action templates
+- **Template Preview**: Rich action cards with animation details
+- **Edit Integration**: Direct access to customization for spells and attacks
+- **Responsive Design**: Grid layout adapting to content
+
+### ActionCustomizationModal.tsx
+**Purpose**: Advanced spell and attack customization interface
+**Features**:
+- **Property Editing**: Name, description, animation properties
+- **Visual Customization**: Color picker, size, duration controls
+- **Combat Mechanics**: Damage dice, attack bonuses, ranges
+- **Real-time Updates**: Immediate visual feedback during editing
+- **Template Preservation**: Maintains original template while creating custom variants
 
 ### CombatTracker.tsx
 **Purpose**: Initiative and round management

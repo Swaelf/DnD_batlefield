@@ -15,8 +15,21 @@ import { FileMenu } from './components/Menu/FileMenu'
 import StatusBar from './components/StatusBar/StatusBar'
 const HelpDialog = lazy(() => import('./components/HelpDialog/HelpDialog').then(m => ({ default: m.HelpDialog })))
 const CombatTracker = lazy(() => import('./components/Timeline/CombatTracker').then(m => ({ default: m.CombatTracker })))
-import { Save, HelpCircle } from 'lucide-react'
+const TestingPanel = lazy(() => import('./testing/TestingPanel').then(m => ({ default: m.TestingPanel })))
+import { Save, HelpCircle, Bug } from 'lucide-react'
 import { Box, Text, Button } from '@/components/ui'
+
+// Debug utilities available but not auto-imported to prevent startup animations
+// These can be manually imported in TestingPanel or browser console if needed:
+// - @/testing/DebugPersistentAreas
+// - @/testing/QuickTestPersistence
+// - @/testing/SpellPersistenceTests
+// - @/testing/DetailedDebugCleanup
+// - @/testing/FinalPersistenceTest
+// - @/testing/RunAndDiagnose
+// - @/testing/SimulateSpellCasting
+// - @/testing/TestFireballSpecific
+// - @/testing/VerifyCleanupCall
 import { styled } from '@/styles/theme.config'
 
 // Move styled components outside to prevent re-creation on every render
@@ -86,21 +99,27 @@ function App() {
   const stageRef = useRef<any>(null)
   const { lastSaved, isSaving } = useAutoSave()
   const [showHelp, setShowHelp] = useState(false)
+  const [showTesting, setShowTesting] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   useKeyboardShortcuts()
 
-  // Add keyboard shortcut for help dialog
+  // Add keyboard shortcuts for help and testing dialogs
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === '?' || e.key === 'F1') {
         e.preventDefault()
         setShowHelp(true)
       }
+      // Ctrl/Cmd + Shift + T for testing panel
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
+        e.preventDefault()
+        setShowTesting(!showTesting)
+      }
     }
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [])
+  }, [showTesting])
 
   useEffect(() => {
     // Create default map on load - only run when currentMap changes from null
@@ -136,6 +155,17 @@ function App() {
 
           {/* File Menu */}
           <FileMenu stageRef={stageRef} />
+
+          {/* Testing Button */}
+          <Button
+            onClick={() => setShowTesting(true)}
+            variant="ghost"
+            size="icon"
+            title="Visual Testing (Ctrl+Shift+T)"
+            css={{ color: showTesting ? '$primary' : '$gray400' }}
+          >
+            <Bug size={16} />
+          </Button>
 
           {/* Help Button */}
           <Button
@@ -189,6 +219,15 @@ function App() {
       {/* Help Dialog */}
       <Suspense fallback={null}>
         <HelpDialog isOpen={showHelp} onClose={() => setShowHelp(false)} />
+      </Suspense>
+
+      {/* Testing Panel */}
+      <Suspense fallback={null}>
+        <TestingPanel
+          stage={stageRef.current}
+          isOpen={showTesting}
+          onClose={() => setShowTesting(false)}
+        />
       </Suspense>
     </AppContainer>
   )

@@ -7,7 +7,9 @@ export * from './grid'
 export * from './token'
 export * from './tools'
 export * from './timeline'
+export * from './timelineUnified'
 export * from './spells'
+export * from './unifiedAction'
 
 // Application layer types
 export * from './stores'

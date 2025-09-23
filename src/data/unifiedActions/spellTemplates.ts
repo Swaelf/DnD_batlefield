@@ -1,0 +1,380 @@
+import { UnifiedAction } from '@/types/unifiedAction'
+
+export const spellTemplates: UnifiedAction[] = [
+  // Fire Spells
+  {
+    id: 'fireball-template',
+    type: 'spell',
+    category: 'fire',
+    source: { x: 0, y: 0 }, // Will be set when used
+    target: { x: 0, y: 0 }, // Will be set when used
+    animation: {
+      type: 'projectile_burst',
+      duration: 1500, // Total animation duration
+      color: '#FF6B35',
+      size: 20, // Projectile size (explosion size is separate)
+      speed: 500, // Projectile speed (px/s)
+      trail: true,
+      trailLength: 8, // Number of trail segments
+      trailFade: 0.8, // Trail opacity decay
+      // Target tracking properties (can be disabled via customization)
+      trackTarget: true, // Enable dynamic target following by default
+      targetTokenId: '', // Will be set when targeting a token
+      // Burst animation details
+      burstSize: 80, // Explosion radius
+      burstDuration: 600, // How long the explosion lasts
+      burstColor: '#FF4500', // Explosion color (slightly different from projectile)
+      // Post-effect properties
+      persistDuration: 2000, // Lingering fire effects duration (ms)
+      persistColor: '#CC2500', // Darker fire for lingering effects
+      persistOpacity: 0.4, // Opacity of lingering effects
+      // Animation phases
+      projectilePhase: 400, // Time for projectile travel (calculated based on distance/speed)
+      explosionPhase: 600, // Time for explosion animation
+      lingerPhase: 2000 // Time for post-explosion effects
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#FF6B35',
+      areaOfEffect: {
+        type: 'circle',
+        center: { x: 0, y: 0 },
+        radius: 80 // 20-foot radius in D&D terms
+      }
+    },
+    metadata: {
+      name: 'Fireball',
+      description: 'A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Can track moving targets.'
+    },
+    // D&D 5e Fireball properties
+    range: 150, // 150 feet range
+    areaOfEffect: 80, // 20-foot radius (4 pixels per foot)
+    damage: '8d6',
+    damageType: 'fire',
+    spellLevel: 3,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 1500
+  },
+
+  // Force Spells
+  {
+    id: 'magic-missile-template',
+    type: 'spell',
+    category: 'force',
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'projectile',
+      duration: 1200, // Slightly longer for the curved path
+      color: '#9370DB', // Purple/violet for force magic
+      size: 8, // Smaller than fireball
+      speed: 400, // Slower than fire bolt for more visible curve
+      trail: true,
+      trailLength: 12,
+      trailFade: 0.75,
+      // Curved path properties
+      curved: true,
+      curveHeight: 60, // Base height of the arc in pixels (will be varied ±40 pixels)
+      curveDirection: 'auto', // 'up', 'down', or 'auto' for dynamic
+      curveRandomSeed: 0.5, // Random seed for curve variation (will be randomized per dart)
+      // Target tracking properties
+      trackTarget: true, // Enable dynamic target following
+      targetTokenId: '' // Will be set when targeting a token
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#9370DB'
+    },
+    metadata: {
+      name: 'Magic Missile',
+      description: 'You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range and follows them if they move.'
+    },
+    // D&D 5e Magic Missile properties
+    range: 120, // 120 feet range
+    damage: '1d4+1',
+    damageType: 'force',
+    spellLevel: 1,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 1200
+  },
+
+  // Darkness Spell
+  {
+    id: 'darkness-template',
+    type: 'spell',
+    category: 'illusion',
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'area',
+      duration: 800, // Initial expanding animation
+      color: '#3D3D2E', // Dark gray with yellow tint
+      secondaryColor: '#4A4A20', // Dark yellow
+      size: 60, // 15-foot radius (4 pixels per foot)
+      particles: false,
+      // Persistent effect properties
+      persistDuration: 10, // 10 rounds (D&D 5e darkness duration)
+      persistColor: '#3D3D2E', // Same dark gray with yellow tint as animation
+      persistOpacity: 0.7 // Slightly lower opacity to match animation feel
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#2F2F2F',
+      areaOfEffect: {
+        type: 'circle',
+        center: { x: 0, y: 0 },
+        radius: 60 // 15-foot radius
+      }
+    },
+    metadata: {
+      name: 'Darkness',
+      description: 'Magical darkness spreads from a point you choose within range to fill a 15-foot-radius sphere for the duration.'
+    },
+    // D&D 5e Darkness properties
+    range: 60, // 60 feet range
+    areaOfEffect: 60, // 15-foot radius (4 pixels per foot)
+    spellLevel: 2,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 800 // Initial animation duration
+  },
+  {
+    id: 'ray-of-frost-template',
+    type: 'spell',
+    category: 'ice',
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'ray',
+      duration: 600,
+      color: '#B0E0E6',
+      size: 8,
+      speed: 800,
+      // Target tracking properties
+      trackTarget: true, // Enable dynamic target following
+      targetTokenId: '' // Will be set when targeting a token
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#B0E0E6'
+    },
+    metadata: {
+      name: 'Ray of Frost',
+      description: 'A frigid beam of blue-white light streaks toward a creature within range and follows them if they move.'
+    },
+    timestamp: 0,
+    duration: 600
+  },
+
+  // Lightning Spells
+  {
+    id: 'lightning-bolt-template',
+    type: 'spell',
+    category: 'lightning',
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'line',
+      duration: 400,
+      color: '#FFD700',
+      size: 15,
+      speed: 1000
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#FFD700',
+      areaOfEffect: {
+        type: 'line',
+        start: { x: 0, y: 0 },
+        end: { x: 0, y: 0 },
+        width: 15
+      }
+    },
+    metadata: {
+      name: 'Lightning Bolt',
+      description: 'A stroke of lightning forming a line 100 feet long and 5 feet wide blasts out from you in a direction you choose.'
+    },
+    timestamp: 0,
+    duration: 400
+  },
+  {
+    id: 'shocking-grasp-template',
+    type: 'spell',
+    category: 'lightning',
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'touch',
+      duration: 500,
+      color: '#FFFF00',
+      size: 20,
+      sparks: true
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#FFFF00'
+    },
+    metadata: {
+      name: 'Shocking Grasp',
+      description: 'Lightning springs from your hand to deliver a shock to a creature you try to touch.'
+    },
+    timestamp: 0,
+    duration: 500
+  },
+
+  // Healing Spells
+  {
+    id: 'cure-wounds-template',
+    type: 'spell',
+    category: 'healing',
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'touch',
+      duration: 800,
+      color: '#FFD700',
+      size: 30,
+      glow: true
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#FFD700'
+    },
+    metadata: {
+      name: 'Cure Wounds',
+      description: 'A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier.'
+    },
+    timestamp: 0,
+    duration: 800
+  },
+
+  // Poison Spells
+  {
+    id: 'poison-spray-template',
+    type: 'spell',
+    category: 'poison',
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'cone',
+      duration: 700,
+      color: '#9ACD32',
+      size: 40,
+      particles: true
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#9ACD32',
+      areaOfEffect: {
+        type: 'cone',
+        origin: { x: 0, y: 0 },
+        direction: 0,
+        angle: 45,
+        range: 40
+      }
+    },
+    metadata: {
+      name: 'Poison Spray',
+      description: 'You extend your hand toward a creature you can see within range and project a puff of noxious gas from your palm.'
+    },
+    timestamp: 0,
+    duration: 700
+  },
+
+  // Earth/Elemental Spells
+  {
+    id: 'stone-rain-template',
+    type: 'spell',
+    category: 'earth',
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'multi-burst',  // New type for multiple bursts
+      duration: 2000,       // Total duration for all stone impacts
+      color: '#8B7355',     // Stone brown color
+      secondaryColor: '#696969',  // Gray for stone variety
+      size: 100,            // Large area radius
+      burstSize: 15,        // Individual stone impact size
+      burstCount: 12,       // Number of stone impacts
+      burstInterval: 150,   // Time between impacts in ms
+      particles: true,
+      // No persistent effects
+      persistDuration: 0
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#8B7355',
+      areaOfEffect: {
+        type: 'circle',
+        center: { x: 0, y: 0 },
+        radius: 100  // 25-foot radius
+      }
+    },
+    metadata: {
+      name: 'Stone Rain',
+      description: 'A barrage of stones rains down in a large area, striking multiple locations with small impacts.'
+    },
+    // D&D-style properties
+    range: 120,           // 120 feet range
+    areaOfEffect: 100,    // 25-foot radius
+    damage: '3d8',        // Bludgeoning damage
+    damageType: 'bludgeoning',
+    spellLevel: 3,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 2000
+  },
+
+  // Divine Spells
+  {
+    id: 'sacred-flame-template',
+    type: 'spell',
+    category: 'divine',
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'pillar',
+      duration: 800,
+      color: '#FFD700',
+      size: 25,
+      radiance: true
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#FFD700'
+    },
+    metadata: {
+      name: 'Sacred Flame',
+      description: 'Flame-like radiance descends on a creature that you can see within range.'
+    },
+    timestamp: 0,
+    duration: 800
+  },
+  {
+    id: 'guiding-bolt-template',
+    type: 'spell',
+    category: 'divine',
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'projectile',
+      duration: 900,
+      color: '#F0E68C',
+      size: 16,
+      speed: 450,
+      trail: true
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#F0E68C'
+    },
+    metadata: {
+      name: 'Guiding Bolt',
+      description: 'A flash of light streaks toward a creature of your choice within range.'
+    },
+    timestamp: 0,
+    duration: 900
+  }
+]

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Group, Rect, Circle, Line, Text as KonvaText } from 'react-konva'
 import Konva from 'konva'
 import { MapObject, Shape, Text } from '@/types/map'
@@ -7,35 +7,40 @@ import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
 import useEventCreationStore from '@store/eventCreationStore'
 import useAnimationStore from '@store/animationStore'
+import useRoundStore from '@store/roundStore'
 import { Token } from '../Token/Token'
 import { snapToGrid } from '@/utils/grid'
-import { ProjectileSpell, RaySpell, AreaSpell, BurstSpell } from '../Spells'
+import { PersistentArea } from '../Spells'
 import { AttackRenderer } from '../Actions/ActionRenderer/AttackRenderer'
 import { SpellEventData, AttackEventData } from '@/types/timeline'
+import { SimpleSpellComponent } from '../Spells/SimpleSpellComponent'
 
-// Type guard for token
+// Track completed spell animations to prevent duplicate persistent areas
+const completedSpellAnimations = new Set<string>()
+
+// Type guards (same as before)
 function isToken(obj: MapObject): obj is TokenType {
   return obj.type === 'token'
 }
 
-// Type guard for shape
 function isShape(obj: MapObject): obj is Shape {
   return obj.type === 'shape'
 }
 
-// Type guard for text
 function isText(obj: MapObject): obj is Text {
   return obj.type === 'text'
 }
 
-// Type guard for spell
 function isSpell(obj: MapObject): obj is MapObject & { type: 'spell'; spellData?: SpellEventData } {
   return obj.type === 'spell'
 }
 
-// Type guard for attack
 function isAttack(obj: MapObject): obj is MapObject & { type: 'attack'; attackData?: AttackEventData } {
   return obj.type === 'attack'
+}
+
+function isPersistentArea(obj: MapObject): obj is MapObject & { type: 'persistent-area'; persistentAreaData?: any } {
+  return obj.type === 'persistent-area'
 }
 
 type ObjectsLayerProps = {
@@ -43,44 +48,45 @@ type ObjectsLayerProps = {
   onObjectDragEnd?: (id: string, newPosition: { x: number; y: number }) => void
 }
 
-const ObjectsLayer: React.FC<ObjectsLayerProps> = ({ onObjectClick, onObjectDragEnd }) => {
-  // Use specific selectors to prevent unnecessary re-renders
+/**
+ * ObjectsLayer that uses the new spell effect architecture
+ */
+export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
+  onObjectClick,
+  onObjectDragEnd
+}) => {
   const currentMap = useMapStore(state => state.currentMap)
-  const selectedObjects = useMapStore(state => state.selectedObjects) as string[]
+  const selectedObjects = useMapStore(state => state.selectedObjects)
   const deleteObject = useMapStore(state => state.deleteObject)
-  const mapVersion = useMapStore(state => state.mapVersion)
-  // Use specific selectors to prevent unnecessary re-renders
+  const updateObjectPosition = useMapStore(state => state.updateObjectPosition)
   const currentTool = useToolStore(state => state.currentTool)
-  const isPicking = useEventCreationStore(state => state.isPicking)
-  const setSelectedToken = useEventCreationStore(state => state.setSelectedToken)
-  // Animation store to check which tokens are currently animating
-  const activePaths = useAnimationStore(state => state.activePaths)
+  const gridSettings = currentMap?.grid
+  const { isPicking, setSelectedToken } = useEventCreationStore()
+  const { activePaths } = useAnimationStore()
+  const currentRound = useRoundStore(state => state.currentRound)
 
-  // Use mapVersion to force re-render when positions change
-  React.useEffect(() => {
-    // Silent re-render on map version change
-  }, [mapVersion])
-
-  if (!currentMap) return null
-
-
-  const renderObject = (obj: MapObject) => {
-    const isSelected = selectedObjects.includes(obj.id)
-
-    if (isToken(obj)) {
-      // Don't render void token
-      if (obj.isVoid) return null
-      return renderToken(obj, isSelected)
-    } else if (isShape(obj)) {
-      return renderShape(obj, isSelected)
-    } else if (isText(obj)) {
-      return renderText(obj, isSelected)
-    } else if (isSpell(obj)) {
-      return renderSpell(obj)
-    } else if (isAttack(obj)) {
-      return renderAttack(obj)
-    }
+  if (!currentMap) {
     return null
+  }
+
+  const handleObjectDragEnd = (objId: string, e: Konva.KonvaEventObject<MouseEvent>) => {
+    const node = e.target
+    let newPosition = {
+      x: node.x(),
+      y: node.y()
+    }
+
+    // Snap to grid if enabled
+    if (gridSettings?.snap) {
+      newPosition = snapToGrid(newPosition, gridSettings.size)
+      node.position(newPosition)
+    }
+
+    // Update position in store
+    updateObjectPosition(objId, newPosition)
+
+    // Notify parent
+    onObjectDragEnd?.(objId, newPosition)
   }
 
   const handleObjectClick = (objId: string, e: Konva.KonvaEventObject<MouseEvent> | null) => {
@@ -97,142 +103,86 @@ const ObjectsLayer: React.FC<ObjectsLayerProps> = ({ onObjectClick, onObjectDrag
       // Delete object when using eraser tool
       deleteObject(objId)
     } else {
-      // Normal click behavior
-      if (e) {
-        onObjectClick?.(objId, e)
-      }
+      // Normal click behavior - call onObjectClick regardless of event
+      onObjectClick?.(objId, e || ({} as Konva.KonvaEventObject<MouseEvent>))
     }
   }
 
-  const renderShape = (shape: Shape, isSelected: boolean) => {
+  const renderObject = (obj: MapObject) => {
+    const isSelected = selectedObjects.includes(obj.id)
+    const isDraggable = currentTool === 'select' && !obj.locked
+
+    // Check if token has active animation path
+    const hasActivePath = activePaths.some(path => path.tokenId === obj.id && path.isAnimating)
+
+    if (isToken(obj)) {
+      return (
+        <Token
+          key={obj.id}
+          token={obj}
+          gridSize={gridSettings?.size || 50}
+          isSelected={isSelected}
+          isDraggable={isDraggable && !hasActivePath}
+          onSelect={(id) => handleObjectClick(id, null)}
+          onDragStart={() => {}}
+          onDragMove={(e) => {}}
+          onDragEnd={(e) => handleObjectDragEnd(obj.id, e)}
+        />
+      )
+    }
+
+    if (isShape(obj)) {
+      return renderShape(obj, isSelected, isDraggable)
+    }
+
+    if (isText(obj)) {
+      return renderText(obj, isSelected, isDraggable)
+    }
+
+    if (isSpell(obj)) {
+      return renderModernSpell(obj)
+    }
+
+    if (isAttack(obj)) {
+      return renderAttack(obj)
+    }
+
+    if (isPersistentArea(obj)) {
+      return renderPersistentArea(obj)
+    }
+
+    return null
+  }
+
+  const renderShape = (shape: Shape, isSelected: boolean, isDraggable: boolean) => {
     const commonProps = {
       key: shape.id,
       id: shape.id,
       x: shape.position.x,
       y: shape.position.y,
       rotation: shape.rotation,
-      fill: shape.fillColor,
-      stroke: isSelected ? '#C9AD6A' : shape.strokeColor,
-      strokeWidth: isSelected ? shape.strokeWidth + 2 : shape.strokeWidth,
+      fill: shape.fill,
+      stroke: isSelected ? '#C9AD6A' : shape.stroke,
+      strokeWidth: isSelected ? 3 : shape.strokeWidth,
       opacity: shape.opacity,
-      draggable: !shape.locked && currentTool !== 'eraser',
+      draggable: isDraggable,
       onClick: (e: Konva.KonvaEventObject<MouseEvent>) => handleObjectClick(shape.id, e),
-      onMouseEnter: (e: Konva.KonvaEventObject<MouseEvent>) => {
-        if (currentTool === 'eraser') {
-          const stage = e.target.getStage()
-          if (stage) {
-            const container = stage.container()
-            container.style.cursor = 'pointer'
-          }
-        }
-      },
-      onMouseLeave: (e: Konva.KonvaEventObject<MouseEvent>) => {
-        if (currentTool === 'eraser') {
-          const stage = e.target.getStage()
-          if (stage) {
-            const container = stage.container()
-            container.style.cursor = 'default'
-          }
-        }
-      },
-      onDragMove: (e: Konva.KonvaEventObject<DragEvent>) => {
-        if (currentMap?.grid.snap) {
-          const node = e.target
-          const pos = { x: node.x(), y: node.y() }
-          const snapped = snapToGrid(pos, currentMap.grid.size, true)
-          node.x(snapped.x)
-          node.y(snapped.y)
-        }
-      },
-      onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => {
-        const node = e.target
-        const pos = { x: node.x(), y: node.y() }
-        const finalPos = currentMap?.grid.snap
-          ? snapToGrid(pos, currentMap.grid.size, true)
-          : pos
-        node.x(finalPos.x)
-        node.y(finalPos.y)
-        onObjectDragEnd?.(shape.id, finalPos)
-      },
+      onDragEnd: (e: Konva.KonvaEventObject<MouseEvent>) => handleObjectDragEnd(shape.id, e)
     }
 
     switch (shape.shapeType) {
       case 'rectangle':
-        return (
-          <Rect
-            {...commonProps}
-            width={shape.width || 100}
-            height={shape.height || 100}
-          />
-        )
+        return <Rect {...commonProps} width={shape.width} height={shape.height} />
       case 'circle':
-        return (
-          <Circle
-            {...commonProps}
-            radius={shape.radius || 50}
-          />
-        )
+        return <Circle {...commonProps} radius={shape.radius} />
       case 'line':
-        return (
-          <Line
-            {...commonProps}
-            points={shape.points || [0, 0, 100, 100]}
-          />
-        )
+        return <Line {...commonProps} points={shape.points} />
       default:
         return null
     }
   }
 
-  const renderToken = (token: TokenType, isSelected: boolean) => {
-    const gridSize = currentMap.grid.size
-
-    // Check if this token is currently animating
-    const isAnimating = activePaths.some(path => path.tokenId === token.id && path.isAnimating)
-
-    // Force re-render by using position values directly as props
-    return (
-      <Group
-        key={token.id}
-        id={token.id}
-        x={token.position.x}
-        y={token.position.y}
-        rotation={token.rotation}
-        draggable={!token.locked && currentTool !== 'eraser' && !isAnimating} // Disable dragging during animation
-        onDragMove={(e) => {
-          if (currentMap?.grid.snap) {
-            const node = e.target
-            const pos = { x: node.x(), y: node.y() }
-            const snapped = snapToGrid(pos, currentMap.grid.size, true)
-            node.x(snapped.x)
-            node.y(snapped.y)
-          }
-        }}
-        onDragEnd={(e) => {
-          const node = e.target
-          const pos = { x: node.x(), y: node.y() }
-          const finalPos = currentMap?.grid.snap
-            ? snapToGrid(pos, currentMap.grid.size, true)
-            : pos
-          node.x(finalPos.x)
-          node.y(finalPos.y)
-          onObjectDragEnd?.(token.id, finalPos)
-        }}
-      >
-        <Token
-          token={{...token, position: {x: 0, y: 0}, rotation: 0}} // Position is now on parent Group
-          gridSize={gridSize}
-          isSelected={isSelected}
-          onSelect={(id) => handleObjectClick(id, null)}
-          onDragMove={() => {}} // Handled by parent Group
-          onDragEnd={() => {}} // Handled by parent Group
-          isDraggable={false} // Dragging handled by parent Group
-        />
-      </Group>
-    )
-  }
-
-  const renderText = (text: Text, isSelected: boolean) => {
+  const renderText = (text: Text, isSelected: boolean, isDraggable: boolean) => {
     return (
       <KonvaText
         key={text.id}
@@ -243,88 +193,84 @@ const ObjectsLayer: React.FC<ObjectsLayerProps> = ({ onObjectClick, onObjectDrag
         text={text.text}
         fontSize={text.fontSize}
         fontFamily={text.fontFamily}
-        fill={text.color}
-        {...(isSelected && { stroke: '#C9AD6A' })}
+        fill={text.fill}
+        opacity={text.opacity}
+        align={text.align}
+        stroke={isSelected ? '#C9AD6A' : undefined}
         strokeWidth={isSelected ? 1 : 0}
-        draggable={!text.locked && currentTool !== 'eraser'}
+        draggable={isDraggable}
         onClick={(e: Konva.KonvaEventObject<MouseEvent>) => handleObjectClick(text.id, e)}
-        onMouseEnter={(e: Konva.KonvaEventObject<MouseEvent>) => {
-          if (currentTool === 'eraser') {
-            const stage = e.target.getStage()
-            if (stage) {
-              const container = stage.container()
-              container.style.cursor = 'pointer'
-            }
-          }
-        }}
-        onMouseLeave={(e: Konva.KonvaEventObject<MouseEvent>) => {
-          if (currentTool === 'eraser') {
-            const stage = e.target.getStage()
-            if (stage) {
-              const container = stage.container()
-              container.style.cursor = 'default'
-            }
-          }
-        }}
-        onDragMove={(e: Konva.KonvaEventObject<DragEvent>) => {
-          if (currentMap?.grid.snap) {
-            const node = e.target
-            const pos = { x: node.x(), y: node.y() }
-            const snapped = snapToGrid(pos, currentMap.grid.size, true)
-            node.x(snapped.x)
-            node.y(snapped.y)
-          }
-        }}
-        onDragEnd={(e: Konva.KonvaEventObject<DragEvent>) => {
-          const node = e.target
-          const pos = { x: node.x(), y: node.y() }
-          const finalPos = currentMap?.grid.snap
-            ? snapToGrid(pos, currentMap.grid.size, true)
-            : pos
-          node.x(finalPos.x)
-          node.y(finalPos.y)
-          onObjectDragEnd?.(text.id, finalPos)
-        }}
+        onDragEnd={(e: Konva.KonvaEventObject<MouseEvent>) => handleObjectDragEnd(text.id, e)}
       />
     )
   }
 
-  const renderSpell = (spell: MapObject & { type: 'spell'; spellData?: SpellEventData }) => {
+  /**
+   * Render spell using the new modern architecture
+   */
+  const renderModernSpell = (spell: MapObject & { type: 'spell'; spellData?: SpellEventData }) => {
     if (!spell.spellData) {
+      console.warn('[ObjectsLayerModern] Spell has no spellData:', spell)
       return null
     }
 
-    // Spells should always animate when they appear on the map
-    const isAnimating = true
     const handleAnimationComplete = () => {
-      // Remove the spell after animation completes
-      // Check if it's a persistent spell
-      if (!spell.spellData?.persistDuration || spell.spellData.persistDuration === 0) {
+      // Guard against multiple completions
+      if (completedSpellAnimations.has(spell.id)) {
+        return
+      }
+      completedSpellAnimations.add(spell.id)
+
+      // For spells with persist duration, create a persistent area
+      const persistDuration = spell.spellData?.persistDuration || 0
+
+      // Area spells and projectile-burst spells can create persistent areas
+      if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst')) {
+        // Create persistent area object
+        const persistentAreaObject = {
+          id: `persistent-area-${Date.now()}-${Math.random()}`,
+          type: 'persistent-area' as const,
+          position: spell.spellData.toPosition,
+          rotation: 0,
+          layer: 9,
+          persistentAreaData: {
+            position: spell.spellData.toPosition,
+            radius: spell.spellData.size || 60,
+            color: spell.spellData.persistColor || spell.spellData.color || '#3D3D2E',
+            opacity: spell.spellData.persistOpacity || 0.8,
+            spellName: spell.spellData.spellName || 'Area Effect',
+            roundCreated: currentRound // Use actual current round
+          },
+          roundCreated: currentRound, // Use actual current round
+          spellDuration: persistDuration,
+          isSpellEffect: true // Mark as spell effect for cleanup
+        }
+
+        // Add persistent area to map using addSpellEffect to ensure it's tracked properly
+        const { addSpellEffect } = useMapStore.getState()
+        addSpellEffect(persistentAreaObject as any)
+
+        // Remove the spell animation object
         setTimeout(() => {
           deleteObject(spell.id)
-        }, 100) // Small delay to ensure animation finishes
+        }, 100)
+      } else {
+        // Remove immediately if no persist duration
+        setTimeout(() => {
+          deleteObject(spell.id)
+        }, 100)
       }
     }
 
-    const spellProps = {
-      spell: spell.spellData,
-      isAnimating,
-      onAnimationComplete: handleAnimationComplete
-    }
-
-    switch (spell.spellData.category) {
-      case 'projectile':
-      case 'projectile-burst':
-        return <ProjectileSpell key={spell.id} {...spellProps} />
-      case 'ray':
-        return <RaySpell key={spell.id} {...spellProps} />
-      case 'area':
-        return <AreaSpell key={spell.id} {...spellProps} />
-      case 'burst':
-        return <BurstSpell key={spell.id} {...spellProps} />
-      default:
-        return null
-    }
+    // Use SimpleSpellComponent for now
+    return (
+      <SimpleSpellComponent
+        key={spell.id}
+        spell={spell.spellData}
+        isAnimating={true}
+        onAnimationComplete={handleAnimationComplete}
+      />
+    )
   }
 
   const renderAttack = (attack: MapObject & { type: 'attack'; attackData?: AttackEventData }) => {
@@ -332,38 +278,60 @@ const ObjectsLayer: React.FC<ObjectsLayerProps> = ({ onObjectClick, onObjectDrag
       return null
     }
 
-    // Attacks should always animate when they appear on the map
-    const isAnimating = true
     const handleAnimationComplete = () => {
-      // Remove the attack after animation completes
       setTimeout(() => {
         deleteObject(attack.id)
-      }, 100) // Small delay to ensure animation finishes
+      }, 100)
     }
 
     return (
       <AttackRenderer
         key={attack.id}
         attack={attack.attackData}
-        isAnimating={isAnimating}
+        isAnimating={true}
         onAnimationComplete={handleAnimationComplete}
       />
     )
   }
 
+  const renderPersistentArea = (area: MapObject & { type: 'persistent-area'; persistentAreaData?: any }) => {
+    if (!area.persistentAreaData) {
+      return null
+    }
+
+    return (
+      <PersistentArea
+        key={area.id}
+        position={area.persistentAreaData.position}
+        radius={area.persistentAreaData.radius}
+        color={area.persistentAreaData.color}
+        opacity={area.persistentAreaData.opacity}
+        spellName={area.persistentAreaData.spellName}
+        roundCreated={area.persistentAreaData.roundCreated}
+      />
+    )
+  }
+
+  // Sort objects by layer to ensure proper rendering order
+  const sortedObjects = [...currentMap.objects].sort((a, b) => {
+    const layerA = a.layer || 0
+    const layerB = b.layer || 0
+    return layerA - layerB
+  })
+
+
   return (
     <Group>
-      {currentMap.objects.map(renderObject)}
+      {sortedObjects.map(renderObject)}
     </Group>
   )
-}
+})
 
 // Custom comparison function to prevent unnecessary re-renders
 const arePropsEqual = (
   prevProps: ObjectsLayerProps,
   nextProps: ObjectsLayerProps
 ): boolean => {
-  // Only re-render if the callback functions actually change
   return (
     prevProps.onObjectClick === nextProps.onObjectClick &&
     prevProps.onObjectDragEnd === nextProps.onObjectDragEnd

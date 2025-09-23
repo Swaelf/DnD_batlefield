@@ -3,6 +3,28 @@ import Konva from 'konva'
 import { Position, Shape } from '@/types/map'
 import { snapToGrid } from '@/utils/grid'
 
+// Helper function to constrain position within range
+const constrainPositionToRange = (
+  targetPosition: Position,
+  originPosition: Position,
+  maxRangePixels: number
+): Position => {
+  const dx = targetPosition.x - originPosition.x
+  const dy = targetPosition.y - originPosition.y
+  const distance = Math.sqrt(dx * dx + dy * dy)
+
+  if (distance <= maxRangePixels) {
+    return targetPosition // Within range, no constraint needed
+  }
+
+  // Constrain to the edge of the range circle
+  const ratio = maxRangePixels / distance
+  return {
+    x: originPosition.x + dx * ratio,
+    y: originPosition.y + dy * ratio
+  }
+}
+
 type ToolHandlersProps = {
   stageRef: React.RefObject<Konva.Stage>
   currentTool: string
@@ -15,6 +37,9 @@ type ToolHandlersProps = {
   staticObjectTemplate: any
   spellEffectTemplate: any
   isPicking: 'from' | 'to' | 'token' | null
+  selectedSpell?: any  // Spell template data for range limits
+  selectedTokenId?: string | null  // Token ID for movement range
+  getTokenExpectedPosition?: (tokenId?: string | null) => Position | null  // Function to get expected position
   drawingState: {
     isDrawing: boolean
     startPoint: Position | null
@@ -42,6 +67,9 @@ export const useToolHandlers = ({
   staticObjectTemplate,
   spellEffectTemplate,
   isPicking,
+  selectedSpell,
+  selectedTokenId,
+  getTokenExpectedPosition,
   drawingState,
   setDrawingState,
   addObject,
@@ -68,7 +96,41 @@ export const useToolHandlers = ({
 
     // Handle position picking for event creation
     if (isPicking === 'from' || isPicking === 'to') {
-      setPosition(isPicking, snappedPos)
+      let finalPosition = snappedPos
+
+      // Apply range constraints when picking destination position
+      if (isPicking === 'to') {
+        // For spell casting - constrain to spell range
+        if (selectedSpell && selectedSpell.range) {
+          const gridSize = currentMap?.grid.size || 50
+          const spellRangeInPixels = (selectedSpell.range / 5) * gridSize
+
+          // Need caster position - use expected position (after pending events) or current position
+          const expectedPosition = getTokenExpectedPosition ? getTokenExpectedPosition(selectedTokenId) : null
+          const selectedToken = selectedTokenId ? currentMap?.objects.find((obj: any) => obj.id === selectedTokenId) : null
+          const casterPosition = expectedPosition || selectedToken?.position
+
+          if (casterPosition) {
+            finalPosition = constrainPositionToRange(snappedPos, casterPosition, spellRangeInPixels)
+          }
+        }
+        // For movement - constrain to movement range
+        else if (selectedTokenId && !(selectedSpell && selectedSpell.range)) {
+          const gridSize = currentMap?.grid.size || 50
+          const movementRangeInPixels = (30 / 5) * gridSize // 30 feet standard movement
+
+          // Use expected position (after pending events) or current position
+          const expectedPosition = getTokenExpectedPosition ? getTokenExpectedPosition(selectedTokenId) : null
+          const selectedToken = currentMap?.objects.find((obj: any) => obj.id === selectedTokenId)
+          const tokenPosition = expectedPosition || selectedToken?.position
+
+          if (tokenPosition) {
+            finalPosition = constrainPositionToRange(snappedPos, tokenPosition, movementRangeInPixels)
+          }
+        }
+      }
+
+      setPosition(isPicking, finalPosition)
       completePositionPicking()
       return
     }
@@ -232,17 +294,57 @@ export const useToolHandlers = ({
         }
         break
     }
-  }, [currentTool, currentMap, handleMouseDown, setDrawingState, fillColor, addObject, tokenTemplate, staticObjectTemplate, spellEffectTemplate, isPicking, setPosition, completePositionPicking, stageRef])
+  }, [currentTool, currentMap, handleMouseDown, setDrawingState, fillColor, addObject, tokenTemplate, staticObjectTemplate, spellEffectTemplate, isPicking, selectedSpell, selectedTokenId, getTokenExpectedPosition, setPosition, completePositionPicking, stageRef])
 
   const handleStageMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
     // Get mouse position and report it
     const stage = stageRef.current
-    if (stage && onMouseMove) {
+    if (stage) {
       const pointer = stage.getPointerPosition()
       if (pointer) {
         const transform = stage.getAbsoluteTransform().copy().invert()
         const pos = transform.point(pointer)
-        onMouseMove(pos)
+        const snappedPos = snapToGrid(pos, currentMap?.grid.size || 50, currentMap?.grid.snap || false)
+
+        // Report position for status bar
+        if (onMouseMove) {
+          onMouseMove(pos)
+        }
+
+        // Update position preview when picking for spell targeting
+        if (isPicking === 'to') {
+          let finalPosition = snappedPos
+
+          // Apply range constraints for preview position
+          // For spell casting - constrain to spell range
+          if (selectedSpell && selectedSpell.range) {
+            const gridSize = currentMap?.grid.size || 50
+            const spellRangeInPixels = (selectedSpell.range / 5) * gridSize
+
+            const expectedPosition = getTokenExpectedPosition ? getTokenExpectedPosition(selectedTokenId) : null
+            const selectedToken = selectedTokenId ? currentMap?.objects.find((obj: any) => obj.id === selectedTokenId) : null
+            const casterPosition = expectedPosition || selectedToken?.position
+
+            if (casterPosition) {
+              finalPosition = constrainPositionToRange(snappedPos, casterPosition, spellRangeInPixels)
+            }
+          }
+          // For movement - constrain to movement range
+          else if (selectedTokenId && !(selectedSpell && selectedSpell.range)) {
+            const gridSize = currentMap?.grid.size || 50
+            const movementRangeInPixels = (30 / 5) * gridSize // 30 feet standard movement
+
+            const expectedPosition = getTokenExpectedPosition ? getTokenExpectedPosition(selectedTokenId) : null
+            const selectedToken = currentMap?.objects.find((obj: any) => obj.id === selectedTokenId)
+            const tokenPosition = expectedPosition || selectedToken?.position
+
+            if (tokenPosition) {
+              finalPosition = constrainPositionToRange(snappedPos, tokenPosition, movementRangeInPixels)
+            }
+          }
+
+          setPosition('to', finalPosition)
+        }
       }
     }
 
@@ -264,7 +366,7 @@ export const useToolHandlers = ({
     const snappedPos = snapToGrid(pos, currentMap?.grid.size || 50, currentMap?.grid.snap || false)
 
     setDrawingState({ currentPoint: snappedPos })
-  }, [currentTool, drawingState, currentMap, handleMouseMove, setDrawingState, onMouseMove, stageRef])
+  }, [currentTool, drawingState, currentMap, handleMouseMove, setDrawingState, onMouseMove, stageRef, isPicking, selectedSpell, selectedTokenId, getTokenExpectedPosition, setPosition])
 
   const handleStageMouseUp = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
     handleMouseUp()

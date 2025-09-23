@@ -11,6 +11,7 @@ type PositionPickerProps = {
   fadeEffect?: boolean
   setFadeEffect?: (value: boolean) => void
   eventType: EventType
+  isDisabled?: boolean
 }
 
 const PositionPickerComponent: React.FC<PositionPickerProps> = ({
@@ -19,7 +20,8 @@ const PositionPickerComponent: React.FC<PositionPickerProps> = ({
   isPicking,
   fadeEffect,
   setFadeEffect,
-  eventType
+  eventType,
+  isDisabled = false
 }) => {
   const showPositionPicker = eventType === 'move' || eventType === 'spell' || eventType === 'attack' || eventType === 'interaction' || eventType === 'environmental'
   const showFadeEffect = eventType === 'appear' || eventType === 'disappear'
@@ -49,13 +51,16 @@ const PositionPickerComponent: React.FC<PositionPickerProps> = ({
               onClick={onPositionPick}
               variant={isPicking === 'to' ? 'primary' : 'secondary'}
               size="icon"
-              title="Pick from map"
+              title={isDisabled ? "Select a spell first" : "Pick from map"}
+              disabled={isDisabled}
               css={{
-                backgroundColor: isPicking === 'to' ? '$blue600' : '$gray700',
-                color: isPicking === 'to' ? '$white' : '$gray300',
-                animation: isPicking === 'to' ? 'pulse 2s infinite' : 'none',
+                backgroundColor: isDisabled ? '$gray800' : (isPicking === 'to' ? '$blue600' : '$gray700'),
+                color: isDisabled ? '$gray600' : (isPicking === 'to' ? '$white' : '$gray300'),
+                animation: isPicking === 'to' && !isDisabled ? 'pulse 2s infinite' : 'none',
                 border: '1px solid $gray600',
-                '&:hover': {
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                opacity: isDisabled ? 0.5 : 1,
+                '&:hover': isDisabled ? {} : {
                   backgroundColor: isPicking === 'to' ? '$blue700' : '$gray600',
                   borderColor: '$secondary'
                 }
@@ -94,8 +99,8 @@ const PositionPickerComponent: React.FC<PositionPickerProps> = ({
               </Box>
             </Box>
           </Box>
-          <Text size="xs" color="gray500">
-            Click "Pick from map" then click on the map to set position
+          <Text size="xs" color={isDisabled ? "error" : "gray500"}>
+            {isDisabled ? "Please select a spell first before choosing target position" : "Click \"Pick from map\" then click on the map to set position"}
           </Text>
         </>
       )}

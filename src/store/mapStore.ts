@@ -8,6 +8,7 @@ const useMapStore = create<MapStore>()(
     currentMap: null,
     selectedObjects: [],
     mapVersion: 0,
+    spellPreviewEnabled: false, // Action preview disabled by default (spells and movement)
 
     createNewMap: (name) => set((state) => {
       const mapId = crypto.randomUUID()
@@ -83,17 +84,20 @@ const useMapStore = create<MapStore>()(
 
     addSpellEffect: (spell) => set((state) => {
       if (state.currentMap) {
-        // Add spell with round tracking
+        // Add spell/persistent area with round tracking
+        // Preserve ALL properties from the original spell object
         const spellObject: MapObject = {
-          ...spell,
-          type: 'spell' as const,
-          isSpellEffect: true,
-          layer: 10 // Spells render on top
+          ...spell, // First spread all original properties
+          // Then ensure critical properties are set
+          layer: spell.layer !== undefined ? spell.layer : (spell.type === 'persistent-area' ? 9 : 10),
+          isSpellEffect: spell.isSpellEffect !== undefined ? spell.isSpellEffect : true,
+          roundCreated: spell.roundCreated,
+          spellDuration: spell.spellDuration
         }
+
         state.currentMap.objects.push(spellObject)
         // Force re-render
         state.mapVersion += 1
-
       }
     }),
 
@@ -175,6 +179,10 @@ const useMapStore = create<MapStore>()(
       }
     }),
 
+    toggleSpellPreview: () => set((state) => {
+      state.spellPreviewEnabled = !state.spellPreviewEnabled
+    }),
+
     updateGridSettings: (settings) => set((state) => {
       if (state.currentMap) {
         Object.assign(state.currentMap.grid, settings)
@@ -190,9 +198,9 @@ const useMapStore = create<MapStore>()(
               return true  // Keep instant spells, let animation handle removal
             }
             // Remove persistent spells that have expired
-            const shouldKeep = currentRound < obj.roundCreated + obj.spellDuration
-            if (!shouldKeep) {
-            }
+            const expiresAtRound = obj.roundCreated + obj.spellDuration
+            const shouldKeep = currentRound < expiresAtRound
+
             return shouldKeep
           }
           return true

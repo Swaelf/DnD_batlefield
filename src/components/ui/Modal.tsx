@@ -69,7 +69,6 @@ const ModalContent = styled(Box, {
   animation: `${slideIn} 200ms ease-out`,
   maxHeight: '90vh',
   maxWidth: '90vw',
-  overflow: 'hidden',
 
   // Focus management
   '&:focus': {
@@ -280,10 +279,9 @@ export const Modal: React.FC<ModalProps> = ({
         padding={padding}
         centered={centered}
         data-modal-content
-        tabIndex={-1}
         data-test-id="modal-content"
         display="flex"
-        flexDirection="column"      
+        flexDirection="column"
       >
         {(title || showCloseButton) && (
           <ModalHeader>

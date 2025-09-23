@@ -29,28 +29,34 @@ export const StartCombatButton = styled(Button, {
 })
 
 export const CombatPanel = styled(Box, {
-  backgroundColor: '$dndBlack',
-  backdropFilter: 'blur(4px)',
-  borderRadius: '$lg',
-  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-  padding: '$4',
+  backgroundColor: 'rgba(26, 26, 26, 0.95)',
+  backdropFilter: 'blur(8px)',
+  borderRadius: '$xl',
+  border: '1px solid rgba(201, 173, 106, 0.2)',
+  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)',
+  padding: '$5',
+  minWidth: '600px',
 })
 
 export const CombatBar = styled(Box, {
   display: 'flex',
   alignItems: 'center',
-  gap: '$3',
+  gap: '$4',
   width: '100%',
+  padding: '$2',
+  borderRadius: '$lg',
+  backgroundColor: 'rgba(55, 65, 81, 0.3)',
 })
 
 export const RoundCounter = styled(Box, {
-  backgroundColor: '$gray800',
-  borderRadius: '$md',
-  paddingX: '$4',
-  paddingY: '$2',
+  backgroundColor: 'rgba(31, 41, 55, 0.8)',
+  borderRadius: '$lg',
+  paddingX: '$5',
+  paddingY: '$3',
   borderWidth: '2px',
   borderStyle: 'solid',
   borderColor: '$secondary',
+  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
 })
 
 export const NavControls = styled(Box, {
@@ -60,34 +66,50 @@ export const NavControls = styled(Box, {
 })
 
 export const NavButton = styled(Button, {
-  padding: '$2',
-  backgroundColor: '$gray700',
+  padding: '$3',
+  backgroundColor: 'rgba(55, 65, 81, 0.8)',
   color: '$gray300',
-  borderRadius: '$md',
+  borderRadius: '$lg',
+  border: '1px solid rgba(107, 114, 128, 0.3)',
+  transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: '$gray600',
+    backgroundColor: 'rgba(75, 85, 99, 0.9)',
     color: '$white',
+    borderColor: 'rgba(156, 163, 175, 0.5)',
+    transform: 'translateY(-1px)',
+  },
+  '&:active': {
+    transform: 'translateY(0)',
   },
   '&:disabled': {
     opacity: 0.5,
     cursor: 'not-allowed',
+    '&:hover': {
+      transform: 'none',
+    },
   },
 })
 
 export const NextRoundButton = styled(Button, {
   paddingX: '$6',
-  paddingY: '$2',
+  paddingY: '$3',
   backgroundColor: '$secondary',
   color: '$dndBlack',
   fontWeight: '$semibold',
   display: 'flex',
   alignItems: 'center',
-  gap: '$1',
+  gap: '$2',
+  borderRadius: '$lg',
+  border: '2px solid transparent',
+  transition: 'all 0.2s ease',
+  fontSize: '$sm',
   '&:hover': {
     backgroundColor: '$yellow500',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 12px rgba(201, 173, 106, 0.3)',
   },
   '&:active': {
-    transform: 'scale(0.98)',
+    transform: 'translateY(0)',
   },
 })
 
@@ -101,33 +123,46 @@ export const StatusSection = styled(Box, {
 export const EventsButton = styled(Button, {
   display: 'flex',
   alignItems: 'center',
-  gap: '$1',
-  paddingX: '$3',
-  paddingY: '$2',
-  backgroundColor: '$gray700',
-  color: '$gray300',
-  borderRadius: '$md',
+  gap: '$2',
+  paddingX: '$4',
+  paddingY: '$3',
+  backgroundColor: '$secondary',
+  color: '$dndBlack',
+  borderRadius: '$lg',
+  fontWeight: '$semibold',
+  fontSize: '$sm',
+  border: '2px solid transparent',
+  transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: '$gray600',
-    color: '$white',
+    backgroundColor: '$yellow500',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 12px rgba(201, 173, 106, 0.3)',
+  },
+  '&:active': {
+    transform: 'translateY(0)',
   },
 })
 
 export const StatusIndicator = styled(Box, {
   display: 'flex',
   alignItems: 'center',
-  gap: '$1',
+  gap: '$2',
   paddingX: '$3',
   paddingY: '$2',
-  borderRadius: '$md',
+  borderRadius: '$lg',
+  fontSize: '$sm',
+  fontWeight: '$medium',
+  border: '1px solid transparent',
   variants: {
     type: {
       events: {
-        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+        borderColor: 'rgba(59, 130, 246, 0.3)',
         color: '$blue400',
       },
       spells: {
-        backgroundColor: 'rgba(147, 51, 234, 0.2)',
+        backgroundColor: 'rgba(168, 85, 247, 0.15)',
+        borderColor: 'rgba(168, 85, 247, 0.3)',
         color: '$purple400',
       },
     },
@@ -135,19 +170,29 @@ export const StatusIndicator = styled(Box, {
 })
 
 export const ControlButton = styled(Button, {
-  padding: '$2',
-  backgroundColor: '$gray700',
+  padding: '$3',
+  backgroundColor: 'rgba(55, 65, 81, 0.8)',
   color: '$gray300',
-  borderRadius: '$md',
+  borderRadius: '$lg',
+  border: '1px solid rgba(107, 114, 128, 0.3)',
+  transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: '$gray600',
+    backgroundColor: 'rgba(75, 85, 99, 0.9)',
     color: '$white',
+    borderColor: 'rgba(156, 163, 175, 0.5)',
+    transform: 'translateY(-1px)',
+  },
+  '&:active': {
+    transform: 'translateY(0)',
   },
 })
 
 export const ExpandedSection = styled(Box, {
-  borderTop: '1px solid $gray700',
-  padding: '$3',
+  borderTop: '1px solid rgba(75, 85, 99, 0.5)',
+  padding: '$4',
+  marginTop: '$3',
+  borderRadius: '$lg',
+  backgroundColor: 'rgba(31, 41, 55, 0.3)',
 })
 
 export const SpeedControl = styled(Box, {

@@ -1,10 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    vanillaExtractPlugin()
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -41,7 +45,7 @@ export default defineConfig({
 
           // UI component libraries
           if (id.includes('node_modules/@radix-ui') ||
-              id.includes('node_modules/@stitches')) {
+              id.includes('node_modules/@vanilla-extract')) {
             return 'ui-vendor'
           }
 

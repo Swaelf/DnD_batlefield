@@ -2,7 +2,7 @@ import React, { useState, memo } from 'react'
 import { Shield } from 'lucide-react'
 import useRoundStore from '@/store/roundStore'
 import useMapStore from '@/store/mapStore'
-import { EventEditor } from './EventEditor'
+import { UnifiedEventEditor } from './UnifiedEventEditor'
 import { RoundCounter } from './RoundCounter'
 import { CombatControls, SpeedControls } from './CombatControls'
 import { RoundTimeline } from './RoundTimeline'
@@ -41,8 +41,10 @@ const CombatTrackerComponent: React.FC = () => {
 
   const handleNextRound = async () => {
     await nextRound()
+    // Get the updated current round from the store after nextRound completes
+    const updatedRound = useRoundStore.getState().currentRound
     // Clean up expired spells after round change
-    cleanupExpiredSpells(currentRound + 1)
+    cleanupExpiredSpells(updatedRound)
   }
 
   const currentRoundData = timeline?.rounds.find(r => r.number === currentRound)
@@ -111,8 +113,8 @@ const CombatTrackerComponent: React.FC = () => {
         </CombatPanel>
       </TrackerContainer>
 
-      {/* Event Editor Dialog - Moved outside of positioned container */}
-      <EventEditor
+      {/* Unified Event Editor Dialog - Moved outside of positioned container */}
+      <UnifiedEventEditor
         isOpen={showEventEditor}
         onClose={() => setShowEventEditor(false)}
       />

@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { Pause, Calendar, Sparkles, ChevronUp, ChevronDown } from 'lucide-react'
+import { Pause, Plus, Sparkles, ChevronUp, ChevronDown } from 'lucide-react'
 import { Text, Box } from '@/components/primitives'
 import {
   StatusSection,
@@ -40,10 +40,10 @@ const CombatControlsComponent: React.FC<CombatControlsProps> = ({
       <StatusSection>
         <EventsButton
           onClick={onShowEventEditor}
-          title="Manage Events"
+          title="Add Action"
         >
-          <Calendar size={12} />
-          <span>Events</span>
+          <Plus size={14} />
+          <span>Add Action</span>
         </EventsButton>
 
         {eventCount > 0 && (

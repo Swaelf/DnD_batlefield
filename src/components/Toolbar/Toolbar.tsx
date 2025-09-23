@@ -4,8 +4,8 @@ import useRoundStore from '@store/roundStore'
 import { TOOLS, ToolType } from '@/types/tools'
 import ToolButton from './ToolButton'
 import { Calendar } from 'lucide-react'
-// Lazy load EventEditor for better initial load performance
-const EventEditor = lazy(() => import('../Timeline/EventEditor').then(m => ({ default: m.EventEditor })))
+// Lazy load UnifiedEventEditor for better initial load performance
+const UnifiedEventEditor = lazy(() => import('../Timeline/UnifiedEventEditor').then(m => ({ default: m.UnifiedEventEditor })))
 import { styled } from '@/styles/theme.config'
 import { Box, Text, Button } from '@/components/primitives'
 
@@ -205,9 +205,9 @@ const Toolbar: React.FC = () => {
         <ColorIndicatorComponent type="stroke" />
       </ColorIndicatorsContainer>
 
-      {/* Event Editor Dialog */}
+      {/* Unified Event Editor Dialog */}
       <Suspense fallback={null}>
-        <EventEditor
+        <UnifiedEventEditor
           isOpen={showEventEditor}
           onClose={handleCloseEventEditor}
         />

@@ -6,7 +6,7 @@ const ControlsPanel = styled(Box, {
   position: 'absolute',
   top: '$4',
   right: '$4',
-  zIndex: 10,
+  zIndex: 50,
   backgroundColor: '$dndBlack/80',
   borderRadius: '$lg',
   padding: '$2',

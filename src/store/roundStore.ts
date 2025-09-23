@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { RoundStore } from '../types'
 import { RoundEvent } from '../types'
+import useMapStore from './mapStore'
 
 const useRoundStore = create<RoundStore>()(
   immer((set, get) => ({
@@ -67,38 +68,54 @@ const useRoundStore = create<RoundStore>()(
         state.timeline!.currentRound = state.currentRound
       })
 
+      // Clean up expired spell effects when advancing rounds
+      // This removes persistent areas that have expired based on their duration
+      const newRound = get().currentRound
+      useMapStore.getState().cleanupExpiredSpells(newRound)
+
       // The animation hook will handle executing events when it detects the round change
     },
 
-    previousRound: () => set((state) => {
-      if (state.currentRound > 1) {
-        state.currentRound -= 1
+    previousRound: () => {
+      set((state) => {
+        if (state.currentRound > 1) {
+          state.currentRound -= 1
+          if (state.timeline) {
+            state.timeline.currentRound = state.currentRound
+          }
+        }
+      })
+
+      // Clean up spell effects when navigating to previous round
+      const newRound = get().currentRound
+      useMapStore.getState().cleanupExpiredSpells(newRound)
+    },
+
+    goToRound: (roundNumber) => {
+      set((state) => {
+        state.currentRound = roundNumber
         if (state.timeline) {
-          state.timeline.currentRound = state.currentRound
-        }
-      }
-    }),
+          state.timeline.currentRound = roundNumber
 
-    goToRound: (roundNumber) => set((state) => {
-      state.currentRound = roundNumber
-      if (state.timeline) {
-        state.timeline.currentRound = roundNumber
-
-        // Ensure the round exists
-        const roundExists = state.timeline.rounds.find(r => r.number === roundNumber)
-        if (!roundExists) {
-          state.timeline.rounds.push({
-            id: crypto.randomUUID(),
-            number: roundNumber,
-            timestamp: Date.now(),
-            events: [],
-            executed: false
-          })
-          // Sort rounds by number
-          state.timeline.rounds.sort((a, b) => a.number - b.number)
+          // Ensure the round exists
+          const roundExists = state.timeline.rounds.find(r => r.number === roundNumber)
+          if (!roundExists) {
+            state.timeline.rounds.push({
+              id: crypto.randomUUID(),
+              number: roundNumber,
+              timestamp: Date.now(),
+              events: [],
+              executed: false
+            })
+            // Sort rounds by number
+            state.timeline.rounds.sort((a, b) => a.number - b.number)
+          }
         }
-      }
-    }),
+      })
+
+      // Clean up spell effects when jumping to a specific round
+      useMapStore.getState().cleanupExpiredSpells(roundNumber)
+    },
 
     addEvent: (tokenId, type, data, roundNumber) => set((state) => {
       if (!state.timeline) return
@@ -173,7 +190,17 @@ const useRoundStore = create<RoundStore>()(
 
         switch (event.type) {
           case 'spell':
-            mapStore.addSpellEffect(event.data as any)
+            // Create proper MapObject for spell
+            const spellData = event.data as any
+            const spellObject = {
+              id: `spell-${Date.now()}-${Math.random()}`,
+              type: 'spell' as const,
+              position: spellData.fromPosition || { x: 0, y: 0 },
+              rotation: 0,
+              layer: 10,
+              spellData: spellData
+            }
+            mapStore.addSpellEffect(spellObject)
             break
           case 'attack':
             mapStore.addAttackEffect(event.data as any)
@@ -209,7 +236,7 @@ const useRoundStore = create<RoundStore>()(
     previewEvent: (event) => {
       // This will trigger a preview animation
       // Implementation will be in the Canvas component
-      console.log('Previewing event:', event)
+      // Preview event implementation will be in the Canvas component
     },
 
     setAnimationSpeed: (speed) => set((state) => {

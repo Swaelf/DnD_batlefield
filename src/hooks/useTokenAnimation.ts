@@ -14,10 +14,7 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
 
   // Execute animations for a specific event
   const animateEvent = useCallback((event: RoundEvent, tokenNode: Konva.Node | null) => {
-    console.log('[Animation] Starting event:', event.type, event.id, { tokenId: event.tokenId })
-
     if (!stageRef.current) {
-      console.log('[Animation] No stage, skipping')
       return Promise.resolve()
     }
 
@@ -40,16 +37,24 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
         }
 
         const moveData = event.data // Type narrowing for MoveEventData
-        const fromPos = moveData.fromPosition
+
+        // For sequential movements, use the token's current position instead of stored fromPosition
+        // This ensures that movements chain correctly
+        const currentTokenPosition = {
+          x: tokenNode.x(),
+          y: tokenNode.y()
+        }
+
+        // Use current position as start if the token has moved from its original position
+        // Otherwise use the stored fromPosition (for first movement)
+        const fromPos = currentTokenPosition
         const toPos = moveData.toPosition
 
 
         // Start animation path tracking
         startAnimation(event.tokenId, fromPos, toPos)
 
-        // Ensure the node starts at the correct position
-        tokenNode.x(fromPos.x)
-        tokenNode.y(fromPos.y)
+        // Token is already at the correct position (current position)
 
         // Force initial draw
         tokenNode.getLayer()?.batchDraw()
@@ -228,59 +233,116 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
         } else if (spellData.category === 'ray') {
           animDuration = 800 // Standard ray duration
         } else if (spellData.category === 'area') {
-          animDuration = 500 // Area fade-in duration
+          // For area spells, use the duration from the spell data (expanding animation only)
+          animDuration = spellData.duration || 800 // Default expanding animation duration
+        } else if (spellData.spellName?.toLowerCase() === 'stone rain') {
+          // Stone rain has its own special multi-burst animation
+          animDuration = 2000 // Total duration for all stone impacts
         }
 
-        const persistDuration = (spellData.persistDuration || 0) * 1000
-        const totalDuration = animDuration + persistDuration
+        const persistDuration = (spellData.persistDuration || 0) // Already in milliseconds
+        const totalDuration = animDuration // For area spells, only use animation duration
 
-        // Add spell effect to the map with animation data
+        // Create spell object for initial animation
         const spellObject = {
           id: spellId,
           type: 'spell' as const,
-          position: actualFromPosition,
+          position: spellData.category === 'area' ? spellData.toPosition : actualFromPosition,
           rotation: 0,
           layer: 100, // Spells render above everything
           isSpellEffect: true,
-          spellData: updatedSpellData,
+          spellData: {
+            ...updatedSpellData,
+            // For area spells, keep persistDuration for the AreaSpell component to use
+            // For other spells, set to 0 since they don't use persistent effects
+            persistDuration: spellData.category === 'area' ? persistDuration : 0,
+            roundCreated: event.roundNumber
+          },
           roundCreated: event.roundNumber,
-          spellDuration: spellData.persistDuration || 0
+          spellDuration: spellData.category === 'area' ? 0 : 0 // Initial spell objects don't persist
         }
 
-        console.log('[Animation] Adding spell:', spellId, {
-          category: updatedSpellData.category,
-          from: actualFromPosition,
-          to: updatedSpellData.toPosition,
-          duration: animDuration,
-          persistDuration
-        })
-
         addSpellEffect(spellObject)
+
+        // Create persistent areas for spells with persist duration > 0
+        // Area spells create them immediately, projectile-burst creates after explosion
+        // Other spell types (projectile, ray) typically don't have persistent effects
+        if (persistDuration > 0 && (spellData.category === 'area' || spellData.category === 'projectile-burst')) {
+          const persistentAreaId = `${spellId}-persistent`
+
+          // For projectile-burst, wait for the explosion to complete
+          // For area spells, create immediately after initial animation
+          const delayTime = spellData.category === 'projectile-burst' ? animDuration : animDuration
+
+          setTimeout(() => {
+            // For tracking spells, we need to get the final target position
+            let finalPosition = updatedSpellData.toPosition
+
+            // If this spell tracks targets, get the current position of the target token
+            if (updatedSpellData.trackTarget && updatedSpellData.targetTokenId) {
+              const { currentMap } = useMapStore.getState()
+              const targetToken = currentMap?.objects.find(obj =>
+                obj.id === updatedSpellData.targetTokenId && obj.type === 'token'
+              )
+              if (targetToken) {
+                finalPosition = targetToken.position
+              }
+            }
+
+            const persistentAreaObject = {
+              id: persistentAreaId,
+              type: 'persistent-area' as const,
+              position: finalPosition,
+              rotation: 0,
+              layer: 0, // Below tokens to allow token selection
+              isSpellEffect: true, // Mark as spell effect for cleanup
+              persistentAreaData: {
+                position: finalPosition,
+                radius: spellData.category === 'projectile-burst' ? (spellData.burstRadius || 40) : (spellData.size || 80),
+                color: spellData.persistColor || spellData.color || '#CC2500',
+                opacity: spellData.persistOpacity || (spellData.category === 'projectile-burst' ? 0.3 : 0.4),
+                spellName: spellData.spellName || 'Unknown Spell',
+                roundCreated: event.roundNumber
+              },
+              roundCreated: event.roundNumber,
+              // For Fireball and similar spells, persist for 1 round
+              // Convert milliseconds to rounds: if persistDuration > 0, use 1 round
+              spellDuration: persistDuration > 0 ? 1 : 0
+            }
+
+            addSpellEffect(persistentAreaObject)
+          }, animDuration)
+        }
 
         // Mark spell as actively animating
         activeSpellAnimations.current.add(spellId)
 
-        console.log('[Animation] Spell will resolve in:', totalDuration, 'ms')
 
         // Create a promise that resolves after the animation completes
         // This ensures sequential execution of spells
         const timeoutId = setTimeout(() => {
-          console.log('[Animation] Spell complete:', spellId)
           timeoutIdsRef.current.delete(timeoutId) // Remove from tracking once executed
           activeSpellAnimations.current.delete(spellId)
 
-          // If it's not a persistent spell, remove it after a small delay
-          // This gives the animation time to complete visually
-          if (!spellData.persistDuration || spellData.persistDuration === 0) {
+          // For area spells with persistent effects, the AreaSpell component handles the persistence
+          // For other spells, remove them if they don't have persistence or aren't area spells
+          if (spellData.category === 'area') {
+            // Area spells: Remove the initial expanding animation spell object immediately
+            // The persistent area (if any) is created by the AreaSpell component
             setTimeout(() => {
               const { deleteObject } = useMapStore.getState()
               deleteObject(spellId)
-              console.log('[Animation] Removed spell object:', spellId)
+            }, 100)
+          } else if (!spellData.persistDuration || spellData.persistDuration === 0) {
+            // Non-area spells without persistence: remove after animation
+            setTimeout(() => {
+              const { deleteObject } = useMapStore.getState()
+              deleteObject(spellId)
             }, 100)
           }
 
           resolve()
-        }, totalDuration)
+        }, animDuration) // Use animDuration instead of totalDuration for area spells
 
         timeoutIdsRef.current.add(timeoutId) // Track timeout for cleanup
 
@@ -296,6 +358,9 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
 
     const { timeline } = useRoundStore.getState()
     if (!timeline) return
+
+    // Don't clean up persistent areas here - let cleanupExpiredSpells handle it
+    // This was incorrectly deleting persistent areas that should still be active
 
     const round = timeline.rounds.find(r => r.number === roundNumber)
     if (!round || round.events.length === 0) {
@@ -330,11 +395,8 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
     // Sort events by order
     const sortedEvents = [...round.events].sort((a, b) => (a.order || 0) - (b.order || 0))
 
-    console.log('[Animation] Executing round', roundNumber, 'with', sortedEvents.length, 'events')
-
     // Execute animations sequentially
     for (const event of sortedEvents) {
-      console.log('[Animation] Processing event:', event.type, 'order:', event.order || 0)
 
       // Special handling for spell events - they don't always need a token node
       if (event.type === 'spell' || (event.data && isSpellEvent(event.data))) {
@@ -377,14 +439,10 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
       }
 
       if (tokenNode) {
-        console.log('[Animation] Found token node for:', event.tokenId)
         await animateEvent(event, tokenNode)
-      } else if (event.type !== 'spell') {
-        console.log('[Animation] WARNING: No token node found for non-spell event:', event.tokenId)
       }
     }
 
-    console.log('[Animation] Round', roundNumber, 'complete')
 
     // Mark round as executed
     const { updateEvent } = useRoundStore.getState()

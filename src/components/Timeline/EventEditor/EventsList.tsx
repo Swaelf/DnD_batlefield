@@ -19,7 +19,7 @@ const EventsListComponent: React.FC<EventsListProps> = ({
 }) => {
   return (
     <Box display="flex" flexDirection="column" css={{
-      width: '350px',
+      width: '50%',
       minWidth: '350px',
       padding: '$4',
       overflowY: 'auto',
@@ -27,7 +27,7 @@ const EventsListComponent: React.FC<EventsListProps> = ({
       borderLeft: '1px solid $gray700',
       backgroundColor: '$gray900/50'
     }}>
-      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="between" css={{ marginBottom: '$4' }}>
+      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="space-between" css={{ marginBottom: '$4' }}>
         <Box>
           <Text size="lg" weight="medium" color="white">
             Timeline Events
@@ -96,7 +96,7 @@ const EventsListComponent: React.FC<EventsListProps> = ({
                   }
                 }}
               >
-                <Box display="flex" alignItems="center" justifyContent="between">
+                <Box display="flex" alignItems="center" justifyContent="space-between">
                   <Box display="flex" alignItems="center" gap="3">
                     <Box
                       css={{

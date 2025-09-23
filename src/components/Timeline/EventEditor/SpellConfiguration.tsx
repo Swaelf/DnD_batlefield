@@ -46,7 +46,7 @@ const SpellConfigurationComponent: React.FC<SpellConfigurationProps> = ({
           borderRadius: '$md',
           marginBottom: '$3'
         }}>
-          <Box display="flex" alignItems="center" justifyContent="between">
+          <Box display="flex" alignItems="center" justifyContent="space-between">
             <Box>
               <Text size="sm" weight="medium" color="white">
                 {selectedSpell.spellName || 'Custom Spell'}

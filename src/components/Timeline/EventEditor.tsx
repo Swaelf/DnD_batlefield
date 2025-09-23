@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Plus, X } from 'lucide-react'
+import { Plus, X, Sparkles } from 'lucide-react'
 import useRoundStore from '@/store/roundStore'
 import useMapStore from '@/store/mapStore'
 import useEventCreationStore from '@/store/eventCreationStore'
@@ -7,6 +7,7 @@ import { EventType, MoveEventData, AppearEventData, DisappearEventData, SpellEve
 import { Token } from '@/types/token'
 import { Position } from '@/types/map'
 import { Modal, ModalBody, Box, Text, Button } from '@/components/ui'
+import { styled } from '@/styles/theme.config'
 import { SpellSelectionModal } from './SpellSelectionModal'
 import { AttackActionConfig } from '@/components/Actions/ActionEditor/AttackActionConfig'
 import { InteractionActionConfig } from '@/components/Actions/ActionEditor/InteractionActionConfig'
@@ -19,6 +20,59 @@ import {
   PositionPicker,
   EventsList
 } from './EventEditor/index'
+
+const StyledFooter = styled(Box, {
+  padding: '$6',
+  borderTop: '1px solid $gray700',
+  backgroundColor: '$gray800/80',
+  backdropFilter: 'blur(8px)'
+})
+
+const StyledSpellPreviewButton = styled(Button, {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '$2',
+  padding: '$2 $3',
+  borderRadius: '$md',
+  transition: '$fast',
+
+  variants: {
+    enabled: {
+      true: {
+        backgroundColor: '$secondary/20',
+        color: '$secondary',
+        border: '1px solid $secondary',
+        '&:hover': {
+          backgroundColor: '$secondary/30',
+          color: '$secondary'
+        }
+      },
+      false: {
+        backgroundColor: '$gray700',
+        color: '$gray400',
+        border: '1px solid $gray600',
+        '&:hover': {
+          backgroundColor: '$gray600',
+          color: '$white'
+        }
+      }
+    }
+  }
+})
+
+const StyledCloseButton = styled(Button, {
+  backgroundColor: '$gray700',
+  color: '$gray300',
+  border: '1px solid $gray600',
+  '&:hover': {
+    backgroundColor: '$gray600'
+  }
+})
+
+const StyledPreviewText = styled(Text, {
+  fontSize: '$xs',
+  fontWeight: '$medium'
+})
 
 type EventEditorProps = {
   isOpen: boolean
@@ -40,6 +94,8 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
   const addEvent = useRoundStore(state => state.addEvent)
   const removeEvent = useRoundStore(state => state.removeEvent)
   const currentMap = useMapStore(state => state.currentMap)
+  const spellPreviewEnabled = useMapStore(state => state.spellPreviewEnabled)
+  const toggleSpellPreview = useMapStore(state => state.toggleSpellPreview)
 
   const [selectedToken, setSelectedToken] = useState<string>(initialTokenId || '')
   const [eventType, setEventType] = useState<EventType>(initialEventType)
@@ -74,6 +130,8 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
   const startPickingToken = useEventCreationStore(state => state.startPickingToken)
   const pickedToPosition = useEventCreationStore(state => state.toPosition)
   const pickedTokenId = useEventCreationStore(state => state.selectedTokenId)
+  const setEventStoreSelectedSpell = useEventCreationStore(state => state.setSelectedSpell)
+  const setEventStorePosition = useEventCreationStore(state => state.setPosition)
 
   // Get all tokens from the current map - recalculate on every render when modal is open
   const tokens = React.useMemo(() => {
@@ -91,20 +149,75 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
   const roundEvents = timeline?.rounds.find(r => r.number === nextRound)?.events || []
 
   useEffect(() => {
+    if (eventType === 'spell' && useEnvironmentCaster) {
+      // For environment caster, set from position to a default location or center of view
+      setEventStorePosition('from', { x: 500, y: 300 }) // Default position for environment caster
+      return
+    }
+
     if (selectedToken && currentMap) {
       const token = currentMap.objects.find(obj => obj.id === selectedToken)
       if (token) {
         setTargetPosition({ x: token.position.x + 100, y: token.position.y })
+        // Set from position in event creation store for spell preview
+        if (eventType === 'spell') {
+          setEventStorePosition('from', token.position)
+        }
       }
     }
-  }, [selectedToken, currentMap])
+  }, [selectedToken, currentMap, eventType, setEventStorePosition, useEnvironmentCaster])
+
+  // Sync selected spell with event creation store for preview
+  useEffect(() => {
+    console.log('Spell sync effect triggered:', { eventType, selectedSpell, hasSpell: !!selectedSpell })
+
+    if (eventType === 'spell' && selectedSpell) {
+      // Pass the full spell configuration including range and area
+      const spellConfig = {
+        ...selectedSpell,
+        areaOfEffect: selectedSpell.burstRadius || selectedSpell.size || 0,
+        lineWidth: selectedSpell.category === 'ray' ? 10 : undefined
+      }
+
+      setEventStoreSelectedSpell(spellConfig);
+
+      // Also ensure fromPosition is set if we have a token
+      const casterId = useEnvironmentCaster ? 'void-token' : selectedToken
+      if (casterId && currentMap) {
+        if (casterId === 'void-token') {
+          setEventStorePosition('from', { x: 500, y: 300 })
+        } else {
+          const caster = currentMap.objects.find(obj => obj.id === casterId)
+          if (caster) {
+            setEventStorePosition('from', caster.position)
+          }
+        }
+      }
+
+      // Verify sync
+      setTimeout(() => {
+        const state = useEventCreationStore.getState()
+        console.log('Verified spell sync in useEffect:', {
+          selectedSpell: state.selectedSpell,
+          fromPosition: state.fromPosition
+        })
+      }, 50)
+    } else if (eventType !== 'spell') {
+      // Clear spell selection when event type changes
+      setEventStoreSelectedSpell(undefined)
+    }
+  }, [selectedSpell, eventType, setEventStoreSelectedSpell, setEventStorePosition, selectedToken, useEnvironmentCaster, currentMap])
 
   useEffect(() => {
     if (pickedToPosition && isPicking === null && isTemporarilyHidden) {
       setTargetPosition(pickedToPosition)
+      // Also update the event creation store's toPosition for spell preview
+      if (eventType === 'spell') {
+        setEventStorePosition('to', pickedToPosition)
+      }
       setIsTemporarilyHidden(false)
     }
-  }, [pickedToPosition, isPicking, isTemporarilyHidden])
+  }, [pickedToPosition, isPicking, isTemporarilyHidden, eventType, setEventStorePosition])
 
   useEffect(() => {
     if (pickedTokenId && isPicking === null && isTemporarilyHidden) {
@@ -121,6 +234,21 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
       const caster = currentMap.objects.find(obj => obj.id === casterId)
       if (!caster) return
 
+      // Find if there's a token at the target position (for tracking)
+      let targetTokenId: string | undefined
+      if (selectedSpell.trackTarget && (selectedSpell.category === 'projectile' || selectedSpell.category === 'projectile-burst' || selectedSpell.category === 'ray')) {
+        // Find token at or near target position
+        const targetToken = currentMap.objects.find(obj => {
+          if (obj.type !== 'token') return false
+          const distance = Math.sqrt(
+            Math.pow(obj.position.x - targetPosition.x, 2) +
+            Math.pow(obj.position.y - targetPosition.y, 2)
+          )
+          return distance < 30 // Within 30 pixels is considered a hit
+        })
+        targetTokenId = targetToken?.id
+      }
+
       const spellData: SpellEventData = {
         type: 'spell',
         spellName: selectedSpell.spellName || 'Custom Spell',
@@ -134,7 +262,9 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
         projectileSpeed: selectedSpell.projectileSpeed,
         burstRadius: selectedSpell.burstRadius,
         persistDuration: selectedSpell.persistDuration,
-        particleEffect: selectedSpell.particleEffect
+        particleEffect: selectedSpell.particleEffect,
+        trackTarget: selectedSpell.trackTarget,
+        targetTokenId
       }
 
       addEvent(casterId, 'spell', spellData, targetRound)
@@ -278,8 +408,78 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
   }
 
   const handlePositionPick = () => {
+    console.log('handlePositionPick called:', {
+      eventType,
+      selectedSpell,
+      hasSelectedSpell: !!selectedSpell,
+      selectedToken,
+      useEnvironmentCaster
+    })
+
+    // For spells, only allow position picking if a spell is selected
+    if (eventType === 'spell' && !selectedSpell) {
+      console.warn('Cannot pick position: No spell selected')
+      return
+    }
+
+    // CRITICAL: Sync all spell data to the store BEFORE hiding the modal
+    if (eventType === 'spell' && selectedSpell) {
+      console.log('Syncing spell data to store:', { selectedSpell })
+
+      // Ensure spell is in the store
+      setEventStoreSelectedSpell(selectedSpell)
+
+      // Ensure fromPosition is set based on current token
+      const casterId = useEnvironmentCaster ? 'void-token' : selectedToken
+      if (casterId && currentMap) {
+        if (casterId === 'void-token') {
+          console.log('Setting environment caster position')
+          setEventStorePosition('from', { x: 500, y: 300 })
+        } else {
+          const caster = currentMap.objects.find(obj => obj.id === casterId)
+          if (caster) {
+            console.log('Setting caster position:', caster.position)
+            setEventStorePosition('from', caster.position)
+          }
+        }
+      }
+
+      // Verify the store was updated
+      setTimeout(() => {
+        const verifyState = useEventCreationStore.getState()
+        console.log('Verified store state after sync:', {
+          selectedSpell: verifyState.selectedSpell,
+          fromPosition: verifyState.fromPosition
+        })
+      }, 50)
+    }
+
+    // Get current store state for debugging
+    const storeState = useEventCreationStore.getState()
+    console.log('Before position picking:', {
+      eventType,
+      selectedSpell,
+      storeState: {
+        isPicking: storeState.isPicking,
+        selectedSpell: storeState.selectedSpell,
+        fromPosition: storeState.fromPosition,
+        toPosition: storeState.toPosition
+      }
+    })
+
+    // Now start position picking
     startPickingPosition('to')
     setIsTemporarilyHidden(true)
+
+    // Check state after setting
+    setTimeout(() => {
+      const newState = useEventCreationStore.getState()
+      console.log('After position picking:', {
+        isPicking: newState.isPicking,
+        selectedSpell: newState.selectedSpell,
+        fromPosition: newState.fromPosition
+      })
+    }, 100)
   }
 
   const handleTokenPick = () => {
@@ -315,30 +515,39 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
         onClose={onClose}
         title=""
         size="xl"
+        closeOnOverlayClick={true}
+        closeOnEscape={true}
       >
-        <ModalBody data-test-id="event-popup" display="flex" flexDirection="column" css={{ padding: 0 }}>
-          <Box display="flex" css={{ height: '70vh', overflow: 'hidden' }}>
+        <ModalBody data-test-id="event-popup" display="flex" flexDirection="column" css={{ padding: 0, backgroundColor: '$gray900' }}>
+          <Box display="flex" css={{ height: '75vh' }}>
             {/* Main Content */}
-            <Box display="flex" flexDirection="column" css={{ flex: 1, padding: '$4', overflowY: 'auto', maxHeight: '70vh' }}>
-              <Box display="flex" flexDirection="column" css={{ padding: '$4', backgroundColor: '$gray800', borderRadius: '$lg', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)' }}>
-                <Box display="flex" alignItems="center" css={{ marginBottom: '$4' }}>
+            <Box display="flex" flexDirection="column" css={{ flex: 1, padding: '$6', overflowY: 'auto', maxHeight: '75vh' }}>
+              <Box display="flex" flexDirection="column" css={{
+                padding: '$6',
+                backgroundColor: '$gray800',
+                borderRadius: '$xl',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+                border: '1px solid $gray700'
+              }}>
+                <Box display="flex" alignItems="center" css={{ marginBottom: '$6' }}>
                   <Box css={{
-                    width: '40px',
-                    height: '40px',
+                    width: '48px',
+                    height: '48px',
                     borderRadius: '$round',
                     backgroundColor: '$secondary',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginRight: '$3'
+                    marginRight: '$4',
+                    boxShadow: '0 4px 12px rgba(201, 173, 106, 0.3)'
                   }}>
-                    <Plus size={20} color="#1A1A1A" />
+                    <Plus size={24} color="#1A1A1A" />
                   </Box>
                   <Box>
-                    <Text size="lg" weight="medium" color="white">
+                    <Text css={{ fontSize: '$xl', fontWeight: '$semibold', color: '$white' }}>
                       Create Event
                     </Text>
-                    <Text size="xs" color="gray400">
+                    <Text css={{ fontSize: '$sm', color: '$gray400', marginTop: '$1' }}>
                       Schedule actions for Round {targetRound}
                     </Text>
                   </Box>
@@ -410,6 +619,7 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
                     fadeEffect={fadeEffect}
                     setFadeEffect={setFadeEffect}
                     eventType={eventType}
+                    isDisabled={eventType === 'spell' && !selectedSpell}
                   />
 
                   {/* Action Buttons */}
@@ -450,31 +660,33 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
           </Box>
 
           {/* Footer */}
-          <Box
+          <StyledFooter
             display="flex"
-            justifyContent="end"
-            gap="2"
-            css={{
-              padding: '$4',
-              borderTop: '1px solid $gray700',
-              backgroundColor: '$gray900/50'
-            }}
+            justifyContent="space-between"
+            alignItems="center"
           >
-            <Button
+            {/* Spell Preview Toggle */}
+            <Box display="flex" alignItems="center">
+              <StyledSpellPreviewButton
+                onClick={toggleSpellPreview}
+                enabled={spellPreviewEnabled}
+                title={spellPreviewEnabled ? 'Disable Spell Preview' : 'Enable Spell Preview'}
+              >
+                <Sparkles size={14} />
+                <StyledPreviewText>
+                  {spellPreviewEnabled ? 'Preview: ON' : 'Preview: OFF'}
+                </StyledPreviewText>
+              </StyledSpellPreviewButton>
+            </Box>
+
+            {/* Close Button */}
+            <StyledCloseButton
               onClick={onClose}
-              variant="outline"
-              css={{
-                backgroundColor: '$gray700',
-                color: '$gray300',
-                '&:hover': {
-                  backgroundColor: '$gray600'
-                }
-              }}
             >
               <X size={16} style={{ marginRight: '4px' }} />
               Close
-            </Button>
-          </Box>
+            </StyledCloseButton>
+          </StyledFooter>
         </ModalBody>
       </Modal>
 
@@ -483,8 +695,34 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
         isOpen={isSpellModalOpen}
         onClose={() => setIsSpellModalOpen(false)}
         onSelect={(spell: Partial<SpellEventData>) => {
+          console.log('Spell selected from modal:', spell)
           setSelectedSpell(spell)
           setIsSpellModalOpen(false)
+
+          // Immediately sync to store
+          console.log('Immediately syncing spell to store')
+          setEventStoreSelectedSpell(spell)
+
+          // Also set the from position when spell is selected if we have a token
+          if (selectedToken && currentMap) {
+            const token = currentMap.objects.find(obj => obj.id === selectedToken)
+            if (token) {
+              console.log('Setting from position on spell selection:', token.position)
+              setEventStorePosition('from', token.position)
+            }
+          } else if (useEnvironmentCaster) {
+            console.log('Setting environment caster position on spell selection')
+            setEventStorePosition('from', { x: 500, y: 300 })
+          }
+
+          // Verify store update
+          setTimeout(() => {
+            const state = useEventCreationStore.getState()
+            console.log('Store state after spell selection:', {
+              selectedSpell: state.selectedSpell,
+              fromPosition: state.fromPosition
+            })
+          }, 100)
         }}
       />
     </>

@@ -4,11 +4,16 @@ import { Position } from '@/types/map'
  * Snap a position to the nearest grid point
  */
 export const snapToGrid = (position: Position, gridSize: number, enabled: boolean): Position => {
-  if (!enabled) return position
+  // Validate inputs to prevent NaN
+  const safeGridSize = isNaN(gridSize) || !isFinite(gridSize) || gridSize <= 0 ? 50 : gridSize
+  const safeX = isNaN(position.x) || !isFinite(position.x) ? 0 : position.x
+  const safeY = isNaN(position.y) || !isFinite(position.y) ? 0 : position.y
+
+  if (!enabled) return { x: safeX, y: safeY }
 
   return {
-    x: Math.round(position.x / gridSize) * gridSize,
-    y: Math.round(position.y / gridSize) * gridSize,
+    x: Math.round(safeX / safeGridSize) * safeGridSize,
+    y: Math.round(safeY / safeGridSize) * safeGridSize,
   }
 }
 

@@ -1,4 +1,3 @@
-export { ProjectileSpell } from './ProjectileSpellSimple'
-export { RaySpell } from './RaySpell'
-export { AreaSpell } from './AreaSpell'
-export { BurstSpell } from './BurstSpell'
+// Core spell components
+export { PersistentArea } from './PersistentArea'
+export { SimpleSpellComponent } from './SimpleSpellComponent'

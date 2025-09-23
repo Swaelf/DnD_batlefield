@@ -31,6 +31,7 @@ export type EventCreationState = {
   fromPosition: Position | null
   toPosition: Position | null
   pathPreview: Position[]
+  selectedSpell?: any // Spell configuration data
 
   // Actions
   startEventCreation: (tokenId: string) => void
@@ -41,6 +42,9 @@ export type EventCreationState = {
   setPosition: (type: 'from' | 'to', position: Position) => void
   setPathPreview: (path: Position[]) => void
   completePositionPicking: () => void
+  setSelectedSpell: (spell: any) => void
+  clearSpellSelection: () => void
+  getTokenExpectedPosition: (tokenId?: string | null) => Position | null
 }
 
 // Round Store Types
@@ -120,6 +124,7 @@ export type MapStore = {
   currentMap: BattleMap | null
   selectedObjects: string[]
   mapVersion: number // Force re-renders when map changes
+  spellPreviewEnabled: boolean // Enable/disable action preview (spells and movement)
 
   // Actions
   createNewMap: (name: string) => void
@@ -138,4 +143,5 @@ export type MapStore = {
   toggleGridVisibility: () => void
   updateGridSettings: (settings: Partial<BattleMap['grid']>) => void
   cleanupExpiredSpells: (currentRound: number) => void
+  toggleSpellPreview: () => void
 }

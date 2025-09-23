@@ -2,6 +2,7 @@ import React, { memo } from 'react'
 import { Line, Circle, Arrow, Text } from 'react-konva'
 import useEventCreationStore from '@/store/eventCreationStore'
 import useAnimationStore from '@/store/animationStore'
+import useMapStore from '@/store/mapStore'
 // Removed unused useRoundStore import
 
 type PathPreviewProps = {
@@ -13,96 +14,165 @@ const PathPreviewComponent: React.FC<PathPreviewProps> = ({ gridSize }) => {
   const isPicking = useEventCreationStore(state => state.isPicking)
   const fromPosition = useEventCreationStore(state => state.fromPosition)
   const toPosition = useEventCreationStore(state => state.toPosition)
+  const selectedSpell = useEventCreationStore(state => state.selectedSpell)
+  const selectedTokenId = useEventCreationStore(state => state.selectedTokenId)
+  const getTokenExpectedPosition = useEventCreationStore(state => state.getTokenExpectedPosition)
   const activePaths = useAnimationStore(state => state.activePaths)
-  // Removed unused timeline and currentRound
 
-  // Calculate distance in grid squares
+  // Get the selected token's current position for movement preview
+  const currentMap = useMapStore(state => state.currentMap)
+  const spellPreviewEnabled = useMapStore(state => state.spellPreviewEnabled)
+  const selectedToken = selectedTokenId ? currentMap?.objects.find(obj => obj.id === selectedTokenId) : null
+
+  // Calculate distance in grid squares and pixels
   const calculateDistance = (from: {x: number, y: number}, to: {x: number, y: number}) => {
     const dx = Math.abs(to.x - from.x) / gridSize
     const dy = Math.abs(to.y - from.y) / gridSize
     return Math.round(Math.sqrt(dx * dx + dy * dy) * 5) // D&D uses 5ft squares
   }
 
-  // Determine if we're picking for a spell (from/to positions)
-  const isSpellPicking = isPicking === 'from' || isPicking === 'to'
+  const calculatePixelDistance = (from: {x: number, y: number}, to: {x: number, y: number}) => {
+    return Math.sqrt(
+      Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2)
+    )
+  }
+
+  // Standard D&D movement speed (can be made configurable per token later)
+  const MOVEMENT_SPEED_FEET = 30 // Standard character movement per round
+  const movementRangeInPixels = (MOVEMENT_SPEED_FEET / 5) * gridSize
+
+  // Check if we have a valid spell (not just a truthy object)
+  const hasValidSpell = selectedSpell && (selectedSpell.spellName || selectedSpell.name || selectedSpell.range)
+
+  // For movement preview, we need either explicit from/to positions OR we're picking 'to' with a selected token
+  // AND preview must be enabled
+  const isMovementPreview = spellPreviewEnabled && !hasValidSpell && (
+    // Case 1: Both positions explicitly set (rare)
+    (isPicking && fromPosition && toPosition) ||
+    // Case 2: We're picking destination position and have a selected token (common case)
+    (isPicking === 'to' && selectedToken && toPosition)
+  )
+
+  // Determine the actual from and to positions for rendering
+  // Use expected position (after pending events) instead of current position
+  const expectedPosition = selectedTokenId ? getTokenExpectedPosition(selectedTokenId) : null
+
+  const actualFromPosition = fromPosition || expectedPosition || (selectedToken ? selectedToken.position : null)
+
+  // DEBUG: Let's see what's actually happening with the positions
+  if (isMovementPreview && selectedTokenId) {
+    console.log('🐛 PathPreview Position Debug:', {
+      selectedTokenId,
+      fromPosition,
+      expectedPosition,
+      tokenCurrentPosition: selectedToken?.position,
+      actualFromPosition,
+      actualToPosition: toPosition,
+      calculation: {
+        step1_fromPosition: fromPosition,
+        step2_expectedPosition: expectedPosition,
+        step3_tokenPosition: selectedToken?.position,
+        final_actualFromPosition: actualFromPosition
+      }
+    })
+  }
+  const actualToPosition = toPosition
+
+  // Check if movement is within range
+  const distance = actualFromPosition && actualToPosition
+    ? calculatePixelDistance(actualFromPosition, actualToPosition)
+    : 0
+  const isWithinMovementRange = distance <= movementRangeInPixels
+
+  const showPathPreview = isMovementPreview && actualFromPosition && actualToPosition
 
   return (
     <>
-      {/* Event Creation Path Preview - including spell paths */}
-      {isPicking && fromPosition && toPosition && (
+      {/* Movement Path Preview - only for non-spell events */}
+      {showPathPreview && (
         <>
-          {/* Path line - different style for spells */}
+          {/* Movement range indicator */}
+          <Circle
+            x={actualFromPosition.x}
+            y={actualFromPosition.y}
+            radius={movementRangeInPixels}
+            stroke="#00CED1"
+            strokeWidth={1}
+            fill="transparent"
+            opacity={0.3}
+            dash={[8, 8]}
+          />
+          {/* Movement Path Arrow */}
           <Arrow
             points={[
-              fromPosition.x,
-              fromPosition.y,
-              toPosition.x,
-              toPosition.y
+              actualFromPosition.x,
+              actualFromPosition.y,
+              actualToPosition.x,
+              actualToPosition.y
             ]}
-            stroke={isSpellPicking ? "#FF6B6B" : "#4169E1"}
+            stroke={isWithinMovementRange ? "#00CED1" : "#FF6B6B"}  // Turquoise for valid, red for invalid
             strokeWidth={3}
-            fill={isSpellPicking ? "#FF6B6B" : "#4169E1"}
-            dash={isSpellPicking ? [15, 5] : [10, 5]}
+            fill={isWithinMovementRange ? "#00CED1" : "#FF6B6B"}
+            dash={[10, 5]}
+            opacity={0.8}
+            pointerLength={18}
+            pointerWidth={12}
+          />
+
+          {/* Start point - movement origin */}
+          <Circle
+            x={actualFromPosition.x}
+            y={actualFromPosition.y}
+            radius={8}
+            fill="#00FF7F"  // Spring green for movement start
+            stroke="#FFFFFF"
+            strokeWidth={2}
+          />
+          {/* Movement start indicator ring */}
+          <Circle
+            x={actualFromPosition.x}
+            y={actualFromPosition.y}
+            radius={12}
+            stroke="#00FF7F"
+            strokeWidth={2}
+            fill="transparent"
+            opacity={0.6}
+            dash={[3, 3]}
+          />
+
+          {/* End point - movement destination */}
+          <Circle
+            x={actualToPosition.x}
+            y={actualToPosition.y}
+            radius={10}
+            fill={isWithinMovementRange ? "#00CED1" : "#FF6B6B"}  // Turquoise for valid, red for invalid
+            stroke="#FFFFFF"
+            strokeWidth={2}
+          />
+          {/* Movement destination indicator */}
+          <Circle
+            x={actualToPosition.x}
+            y={actualToPosition.y}
+            radius={16}
+            stroke={isWithinMovementRange ? "#00CED1" : "#FF6B6B"}
+            strokeWidth={2}
+            fill="transparent"
             opacity={0.7}
-            pointerLength={15}
-            pointerWidth={15}
+            dash={[4, 4]}
           />
 
-          {/* Start point - spell caster position */}
-          <Circle
-            x={fromPosition.x}
-            y={fromPosition.y}
-            radius={isSpellPicking ? 10 : 8}
-            fill={isSpellPicking ? "#FFD700" : "#00FF00"}
-            stroke="#FFFFFF"
-            strokeWidth={2}
-          />
-          {isSpellPicking && (
-            <Circle
-              x={fromPosition.x}
-              y={fromPosition.y}
-              radius={15}
-              stroke="#FFD700"
-              strokeWidth={2}
-              fill="transparent"
-              opacity={0.5}
-            />
-          )}
-
-          {/* End point - spell target */}
-          <Circle
-            x={toPosition.x}
-            y={toPosition.y}
-            radius={isSpellPicking ? 10 : 8}
-            fill={isSpellPicking ? "#FF4444" : "#FF0000"}
-            stroke="#FFFFFF"
-            strokeWidth={2}
-          />
-          {isSpellPicking && (
-            <Circle
-              x={toPosition.x}
-              y={toPosition.y}
-              radius={20}
-              stroke="#FF4444"
-              strokeWidth={2}
-              fill="transparent"
-              opacity={0.5}
-              dash={[5, 5]}
-            />
-          )}
-
-          {/* Distance label */}
+          {/* Movement Distance label */}
           <Text
-            x={(fromPosition.x + toPosition.x) / 2}
-            y={(fromPosition.y + toPosition.y) / 2 - 20}
-            text={`${calculateDistance(fromPosition, toPosition)} ft`}
-            fontSize={14}
+            x={(actualFromPosition.x + actualToPosition.x) / 2}
+            y={(actualFromPosition.y + actualToPosition.y) / 2 - 25}
+            text={`Move: ${calculateDistance(actualFromPosition, actualToPosition)} ft${isWithinMovementRange ? '' : ' (OUT OF RANGE)'}`}
+            fontSize={16}
             fontFamily="'Scala Sans', sans-serif"
-            fill="#FFFFFF"
+            fill={isWithinMovementRange ? "#00CED1" : "#FF6B6B"}
             stroke="#000000"
             strokeWidth={1}
             align="center"
-            offsetX={20}
+            offsetX={isWithinMovementRange ? 30 : 60}  // Wider offset for longer text
           />
         </>
       )}

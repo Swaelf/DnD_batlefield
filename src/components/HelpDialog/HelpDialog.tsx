@@ -105,7 +105,7 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
                     key={index}
                     display="flex"
                     alignItems="center"
-                    justifyContent="between"
+                    justifyContent="space-between"
                     css={{
                       paddingY: '$2',
                       paddingX: '$3',
@@ -138,7 +138,7 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
       </ModalBody>
 
       <ModalFooter>
-        <Box display="flex" alignItems="center" justifyContent="between" width="full">
+        <Box display="flex" alignItems="center" justifyContent="space-between" width="full">
           <Box display="flex" alignItems="center" gap="2">
             <Text size="xs" color="gray500">
               Press <Kbd size="sm">?</Kbd> anytime to show this help

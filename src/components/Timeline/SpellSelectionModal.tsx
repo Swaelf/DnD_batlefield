@@ -19,6 +19,7 @@ const spellPresets = [
     size: 20,
     range: 150,
     duration: 2,
+    persistDuration: 1, // Burning ground persists for 1 round
     icon: Flame,
     description: 'A bright streak flashes from your pointing finger to a point you choose'
   },
@@ -30,6 +31,7 @@ const spellPresets = [
     size: 8,
     range: 120,
     duration: 1.5,
+    persistDuration: 0, // No persistent area
     projectileSpeed: 400,
     particleEffect: true,
     icon: Zap,
@@ -43,6 +45,7 @@ const spellPresets = [
     size: 10,
     range: 100,
     duration: 1,
+    persistDuration: 0, // No persistent area
     icon: Zap,
     description: 'A stroke of lightning forming a line'
   },
@@ -54,6 +57,7 @@ const spellPresets = [
     size: 10,
     range: 60,
     duration: 1.5,
+    persistDuration: 0, // No persistent area
     icon: Heart,
     description: 'A creature of your choice regains hit points'
   },
@@ -64,7 +68,7 @@ const spellPresets = [
     color: '#f0f0f0',
     size: 20,
     duration: 0,
-    persistDuration: 60,
+    persistDuration: 10, // 1 minute = 10 rounds (for testing, normally 600 for 1 hour)
     icon: Shield,
     description: 'Conjure a mass of thick, sticky webbing'
   },
@@ -75,6 +79,7 @@ const spellPresets = [
     color: '#87ceeb',
     size: 60,
     duration: 2,
+    persistDuration: 0, // No persistent area
     icon: Snowflake,
     description: 'A blast of cold air erupts from your hands'
   },
@@ -85,7 +90,7 @@ const spellPresets = [
     color: '#708090',
     size: 5,
     duration: 0,
-    persistDuration: 60,
+    persistDuration: 10, // 1 minute = 10 rounds
     icon: Wind,
     description: 'Fill the air with spinning daggers'
   },
@@ -96,7 +101,7 @@ const spellPresets = [
     color: '#000000',
     size: 15,
     duration: 0,
-    persistDuration: 600,
+    persistDuration: 10, // Using 10 rounds for testing (normally 100 for 10 minutes)
     icon: Eye,
     description: 'Magical darkness spreads from a point'
   },
@@ -107,6 +112,7 @@ const spellPresets = [
     color: '#8b008b',
     size: 30,
     duration: 3,
+    persistDuration: 0, // No persistent area
     icon: Skull,
     description: 'Necromantic energy washes over a creature'
   }
@@ -136,7 +142,8 @@ export const SpellSelectionModal: React.FC<SpellSelectionModalProps> = ({
     duration: 3,
     persistDuration: 0,
     particleEffect: true,
-    projectileSpeed: 500
+    projectileSpeed: 500,
+    trackTarget: true // Default to tracking for projectile and ray spells
   })
   const [isCustomMode, setIsCustomMode] = useState(false)
 
@@ -155,12 +162,14 @@ export const SpellSelectionModal: React.FC<SpellSelectionModalProps> = ({
       duration: preset.duration * 1000, // Convert to milliseconds
       persistDuration: preset.persistDuration,
       particleEffect: preset.particleEffect !== false, // Default to true unless explicitly false
-      projectileSpeed: preset.projectileSpeed
+      projectileSpeed: preset.projectileSpeed,
+      // Default to tracking for projectile and ray spells
+      trackTarget: preset.category === 'projectile' || preset.category === 'projectile-burst' || preset.category === 'ray'
     }
 
-    // For projectile-burst spells, set the burstRadius
-    if (preset.category === 'projectile-burst' && preset.size) {
-      spellData.burstRadius = preset.size * 2 // Burst radius in pixels based on size
+    // For projectile-burst spells, set the burstRadius as the area of effect radius in feet
+    if (preset.category === 'projectile-burst') {
+      spellData.burstRadius = 20 // Fireball has a 20 ft radius burst
     }
 
     onSelect(spellData)
@@ -178,12 +187,13 @@ export const SpellSelectionModal: React.FC<SpellSelectionModalProps> = ({
       duration: customSpell.duration * 1000, // Convert to milliseconds
       persistDuration: customSpell.persistDuration,
       particleEffect: customSpell.particleEffect,
-      projectileSpeed: customSpell.projectileSpeed
+      projectileSpeed: customSpell.projectileSpeed,
+      trackTarget: customSpell.trackTarget
     }
 
-    // For projectile-burst spells, set the burstRadius based on size
+    // For projectile-burst spells, set the burstRadius as the area size
     if (customSpell.category === 'projectile-burst') {
-      spellData.burstRadius = customSpell.size * 2 // Burst radius in pixels
+      spellData.burstRadius = customSpell.size // Size is already in feet for area effects
     }
 
     onSelect(spellData)
@@ -357,7 +367,32 @@ export const SpellSelectionModal: React.FC<SpellSelectionModalProps> = ({
                       Particle Trail Effect
                     </FieldLabel>
                   </Field>
+
+                  <Field>
+                    <FieldLabel css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+                      <input
+                        type="checkbox"
+                        checked={customSpell.trackTarget}
+                        onChange={(e) => setCustomSpell({ ...customSpell, trackTarget: e.target.checked })}
+                      />
+                      Track Moving Target
+                    </FieldLabel>
+                  </Field>
                 </>
+              )}
+
+              {/* Ray-specific options */}
+              {customSpell.category === 'ray' && (
+                <Field>
+                  <FieldLabel css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+                    <input
+                      type="checkbox"
+                      checked={customSpell.trackTarget}
+                      onChange={(e) => setCustomSpell({ ...customSpell, trackTarget: e.target.checked })}
+                    />
+                    Track Moving Target
+                  </FieldLabel>
+                </Field>
               )}
             </Grid>
 
