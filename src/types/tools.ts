@@ -4,9 +4,12 @@ export type ToolType =
   | 'select'
   | 'rectangle'
   | 'circle'
+  | 'line'
+  | 'polygon'
   | 'token'
   | 'staticObject'
   | 'spellEffect'
+  | 'layers'
   | 'pan'
   | 'measure'
   | 'text'
@@ -49,6 +52,20 @@ export const TOOLS: Record<ToolType, Tool> = {
     shortcut: 'C',
     tooltip: 'Draw circle (C)'
   },
+  line: {
+    id: 'line',
+    name: 'Line',
+    icon: 'Minus',
+    shortcut: 'L',
+    tooltip: 'Draw line (L)'
+  },
+  polygon: {
+    id: 'polygon',
+    name: 'Polygon',
+    icon: 'Pentagon',
+    shortcut: 'P',
+    tooltip: 'Draw polygon (P) - Click to add points, double-click to finish'
+  },
   token: {
     id: 'token',
     name: 'Token',
@@ -69,6 +86,13 @@ export const TOOLS: Record<ToolType, Tool> = {
     icon: 'Sparkles',
     shortcut: 'S',
     tooltip: 'Place spell effects (S)'
+  },
+  layers: {
+    id: 'layers',
+    name: 'Layers',
+    icon: 'Layers',
+    shortcut: 'Y',
+    tooltip: 'Manage layers (Y)'
   },
   pan: {
     id: 'pan',

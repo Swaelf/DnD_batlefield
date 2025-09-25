@@ -8,6 +8,8 @@ import { TokenProperties } from './TokenProperties'
 import { ShapeProperties } from './ShapeProperties'
 import { ActionButtons } from './ActionButtons'
 import { LayerControls } from './LayerControls'
+import { LayerManagementPanel } from './LayerManagementPanel'
+import { ShapeStylePanel } from './ShapeStylePanel'
 import {
   Panel,
   PanelHeader,
@@ -99,7 +101,17 @@ const PropertiesPanelComponent: React.FC = () => {
           <PanelTitle>Properties</PanelTitle>
         </PanelHeader>
         <PanelBody>
-          <Text size="sm" color="gray400">Select an object to edit its properties</Text>
+          <Text size="sm" color="gray400" css={{ marginBottom: '$4' }}>
+            Select an object to edit its properties
+          </Text>
+
+          {/* Shape Style Panel for Drawing Tools */}
+          <ShapeStylePanel />
+
+          {/* Layer Management - Always Available */}
+          <PanelSection divider>
+            <LayerManagementPanel />
+          </PanelSection>
         </PanelBody>
       </Panel>
     )
@@ -116,6 +128,10 @@ const PropertiesPanelComponent: React.FC = () => {
           <Text size="sm" color="gray300" css={{ marginBottom: '$4' }}>
             {selectedObjects.length} objects selected
           </Text>
+
+          {/* Shape Style Panel for Drawing Tools */}
+          <ShapeStylePanel />
+
           <Button
             onClick={deleteSelected}
             variant="destructive"
@@ -165,7 +181,12 @@ const PropertiesPanelComponent: React.FC = () => {
           />
         )}
 
-        {/* Layer Controls */}
+        {/* Layer Management System */}
+        <PanelSection divider>
+          <LayerManagementPanel />
+        </PanelSection>
+
+        {/* Legacy Layer Controls */}
         <PanelSection divider>
           <LayerControls selectedObject={selectedObject} />
         </PanelSection>

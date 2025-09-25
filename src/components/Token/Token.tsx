@@ -21,6 +21,7 @@ type TokenProps = {
   onDragStart?: () => void;
   onDragMove?: (e: Konva.KonvaEventObject<DragEvent>) => void;
   onDragEnd?: (e: Konva.KonvaEventObject<DragEvent>) => void;
+  onContextMenu?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   isDraggable?: boolean;
 }
 
@@ -32,6 +33,7 @@ const TokenComponent: React.FC<TokenProps> = ({
   onDragStart,
   onDragMove,
   onDragEnd,
+  onContextMenu,
   isDraggable = true,
 }) => {
   // Validate gridSize to prevent NaN
@@ -62,6 +64,7 @@ const TokenComponent: React.FC<TokenProps> = ({
       onDragStart={onDragStart}
       onDragMove={onDragMove}
       onDragEnd={onDragEnd}
+      onContextMenu={onContextMenu}
     >
       {/* Token background/border */}
       {token.shape === 'circle' ? (

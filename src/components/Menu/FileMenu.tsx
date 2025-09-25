@@ -6,7 +6,11 @@ import {
   Image,
   Trash2,
   Clock,
-  Plus
+  Plus,
+  FileImage,
+  FileDown,
+  Import,
+  Share
 } from 'lucide-react'
 import Konva from 'konva'
 import useMapStore from '@/store/mapStore'
@@ -17,6 +21,8 @@ import {
   exportMapAsPNG,
   exportVisibleAreaAsPNG
 } from '@/utils/export'
+import { UniversalMapImporter } from '@/components/Import/UniversalMapImporter'
+import { EnhancedExportSystem } from '@/components/Export/EnhancedExportSystem'
 import {
   Menu,
   MenuButton,
@@ -45,6 +51,8 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [showNewMapDialog, setShowNewMapDialog] = useState(false)
+  const [showImporter, setShowImporter] = useState(false)
+  const [showExporter, setShowExporter] = useState(false)
   const [newMapName, setNewMapName] = useState('Untitled Map')
 
   const handleSaveJSON = () => {
@@ -185,7 +193,28 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
 
         <MenuSeparator />
 
-        {/* Import/Export */}
+        {/* Advanced Import/Export */}
+        <MenuGroup>
+          <MenuItem onClick={() => { setShowImporter(true); setIsMenuOpen(false) }}>
+            <Import size={16} />
+            Universal Import...
+            <Box css={{ marginLeft: 'auto' }}>
+              <Text size="xs" color="gray500">Roll20, Foundry, etc.</Text>
+            </Box>
+          </MenuItem>
+
+          <MenuItem onClick={() => { setShowExporter(true); setIsMenuOpen(false) }}>
+            <Share size={16} />
+            Enhanced Export...
+            <Box css={{ marginLeft: 'auto' }}>
+              <Text size="xs" color="gray500">PDF, SVG, Print</Text>
+            </Box>
+          </MenuItem>
+        </MenuGroup>
+
+        <MenuSeparator />
+
+        {/* Legacy Import/Export */}
         <MenuGroup>
           <MenuItem onClick={handleSaveJSON}>
             <Download size={16} />
@@ -200,22 +229,22 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
 
         <MenuSeparator />
 
-        {/* Image Export */}
+        {/* Quick Image Export */}
         <MenuGroup>
           <MenuItem
             onClick={handleExportPNG}
             disabled={!stageRef?.current}
           >
             <Image size={16} />
-            Export Full Map as PNG
+            Quick PNG Export (Full)
           </MenuItem>
 
           <MenuItem
             onClick={handleExportVisiblePNG}
             disabled={!stageRef?.current}
           >
-            <Image size={16} />
-            Export View as PNG
+            <FileImage size={16} />
+            Quick PNG Export (View)
           </MenuItem>
         </MenuGroup>
 
@@ -278,6 +307,23 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
         accept=".json"
         onChange={handleFileSelect}
         style={{ display: 'none' }}
+      />
+
+      {/* Universal Map Importer */}
+      <UniversalMapImporter
+        isOpen={showImporter}
+        onClose={() => setShowImporter(false)}
+        onImportComplete={(map) => {
+          loadMap(map)
+          setShowImporter(false)
+        }}
+      />
+
+      {/* Enhanced Export System */}
+      <EnhancedExportSystem
+        isOpen={showExporter}
+        onClose={() => setShowExporter(false)}
+        stageRef={stageRef}
       />
     </>
   )

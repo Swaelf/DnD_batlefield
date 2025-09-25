@@ -1,0 +1,1 @@
+export { SpellIcon } from './SpellIcon'

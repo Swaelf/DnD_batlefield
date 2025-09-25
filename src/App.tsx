@@ -9,6 +9,18 @@ import Toolbar from './components/Toolbar/Toolbar'
 import PropertiesPanel from './components/Properties/PropertiesPanel'
 import TokenLibrary from './components/Token/TokenLibrary'
 import { StaticObjectLibrary } from './components/StaticObject/StaticObjectLibrary'
+import { AdvancedLayerPanel } from './components/Layers/AdvancedLayerPanel'
+import { AdvancedSelectionManager } from './components/Selection/AdvancedSelectionManager'
+import { RealTimeCollaborationManager } from './components/Collaboration/RealTimeCollaborationManager'
+import { UserManagementPanel } from './components/Collaboration/UserManagementPanel'
+import { ConflictResolutionSystem } from './components/Collaboration/ConflictResolutionSystem'
+import { CollaborationSessionCreator } from './components/Collaboration/CollaborationSessionCreator'
+import { PerformanceDashboard } from './components/Performance/PerformanceDashboard'
+import { AccessibilityPanel } from './components/Accessibility/AccessibilityPanel'
+import { FeatureErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
+import { usePerformanceMonitor } from './hooks/usePerformanceMonitor'
+import { useAccessibility } from './hooks/useAccessibility'
+import useCollaborationStore from '@store/collaborationStore'
 // Lazy load heavy components for better initial load performance
 const SpellEffectsPanel = lazy(() => import('./components/SpellEffect/SpellEffectsPanel').then(m => ({ default: m.SpellEffectsPanel })))
 import { FileMenu } from './components/Menu/FileMenu'
@@ -16,8 +28,10 @@ import StatusBar from './components/StatusBar/StatusBar'
 const HelpDialog = lazy(() => import('./components/HelpDialog/HelpDialog').then(m => ({ default: m.HelpDialog })))
 const CombatTracker = lazy(() => import('./components/Timeline/CombatTracker').then(m => ({ default: m.CombatTracker })))
 const TestingPanel = lazy(() => import('./testing/TestingPanel').then(m => ({ default: m.TestingPanel })))
-import { Save, HelpCircle, Bug } from 'lucide-react'
-import { Box, Text, Button } from '@/components/ui'
+import { Save, HelpCircle, Bug, Users, UserPlus, Activity, Accessibility } from 'lucide-react'
+import { Box, Text } from '@/components/ui'
+import { Button } from '@/components/primitives'
+import { ContextMenuManager } from '@/components/ContextMenu/ContextMenuManager'
 
 // Debug utilities available but not auto-imported to prevent startup animations
 // These can be manually imported in TestingPanel or browser console if needed:
@@ -100,8 +114,20 @@ function App() {
   const { lastSaved, isSaving } = useAutoSave()
   const [showHelp, setShowHelp] = useState(false)
   const [showTesting, setShowTesting] = useState(false)
+  const [showUserManagement, setShowUserManagement] = useState(false)
+  const [showSessionCreator, setShowSessionCreator] = useState(false)
+  const [showPerformance, setShowPerformance] = useState(false)
+  const [showAccessibility, setShowAccessibility] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
+
+  // Collaboration state
+  const { currentSession, isHost, connectedUsers, connectionStatus } = useCollaborationStore()
+  const isCollaborating = currentSession && connectionStatus === 'connected'
+
+  // Performance and accessibility
+  const { score: performanceScore, warnings } = usePerformanceMonitor()
+  const { preferences, announceMessage } = useAccessibility()
   useKeyboardShortcuts()
 
   // Add keyboard shortcuts for help and testing dialogs
@@ -115,6 +141,16 @@ function App() {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
         e.preventDefault()
         setShowTesting(!showTesting)
+      }
+      // Ctrl/Cmd + Shift + P for performance dashboard
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
+        e.preventDefault()
+        setShowPerformance(true)
+      }
+      // Alt + A for accessibility panel
+      if (e.altKey && e.key === 'a') {
+        e.preventDefault()
+        setShowAccessibility(true)
       }
     }
     window.addEventListener('keydown', handleKeyPress)
@@ -132,16 +168,38 @@ function App() {
     <AppContainer>
       {/* Header */}
       <AppHeader>
-        <Box display="flex" alignItems="center" gap="4">
+        <Box css={{ display: 'flex', alignItems: 'center', gap: '$4' }}>
           <AppTitle>D&D Map Maker</AppTitle>
           {currentMap && (
             <Text size="sm" color="gray400">
               {currentMap.name} ({currentMap.width}x{currentMap.height})
             </Text>
           )}
+
+          {/* Collaboration Status */}
+          {isCollaborating && (
+            <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+              <Box
+                css={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: connectionStatus === 'connected' ? '$success' : '$warning'
+                }}
+              />
+              <Text css={{ fontSize: '$sm', color: '$success' }}>
+                {connectedUsers.size} user{connectedUsers.size !== 1 ? 's' : ''} online
+              </Text>
+              {isHost && (
+                <Text css={{ fontSize: '$xs', color: '$secondary' }}>
+                  (Host)
+                </Text>
+              )}
+            </Box>
+          )}
         </Box>
 
-        <Box display="flex" alignItems="center" gap="4">
+        <Box css={{ display: 'flex', alignItems: 'center', gap: '$4' }}>
           {/* Auto-save indicator */}
           <AutoSaveIndicator
             data-saving={isSaving}
@@ -155,6 +213,56 @@ function App() {
 
           {/* File Menu */}
           <FileMenu stageRef={stageRef} />
+
+          {/* Collaboration Controls */}
+          {isCollaborating && (
+            <Button
+              onClick={() => setShowUserManagement(true)}
+              variant="ghost"
+              size="sm"
+              title="Manage Users"
+            >
+              <Users size={16} />
+              <Text css={{ fontSize: '$sm' }}>{connectedUsers.size}</Text>
+            </Button>
+          )}
+
+          {!isCollaborating && (
+            <Button
+              onClick={() => setShowSessionCreator(true)}
+              variant="ghost"
+              size="sm"
+              title="Start Collaboration"
+            >
+              <UserPlus size={16} />
+              <Text css={{ fontSize: '$sm' }}>Collaborate</Text>
+            </Button>
+          )}
+
+          {/* Performance Button */}
+          <Button
+            onClick={() => setShowPerformance(true)}
+            variant="ghost"
+            size="icon"
+            title="Performance Dashboard (Ctrl+Shift+P)"
+            css={{
+              color: performanceScore < 70 ? '$error' :
+                    warnings.length > 0 ? '$warning' : '$gray400'
+            }}
+          >
+            <Activity size={16} />
+          </Button>
+
+          {/* Accessibility Button */}
+          <Button
+            onClick={() => setShowAccessibility(true)}
+            variant="ghost"
+            size="icon"
+            title="Accessibility Settings (Alt+A)"
+            css={{ color: preferences.screenReaderMode ? '$primary' : '$gray400' }}
+          >
+            <Accessibility size={16} />
+          </Button>
 
           {/* Testing Button */}
           <Button
@@ -185,6 +293,7 @@ function App() {
 
         {/* Canvas Area */}
         <CanvasArea ref={containerRef}>
+          <FeatureErrorBoundary name="Canvas">
           <MapCanvas
             width={canvasSize.width}
             height={canvasSize.height}
@@ -193,6 +302,18 @@ function App() {
             onZoomChange={(z) => setZoom(z)}
           />
 
+          {/* Real-time Collaboration Layer */}
+          {isCollaborating && (
+            <RealTimeCollaborationManager
+              stageRef={stageRef}
+              isActive={isCollaborating}
+            />
+          )}
+
+          {/* Conflict Resolution System */}
+          <ConflictResolutionSystem isActive={!!isCollaborating} />
+          </FeatureErrorBoundary>
+
           {/* Combat Tracker */}
           <Suspense fallback={<Box css={{ position: 'absolute', bottom: 0, left: 0 }} />}>
             <CombatTracker />
@@ -200,17 +321,23 @@ function App() {
         </CanvasArea>
 
         {/* Sidebar - Show appropriate panel based on current tool */}
-        {currentTool === 'token' ? (
-          <TokenLibrary />
+        <FeatureErrorBoundary name="Sidebar">
+          {currentTool === 'token' ? (
+            <TokenLibrary />
         ) : currentTool === 'staticObject' ? (
           <StaticObjectLibrary />
         ) : currentTool === 'spellEffect' ? (
           <Suspense fallback={<Box css={{ width: 320, backgroundColor: '$dndBlack' }} />}>
             <SpellEffectsPanel />
           </Suspense>
+        ) : currentTool === 'layers' ? (
+          <AdvancedLayerPanel />
+        ) : currentTool === 'select' ? (
+          <AdvancedSelectionManager />
         ) : (
           <PropertiesPanel />
         )}
+        </FeatureErrorBoundary>
       </AppBody>
 
       {/* Status Bar */}
@@ -229,8 +356,43 @@ function App() {
           onClose={() => setShowTesting(false)}
         />
       </Suspense>
+
+      {/* User Management Panel */}
+      <UserManagementPanel
+        isOpen={showUserManagement}
+        onClose={() => setShowUserManagement(false)}
+      />
+
+      {/* Session Creator */}
+      <CollaborationSessionCreator
+        isOpen={showSessionCreator}
+        onClose={() => setShowSessionCreator(false)}
+        onSessionCreated={(sessionId) => {
+          console.log('Session created:', sessionId)
+        }}
+      />
+
+      {/* Performance Dashboard */}
+      <PerformanceDashboard
+        isOpen={showPerformance}
+        onClose={() => setShowPerformance(false)}
+      />
+
+      {/* Accessibility Panel */}
+      <AccessibilityPanel
+        isOpen={showAccessibility}
+        onClose={() => setShowAccessibility(false)}
+      />
     </AppContainer>
   )
 }
 
-export default App
+const AppWithContextMenu: React.FC = () => {
+  return (
+    <ContextMenuManager>
+      <App />
+    </ContextMenuManager>
+  )
+}
+
+export default AppWithContextMenu

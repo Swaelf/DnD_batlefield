@@ -1,0 +1,212 @@
+{
+  "name": "MapMaker - D&D Battle Map Editor",
+  "short_name": "MapMaker",
+  "description": "Professional D&D battle map editor with real-time collaboration, advanced tools, and spell effects for tabletop RPG sessions",
+  "version": "1.0.0",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "landscape-primary",
+  "theme_color": "#922610",
+  "background_color": "#1a1a1a",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+
+  "icons": [
+    {
+      "src": "/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop-1.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "MapMaker main interface with canvas and tools"
+    },
+    {
+      "src": "/screenshot-desktop-2.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Advanced drawing tools and spell effects"
+    },
+    {
+      "src": "/screenshot-mobile-1.png",
+      "sizes": "428x926",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Mobile responsive design"
+    }
+  ],
+
+  "categories": [
+    "games",
+    "productivity",
+    "education",
+    "graphics"
+  ],
+
+  "shortcuts": [
+    {
+      "name": "New Map",
+      "short_name": "New",
+      "description": "Create a new battle map",
+      "url": "/?action=new",
+      "icons": [
+        {
+          "src": "/shortcut-new.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Open Recent",
+      "short_name": "Recent",
+      "description": "Open recently edited maps",
+      "url": "/?action=recent",
+      "icons": [
+        {
+          "src": "/shortcut-recent.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Collaborate",
+      "short_name": "Collaborate",
+      "description": "Start or join a collaboration session",
+      "url": "/?action=collaborate",
+      "icons": [
+        {
+          "src": "/shortcut-collaborate.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "application/json": [".mapmaker", ".battle-map"],
+        "image/png": [".png"],
+        "image/jpeg": [".jpg", ".jpeg"]
+      }
+    }
+  ],
+
+  "protocol_handlers": [
+    {
+      "protocol": "mapmaker",
+      "url": "/?map=%s"
+    }
+  ],
+
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "images",
+          "accept": ["image/png", "image/jpeg", "image/webp"]
+        }
+      ]
+    }
+  },
+
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
+
+  "prefer_related_applications": false,
+
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://mapmaker.app/manifest.json"
+    }
+  ],
+
+  "iarc_rating_id": "",
+
+  "features": [
+    "cross-origin-isolated"
+  ],
+
+  "handle_links": "preferred",
+
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "navigate-new"]
+  },
+
+  "permissions": [
+    "geolocation",
+    "notifications",
+    "persistent-storage",
+    "background-sync"
+  ]
+}

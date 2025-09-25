@@ -5,14 +5,16 @@ import useMapStore from '@store/mapStore'
 import { useHistoryStore } from '@store/historyStore'
 
 export const useKeyboardShortcuts = () => {
-  const { setTool, currentTool } = useToolStore()
-  const { deleteSelected, clearSelection, selectedObjects, currentMap, loadMap, toggleGridSnap, toggleGridVisibility } = useMapStore()
+  const { setTool, currentTool, clearMeasurementPoints } = useToolStore()
+  const { deleteSelected, duplicateSelected, clearSelection, selectedObjects, currentMap, loadMap, toggleGridSnap, toggleGridVisibility, selectMultiple } = useMapStore()
   const historyStore = useHistoryStore()
 
   // Tool shortcuts
   useHotkeys('v', () => setTool('select'), [setTool])
   useHotkeys('r', () => setTool('rectangle'), [setTool])
   useHotkeys('c', () => setTool('circle'), [setTool])
+  useHotkeys('l', () => setTool('line'), [setTool])
+  useHotkeys('p', () => setTool('polygon'), [setTool])
   useHotkeys('t', () => setTool('token'), [setTool])
   useHotkeys('o', () => setTool('staticObject'), [setTool])
   useHotkeys('s', () => setTool('spellEffect'), [setTool])
@@ -28,33 +30,49 @@ export const useKeyboardShortcuts = () => {
     }
   }, [selectedObjects, deleteSelected])
 
-  // Clear selection
+  // Clear selection or measurement points
   useHotkeys('escape', () => {
-    clearSelection()
-  }, [clearSelection])
+    if (currentTool === 'measure') {
+      clearMeasurementPoints()
+    } else {
+      clearSelection()
+    }
+  }, [clearSelection, clearMeasurementPoints, currentTool])
+
+  // Select all objects
+  useHotkeys('ctrl+a, cmd+a', () => {
+    if (currentMap && currentMap.objects.length > 0) {
+      const allObjectIds = currentMap.objects.map(obj => obj.id)
+      selectMultiple(allObjectIds)
+    }
+  }, [currentMap, selectMultiple])
+
+  // Duplicate selected objects
+  useHotkeys('ctrl+d, cmd+d', () => {
+    if (selectedObjects.length > 0) {
+      duplicateSelected()
+    }
+  }, [selectedObjects, duplicateSelected])
 
   // Undo
   useHotkeys('ctrl+z, cmd+z', () => {
-    if (currentMap) {
-      // Save current state to future
-      historyStore.pushState(currentMap)
-      const previousState = historyStore.undo()
+    if (currentMap && historyStore.canUndo) {
+      const previousState = historyStore.undoWithCurrentState(currentMap)
       if (previousState) {
         loadMap(previousState)
       }
     }
-  }, [currentMap, loadMap])
+  }, [currentMap, loadMap, historyStore])
 
   // Redo
   useHotkeys('ctrl+shift+z, cmd+shift+z', () => {
-    const nextState = historyStore.redo()
-    if (nextState) {
-      if (currentMap) {
-        historyStore.pushState(currentMap)
+    if (currentMap && historyStore.canRedo) {
+      const nextState = historyStore.redoWithCurrentState(currentMap)
+      if (nextState) {
+        loadMap(nextState)
       }
-      loadMap(nextState)
     }
-  }, [currentMap, loadMap])
+  }, [currentMap, loadMap, historyStore])
 
   // Save shortcut
   useHotkeys('ctrl+s, cmd+s', (e) => {

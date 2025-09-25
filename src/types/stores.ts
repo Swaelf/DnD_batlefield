@@ -4,6 +4,40 @@ import { ToolType, DrawingState } from './tools'
 import { TokenTemplate } from './token'
 import { SpellEffectTemplate } from './spells'
 
+// Layer Store Types
+export type LayerDefinition = {
+  id: string
+  name: string
+  type: 'background' | 'terrain' | 'grid' | 'objects' | 'tokens' | 'effects' | 'fog' | 'ui'
+  visible: boolean
+  locked: boolean
+  opacity: number
+  zIndex: number
+  color?: string
+  defaultForType?: string[]
+  isDeletable: boolean
+}
+
+export type LayerStore = {
+  layers: LayerDefinition[]
+  activeLayerId: string | null
+
+  // Actions
+  createLayer: (name: string, type: LayerDefinition['type'], afterLayerId?: string) => void
+  deleteLayer: (layerId: string) => void
+  updateLayer: (layerId: string, updates: Partial<LayerDefinition>) => void
+  moveLayer: (layerId: string, direction: 'up' | 'down') => void
+  setActiveLayer: (layerId: string | null) => void
+  toggleLayerVisibility: (layerId: string) => void
+  toggleLayerLock: (layerId: string) => void
+
+  // Utility functions
+  getLayerById: (layerId: string) => LayerDefinition | undefined
+  getDefaultLayerForObjectType: (objectType: string) => string
+  migrateNumericLayer: (numericLayer: number) => string
+  getLayerZIndex: (layerId: string) => number
+}
+
 // Animation Store Types
 export type AnimationPath = {
   tokenId: string
@@ -86,6 +120,7 @@ export type ToolStore = {
   tokenTemplate: TokenTemplate | null
   staticObjectTemplate: StaticObjectTemplate | null
   spellEffectTemplate: SpellEffectTemplate | null
+  measurementPoints: Position[]
 
   // Actions
   setTool: (tool: ToolType) => void
@@ -99,6 +134,8 @@ export type ToolStore = {
   setTokenTemplate: (template: TokenTemplate | null) => void
   setStaticObjectTemplate: (template: StaticObjectTemplate | null) => void
   setSpellEffectTemplate: (template: SpellEffectTemplate | null) => void
+  addMeasurementPoint: (point: Position) => void
+  clearMeasurementPoints: () => void
 }
 
 // History Store Types
@@ -136,8 +173,10 @@ export type MapStore = {
   selectMultiple: (ids: string[]) => void
   clearSelection: () => void
   deleteSelected: () => void
+  duplicateSelected: (offset?: Position) => void
   deleteObject: (id: string) => void
   updateObjectPosition: (id: string, position: Position) => void
+  batchUpdatePosition: (objectIds: string[], deltaPosition: Position) => void
   updateObject: (id: string, updates: Partial<MapObject>) => void
   toggleGridSnap: () => void
   toggleGridVisibility: () => void

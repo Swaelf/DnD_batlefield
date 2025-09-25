@@ -25,6 +25,90 @@ const constrainPositionToRange = (
   }
 }
 
+// Helper function to check if an object intersects with a rectangle
+const objectIntersectsRect = (obj: any, rect: { x: number; y: number; width: number; height: number }): boolean => {
+  // Get object bounds
+  let objBounds: { x: number; y: number; width: number; height: number }
+
+  switch (obj.type) {
+    case 'token':
+      const tokenSize = getTokenPixelSize(obj.size || 'medium', 50) // Assume 50px grid
+      objBounds = {
+        x: obj.position.x - tokenSize / 2,
+        y: obj.position.y - tokenSize / 2,
+        width: tokenSize,
+        height: tokenSize
+      }
+      break
+    case 'shape':
+      switch (obj.shapeType) {
+        case 'rectangle':
+          objBounds = {
+            x: obj.position.x,
+            y: obj.position.y,
+            width: obj.width || 0,
+            height: obj.height || 0
+          }
+          break
+        case 'circle':
+          const radius = obj.radius || 0
+          objBounds = {
+            x: obj.position.x - radius,
+            y: obj.position.y - radius,
+            width: radius * 2,
+            height: radius * 2
+          }
+          break
+        case 'line':
+        case 'polygon':
+          // For lines and polygons, use a simple point-in-rect check
+          if (obj.points && obj.points.length >= 2) {
+            const xs = obj.points.filter((_: any, i: number) => i % 2 === 0)
+            const ys = obj.points.filter((_: any, i: number) => i % 2 === 1)
+            const minX = Math.min(...xs)
+            const maxX = Math.max(...xs)
+            const minY = Math.min(...ys)
+            const maxY = Math.max(...ys)
+            objBounds = {
+              x: minX,
+              y: minY,
+              width: maxX - minX,
+              height: maxY - minY
+            }
+          } else {
+            return false
+          }
+          break
+        default:
+          return false
+      }
+      break
+    default:
+      return false
+  }
+
+  // Check rectangle intersection
+  return !(
+    objBounds.x > rect.x + rect.width ||
+    objBounds.x + objBounds.width < rect.x ||
+    objBounds.y > rect.y + rect.height ||
+    objBounds.y + objBounds.height < rect.y
+  )
+}
+
+// Helper function to get token pixel size based on D&D size
+const getTokenPixelSize = (size: string, gridSize: number): number => {
+  switch (size) {
+    case 'tiny': return gridSize * 0.5
+    case 'small':
+    case 'medium': return gridSize
+    case 'large': return gridSize * 2
+    case 'huge': return gridSize * 3
+    case 'gargantuan': return gridSize * 4
+    default: return gridSize
+  }
+}
+
 type ToolHandlersProps = {
   stageRef: React.RefObject<Konva.Stage>
   currentTool: string
@@ -47,8 +131,11 @@ type ToolHandlersProps = {
   }
   setDrawingState: (state: any) => void
   addObject: (object: any) => void
+  addMeasurementPoint?: (point: Position) => void
+  clearMeasurementPoints?: () => void
   setPosition: (type: 'from' | 'to', position: Position) => void
   completePositionPicking: () => void
+  selectMultiple: (objectIds: string[]) => void
   handleMouseDown: (e: Konva.KonvaEventObject<MouseEvent>) => void
   handleMouseMove: (e: Konva.KonvaEventObject<MouseEvent>) => void
   handleMouseUp: () => void
@@ -73,8 +160,11 @@ export const useToolHandlers = ({
   drawingState,
   setDrawingState,
   addObject,
+  addMeasurementPoint,
+  clearMeasurementPoints,
   setPosition,
   completePositionPicking,
+  selectMultiple,
   handleMouseDown,
   handleMouseMove,
   handleMouseUp,
@@ -149,14 +239,37 @@ export const useToolHandlers = ({
     // Handle different tools
     switch (currentTool) {
       case 'select':
-        // Selection will be handled by clicking on objects
+        // Only start selection rectangle if clicking on empty canvas
+        // If clicking on object, that will be handled by object click handlers
+        const stage = stageRef.current
+        if (stage) {
+          const pointedObject = stage.getIntersection(pointer)
+          if (!pointedObject || pointedObject.getClassName() === 'Layer') {
+            // Clicking empty canvas - start selection rectangle
+            setDrawingState({
+              isDrawing: true,
+              startPoint: snappedPos,
+              currentPoint: snappedPos
+            })
+          }
+        }
         break
       case 'rectangle':
       case 'circle':
-      case 'measure':
         setDrawingState({
           isDrawing: true,
           startPoint: snappedPos,
+          currentPoint: snappedPos
+        })
+        break
+      case 'measure':
+        // Add measurement point and set current point for preview
+        if (addMeasurementPoint) {
+          addMeasurementPoint(snappedPos)
+        }
+        setDrawingState({
+          isDrawing: false,
+          startPoint: null,
           currentPoint: snappedPos
         })
         break
@@ -213,13 +326,32 @@ export const useToolHandlers = ({
       case 'staticObject':
         // Place static object using template
         if (staticObjectTemplate) {
+          // Calculate position - for rectangles, offset to center at cursor
+          // For circles, Konva already uses center position
+          let objectPosition = snappedPos
+          if (staticObjectTemplate.shape === 'rectangle') {
+            // Offset position so rectangle is centered at cursor (since Konva uses top-left for rectangles)
+            objectPosition = {
+              x: snappedPos.x - (staticObjectTemplate.width / 2),
+              y: snappedPos.y - (staticObjectTemplate.height / 2)
+            }
+          } else if (staticObjectTemplate.shape === 'polygon' && staticObjectTemplate.points) {
+            // For polygons, we need to offset based on the bounding box
+            // The points are relative to the position, so offset the position
+            objectPosition = {
+              x: snappedPos.x - (staticObjectTemplate.width / 2),
+              y: snappedPos.y - (staticObjectTemplate.height / 2)
+            }
+          }
+          // Circles already use center position in Konva, so no offset needed
+
           const newObject: Shape = {
             id: crypto.randomUUID(),
             type: 'shape' as const,
             shapeType: staticObjectTemplate.shape,
-            position: snappedPos,
+            position: objectPosition,
             width: staticObjectTemplate.shape === 'rectangle' ? staticObjectTemplate.width : undefined,
-            height: staticObjectTemplate.shape === 'rectangle' ? staticObjectTemplate.height : undefined,
+            height: staticObjectTemplate.shape === 'rectangle' || staticObjectTemplate.shape === 'polygon' ? staticObjectTemplate.height : undefined,
             radius: staticObjectTemplate.shape === 'circle' ? staticObjectTemplate.width / 2 : undefined,
             points: staticObjectTemplate.points,
             rotation: 0,
@@ -231,7 +363,8 @@ export const useToolHandlers = ({
             strokeWidth: staticObjectTemplate.strokeWidth,
             opacity: 1,
             name: staticObjectTemplate.name,
-            locked: false
+            locked: false,
+            metadata: staticObjectTemplate.metadata || { isStatic: true }
           } as Shape
           addObject(newObject)
         }
@@ -294,7 +427,7 @@ export const useToolHandlers = ({
         }
         break
     }
-  }, [currentTool, currentMap, handleMouseDown, setDrawingState, fillColor, addObject, tokenTemplate, staticObjectTemplate, spellEffectTemplate, isPicking, selectedSpell, selectedTokenId, getTokenExpectedPosition, setPosition, completePositionPicking, stageRef])
+  }, [currentTool, currentMap, handleMouseDown, setDrawingState, fillColor, addObject, addMeasurementPoint, tokenTemplate, staticObjectTemplate, spellEffectTemplate, isPicking, selectedSpell, selectedTokenId, getTokenExpectedPosition, setPosition, completePositionPicking, stageRef])
 
   const handleStageMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
     // Get mouse position and report it
@@ -365,7 +498,12 @@ export const useToolHandlers = ({
     const pos = transform.point(pointer)
     const snappedPos = snapToGrid(pos, currentMap?.grid.size || 50, currentMap?.grid.snap || false)
 
-    setDrawingState({ currentPoint: snappedPos })
+    // For measurement tool, always update current point for preview
+    if (currentTool === 'measure') {
+      setDrawingState({ currentPoint: snappedPos })
+    } else {
+      setDrawingState({ currentPoint: snappedPos })
+    }
   }, [currentTool, drawingState, currentMap, handleMouseMove, setDrawingState, onMouseMove, stageRef, isPicking, selectedSpell, selectedTokenId, getTokenExpectedPosition, setPosition])
 
   const handleStageMouseUp = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -400,6 +538,39 @@ export const useToolHandlers = ({
     let newObject: Shape | null = null
 
     switch (currentTool) {
+      case 'select':
+        // Handle drag-to-select rectangle
+        const selectionRect = {
+          x: Math.min(startPoint.x, currentPoint.x),
+          y: Math.min(startPoint.y, currentPoint.y),
+          width: Math.abs(currentPoint.x - startPoint.x),
+          height: Math.abs(currentPoint.y - startPoint.y)
+        }
+
+        // Find objects that intersect with selection rectangle
+        const selectedObjectIds: string[] = []
+        if (currentMap?.objects) {
+          for (const obj of currentMap.objects) {
+            // Check if object intersects with selection rectangle
+            if (objectIntersectsRect(obj, selectionRect)) {
+              selectedObjectIds.push(obj.id)
+            }
+          }
+        }
+
+        // Select the found objects
+        if (selectedObjectIds.length > 0) {
+          selectMultiple(selectedObjectIds)
+        }
+
+        // Reset drawing state and return early - don't create an object
+        setDrawingState({
+          isDrawing: false,
+          startPoint: null,
+          currentPoint: null
+        })
+        return
+
       case 'rectangle':
         newObject = {
           id: crypto.randomUUID(),
@@ -414,9 +585,9 @@ export const useToolHandlers = ({
           rotation: 0,
           layer: 1,
           fill: fillColor,
-          fillColor,
+          fillColor: fillColor,
           stroke: strokeColor,
-          strokeColor,
+          strokeColor: strokeColor,
           strokeWidth,
           opacity
         }
@@ -435,11 +606,66 @@ export const useToolHandlers = ({
           rotation: 0,
           layer: 1,
           fill: fillColor,
-          fillColor,
+          fillColor: fillColor,
           stroke: strokeColor,
-          strokeColor,
+          strokeColor: strokeColor,
           strokeWidth,
           opacity
+        }
+        break
+      case 'line':
+        newObject = {
+          id: crypto.randomUUID(),
+          type: 'shape',
+          shapeType: 'line',
+          position: { x: 0, y: 0 }, // Line uses points array instead
+          points: [startPoint.x, startPoint.y, currentPoint.x, currentPoint.y],
+          rotation: 0,
+          layer: 1,
+          fill: 'transparent', // Lines don't use fill
+          fillColor: 'transparent',
+          stroke: strokeColor,
+          strokeColor: strokeColor,
+          strokeWidth,
+          opacity
+        }
+        break
+      case 'polygon':
+        // Polygon tool handles multiple points - create with minimum 3 points
+        if (drawingState.points && drawingState.points.length >= 2) {
+          // Close the polygon with the current point
+          const allPoints = [...drawingState.points, currentPoint]
+          // Convert to flat array for Konva
+          const flatPoints: number[] = []
+          allPoints.forEach(point => {
+            flatPoints.push(point.x, point.y)
+          })
+          newObject = {
+            id: crypto.randomUUID(),
+            type: 'shape',
+            shapeType: 'polygon',
+            position: { x: 0, y: 0 }, // Polygon uses points array
+            points: flatPoints,
+            rotation: 0,
+            layer: 1,
+            fill: fillColor,
+            fillColor: fillColor,
+            stroke: strokeColor,
+            strokeColor: strokeColor,
+            strokeWidth,
+            opacity
+          }
+        } else {
+          // First point of polygon - don't create object yet, just add to points
+          const newPoints = [...(drawingState.points || []), startPoint]
+          setDrawingState({
+            ...drawingState,
+            points: newPoints,
+            startPoint: currentPoint, // Next line starts from current point
+            currentPoint: null,
+            isDrawing: false // Allow next click to start new line
+          })
+          return // Don't create object yet
         }
         break
     }

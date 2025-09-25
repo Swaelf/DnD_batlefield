@@ -22,15 +22,8 @@ export default defineConfig([
     rules: {
       // TypeScript strict rules to prevent 'any' usage
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unsafe-any': 'error',
-      '@typescript-eslint/no-unsafe-assignment': 'error',
-      '@typescript-eslint/no-unsafe-call': 'error',
-      '@typescript-eslint/no-unsafe-member-access': 'error',
-      '@typescript-eslint/no-unsafe-return': 'error',
-      '@typescript-eslint/no-unsafe-argument': 'error',
 
       // Additional TypeScript strictness
-      '@typescript-eslint/prefer-unknown-to-any': 'error',
       '@typescript-eslint/ban-types': ['error', {
         types: {
           'Object': {
@@ -53,6 +46,41 @@ export default defineConfig([
           },
         },
       }],
+
+      // Architecture enforcement rules
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['**/components/*/*'],
+            message: 'Import from component index files, not internal files. Use: import { Component } from "@/shared/components"'
+          },
+          {
+            group: ['**/store/*'],
+            message: 'Use facade hooks instead of direct store access. Create hooks in module hooks/ folder.'
+          },
+          {
+            group: ['@/types', '@/types/*'],
+            message: 'Import types from foundation: import { Type } from "@/foundation/types"'
+          },
+          {
+            group: ['../../../*'],
+            message: 'Avoid deep relative imports. Use absolute imports with @ aliases.'
+          }
+        ]
+      }],
+
+      // Component architecture rules
+      'max-lines': ['error', {
+        max: 150,
+        skipBlankLines: true,
+        skipComments: true
+      }],
+      'complexity': ['error', 10],
+      'max-params': ['error', 7],
+
+      // File naming and structure
+      'prefer-const': 'error',
+      'no-var': 'error'
     },
   },
   {
@@ -60,12 +88,6 @@ export default defineConfig([
     files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', '**/test/**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unsafe-any': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
     },
   },
 ])

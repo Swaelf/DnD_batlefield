@@ -1,11 +1,9 @@
-import React, { useState, useCallback, useMemo, lazy, Suspense } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import useToolStore from '@store/toolStore'
-import useRoundStore from '@store/roundStore'
 import { TOOLS, ToolType } from '@/types/tools'
 import ToolButton from './ToolButton'
-import { Calendar } from 'lucide-react'
-// Lazy load UnifiedEventEditor for better initial load performance
-const UnifiedEventEditor = lazy(() => import('../Timeline/UnifiedEventEditor').then(m => ({ default: m.UnifiedEventEditor })))
+import { Grid3x3 } from 'lucide-react'
+import useMapStore from '@store/mapStore'
 import { styled } from '@/styles/theme.config'
 import { Box, Text, Button } from '@/components/primitives'
 
@@ -134,8 +132,9 @@ const Toolbar: React.FC = () => {
   // Use specific selectors to prevent unnecessary re-renders
   const currentTool = useToolStore(state => state.currentTool)
   const setTool = useToolStore(state => state.setTool)
-  const isInCombat = useRoundStore(state => state.isInCombat)
-  const [showEventEditor, setShowEventEditor] = useState(false)
+  const currentMap = useMapStore(state => state.currentMap)
+  const toggleGridSnap = useMapStore(state => state.toggleGridSnap)
+  const gridSnapEnabled = currentMap?.grid?.snap || false
 
   // Memoize the tools list since it never changes
   const visibleTools = useMemo<ToolType[]>(() => [
@@ -156,13 +155,9 @@ const Toolbar: React.FC = () => {
     setTool(toolId)
   }, [setTool])
 
-  const handleOpenEventEditor = useCallback(() => {
-    setShowEventEditor(true)
-  }, [])
-
-  const handleCloseEventEditor = useCallback(() => {
-    setShowEventEditor(false)
-  }, [])
+  const handleToggleSnap = useCallback(() => {
+    toggleGridSnap()
+  }, [toggleGridSnap])
 
   return (
     <ToolbarContainer>
@@ -184,34 +179,26 @@ const Toolbar: React.FC = () => {
 
       <ToolbarDivider />
 
-      {/* Event Management Button (only in combat) */}
-      {isInCombat && (
-        <>
-          <EventButton
-            onClick={handleOpenEventEditor}
-            title="Manage Events"
-          >
-            <Calendar size={20} />
-            <EventButtonText>Events</EventButtonText>
-          </EventButton>
+      {/* Snap to Grid Button */}
+      <EventButton
+        onClick={handleToggleSnap}
+        title={`Snap to Grid (${gridSnapEnabled ? 'ON' : 'OFF'})\nShortcut: Shift+G`}
+        css={{
+          borderColor: gridSnapEnabled ? '$secondary' : '$gray700',
+          backgroundColor: gridSnapEnabled ? '$gray800' : 'transparent',
+        }}
+      >
+        <Grid3x3 size={20} />
+        <EventButtonText>Snap</EventButtonText>
+      </EventButton>
 
-          <ToolbarDivider />
-        </>
-      )}
+      <ToolbarDivider />
 
       {/* Color indicators */}
       <ColorIndicatorsContainer>
         <ColorIndicatorComponent type="fill" />
         <ColorIndicatorComponent type="stroke" />
       </ColorIndicatorsContainer>
-
-      {/* Unified Event Editor Dialog */}
-      <Suspense fallback={null}>
-        <UnifiedEventEditor
-          isOpen={showEventEditor}
-          onClose={handleCloseEventEditor}
-        />
-      </Suspense>
     </ToolbarContainer>
   )
 }

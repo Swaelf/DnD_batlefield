@@ -2,6 +2,37 @@ import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { MapStore } from '../types'
 import { MapObject, AttackEventData } from '../types'
+import { useHistoryStore } from './historyStore'
+import { useLayerStore } from './layerStore'
+
+// Helper function to save current state to history before modifications
+const saveToHistory = () => {
+  const currentMap = useMapStore.getState().currentMap
+  if (currentMap) {
+    const historyStore = useHistoryStore.getState()
+    historyStore.pushState(currentMap)
+  }
+}
+
+// Helper function to assign layer ID to objects based on type and active layer
+const assignLayerId = (object: MapObject): MapObject => {
+  const layerStore = useLayerStore.getState()
+
+  // If object already has a layerId, use it
+  if (object.layerId) {
+    return object
+  }
+
+  // Use active layer if set, otherwise default layer for object type
+  const layerId = layerStore.activeLayerId || layerStore.getDefaultLayerForObjectType(object.type)
+  const layer = layerStore.getLayerById(layerId)
+
+  return {
+    ...object,
+    layerId,
+    layer: layer?.zIndex || object.layer || 0 // Update numeric layer to match
+  }
+}
 
 const useMapStore = create<MapStore>()(
   immer((set) => ({
@@ -76,11 +107,15 @@ const useMapStore = create<MapStore>()(
       state.selectedObjects = []
     }),
 
-    addObject: (object) => set((state) => {
-      if (state.currentMap) {
-        state.currentMap.objects.push(object)
-      }
-    }),
+    addObject: (object) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          const objectWithLayer = assignLayerId(object)
+          state.currentMap.objects.push(objectWithLayer)
+        }
+      })
+    },
 
     addSpellEffect: (spell) => set((state) => {
       if (state.currentMap) {
@@ -131,41 +166,104 @@ const useMapStore = create<MapStore>()(
       state.selectedObjects = []
     }),
 
-    deleteSelected: () => set((state) => {
-      if (state.currentMap) {
-        state.currentMap.objects = state.currentMap.objects.filter(
-          obj => !state.selectedObjects.includes(obj.id)
-        )
-        state.selectedObjects = []
-      }
-    }),
+    deleteSelected: () => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          state.currentMap.objects = state.currentMap.objects.filter(
+            obj => !state.selectedObjects.includes(obj.id)
+          )
+          state.selectedObjects = []
+        }
+      })
+    },
 
-    deleteObject: (id) => set((state) => {
-      if (state.currentMap) {
-        state.currentMap.objects = state.currentMap.objects.filter(obj => obj.id !== id)
-        state.selectedObjects = state.selectedObjects.filter(selectedId => selectedId !== id)
-      }
-    }),
+    duplicateSelected: (offset = { x: 50, y: 50 }) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap && state.selectedObjects.length > 0) {
+          const duplicatedObjects = []
+          const newSelectedIds = []
 
-    updateObjectPosition: (id, position) => set((state) => {
-      if (state.currentMap) {
-        const object = state.currentMap.objects.find(obj => obj.id === id)
-        if (object) {
-          object.position = position
+          for (const selectedId of state.selectedObjects) {
+            const originalObject = state.currentMap.objects.find(obj => obj.id === selectedId)
+            if (originalObject) {
+              const duplicateId = crypto.randomUUID()
+              const duplicatedObject = {
+                ...originalObject,
+                id: duplicateId,
+                position: {
+                  x: originalObject.position.x + offset.x,
+                  y: originalObject.position.y + offset.y
+                }
+              }
+              duplicatedObjects.push(duplicatedObject)
+              newSelectedIds.push(duplicateId)
+            }
+          }
+
+          // Add duplicated objects to the map
+          state.currentMap.objects.push(...duplicatedObjects)
+          // Select the duplicated objects
+          state.selectedObjects = newSelectedIds
+        }
+      })
+    },
+
+    deleteObject: (id) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          state.currentMap.objects = state.currentMap.objects.filter(obj => obj.id !== id)
+          state.selectedObjects = state.selectedObjects.filter(selectedId => selectedId !== id)
+        }
+      })
+    },
+
+    updateObjectPosition: (id, position) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          const object = state.currentMap.objects.find(obj => obj.id === id)
+          if (object) {
+            object.position = position
+            // Increment version to force re-render
+            state.mapVersion += 1
+          }
+        }
+      })
+    },
+
+    batchUpdatePosition: (objectIds, deltaPosition) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          for (const id of objectIds) {
+            const object = state.currentMap.objects.find(obj => obj.id === id)
+            if (object) {
+              object.position = {
+                x: object.position.x + deltaPosition.x,
+                y: object.position.y + deltaPosition.y
+              }
+            }
+          }
           // Increment version to force re-render
           state.mapVersion += 1
         }
-      }
-    }),
+      })
+    },
 
-    updateObject: (id, updates) => set((state) => {
-      if (state.currentMap) {
-        const objectIndex = state.currentMap.objects.findIndex(obj => obj.id === id)
-        if (objectIndex !== -1) {
-          Object.assign(state.currentMap.objects[objectIndex], updates)
+    updateObject: (id, updates) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          const objectIndex = state.currentMap.objects.findIndex(obj => obj.id === id)
+          if (objectIndex !== -1) {
+            Object.assign(state.currentMap.objects[objectIndex], updates)
+          }
         }
-      }
-    }),
+      })
+    },
 
     toggleGridSnap: () => set((state) => {
       if (state.currentMap) {

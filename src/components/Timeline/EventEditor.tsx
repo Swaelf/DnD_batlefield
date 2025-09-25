@@ -122,7 +122,7 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
 
   // Fixed values
   const duration = 1000
-  const targetRound = currentRound + 1
+  const targetRound = currentRound // Events execute in current round, not next
 
   // Use specific selectors to prevent unnecessary re-renders
   const isPicking = useEventCreationStore(state => state.isPicking)

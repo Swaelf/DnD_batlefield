@@ -62,9 +62,9 @@ export const Grid = styled('div', {
     },
 
     align: {
-      start: { alignItems: 'start' },
+      start: { alignItems: 'flex-start' },
       center: { alignItems: 'center' },
-      end: { alignItems: 'end' },
+      end: { alignItems: 'flex-end' },
       stretch: { alignItems: 'stretch' },
     },
 

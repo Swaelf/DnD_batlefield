@@ -19,6 +19,7 @@ const useToolStore = create<ToolStore>()(
     tokenTemplate: null,
     staticObjectTemplate: null,
     spellEffectTemplate: null,
+    measurementPoints: [],
 
     setTool: (tool) => set((state) => {
       if (tool !== state.currentTool) {
@@ -30,6 +31,10 @@ const useToolStore = create<ToolStore>()(
           startPoint: null,
           currentPoint: null,
           points: [],
+        }
+        // Clear measurement points when switching away from measure tool
+        if (state.currentTool !== 'measure') {
+          state.measurementPoints = []
         }
       }
     }),
@@ -79,6 +84,14 @@ const useToolStore = create<ToolStore>()(
 
     setSpellEffectTemplate: (template) => set((state) => {
       state.spellEffectTemplate = template
+    }),
+
+    addMeasurementPoint: (point) => set((state) => {
+      state.measurementPoints.push(point)
+    }),
+
+    clearMeasurementPoints: () => set((state) => {
+      state.measurementPoints = []
     }),
   }))
 )

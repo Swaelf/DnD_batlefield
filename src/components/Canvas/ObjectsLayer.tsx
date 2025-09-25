@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import { Group, Rect, Circle, Line, Text as KonvaText } from 'react-konva'
 import Konva from 'konva'
 import { MapObject, Shape, Text } from '@/types/map'
@@ -8,6 +8,8 @@ import useToolStore from '@store/toolStore'
 import useEventCreationStore from '@store/eventCreationStore'
 import useAnimationStore from '@store/animationStore'
 import useRoundStore from '@store/roundStore'
+import { useLayerStore } from '@store/layerStore'
+import { useContextMenu } from '@hooks/useContextMenu'
 import { Token } from '../Token/Token'
 import { snapToGrid } from '@/utils/grid'
 import { PersistentArea } from '../Spells'
@@ -59,15 +61,14 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
   const selectedObjects = useMapStore(state => state.selectedObjects)
   const deleteObject = useMapStore(state => state.deleteObject)
   const updateObjectPosition = useMapStore(state => state.updateObjectPosition)
+  const batchUpdatePosition = useMapStore(state => state.batchUpdatePosition)
   const currentTool = useToolStore(state => state.currentTool)
   const gridSettings = currentMap?.grid
   const { isPicking, setSelectedToken } = useEventCreationStore()
   const { activePaths } = useAnimationStore()
   const currentRound = useRoundStore(state => state.currentRound)
-
-  if (!currentMap) {
-    return null
-  }
+  const { layers, getDefaultLayerForObjectType, migrateNumericLayer } = useLayerStore()
+  const { handleContextMenu } = useContextMenu()
 
   const handleObjectDragEnd = (objId: string, e: Konva.KonvaEventObject<MouseEvent>) => {
     const node = e.target
@@ -82,8 +83,23 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
       node.position(newPosition)
     }
 
-    // Update position in store
-    updateObjectPosition(objId, newPosition)
+    // Check if this object is part of a multi-selection
+    const isPartOfMultiSelection = selectedObjects.length > 1 && selectedObjects.includes(objId)
+
+    if (isPartOfMultiSelection) {
+      // Calculate delta from original position
+      const draggedObject = currentMap.objects.find(obj => obj.id === objId)
+      if (draggedObject) {
+        const deltaX = newPosition.x - draggedObject.position.x
+        const deltaY = newPosition.y - draggedObject.position.y
+
+        // Move all selected objects by the same delta
+        batchUpdatePosition(selectedObjects, { x: deltaX, y: deltaY })
+      }
+    } else {
+      // Single object movement
+      updateObjectPosition(objId, newPosition)
+    }
 
     // Notify parent
     onObjectDragEnd?.(objId, newPosition)
@@ -108,6 +124,30 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
     }
   }
 
+  const handleObjectRightClick = useCallback((objId: string, e: Konva.KonvaEventObject<MouseEvent>) => {
+    e.evt.preventDefault()
+    e.evt.stopPropagation()
+
+    // Convert Konva coordinates to screen coordinates
+    const stage = e.target.getStage()
+    if (!stage) return
+
+    // Use the mouse event coordinates directly since they're already in screen space
+    const screenX = e.evt.clientX
+    const screenY = e.evt.clientY
+
+    handleContextMenu(
+      {
+        clientX: screenX,
+        clientY: screenY,
+        preventDefault: () => e.evt.preventDefault(),
+        stopPropagation: () => e.evt.stopPropagation()
+      } as React.MouseEvent,
+      'object',
+      { objectId: objId }
+    )
+  }, [handleContextMenu])
+
   const renderObject = (obj: MapObject) => {
     const isSelected = selectedObjects.includes(obj.id)
     const isDraggable = currentTool === 'select' && !obj.locked
@@ -127,6 +167,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
           onDragStart={() => {}}
           onDragMove={(e) => {}}
           onDragEnd={(e) => handleObjectDragEnd(obj.id, e)}
+          onContextMenu={(e) => handleObjectRightClick(obj.id, e)}
         />
       )
     }
@@ -155,8 +196,39 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
   }
 
   const renderShape = (shape: Shape, isSelected: boolean, isDraggable: boolean) => {
+    // Determine if this is a static object based on its properties
+    const isStaticObject = shape.metadata?.isStatic ||
+      shape.fill?.includes('#228B22') || // Tree colors - Summer Oak
+      shape.fill?.includes('#0F5132') || // Pine tree
+      shape.fill?.includes('#CD853F') || // Autumn Oak
+      shape.fill?.includes('#8FBC8F') || // Willow
+      shape.fill?.includes('#FFB6C1') || // Cherry Blossom
+      shape.fill?.includes('#8B7D6B') || // Dead tree
+      shape.fill?.includes('#DC143C') || // Maple Red
+      shape.fill?.includes('#90EE90') || // Birch
+      shape.fill?.includes('#006400') || // Jungle
+      shape.fill?.includes('#696969') || // Rock
+      shape.fill?.includes('#3CB371') || // Bush
+      shape.fill?.includes('#8B008B') || // Berry Bush
+      shape.fill?.includes('#FF69B4') || // Flowering Bush
+      shape.fill?.includes('#5c5c5c') || // Stone wall
+      shape.fill?.includes('#8B4513') || // Wood/furniture
+      shape.fill?.includes('#654321')    // Wood/furniture
+
+    // Different visual styles for static objects vs regular shapes
+    const shadowConfig = isStaticObject ? {
+      shadowColor: '#000000',
+      shadowBlur: isSelected ? 10 : 4,
+      shadowOpacity: 0.6,
+      shadowOffset: { x: 4, y: 6 },
+    } : {
+      shadowColor: 'black',
+      shadowBlur: isSelected ? 12 : 8,
+      shadowOpacity: 0.3,
+      shadowOffset: { x: 2, y: 2 },
+    }
+
     const commonProps = {
-      key: shape.id,
       id: shape.id,
       x: shape.position.x,
       y: shape.position.y,
@@ -164,19 +236,182 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
       fill: shape.fill,
       stroke: isSelected ? '#C9AD6A' : shape.stroke,
       strokeWidth: isSelected ? 3 : shape.strokeWidth,
-      opacity: shape.opacity,
+      opacity: shape.opacity * (isStaticObject ? 0.95 : 1),
       draggable: isDraggable,
       onClick: (e: Konva.KonvaEventObject<MouseEvent>) => handleObjectClick(shape.id, e),
-      onDragEnd: (e: Konva.KonvaEventObject<MouseEvent>) => handleObjectDragEnd(shape.id, e)
+      onDragEnd: (e: Konva.KonvaEventObject<MouseEvent>) => handleObjectDragEnd(shape.id, e),
+      onContextMenu: (e: Konva.KonvaEventObject<MouseEvent>) => handleObjectRightClick(shape.id, e),
+      ...shadowConfig,
+      // Add hover effects
+      onMouseEnter: (e: Konva.KonvaEventObject<MouseEvent>) => {
+        const target = e.target
+        if (isStaticObject) {
+          target.shadowBlur(8)
+          target.shadowOpacity(0.8)
+          target.scaleX(1.05)
+          target.scaleY(1.05)
+        } else {
+          target.shadowBlur(15)
+          target.shadowOpacity(0.5)
+        }
+        const stage = target.getStage()
+        if (stage) {
+          stage.container().style.cursor = isDraggable ? 'move' : 'pointer'
+        }
+      },
+      onMouseLeave: (e: Konva.KonvaEventObject<MouseEvent>) => {
+        const target = e.target
+        if (isStaticObject) {
+          target.shadowBlur(isSelected ? 10 : 4)
+          target.shadowOpacity(0.6)
+          target.scaleX(1)
+          target.scaleY(1)
+        } else {
+          target.shadowBlur(isSelected ? 12 : 8)
+          target.shadowOpacity(0.3)
+        }
+        const stage = target.getStage()
+        if (stage) {
+          stage.container().style.cursor = 'default'
+        }
+      }
     }
 
     switch (shape.shapeType) {
       case 'rectangle':
-        return <Rect {...commonProps} width={shape.width} height={shape.height} />
+        // Special handling for walls and furniture
+        const isWall = shape.fill?.includes('#5c5c5c') || shape.fill?.includes('#8B4513')
+        const isFurniture = shape.fill?.includes('#654321') || shape.fill?.includes('#A0522D')
+
+        return (
+          <Rect
+            key={shape.id}
+            {...commonProps}
+            width={shape.width}
+            height={shape.height}
+            cornerRadius={isWall ? 0 : (isFurniture ? 2 : 4)}
+            dash={isWall ? [10, 5] : undefined}
+            dashEnabled={isWall}
+          />
+        )
       case 'circle':
-        return <Circle {...commonProps} radius={shape.radius} />
+        // Special handling for trees and natural objects - expanded color detection
+        const isTree = shape.metadata?.effectType === 'tree' ||
+          shape.fill?.includes('#228B22') || // Summer Oak
+          shape.fill?.includes('#0F5132') || // Pine
+          shape.fill?.includes('#CD853F') || // Autumn Oak
+          shape.fill?.includes('#8FBC8F') || // Willow
+          shape.fill?.includes('#FFB6C1') || // Cherry
+          shape.fill?.includes('#8B7D6B') || // Dead
+          shape.fill?.includes('#DC143C') || // Maple
+          shape.fill?.includes('#90EE90') || // Birch
+          shape.fill?.includes('#006400') || // Jungle
+          shape.fill?.includes('#3CB371') || // Bush
+          shape.fill?.includes('#8B008B') || // Berry Bush
+          shape.fill?.includes('#FF69B4')    // Flowering Bush
+        const isWell = shape.fill?.includes('#4682B4')
+
+        // Ensure we have a valid radius
+        const validRadius = shape.radius || (shape.width ? shape.width / 2 : 30) // Default to 30 if no radius or width
+
+        if (isTree) {
+          // Trees get a rougher, more organic edge with multiple layers for depth
+          const isFlowering = shape.fill?.includes('#FFB6C1') || shape.fill?.includes('#FF69B4')
+          const isAutumn = shape.fill?.includes('#CD853F') || shape.fill?.includes('#DC143C')
+          const isDead = shape.fill?.includes('#8B7D6B')
+
+          return (
+            <Group key={shape.id}>
+              {/* Outer shadow/canopy effect */}
+              <Circle
+                x={commonProps.x}
+                y={commonProps.y}
+                radius={validRadius * 1.2}
+                fill={commonProps.fill}
+                opacity={0.15}
+                listening={false}
+              />
+              {/* Main tree circle */}
+              <Circle
+                {...commonProps}
+                radius={validRadius}
+                strokeWidth={commonProps.strokeWidth * 1.5}
+                dash={isDead ? [5, 5] : [3, 2]}
+                dashEnabled={true}
+              />
+              {/* Inner texture circles for depth */}
+              <Circle
+                x={commonProps.x}
+                y={commonProps.y}
+                radius={validRadius * 0.7}
+                fill={commonProps.fill}
+                opacity={isDead ? 0.2 : 0.3}
+                listening={false}
+              />
+              {/* Special effects for flowering/autumn trees */}
+              {(isFlowering || isAutumn) && (
+                <Circle
+                  x={commonProps.x + validRadius * 0.2}
+                  y={commonProps.y - validRadius * 0.2}
+                  radius={validRadius * 0.4}
+                  fill={isFlowering ? '#FFC0CB' : '#FF8C00'}
+                  opacity={0.4}
+                  listening={false}
+                />
+              )}
+            </Group>
+          )
+        }
+
+        return (
+          <Circle
+            key={shape.id}
+            {...commonProps}
+            radius={validRadius}
+            strokeWidth={isWell ? commonProps.strokeWidth * 2 : commonProps.strokeWidth}
+          />
+        )
       case 'line':
-        return <Line {...commonProps} points={shape.points} />
+        return (
+          <Line
+            key={shape.id}
+            {...commonProps}
+            points={shape.points}
+            lineCap="round"
+            lineJoin="round"
+          />
+        )
+      case 'polygon':
+        // Special handling for rocks and crystals
+        const isRock = shape.fill?.includes('#696969')
+        const isCrystal = shape.fill?.includes('#9370DB')
+
+        return (
+          <Group key={shape.id}>
+            <Line
+              {...commonProps}
+              points={shape.points}
+              closed={true}
+              lineCap={isRock ? "square" : "round"}
+              lineJoin={isRock ? "miter" : "round"}
+              strokeWidth={commonProps.strokeWidth * (isRock ? 1.5 : 1)}
+            />
+            {isCrystal && (
+              /* Add inner glow for crystals */
+              <Line
+                x={commonProps.x}
+                y={commonProps.y}
+                points={shape.points}
+                closed={true}
+                fill={commonProps.fill}
+                opacity={0.5}
+                scaleX={0.8}
+                scaleY={0.8}
+                listening={false}
+              />
+            )}
+          </Group>
+        )
       default:
         return null
     }
@@ -197,10 +432,35 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
         opacity={text.opacity}
         align={text.align}
         stroke={isSelected ? '#C9AD6A' : undefined}
-        strokeWidth={isSelected ? 1 : 0}
+        strokeWidth={isSelected ? 2 : 0}
         draggable={isDraggable}
+        // Add visual enhancements
+        shadowColor='black'
+        shadowBlur={isSelected ? 8 : 4}
+        shadowOpacity={0.4}
+        shadowOffset={{ x: 1, y: 1 }}
+        // Add hover effects
+        onMouseEnter={(e: Konva.KonvaEventObject<MouseEvent>) => {
+          const target = e.target
+          target.shadowBlur(10)
+          target.shadowOpacity(0.6)
+          const stage = target.getStage()
+          if (stage) {
+            stage.container().style.cursor = isDraggable ? 'move' : 'pointer'
+          }
+        }}
+        onMouseLeave={(e: Konva.KonvaEventObject<MouseEvent>) => {
+          const target = e.target
+          target.shadowBlur(isSelected ? 8 : 4)
+          target.shadowOpacity(0.4)
+          const stage = target.getStage()
+          if (stage) {
+            stage.container().style.cursor = 'default'
+          }
+        }}
         onClick={(e: Konva.KonvaEventObject<MouseEvent>) => handleObjectClick(text.id, e)}
         onDragEnd={(e: Konva.KonvaEventObject<MouseEvent>) => handleObjectDragEnd(text.id, e)}
+        onContextMenu={(e: Konva.KonvaEventObject<MouseEvent>) => handleObjectRightClick(text.id, e)}
       />
     )
   }
@@ -312,17 +572,44 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
     )
   }
 
-  // Sort objects by layer to ensure proper rendering order
-  const sortedObjects = [...currentMap.objects].sort((a, b) => {
-    const layerA = a.layer || 0
-    const layerB = b.layer || 0
-    return layerA - layerB
-  })
+  // Create layer-aware object rendering with proper sorting and visibility
+  const getLayerForObject = (obj: MapObject) => {
+    // If object has a layer ID, use it; otherwise migrate numeric layer or use default
+    if (obj.layerId) {
+      return layers.find(l => l.id === obj.layerId)
+    }
 
+    // Migrate legacy numeric layer to layer ID
+    if (obj.layer !== undefined) {
+      const layerId = migrateNumericLayer(obj.layer)
+      return layers.find(l => l.id === layerId)
+    }
+
+    // Use default layer for object type
+    const defaultLayerId = getDefaultLayerForObjectType(obj.type)
+    return layers.find(l => l.id === defaultLayerId)
+  }
+
+  // Filter and sort objects by layer visibility and z-index
+  const visibleSortedObjects = currentMap?.objects
+    ? currentMap.objects
+        .map(obj => ({ obj, layer: getLayerForObject(obj) }))
+        .filter(({ layer }) => layer?.visible !== false) // Show if layer is visible or undefined
+        .sort((a, b) => {
+          const zIndexA = a.layer?.zIndex || a.obj.layer || 0
+          const zIndexB = b.layer?.zIndex || b.obj.layer || 0
+          return zIndexA - zIndexB
+        })
+        .map(({ obj }) => obj)
+    : []
+
+  if (!currentMap) {
+    return null
+  }
 
   return (
     <Group>
-      {sortedObjects.map(renderObject)}
+      {visibleSortedObjects.map(renderObject)}
     </Group>
   )
 })

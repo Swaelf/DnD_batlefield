@@ -11,7 +11,8 @@ export type MapObject = {
   type: 'token' | 'shape' | 'tile' | 'text' | 'spell' | 'attack' | 'persistent-area'
   position: Position
   rotation: number
-  layer: number
+  layer: number // Legacy numeric layer for backward compatibility
+  layerId?: string // New layer ID for layer management system
   locked?: boolean
   visible?: boolean
   name?: string

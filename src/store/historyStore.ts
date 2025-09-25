@@ -16,6 +16,8 @@ type HistoryStore = HistoryState & {
   pushState: (state: BattleMap) => void
   undo: () => BattleMap | null
   redo: () => BattleMap | null
+  undoWithCurrentState: (currentState: BattleMap) => BattleMap | null
+  redoWithCurrentState: (currentState: BattleMap) => BattleMap | null
   clear: () => void
   getHistoryInfo: () => { undoCount: number; redoCount: number }
 }
@@ -51,42 +53,83 @@ export const useHistoryStore = create<HistoryStore>()(
       const state = get()
       if (state.past.length === 0) return null
 
-      let newState: BattleMap | null = null
+      let previousState: BattleMap | null = null
 
       set((draft) => {
-        const previousState = draft.past.pop()
-        if (previousState) {
-          // Get the current state before undo (should be passed as parameter)
-          // For now, we'll return the previous state
-          newState = previousState
+        previousState = draft.past.pop() || null
 
-          // Update flags
-          draft.canUndo = draft.past.length > 0
-          draft.canRedo = draft.future.length > 0
-        }
+        // Note: We need the current state to be pushed to future
+        // This will be handled by the calling code
+
+        // Update flags
+        draft.canUndo = draft.past.length > 0
+        draft.canRedo = true // We can redo after undo
       })
 
-      return newState
+      return previousState
     },
 
     redo: () => {
       const state = get()
       if (state.future.length === 0) return null
 
-      let newState: BattleMap | null = null
+      let nextState: BattleMap | null = null
 
       set((draft) => {
-        const nextState = draft.future.pop()
-        if (nextState) {
-          newState = nextState
+        nextState = draft.future.pop() || null
 
-          // Update flags
-          draft.canUndo = draft.past.length > 0
-          draft.canRedo = draft.future.length > 0
-        }
+        // Update flags
+        draft.canUndo = true // We can undo after redo
+        draft.canRedo = draft.future.length > 0
       })
 
-      return newState
+      return nextState
+    },
+
+    undoWithCurrentState: (currentState: BattleMap) => {
+      const state = get()
+      if (state.past.length === 0) return null
+
+      let previousState: BattleMap | null = null
+
+      set((draft) => {
+        previousState = draft.past.pop() || null
+
+        if (previousState) {
+          // Push current state to future for redo
+          const currentStateCopy = JSON.parse(JSON.stringify(currentState))
+          draft.future.push(currentStateCopy)
+        }
+
+        // Update flags
+        draft.canUndo = draft.past.length > 0
+        draft.canRedo = true // We can redo after undo
+      })
+
+      return previousState
+    },
+
+    redoWithCurrentState: (currentState: BattleMap) => {
+      const state = get()
+      if (state.future.length === 0) return null
+
+      let nextState: BattleMap | null = null
+
+      set((draft) => {
+        nextState = draft.future.pop() || null
+
+        if (nextState) {
+          // Push current state to past for undo
+          const currentStateCopy = JSON.parse(JSON.stringify(currentState))
+          draft.past.push(currentStateCopy)
+        }
+
+        // Update flags
+        draft.canUndo = true // We can undo after redo
+        draft.canRedo = draft.future.length > 0
+      })
+
+      return nextState
     },
 
     clear: () => set((draft) => {

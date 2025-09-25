@@ -124,7 +124,7 @@ const UnifiedEventEditorComponent: React.FC<UnifiedEventEditorProps> = ({
   const [isTemporarilyHidden, setIsTemporarilyHidden] = useState(false)
 
   // Fixed values
-  const targetRound = currentRound + 1
+  const targetRound = currentRound // Events execute in current round, not next
 
   // Use specific selectors to prevent unnecessary re-renders
   const isPicking = useEventCreationStore(state => state.isPicking)
@@ -144,9 +144,8 @@ const UnifiedEventEditorComponent: React.FC<UnifiedEventEditorProps> = ({
     return filteredTokens
   }, [isOpen, currentMap?.objects])
 
-  // Get events for the next round
-  const nextRound = currentRound + 1
-  const roundEvents = timeline?.rounds.find(r => r.number === nextRound)?.events || []
+  // Get events for the current round
+  const roundEvents = timeline?.rounds.find(r => r.number === currentRound)?.events || []
 
   useEffect(() => {
     if (selectedToken && currentMap) {
@@ -568,7 +567,7 @@ const UnifiedEventEditorComponent: React.FC<UnifiedEventEditorProps> = ({
             <EventsList
               roundEvents={roundEvents}
               tokens={tokens}
-              nextRound={nextRound}
+              nextRound={currentRound}
               onDeleteEvent={handleDeleteEvent}
             />
           </MainContainer>

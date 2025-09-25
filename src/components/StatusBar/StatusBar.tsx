@@ -119,11 +119,14 @@ const StatusButton = styled(Button, {
 const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
   // Use specific selectors to prevent unnecessary re-renders
   const currentMap = useMapStore(state => state.currentMap)
+  const loadMap = useMapStore(state => state.loadMap)
   const selectedObjects = useMapStore(state => state.selectedObjects, shallow)
   const currentTool = useToolStore(state => state.currentTool)
   const canUndo = useHistoryStore(state => state.canUndo)
   const canRedo = useHistoryStore(state => state.canRedo)
   const getHistoryInfo = useHistoryStore(state => state.getHistoryInfo)
+  const undoWithCurrentState = useHistoryStore(state => state.undoWithCurrentState)
+  const redoWithCurrentState = useHistoryStore(state => state.redoWithCurrentState)
   const [fps, setFps] = useState(60)
 
   // FPS counter
@@ -156,6 +159,25 @@ const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
   }, [])
 
   const formatZoom = useCallback((z: number) => `${Math.round(z * 100)}%`, [])
+
+  // Undo/Redo click handlers
+  const handleUndo = useCallback(() => {
+    if (currentMap && canUndo) {
+      const previousState = undoWithCurrentState(currentMap)
+      if (previousState) {
+        loadMap(previousState)
+      }
+    }
+  }, [currentMap, canUndo, undoWithCurrentState, loadMap])
+
+  const handleRedo = useCallback(() => {
+    if (currentMap && canRedo) {
+      const nextState = redoWithCurrentState(currentMap)
+      if (nextState) {
+        loadMap(nextState)
+      }
+    }
+  }, [currentMap, canRedo, redoWithCurrentState, loadMap])
 
   const getToolName = useCallback((tool: string) => {
     const names: Record<string, string> = {
@@ -232,6 +254,7 @@ const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
         <StatusItem css={{ gap: '$2' }}>
           <StatusButton
             disabled={!canUndo}
+            onClick={handleUndo}
             title={`Undo (${historyInfo.undoCount} available)`}
           >
             <Undo2 size={12} />
@@ -239,6 +262,7 @@ const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
           </StatusButton>
           <StatusButton
             disabled={!canRedo}
+            onClick={handleRedo}
             title={`Redo (${historyInfo.redoCount} available)`}
           >
             <Redo2 size={12} />

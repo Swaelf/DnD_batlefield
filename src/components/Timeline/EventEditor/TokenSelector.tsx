@@ -20,12 +20,12 @@ const TokenSelectorComponent: React.FC<TokenSelectorProps> = ({
 }) => {
   return (
     <Box css={{
-      padding: '$3',
-      backgroundColor: '$gray900/50',
-      borderRadius: '$md',
-      border: '1px solid $gray700'
+      padding: '12px',
+      backgroundColor: '#171717',
+      borderRadius: '8px',
+      border: '1px solid #3a3a3a'
     }}>
-      <FieldLabel css={{ marginBottom: '$2' }}>Select Token</FieldLabel>
+      <FieldLabel css={{ marginBottom: '8px' }}>Select Token</FieldLabel>
       <Box display="flex" gap="2">
         <Button
           onClick={onTokenPick}
@@ -33,13 +33,13 @@ const TokenSelectorComponent: React.FC<TokenSelectorProps> = ({
           size="icon"
           title="Pick from map"
           css={{
-            backgroundColor: isPicking === 'token' ? '$blue600' : '$gray700',
-            color: isPicking === 'token' ? '$white' : '$gray300',
+            backgroundColor: isPicking === 'token' ? '#2563eb' : '#3a3a3a',
+            color: isPicking === 'token' ? '#ffffff' : '#d1d5db',
             animation: isPicking === 'token' ? 'pulse 2s infinite' : 'none',
-            border: '1px solid $gray600',
+            border: '1px solid #4b5563',
             '&:hover': {
-              backgroundColor: isPicking === 'token' ? '$blue700' : '$gray600',
-              borderColor: '$secondary'
+              backgroundColor: isPicking === 'token' ? '#1d4ed8' : '#4b5563',
+              borderColor: '#C9AD6A'
             }
           }}
         >

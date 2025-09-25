@@ -1,0 +1,1 @@
+export { SpellSearch } from './SpellSearch'

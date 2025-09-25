@@ -49,31 +49,33 @@ const useRoundStore = create<RoundStore>()(
       const { timeline, currentRound } = get()
       if (!timeline || !timeline.isActive) return
 
-      // First increment the round
+      // Execute events for current round before advancing
+      await get().executeRoundEvents(currentRound)
+
+      // Then increment the round
+      const nextRoundNumber = currentRound + 1
       set((state) => {
-        state.currentRound = currentRound + 1
+        state.currentRound = nextRoundNumber
 
         // Create new round if it doesn't exist
-        const nextRoundExists = state.timeline!.rounds.find(r => r.number === state.currentRound)
+        const nextRoundExists = state.timeline!.rounds.find(r => r.number === nextRoundNumber)
         if (!nextRoundExists) {
           state.timeline!.rounds.push({
             id: crypto.randomUUID(),
-            number: state.currentRound,
+            number: nextRoundNumber,
             timestamp: Date.now(),
             events: [],
             executed: false
           })
         }
 
-        state.timeline!.currentRound = state.currentRound
+        state.timeline!.currentRound = nextRoundNumber
       })
 
       // Clean up expired spell effects when advancing rounds
       // This removes persistent areas that have expired based on their duration
       const newRound = get().currentRound
       useMapStore.getState().cleanupExpiredSpells(newRound)
-
-      // The animation hook will handle executing events when it detects the round change
     },
 
     previousRound: () => {
@@ -204,6 +206,43 @@ const useRoundStore = create<RoundStore>()(
             break
           case 'attack':
             mapStore.addAttackEffect(event.data as any)
+            break
+          case 'move':
+            // Handle token movement animation
+            const moveData = event.data as any
+            if (moveData.fromPosition && moveData.toPosition) {
+              // Start smooth animation using animationStore
+              const animationStore = (await import('./animationStore')).default.getState()
+              animationStore.startAnimation(event.tokenId, moveData.fromPosition, moveData.toPosition)
+
+              // Create animation loop
+              const duration = moveData.duration || 1000 // Default 1 second
+              const startTime = Date.now()
+
+              const animate = () => {
+                const elapsed = Date.now() - startTime
+                const progress = Math.min(elapsed / duration, 1)
+
+                // Update animation progress
+                animationStore.updateProgress(event.tokenId, progress)
+
+                // Calculate current position
+                const currentX = moveData.fromPosition.x + (moveData.toPosition.x - moveData.fromPosition.x) * progress
+                const currentY = moveData.fromPosition.y + (moveData.toPosition.y - moveData.fromPosition.y) * progress
+
+                // Update token position in map
+                mapStore.updateObjectPosition(event.tokenId, { x: currentX, y: currentY })
+
+                if (progress < 1) {
+                  requestAnimationFrame(animate)
+                } else {
+                  // Animation complete
+                  animationStore.endAnimation(event.tokenId)
+                }
+              }
+
+              requestAnimationFrame(animate)
+            }
             break
           // Add other event types here as needed
         }

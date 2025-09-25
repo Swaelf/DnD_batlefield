@@ -122,7 +122,7 @@ export const SpellEffectsPanel = memo(() => {
                         },
                       }}
                     >
-                      <Box display="flex" alignItems="start" gap="3">
+                      <Box display="flex" alignItems="flex-start" gap="3">
                         <Box css={{ color: '$gray400', marginTop: '2px' }}>
                           {template.icon}
                         </Box>
