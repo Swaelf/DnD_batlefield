@@ -1,20 +1,20 @@
-import React, { useEffect, useRef, useCallback } from 'react'
+import React, { useCallback } from 'react'
 import { Group, Rect, Circle, Line, Text as KonvaText } from 'react-konva'
-import Konva from 'konva'
-import { MapObject, Shape, Text } from '@/types/map'
-import { Token as TokenType } from '@/types/token'
-import useMapStore from '@store/mapStore'
-import useToolStore from '@store/toolStore'
-import useEventCreationStore from '@store/eventCreationStore'
-import useAnimationStore from '@store/animationStore'
-import useRoundStore from '@store/roundStore'
-import { useLayerStore } from '@store/layerStore'
-import { useContextMenu } from '@hooks/useContextMenu'
+import type Konva from 'konva'
+import type { MapObject, Shape, Text } from '@/types/map'
+import type { Token as TokenType } from '@/types/token'
+import type { SpellEventData, AttackEventData } from '@/types/timeline'
+import useMapStore from '@/store/mapStore'
+import useToolStore from '@/store/toolStore'
+import useEventCreationStore from '@/store/eventCreationStore'
+import useAnimationStore from '@/store/animationStore'
+import useRoundStore from '@/store/roundStore'
+import { useLayerStore } from '@/store/layerStore'
+import { useContextMenu } from '@/hooks/useContextMenu'
 import { Token } from '../Token/Token'
 import { snapToGrid } from '@/utils/grid'
 import { PersistentArea } from '../Spells'
 import { AttackRenderer } from '../Actions/ActionRenderer/AttackRenderer'
-import { SpellEventData, AttackEventData } from '@/types/timeline'
 import { SimpleSpellComponent } from '../Spells/SimpleSpellComponent'
 
 // Track completed spell animations to prevent duplicate persistent areas
@@ -48,6 +48,8 @@ function isPersistentArea(obj: MapObject): obj is MapObject & { type: 'persisten
 type ObjectsLayerProps = {
   onObjectClick?: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void
   onObjectDragEnd?: (id: string, newPosition: { x: number; y: number }) => void
+  onTokenSelect?: (tokenId: string, position: { x: number; y: number }) => void
+  onTokenDeselect?: () => void
 }
 
 /**
@@ -55,7 +57,9 @@ type ObjectsLayerProps = {
  */
 export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
   onObjectClick,
-  onObjectDragEnd
+  onObjectDragEnd,
+  onTokenSelect,
+  onTokenDeselect
 }) => {
   const currentMap = useMapStore(state => state.currentMap)
   const selectedObjects = useMapStore(state => state.selectedObjects)
@@ -79,7 +83,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
 
     // Snap to grid if enabled
     if (gridSettings?.snap) {
-      newPosition = snapToGrid(newPosition, gridSettings.size)
+      newPosition = snapToGrid(newPosition, gridSettings.size, true)
       node.position(newPosition)
     }
 
@@ -88,7 +92,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
 
     if (isPartOfMultiSelection) {
       // Calculate delta from original position
-      const draggedObject = currentMap.objects.find(obj => obj.id === objId)
+      const draggedObject = currentMap?.objects.find(obj => obj.id === objId)
       if (draggedObject) {
         const deltaX = newPosition.x - draggedObject.position.x
         const deltaY = newPosition.y - draggedObject.position.y
@@ -113,6 +117,32 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
         setSelectedToken(objId)
         return
       }
+    }
+
+    // Check if this is a token and we're using the select tool
+    const obj = currentMap?.objects.find(o => o.id === objId)
+
+    if (obj && isToken(obj) && currentTool === 'select' && onTokenSelect) {
+      // Get stage position for tooltip placement
+      if (e && e.target) {
+        const stage = e.target.getStage()
+        if (stage) {
+          const tokenNode = e.target
+          const tokenPosition = tokenNode.getAbsolutePosition()
+          const scale = stage.scaleX()
+
+          // Position tooltip to the right of the token
+          const tooltipPosition = {
+            x: tokenPosition.x + (50 * scale) + 20,  // 50 is approx token radius
+            y: tokenPosition.y - 100
+          }
+
+          onTokenSelect(objId, tooltipPosition)
+        }
+      }
+    } else if (!isToken(obj!) && onTokenDeselect) {
+      // Close tooltip only if selecting a non-token object
+      onTokenDeselect()
     }
 
     if (currentTool === 'eraser') {
@@ -163,9 +193,9 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
           gridSize={gridSettings?.size || 50}
           isSelected={isSelected}
           isDraggable={isDraggable && !hasActivePath}
-          onSelect={(id) => handleObjectClick(id, null)}
+          onSelect={(id, e) => handleObjectClick(id, e)}
           onDragStart={() => {}}
-          onDragMove={(e) => {}}
+          onDragMove={() => {}}
           onDragEnd={(e) => handleObjectDragEnd(obj.id, e)}
           onContextMenu={(e) => handleObjectRightClick(obj.id, e)}
         />
@@ -246,13 +276,13 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
       onMouseEnter: (e: Konva.KonvaEventObject<MouseEvent>) => {
         const target = e.target
         if (isStaticObject) {
-          target.shadowBlur(8)
-          target.shadowOpacity(0.8)
+          //target.shadowBlur(8)
+          //target.shadowOpacity(0.8)
           target.scaleX(1.05)
           target.scaleY(1.05)
         } else {
-          target.shadowBlur(15)
-          target.shadowOpacity(0.5)
+          //target.shadowBlur(15)
+          //target.shadowOpacity(0.5)
         }
         const stage = target.getStage()
         if (stage) {
@@ -262,13 +292,13 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
       onMouseLeave: (e: Konva.KonvaEventObject<MouseEvent>) => {
         const target = e.target
         if (isStaticObject) {
-          target.shadowBlur(isSelected ? 10 : 4)
-          target.shadowOpacity(0.6)
+          //target.shadowBlur(isSelected ? 10 : 4)
+          //target.shadowOpacity(0.6)
           target.scaleX(1)
           target.scaleY(1)
         } else {
-          target.shadowBlur(isSelected ? 12 : 8)
-          target.shadowOpacity(0.3)
+          //target.shadowBlur(isSelected ? 12 : 8)
+          //target.shadowOpacity(0.3)
         }
         const stage = target.getStage()
         if (stage) {
@@ -278,7 +308,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
     }
 
     switch (shape.shapeType) {
-      case 'rectangle':
+      case 'rectangle': {
         // Special handling for walls and furniture
         const isWall = shape.fill?.includes('#5c5c5c') || shape.fill?.includes('#8B4513')
         const isFurniture = shape.fill?.includes('#654321') || shape.fill?.includes('#A0522D')
@@ -294,7 +324,8 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
             dashEnabled={isWall}
           />
         )
-      case 'circle':
+      }
+      case 'circle': {
         // Special handling for trees and natural objects - expanded color detection
         const isTree = shape.metadata?.effectType === 'tree' ||
           shape.fill?.includes('#228B22') || // Summer Oak
@@ -371,6 +402,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
             strokeWidth={isWell ? commonProps.strokeWidth * 2 : commonProps.strokeWidth}
           />
         )
+      }
       case 'line':
         return (
           <Line
@@ -381,7 +413,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
             lineJoin="round"
           />
         )
-      case 'polygon':
+      case 'polygon': {
         // Special handling for rocks and crystals
         const isRock = shape.fill?.includes('#696969')
         const isCrystal = shape.fill?.includes('#9370DB')
@@ -412,6 +444,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
             )}
           </Group>
         )
+      }
       default:
         return null
     }
@@ -442,8 +475,8 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
         // Add hover effects
         onMouseEnter={(e: Konva.KonvaEventObject<MouseEvent>) => {
           const target = e.target
-          target.shadowBlur(10)
-          target.shadowOpacity(0.6)
+          //target.shadowBlur(10)
+          //target.shadowOpacity(0.6)
           const stage = target.getStage()
           if (stage) {
             stage.container().style.cursor = isDraggable ? 'move' : 'pointer'
@@ -451,8 +484,8 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
         }}
         onMouseLeave={(e: Konva.KonvaEventObject<MouseEvent>) => {
           const target = e.target
-          target.shadowBlur(isSelected ? 8 : 4)
-          target.shadowOpacity(0.4)
+          //target.shadowBlur(isSelected ? 8 : 4)
+          //target.shadowOpacity(0.4)
           const stage = target.getStage()
           if (stage) {
             stage.container().style.cursor = 'default'
@@ -503,12 +536,12 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
           },
           roundCreated: currentRound, // Use actual current round
           spellDuration: persistDuration,
-          isSpellEffect: true // Mark as spell effect for cleanup
+          isSpellEffect: true as const // Mark as spell effect for cleanup
         }
 
         // Add persistent area to map using addSpellEffect to ensure it's tracked properly
-        const { addSpellEffect } = useMapStore.getState()
-        addSpellEffect(persistentAreaObject as any)
+        const addSpellEffect = useMapStore.getState().addSpellEffect
+        addSpellEffect(persistentAreaObject)
 
         // Remove the spell animation object
         setTimeout(() => {

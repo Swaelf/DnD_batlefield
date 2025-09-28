@@ -1,13 +1,12 @@
 import React, { memo, useState, useCallback } from 'react'
-import { Play, Pause, Square, Plus, Trash2, Copy, Settings } from 'lucide-react'
+import { Play, Pause, Plus, Trash2, Copy, Settings } from 'lucide-react'
 import {
   SEQUENCE_TYPES,
   SEQUENCE_TIMING,
   SEQUENCE_PRIORITIES,
-  SEQUENCE_TEMPLATES,
-  SEQUENCE_STATUS
+  SEQUENCE_TEMPLATES
 } from '@/constants'
-import type { SequenceEventData, SequenceAction, SequenceResult } from '@/types'
+import type { SequenceEventData, SequenceAction, SequenceResult, EventType, EventData, SequenceModifiers, SequenceCondition } from '@/types'
 import {
   Box,
   Button,
@@ -20,6 +19,23 @@ import {
   PanelBody,
   PanelSection
 } from '@/components/ui'
+
+// Convert template modifiers to proper SequenceModifiers format
+const convertTemplateModifiers = (templateModifiers: unknown): SequenceModifiers | undefined => {
+  if (!templateModifiers || typeof templateModifiers !== 'object') return undefined
+
+  const modifiers = templateModifiers as Record<string, unknown>
+  const converted: SequenceModifiers = {}
+
+  // Convert underscore format to camelCase
+  if (typeof modifiers.damage_bonus === 'string') converted.damageBonus = modifiers.damage_bonus
+  if (typeof modifiers.attack_bonus === 'number') converted.attackBonus = modifiers.attack_bonus
+  if (typeof modifiers.ac_bonus === 'number') converted.acBonus = modifiers.ac_bonus
+  if (typeof modifiers.attack_penalty === 'number') converted.attackPenalty = modifiers.attack_penalty
+  if (typeof modifiers.speed_bonus === 'number') converted.speedBonus = modifiers.speed_bonus
+
+  return Object.keys(converted).length > 0 ? converted : undefined
+}
 
 type ActionSequencerProps = {
   selectedSequence: Partial<SequenceEventData> | null
@@ -47,19 +63,22 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
       const newSequence: Partial<SequenceEventData> = {
         type: 'sequence',
         sequenceName: template.name,
-        sequenceType: template.type as any,
+        sequenceType: template.type as SequenceEventData['sequenceType'],
         templateId,
         actions: template.actions.map((action, index) => ({
           id: `action-${index}`,
-          type: action.type as any,
-          timing: action.timing as any,
+          type: action.type as Exclude<EventType, 'sequence'>,
+          timing: action.timing as SequenceAction['timing'],
           priority: action.priority,
-          delay: action.delay,
-          conditions: action.conditions?.map(cond => ({
-            type: cond as any,
-          })),
-          data: {} as any, // Will be filled by specific action config
-          modifiers: action.modifiers,
+          delay: 'delay' in action && typeof action.delay === 'number' ? action.delay : 0,
+          conditions: 'conditions' in action && Array.isArray(action.conditions) ? action.conditions.map((cond: unknown): SequenceCondition =>
+            typeof cond === 'object' && cond && 'type' in cond ? ({
+              type: String(cond.type) as SequenceCondition['type'],
+              value: 'value' in cond ? Number(cond.value) : undefined
+            }) : ({ type: 'success' as const })
+          ) : [],
+          data: {} as Exclude<EventData, SequenceEventData>, // Will be filled by specific action config
+          modifiers: 'modifiers' in action ? convertTemplateModifiers(action.modifiers) : undefined,
           optional: false,
         })),
         priority: SEQUENCE_PRIORITIES.NORMAL,
@@ -75,7 +94,7 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
       type: 'move',
       timing: 'immediate',
       priority: SEQUENCE_PRIORITIES.NORMAL,
-      data: {} as any,
+      data: {} as Exclude<EventData, SequenceEventData>,
     }
 
     onSequenceChange({
@@ -186,17 +205,17 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
   }
 
   return (
-    <Panel size="sidebar" css={{ borderLeft: '1px solid $gray800' }}>
+    <Panel size="sidebar" style={{ borderLeft: '1px solid var(--gray800)' }}>
       <PanelBody>
         <PanelSection>
-          <Box display="flex" alignItems="center" gap="2" css={{ marginBottom: '$3' }}>
+          <Box display="flex" alignItems="center" style={{ gap: 'var(--space-2)', marginBottom: '12px' }}>
             <Play size={20} />
             <Text size="md" weight="medium">Action Sequencer</Text>
           </Box>
 
           {/* Sequence Template Selection */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Sequence Templates</FieldLabel>
+          <Box style={{ marginBottom: '16px' }}>
+            <FieldLabel style={{ marginBottom: '8px' }}>Sequence Templates</FieldLabel>
             <Select
               value=""
               onValueChange={handleTemplateSelect}
@@ -211,21 +230,20 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
           </Box>
 
           {/* Sequence Configuration */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Sequence Name</FieldLabel>
+          <Box style={{ marginBottom: '16px' }}>
+            <FieldLabel style={{ marginBottom: '8px' }}>Sequence Name</FieldLabel>
             <Input
               value={sequence.sequenceName || ''}
-              onChange={(e) => onSequenceChange({ ...sequence, sequenceName: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSequenceChange({ ...sequence, sequenceName: e.target.value })}
               placeholder="Enter sequence name..."
-              size="sm"
             />
           </Box>
 
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Sequence Type</FieldLabel>
+          <Box style={{ marginBottom: '16px' }}>
+            <FieldLabel style={{ marginBottom: '8px' }}>Sequence Type</FieldLabel>
             <Select
               value={sequence.sequenceType || 'simple'}
-              onValueChange={(type) => onSequenceChange({ ...sequence, sequenceType: type as any })}
+              onValueChange={(type) => onSequenceChange({ ...sequence, sequenceType: type as SequenceEventData['sequenceType'] })}
             >
               {Object.values(SEQUENCE_TYPES).map((type) => (
                 <SelectOption key={type} value={type}>
@@ -235,8 +253,8 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
             </Select>
           </Box>
 
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Priority</FieldLabel>
+          <Box style={{ marginBottom: '16px' }}>
+            <FieldLabel style={{ marginBottom: '8px' }}>Priority</FieldLabel>
             <Select
               value={sequence.priority?.toString() || SEQUENCE_PRIORITIES.NORMAL.toString()}
               onValueChange={(priority) => onSequenceChange({ ...sequence, priority: parseInt(priority) })}
@@ -250,41 +268,49 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
           </Box>
 
           {/* Actions List */}
-          <Box css={{ marginBottom: '$4' }}>
-            <Box display="flex" alignItems="center" justifyContent="space-between" css={{ marginBottom: '$2' }}>
+          <Box style={{ marginBottom: '16px' }}>
+            <Box display="flex" alignItems="center" justifyContent="space-between" style={{ marginBottom: '8px' }}>
               <FieldLabel>Actions ({sequence.actions?.length || 0})</FieldLabel>
               <Button
                 onClick={handleAddAction}
                 variant="outline"
                 size="sm"
-                css={{
-                  backgroundColor: '$gray800',
-                  '&:hover': { backgroundColor: '$gray700' }
+                style={{
+                  backgroundColor: 'var(--gray800)',
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray700)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--gray800)'}
               >
                 <Plus size={14} />
               </Button>
             </Box>
 
-            <Box css={{ maxHeight: '300px', overflowY: 'auto' }}>
+            <Box style={{ maxHeight: '300px', overflowY: 'auto' }}>
               {(sequence.actions || []).map((action, index) => (
                 <Box
                   key={action.id}
-                  css={{
-                    padding: '$2',
-                    marginBottom: '$2',
-                    backgroundColor: selectedActionIndex === index ? '$gray700' : '$gray800',
-                    borderRadius: '$sm',
-                    border: '1px solid $gray600',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: '$gray700'
+                  style={{
+                    padding: '8px',
+                    marginBottom: '8px',
+                    backgroundColor: selectedActionIndex === index ? 'var(--colors-gray700)' : 'var(--colors-gray800)',
+                    borderRadius: 'var(--radii-sm)',
+                    border: '1px solid var(--colors-gray600)',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedActionIndex !== index) {
+                      e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedActionIndex !== index) {
+                      e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
                     }
                   }}
                   onClick={() => setSelectedActionIndex(selectedActionIndex === index ? -1 : index)}
                 >
                   <Box display="flex" alignItems="center" justifyContent="space-between">
-                    <Box display="flex" alignItems="center" gap="2">
+                    <Box display="flex" alignItems="center" style={{ gap: 'var(--space-2)' }}>
                       <Text size="sm" weight="medium">
                         {index + 1}. {action.type}
                       </Text>
@@ -295,7 +321,7 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
                         <Text size="sm">{getActionStatusIcon(index)}</Text>
                       )}
                     </Box>
-                    <Box display="flex" alignItems="center" gap="1">
+                    <Box display="flex" alignItems="center" style={{ gap: 'var(--space-1)' }}>
                       <Button
                         onClick={(e) => {
                           e.stopPropagation()
@@ -303,7 +329,7 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
                         }}
                         variant="ghost"
                         size="sm"
-                        css={{ padding: '$1' }}
+                        style={{ padding: '4px' }}
                       >
                         <Copy size={12} />
                       </Button>
@@ -314,7 +340,7 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
                         }}
                         variant="ghost"
                         size="sm"
-                        css={{ padding: '$1', color: '$red400' }}
+                        style={{ padding: '4px', color: 'var(--red400)' }}
                       >
                         <Trash2 size={12} />
                       </Button>
@@ -322,13 +348,13 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
                   </Box>
 
                   {selectedActionIndex === index && (
-                    <Box css={{ marginTop: '$2', paddingTop: '$2', borderTop: '1px solid $gray600' }}>
-                      <Box display="flex" gap="2" css={{ marginBottom: '$2' }}>
-                        <Box css={{ flex: 1 }}>
-                          <FieldLabel css={{ marginBottom: '$1' }}>Timing</FieldLabel>
+                    <Box style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--gray600)' }}>
+                      <Box display="flex" style={{ gap: 'var(--space-2)', marginBottom: '8px' }}>
+                        <Box style={{ flex: 1 }}>
+                          <FieldLabel style={{ marginBottom: '4px' }}>Timing</FieldLabel>
                           <Select
                             value={action.timing}
-                            onValueChange={(timing) => handleActionUpdate(index, { timing: timing as any })}
+                            onValueChange={(timing) => handleActionUpdate(index, { timing: timing as SequenceAction['timing'] })}
                             size="sm"
                           >
                             {Object.values(SEQUENCE_TIMING).map((timing) => (
@@ -338,38 +364,36 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
                             ))}
                           </Select>
                         </Box>
-                        <Box css={{ flex: 1 }}>
-                          <FieldLabel css={{ marginBottom: '$1' }}>Priority</FieldLabel>
+                        <Box style={{ flex: 1 }}>
+                          <FieldLabel style={{ marginBottom: '4px' }}>Priority</FieldLabel>
                           <Input
                             type="number"
                             value={action.priority}
-                            onChange={(e) => handleActionUpdate(index, { priority: parseInt(e.target.value) || 0 })}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleActionUpdate(index, { priority: parseInt(e.target.value) || 0 })}
                             min="0"
                             max="100"
-                            size="sm"
                           />
                         </Box>
                       </Box>
 
                       {action.timing === 'delayed' && (
-                        <Box css={{ marginBottom: '$2' }}>
-                          <FieldLabel css={{ marginBottom: '$1' }}>Delay (ms)</FieldLabel>
+                        <Box style={{ marginBottom: '8px' }}>
+                          <FieldLabel style={{ marginBottom: '4px' }}>Delay (ms)</FieldLabel>
                           <Input
                             type="number"
                             value={action.delay || 0}
-                            onChange={(e) => handleActionUpdate(index, { delay: parseInt(e.target.value) || 0 })}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleActionUpdate(index, { delay: parseInt(e.target.value) || 0 })}
                             min="0"
-                            size="sm"
                           />
                         </Box>
                       )}
 
-                      <Box css={{ marginBottom: '$2' }}>
-                        <Box display="flex" alignItems="center" gap="2">
+                      <Box style={{ marginBottom: '8px' }}>
+                        <Box display="flex" alignItems="center" style={{ gap: 'var(--space-2)' }}>
                           <input
                             type="checkbox"
                             checked={action.optional || false}
-                            onChange={(e) => handleActionUpdate(index, { optional: e.target.checked })}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleActionUpdate(index, { optional: e.target.checked })}
                           />
                           <Text size="sm">Optional (sequence continues on failure)</Text>
                         </Box>
@@ -382,23 +406,16 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
           </Box>
 
           {/* Execution Controls */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Execution</FieldLabel>
-            <Box display="flex" gap="2">
+          <Box style={{ marginBottom: '16px' }}>
+            <FieldLabel style={{ marginBottom: '8px' }}>Execution</FieldLabel>
+            <Box display="flex" style={{ gap: 'var(--space-2)' }}>
               <Button
                 onClick={handleExecute}
                 disabled={isExecuting || !sequence.sequenceName || !sequence.actions?.length}
                 variant="primary"
-                css={{
-                  backgroundColor: '$green600',
-                  color: '$white',
-                  '&:hover:not(:disabled)': {
-                    backgroundColor: '$green700'
-                  },
-                  '&:disabled': {
-                    opacity: 0.5,
-                    cursor: 'not-allowed'
-                  }
+                style={{
+                  backgroundColor: 'var(--green600)',
+                  color: 'var(--white)'
                 }}
               >
                 {isExecuting ? <Pause size={16} /> : <Play size={16} />}
@@ -408,9 +425,8 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
               <Button
                 onClick={() => setPreviewMode(!previewMode)}
                 variant="outline"
-                css={{
-                  backgroundColor: '$gray700',
-                  '&:hover': { backgroundColor: '$gray600' }
+                style={{
+                  backgroundColor: 'var(--gray700)'
                 }}
               >
                 <Settings size={16} />
@@ -421,17 +437,17 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
 
           {/* Execution Status */}
           {executionResult && (
-            <Box css={{ marginBottom: '$4' }}>
-              <FieldLabel css={{ marginBottom: '$2' }}>Status</FieldLabel>
+            <Box style={{ marginBottom: '16px' }}>
+              <FieldLabel style={{ marginBottom: '8px' }}>Status</FieldLabel>
               <Box
-                css={{
-                  padding: '$2',
-                  backgroundColor: '$gray800',
-                  borderRadius: '$sm',
-                  border: `1px solid ${getSequenceStatusColor()}`,
+                style={{
+                  padding: '8px',
+                  backgroundColor: 'var(--gray800)',
+                  borderRadius: '8px',
+                  border: `1px solid ${getSequenceStatusColor()}`
                 }}
               >
-                <Text size="sm" css={{ color: getSequenceStatusColor() }}>
+                <Text size="sm" color="gray100">
                   {executionResult.status.toUpperCase()}
                 </Text>
                 <Text size="xs" color="gray400">
@@ -447,13 +463,12 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
           )}
 
           {/* Description */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Description</FieldLabel>
+          <Box style={{ marginBottom: '16px' }}>
+            <FieldLabel style={{ marginBottom: '8px' }}>Description</FieldLabel>
             <Input
               value={sequence.description || ''}
-              onChange={(e) => onSequenceChange({ ...sequence, description: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSequenceChange({ ...sequence, description: e.target.value })}
               placeholder="Describe the sequence..."
-              size="sm"
             />
           </Box>
         </PanelSection>

@@ -19,7 +19,7 @@ export type { LegacyTokenLibraryProps } from './LegacyTokenLibraryAdapter'
 
 // Also export the originals for direct access if needed
 export { Token as LegacyToken } from './Token'
-export { TokenLibrary as LegacyTokenLibrary } from './TokenLibrary'
+export { default as LegacyTokenLibrary } from './TokenLibrary'
 
 // Export types for compatibility
 export type { Token as TokenType } from '@/types/token'

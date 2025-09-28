@@ -1,5 +1,11 @@
+/**
+ * ActionLogEntry Component
+ * Individual action entry display with expandable details
+ */
+
 import { memo } from 'react'
-import { styled } from '@/styles/theme.config'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
 import type { ActionHistoryEntry } from '@/types/unifiedAction'
 import {
   Sword,
@@ -19,149 +25,6 @@ type ActionLogEntryProps = {
   onToggleExpand?: () => void
 }
 
-const EntryContainer = styled('div', {
-  padding: '$2 $3',
-  borderBottom: '1px solid $gray700',
-  cursor: 'pointer',
-  transition: 'background-color 0.2s',
-
-  '&:hover': {
-    backgroundColor: '$gray800'
-  },
-
-  variants: {
-    status: {
-      completed: {
-        borderLeft: '3px solid $success'
-      },
-      failed: {
-        borderLeft: '3px solid $error'
-      },
-      executing: {
-        borderLeft: '3px solid $warning',
-        backgroundColor: '$gray800'
-      }
-    }
-  }
-})
-
-const EntryHeader = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2'
-})
-
-const TypeIcon = styled('div', {
-  width: 24,
-  height: 24,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: '$small',
-  flexShrink: 0,
-
-  variants: {
-    type: {
-      spell: {
-        backgroundColor: '$purple',
-        color: 'white'
-      },
-      attack: {
-        backgroundColor: '$dndRed',
-        color: 'white'
-      },
-      interaction: {
-        backgroundColor: '$secondary',
-        color: '$gray900'
-      },
-      move: {
-        backgroundColor: '$gray600',
-        color: 'white'
-      }
-    }
-  }
-})
-
-const EntryTitle = styled('div', {
-  flex: 1,
-  fontSize: '$small',
-  fontWeight: 500,
-  color: '$text'
-})
-
-const StatusIcon = styled('div', {
-  width: 20,
-  height: 20,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-
-  variants: {
-    status: {
-      completed: {
-        color: '$success'
-      },
-      failed: {
-        color: '$error'
-      },
-      executing: {
-        color: '$warning'
-      }
-    }
-  }
-})
-
-const Timestamp = styled('div', {
-  fontSize: '$tiny',
-  color: '$gray500',
-  marginLeft: 'auto',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1'
-})
-
-const EntryDetails = styled('div', {
-  marginTop: '$2',
-  marginLeft: 32,
-  padding: '$2',
-  backgroundColor: '$gray850',
-  borderRadius: '$small',
-  fontSize: '$small',
-  color: '$gray400'
-})
-
-const DetailRow = styled('div', {
-  display: 'flex',
-  justifyContent: 'space-between',
-  padding: '$1 0',
-
-  '& span:first-child': {
-    color: '$gray500',
-    marginRight: '$2'
-  },
-
-  '& span:last-child': {
-    color: '$text',
-    fontFamily: '$mono',
-    fontSize: '$tiny'
-  }
-})
-
-const AffectedTargets = styled('div', {
-  marginTop: '$1',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  flexWrap: 'wrap'
-})
-
-const TargetChip = styled('span', {
-  padding: '2px 6px',
-  backgroundColor: '$gray700',
-  borderRadius: '$small',
-  fontSize: '$tiny',
-  color: '$secondary'
-})
 
 const ActionLogEntryComponent = ({
   entry,
@@ -238,81 +101,339 @@ const ActionLogEntryComponent = ({
     return `${entry.duration}ms`
   }
 
+  const getTypeIconStyle = () => {
+    const baseStyle = {
+      width: '24px',
+      height: '24px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '4px',
+      flexShrink: 0
+    }
+
+    switch (entry.type) {
+      case 'spell':
+        return { ...baseStyle, backgroundColor: 'var(--colors-purple600)', color: 'white' }
+      case 'attack':
+        return { ...baseStyle, backgroundColor: 'var(--colors-dndRed)', color: 'white' }
+      case 'interaction':
+        return { ...baseStyle, backgroundColor: 'var(--colors-secondary)', color: 'var(--colors-gray900)' }
+      case 'move':
+        return { ...baseStyle, backgroundColor: 'var(--colors-gray600)', color: 'white' }
+      default:
+        return { ...baseStyle, backgroundColor: 'var(--colors-gray600)', color: 'white' }
+    }
+  }
+
+  const getStatusColor = () => {
+    switch (entry.status) {
+      case 'completed':
+        return 'var(--colors-success)'
+      case 'failed':
+        return 'var(--colors-error)'
+      case 'executing':
+        return 'var(--colors-warning)'
+      default:
+        return 'var(--colors-gray400)'
+    }
+  }
+
+  const getContainerStyle = () => {
+    let borderLeftColor = 'transparent'
+    let backgroundColor = 'transparent'
+
+    switch (entry.status) {
+      case 'completed':
+        borderLeftColor = 'var(--colors-success)'
+        break
+      case 'failed':
+        borderLeftColor = 'var(--colors-error)'
+        break
+      case 'executing':
+        borderLeftColor = 'var(--colors-warning)'
+        backgroundColor = 'var(--colors-gray800)'
+        break
+    }
+
+    return {
+      padding: '8px 12px',
+      borderBottom: '1px solid var(--colors-gray700)',
+      borderLeft: `3px solid ${borderLeftColor}`,
+      backgroundColor,
+      cursor: 'pointer',
+      transition: 'background-color 0.2s'
+    }
+  }
+
   return (
-    <EntryContainer
-      status={entry.status}
+    <Box
+      style={getContainerStyle()}
       onClick={onToggleExpand}
     >
-      <EntryHeader>
-        <TypeIcon type={entry.type}>
+      {/* Entry Header */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}
+      >
+        {/* Type Icon */}
+        <Box style={getTypeIconStyle()}>
           {getTypeIcon()}
-        </TypeIcon>
+        </Box>
 
-        <EntryTitle>
+        {/* Title */}
+        <Text
+          variant="body"
+          size="sm"
+          style={{
+            flex: 1,
+            fontWeight: '500',
+            color: 'var(--colors-gray200)'
+          }}
+        >
           {getActionDescription()}
-        </EntryTitle>
+        </Text>
 
-        <StatusIcon status={entry.status}>
+        {/* Status Icon */}
+        <Box
+          style={{
+            width: '20px',
+            height: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: getStatusColor()
+          }}
+        >
           {getStatusIcon()}
-        </StatusIcon>
+        </Box>
 
-        <Timestamp>
+        {/* Timestamp */}
+        <Box
+          style={{
+            fontSize: '10px',
+            color: 'var(--colors-gray500)',
+            marginLeft: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
           <Clock size={12} />
           {formatTimestamp(entry.timestamp)}
-        </Timestamp>
-      </EntryHeader>
+        </Box>
+      </Box>
 
+      {/* Expanded Details */}
       {isExpanded && (
-        <EntryDetails>
-          <DetailRow>
-            <span>Category:</span>
-            <span>{entry.category}</span>
-          </DetailRow>
+        <Box
+          style={{
+            marginTop: '8px',
+            marginLeft: '32px',
+            padding: '8px',
+            backgroundColor: 'var(--colors-gray850)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            color: 'var(--colors-gray400)'
+          }}
+        >
+          {/* Category */}
+          <Box
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '4px 0'
+            }}
+          >
+            <Text
+              variant="body"
+              size="xs"
+              style={{ color: 'var(--colors-gray500)' }}
+            >
+              Category:
+            </Text>
+            <Text
+              variant="body"
+              size="xs"
+              style={{
+                color: 'var(--colors-gray200)',
+                fontFamily: 'monospace'
+              }}
+            >
+              {entry.category}
+            </Text>
+          </Box>
 
-          <DetailRow>
-            <span>Duration:</span>
-            <span>{getDuration()}</span>
-          </DetailRow>
+          {/* Duration */}
+          <Box
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '4px 0'
+            }}
+          >
+            <Text
+              variant="body"
+              size="xs"
+              style={{ color: 'var(--colors-gray500)' }}
+            >
+              Duration:
+            </Text>
+            <Text
+              variant="body"
+              size="xs"
+              style={{
+                color: 'var(--colors-gray200)',
+                fontFamily: 'monospace'
+              }}
+            >
+              {getDuration()}
+            </Text>
+          </Box>
 
+          {/* Animation */}
           {entry.animation && (
-            <DetailRow>
-              <span>Animation:</span>
-              <span>{entry.animation.type}</span>
-            </DetailRow>
+            <Box
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '4px 0'
+              }}
+            >
+              <Text
+                variant="body"
+                size="xs"
+                style={{ color: 'var(--colors-gray500)' }}
+              >
+                Animation:
+              </Text>
+              <Text
+                variant="body"
+                size="xs"
+                style={{
+                  color: 'var(--colors-gray200)',
+                  fontFamily: 'monospace'
+                }}
+              >
+                {entry.animation.type}
+              </Text>
+            </Box>
           )}
 
+          {/* Affected Targets */}
           {entry.effects?.affectedTargets && entry.effects.affectedTargets.length > 0 && (
             <>
-              <DetailRow>
-                <span>Affected Targets:</span>
-              </DetailRow>
-              <AffectedTargets>
+              <Box
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '4px 0'
+                }}
+              >
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{ color: 'var(--colors-gray500)' }}
+                >
+                  Affected Targets:
+                </Text>
+              </Box>
+              <Box
+                style={{
+                  marginTop: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  flexWrap: 'wrap'
+                }}
+              >
                 {entry.effects.affectedTargets.map(targetId => (
-                  <TargetChip key={targetId}>
-                    <Target size={10} style={{ display: 'inline', marginRight: 2 }} />
+                  <Text
+                    key={targetId}
+                    variant="body"
+                    size="xs"
+                    style={{
+                      padding: '2px 6px',
+                      backgroundColor: 'var(--colors-gray700)',
+                      borderRadius: '4px',
+                      color: 'var(--colors-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '2px'
+                    }}
+                  >
+                    <Target size={10} />
                     {targetId}
-                  </TargetChip>
+                  </Text>
                 ))}
-              </AffectedTargets>
+              </Box>
             </>
           )}
 
+          {/* Error */}
           {entry.error && (
-            <DetailRow style={{ color: '$error' }}>
-              <span>Error:</span>
-              <span>{entry.error}</span>
-            </DetailRow>
+            <Box
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '4px 0',
+                color: 'var(--colors-error)'
+              }}
+            >
+              <Text
+                variant="body"
+                size="xs"
+                style={{ color: 'var(--colors-gray500)' }}
+              >
+                Error:
+              </Text>
+              <Text
+                variant="body"
+                size="xs"
+                style={{
+                  color: 'var(--colors-error)',
+                  fontFamily: 'monospace'
+                }}
+              >
+                {entry.error}
+              </Text>
+            </Box>
           )}
 
+          {/* Description */}
           {entry.metadata.description && (
-            <DetailRow>
-              <span>Description:</span>
-              <span>{entry.metadata.description}</span>
-            </DetailRow>
+            <Box
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '4px 0'
+              }}
+            >
+              <Text
+                variant="body"
+                size="xs"
+                style={{ color: 'var(--colors-gray500)' }}
+              >
+                Description:
+              </Text>
+              <Text
+                variant="body"
+                size="xs"
+                style={{
+                  color: 'var(--colors-gray200)',
+                  fontFamily: 'monospace'
+                }}
+              >
+                {entry.metadata.description}
+              </Text>
+            </Box>
           )}
-        </EntryDetails>
+        </Box>
       )}
-    </EntryContainer>
+    </Box>
   )
 }
 

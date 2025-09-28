@@ -46,13 +46,15 @@ export const button = recipe({
     },
 
     ':disabled': {
-      opacity: '0.6',
+      opacity: 0.6,
       cursor: 'not-allowed',
       transform: 'none',
     },
 
-    ':disabled:hover': {
-      transform: 'none',
+    selectors: {
+      '&:disabled:hover': {
+        transform: 'none',
+      },
     },
   },
 

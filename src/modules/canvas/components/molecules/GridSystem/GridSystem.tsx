@@ -9,7 +9,7 @@ import React, { useMemo } from 'react'
 import { Group } from 'react-konva'
 import { GridLine } from '../../atoms'
 import type { Rectangle, Point } from '@/types/geometry'
-import type { GridConfig, GridType } from '../../../types'
+import type { GridConfig } from '../../../services'
 
 export interface GridSystemProps {
   readonly config: GridConfig
@@ -73,8 +73,8 @@ export const GridSystem: React.FC<GridSystemProps> = React.memo(({
       }
 
       // Sub-grid lines if configured
-      if (config.subGrid && config.subGrid.visible && config.subGrid.divisions > 1) {
-        const subSize = config.size / config.subGrid.divisions
+      if (config.subGrid && config.subGrid.visible && config.subGrid.subdivisions > 1) {
+        const subSize = config.size / config.subGrid.subdivisions
 
         // Sub-grid vertical lines
         for (let x = startX; x <= endX; x += subSize) {
@@ -131,7 +131,7 @@ export const GridSystem: React.FC<GridSystemProps> = React.memo(({
           stroke={config.subGrid?.color || config.color}
           strokeWidth={config.subGrid?.strokeWidth || config.strokeWidth * 0.5}
           opacity={(config.subGrid?.opacity || config.opacity) * 0.6}
-          isMajor={false}
+          _isMajor={false}
         />
       ))}
 
@@ -144,7 +144,7 @@ export const GridSystem: React.FC<GridSystemProps> = React.memo(({
           stroke={config.color}
           strokeWidth={config.strokeWidth}
           opacity={config.opacity}
-          isMajor={true}
+          _isMajor={true}
         />
       ))}
     </Group>

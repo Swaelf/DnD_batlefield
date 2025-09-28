@@ -1,13 +1,12 @@
 /**
  * SpellSearch Molecule Component
- *
- * Advanced search interface for spells with school and level filtering.
- * Follows molecular design patterns with 60-90 line constraint.
+ * Advanced search interface for spells with school and level filtering
  */
 
 import React from 'react'
 import { Search, X, Settings } from 'lucide-react'
-import { styled } from '@/styles/theme.config'
+import { Box } from '@/components/primitives/BoxVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import { useSpellLibrary } from '../../../hooks'
 import type { SpellSchoolId, SpellCategoryId } from '../../../types'
 
@@ -16,124 +15,9 @@ interface SpellSearchProps {
   className?: string
 }
 
-const SearchContainer = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '$2'
-})
-
-const SearchInputRow = styled('div', {
-  display: 'flex',
-  gap: '$2',
-  alignItems: 'center'
-})
-
-const SearchWrapper = styled('div', {
-  position: 'relative',
-  flex: 1
-})
-
-const SearchInput = styled('input', {
-  width: '100%',
-  padding: '$2 $3',
-  paddingLeft: '$8',
-  borderRadius: '$2',
-  border: '1px solid $gray400',
-  fontSize: '$sm',
-  background: '$gray100',
-  color: '$gray900',
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$dndRed',
-    background: 'white'
-  },
-
-  '&::placeholder': {
-    color: '$gray600'
-  }
-})
-
-const SearchIcon = styled(Search, {
-  position: 'absolute',
-  left: '$2',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  color: '$gray600',
-  size: 16
-})
-
-const ClearButton = styled('button', {
-  position: 'absolute',
-  right: '$2',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  background: 'none',
-  border: 'none',
-  padding: '$1',
-  borderRadius: '$1',
-  cursor: 'pointer',
-  color: '$gray600',
-
-  '&:hover': {
-    color: '$gray800',
-    background: '$gray200'
-  }
-})
-
-const CustomToggle = styled('button', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  padding: '$2',
-  borderRadius: '$2',
-  border: '1px solid $gray400',
-  background: '$gray100',
-  color: '$gray700',
-  fontSize: '$xs',
-  cursor: 'pointer',
-  whiteSpace: 'nowrap',
-
-  '&:hover': {
-    background: '$gray200'
-  },
-
-  variants: {
-    active: {
-      true: {
-        background: '$dndRed',
-        color: 'white',
-        borderColor: '$dndRed'
-      }
-    }
-  }
-})
-
-const FilterRow = styled('div', {
-  display: 'flex',
-  gap: '$2',
-  alignItems: 'center',
-  flexWrap: 'wrap'
-})
-
-const Select = styled('select', {
-  padding: '$1 $2',
-  borderRadius: '$2',
-  border: '1px solid $gray400',
-  background: '$gray100',
-  color: '$gray700',
-  fontSize: '$xs',
-  cursor: 'pointer',
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$dndRed',
-    background: 'white'
-  }
-})
 
 export const SpellSearch: React.FC<SpellSearchProps> = ({
-  onToggleCustom,
+  onToggleCustom: _onToggleCustom,
   className
 }) => {
   const {
@@ -171,63 +55,178 @@ export const SpellSearch: React.FC<SpellSearchProps> = ({
   }
 
   return (
-    <SearchContainer className={className}>
-      <SearchInputRow>
-        <SearchWrapper>
-          <SearchIcon />
-          <SearchInput
+    <Box
+      className={className}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px'
+      }}
+    >
+      {/* Search Input Row */}
+      <Box
+        style={{
+          display: 'flex',
+          gap: '8px',
+          alignItems: 'center'
+        }}
+      >
+        {/* Search Input Wrapper */}
+        <Box
+          style={{
+            position: 'relative',
+            flex: 1
+          }}
+        >
+          <Search
+            size={16}
+            style={{
+              position: 'absolute',
+              left: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--colors-gray600)',
+              pointerEvents: 'none'
+            }}
+          />
+          <input
             type="text"
             placeholder="Search spells..."
             value={selection.searchQuery}
             onChange={handleQueryChange}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              paddingLeft: '32px',
+              borderRadius: '4px',
+              border: '1px solid var(--colors-gray400)',
+              fontSize: '14px',
+              backgroundColor: 'var(--colors-gray100)',
+              color: 'var(--colors-gray900)',
+              outline: 'none'
+            }}
           />
           {selection.searchQuery && (
-            <ClearButton onClick={handleClear} title="Clear search">
+            <button
+              onClick={handleClear}
+              title="Clear search"
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                padding: '4px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                color: 'var(--colors-gray600)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
               <X size={14} />
-            </ClearButton>
+            </button>
           )}
-        </SearchWrapper>
+        </Box>
 
-        <CustomToggle
-          active={selection.showCustomSpells}
+        {/* Custom Toggle */}
+        <Button
+          variant={selection.showCustomSpells ? 'primary' : 'outline'}
+          size="sm"
           onClick={toggleCustomSpells}
           title="Include custom spells"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            whiteSpace: 'nowrap',
+            fontSize: '12px',
+            backgroundColor: selection.showCustomSpells ? 'var(--colors-dndRed)' : 'var(--colors-gray100)',
+            color: selection.showCustomSpells ? 'white' : 'var(--colors-gray700)',
+            borderColor: selection.showCustomSpells ? 'var(--colors-dndRed)' : 'var(--colors-gray400)'
+          }}
         >
           <Settings size={12} />
           Custom
-        </CustomToggle>
-      </SearchInputRow>
+        </Button>
+      </Box>
 
-      <FilterRow>
-        <Select value={selection.activeSchool} onChange={handleSchoolChange}>
+      {/* Filter Row */}
+      <Box
+        style={{
+          display: 'flex',
+          gap: '8px',
+          alignItems: 'center',
+          flexWrap: 'wrap'
+        }}
+      >
+        <select
+          value={selection.activeSchool}
+          onChange={handleSchoolChange}
+          style={{
+            padding: '4px 8px',
+            borderRadius: '4px',
+            border: '1px solid var(--colors-gray400)',
+            backgroundColor: 'var(--colors-gray100)',
+            color: 'var(--colors-gray700)',
+            fontSize: '12px',
+            cursor: 'pointer',
+            outline: 'none'
+          }}
+        >
           <option value="all">All Schools</option>
           {schools.map(school => (
             <option key={school.id} value={school.id}>
               {school.name} ({school.count})
             </option>
           ))}
-        </Select>
+        </select>
 
-        <Select value={selection.activeCategory} onChange={handleCategoryChange}>
+        <select
+          value={selection.activeCategory}
+          onChange={handleCategoryChange}
+          style={{
+            padding: '4px 8px',
+            borderRadius: '4px',
+            border: '1px solid var(--colors-gray400)',
+            backgroundColor: 'var(--colors-gray100)',
+            color: 'var(--colors-gray700)',
+            fontSize: '12px',
+            cursor: 'pointer',
+            outline: 'none'
+          }}
+        >
           <option value="all">All Categories</option>
           {categories.map(category => (
             <option key={category.id} value={category.id}>
               {category.name} ({category.count})
             </option>
           ))}
-        </Select>
+        </select>
 
-        <Select
+        <select
           value={`${selection.levelFilter.min}-${selection.levelFilter.max}`}
           onChange={handleLevelChange}
+          style={{
+            padding: '4px 8px',
+            borderRadius: '4px',
+            border: '1px solid var(--colors-gray400)',
+            backgroundColor: 'var(--colors-gray100)',
+            color: 'var(--colors-gray700)',
+            fontSize: '12px',
+            cursor: 'pointer',
+            outline: 'none'
+          }}
         >
           <option value="0-9">All Levels</option>
           <option value="0-0">Cantrips</option>
           <option value="1-2">Low (1-2)</option>
           <option value="3-5">Mid (3-5)</option>
           <option value="6-9">High (6-9)</option>
-        </Select>
-      </FilterRow>
-    </SearchContainer>
+        </select>
+      </Box>
+    </Box>
   )
 }

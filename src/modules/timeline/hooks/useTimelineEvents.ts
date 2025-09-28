@@ -3,7 +3,7 @@
  * Hook for subscribing to and handling timeline domain events
  */
 
-import { useEffect, useCallback, useMemo } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useEventBus } from '@/core/events'
 import { useTimeline } from './useTimeline'
 import type { EventId, RoundId, Timeline, RoundEvent } from '../types'
@@ -12,7 +12,7 @@ import type { EventId, RoundId, Timeline, RoundEvent } from '../types'
  * Timeline domain events
  */
 export type TimelineEventPayload = {
-  TIMELINE_CREATED: { timelineId: string; timeline: Timeline }
+  TIMELINE_CREATED: { timelineId: string; name: string }
   TIMELINE_ACTIVATED: { timelineId: string }
   TIMELINE_DELETED: { timelineId: string }
 
@@ -23,10 +23,10 @@ export type TimelineEventPayload = {
   ROUND_REMOVED: { timelineId: string; roundId: string }
   ROUND_ADVANCED: { timelineId: string; fromRound: number; toRound: number }
 
-  EVENT_CREATED: { timelineId: string; roundId: string; eventId: string; event: RoundEvent }
-  EVENT_UPDATED: { timelineId: string; eventId: string; event: RoundEvent }
+  EVENT_CREATED: { timelineId: string; roundId: string; eventId: string }
+  EVENT_UPDATED: { timelineId: string; eventId: string }
   EVENT_DELETED: { timelineId: string; eventId: string }
-  EVENT_EXECUTED: { timelineId: string; eventId: string; success: boolean }
+  EVENT_EXECUTED: { eventId: string; roundId: string; success: boolean }
   EVENT_SELECTED: { timelineId: string; eventIds: string[] }
 
   PLAYBACK_STARTED: { timelineId: string }
@@ -38,7 +38,7 @@ export type TimelineEventPayload = {
  * Hook for timeline event handling
  */
 export const useTimelineEvents = () => {
-  const { emit, on, off } = useEventBus()
+  const { emit, on } = useEventBus()
   const timeline = useTimeline()
 
   // Emit timeline events when state changes
@@ -56,7 +56,7 @@ export const useTimelineEvents = () => {
 
   // Event emission helpers
   const emitTimelineCreated = useCallback((timelineObj: Timeline) => {
-    emit('TIMELINE_CREATED', { timelineId: timelineObj.id, timeline: timelineObj })
+    emit('TIMELINE_CREATED', { timelineId: timelineObj.id, name: timelineObj.name })
   }, [emit])
 
   const emitTimelineActivated = useCallback((timelineId: string) => {
@@ -87,20 +87,20 @@ export const useTimelineEvents = () => {
     emit('ROUND_ADVANCED', { timelineId, fromRound, toRound })
   }, [emit])
 
-  const emitEventCreated = useCallback((timelineId: string, roundId: string, eventId: string, event: RoundEvent) => {
-    emit('EVENT_CREATED', { timelineId, roundId, eventId, event })
+  const emitEventCreated = useCallback((timelineId: string, roundId: string, eventId: string, _event: RoundEvent) => {
+    emit('EVENT_CREATED', { timelineId, roundId, eventId })
   }, [emit])
 
-  const emitEventUpdated = useCallback((timelineId: string, eventId: string, event: RoundEvent) => {
-    emit('EVENT_UPDATED', { timelineId, eventId, event })
+  const emitEventUpdated = useCallback((timelineId: string, eventId: string, _event: RoundEvent) => {
+    emit('EVENT_UPDATED', { timelineId, eventId })
   }, [emit])
 
   const emitEventDeleted = useCallback((timelineId: string, eventId: string) => {
     emit('EVENT_DELETED', { timelineId, eventId })
   }, [emit])
 
-  const emitEventExecuted = useCallback((timelineId: string, eventId: string, success: boolean) => {
-    emit('EVENT_EXECUTED', { timelineId, eventId, success })
+  const emitEventExecuted = useCallback((_timelineId: string, eventId: EventId, success: boolean) => {
+    emit('EVENT_EXECUTED', { eventId, roundId: 'current' as RoundId, success })
   }, [emit])
 
   const emitEventSelected = useCallback((timelineId: string, eventIds: string[]) => {
@@ -139,8 +139,7 @@ export const useTimelineEvents = () => {
     emitPlaybackSpeedChanged,
 
     // Event subscription methods
-    on,
-    off
+    on
   }
 }
 
@@ -152,12 +151,12 @@ export const useTimelineEventSubscription = <K extends keyof TimelineEventPayloa
   handler: (payload: TimelineEventPayload[K]) => void,
   deps: React.DependencyList = []
 ) => {
-  const { on, off } = useEventBus()
+  const { on } = useEventBus()
 
   useEffect(() => {
-    const subscription = on(eventType, handler)
-    return () => subscription.unsubscribe()
-  }, [eventType, handler, on, off, ...deps])
+    const cleanup = on(eventType, handler as any)
+    return cleanup
+  }, [eventType, handler, on, ...deps])
 }
 
 /**
@@ -357,7 +356,7 @@ export const useTimelineEventLogger = (enabled: boolean = false) => {
     })
 
     return () => {
-      subscriptions.forEach(sub => sub.unsubscribe())
+      subscriptions.forEach(cleanup => cleanup())
     }
   }, [enabled, on])
 }

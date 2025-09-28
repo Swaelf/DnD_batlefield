@@ -68,6 +68,12 @@ const CloseButton = styled(IconButton, {
   right: '$md'
 })
 
+const ModalTitle = styled(Box, {
+  fontSize: '$lg',
+  fontWeight: '$semibold',
+  margin: 0
+})
+
 export const Modal = ({
   open,
   onClose,
@@ -101,6 +107,7 @@ export const Modal = ({
         document.body.style.overflow = originalOverflow
       }
     }
+    return undefined
   }, [open])
 
   if (!open) return null
@@ -132,9 +139,9 @@ export const Modal = ({
 
         {title && (
           <ModalHeader>
-            <Box as="h2" id="modal-title" css={{ fontSize: '$lg', fontWeight: '$semibold', margin: 0 }}>
+            <ModalTitle as="h2" id="modal-title">
               {title}
-            </Box>
+            </ModalTitle>
           </ModalHeader>
         )}
 

@@ -1,46 +1,29 @@
 import React, { memo } from 'react'
 import {
   DoorOpen,
-  DoorClosed,
   AlertTriangle,
   Settings,
   Box as BoxIcon,
   ToggleLeft,
   ToggleRight,
   CircleDot,
-  Zap,
-  Search
+  Zap
 } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import {
   INTERACTION_TYPES,
-  DOOR_TYPES,
-  DOOR_STATES,
-  TRAP_TYPES,
-  TRAP_STATES,
-  CONTAINER_TYPES,
-  CONTAINER_STATES,
-  SWITCH_STATES,
-  PORTAL_STATES,
   DIFFICULTY_CLASSES,
   INTERACTION_DURATIONS,
   INTERACTION_EFFECTS,
   INTERACTION_PRESETS
 } from '@/constants'
-import type { InteractionEventData } from '@/types'
-import {
-  Box,
-  Button,
-  Text,
-  Select,
-  SelectOption,
-  Input,
-  FieldLabel,
-  Panel,
-  PanelBody,
-  PanelSection
-} from '@/components/ui'
+import type { InteractionEventData } from '@/types/timeline'
 
-type InteractionActionConfigProps = {
+export type InteractionActionConfigProps = {
   selectedInteraction: Partial<InteractionEventData> | null
   onInteractionChange: (interaction: Partial<InteractionEventData>) => void
 }
@@ -60,23 +43,23 @@ const InteractionActionConfigComponent: React.FC<InteractionActionConfigProps> =
     if (presetKey) {
       const preset = INTERACTION_PRESETS[presetKey as keyof typeof INTERACTION_PRESETS]
       onInteractionChange({
+        ...preset,
         type: 'interaction',
-        interactionType: interactionType as any,
+        interactionType: interactionType as InteractionEventData['interactionType'],
         action: getDefaultAction(interactionType),
         duration: INTERACTION_DURATIONS.NORMAL,
-        effect: INTERACTION_EFFECTS.GLOW,
-        ...preset
+        effect: INTERACTION_EFFECTS.GLOW
       })
     } else {
       onInteractionChange({
         ...interaction,
-        interactionType: interactionType as any,
+        interactionType: interactionType as InteractionEventData['interactionType'],
         action: getDefaultAction(interactionType)
       })
     }
   }
 
-  const getDefaultAction = (interactionType: string): string => {
+  const getDefaultAction = (interactionType: string): InteractionEventData['action'] => {
     switch (interactionType) {
       case INTERACTION_TYPES.DOOR:
         return 'open'
@@ -149,165 +132,259 @@ const InteractionActionConfigComponent: React.FC<InteractionActionConfigProps> =
   }))
 
   return (
-    <Panel size="sidebar" css={{ borderLeft: '1px solid $gray800' }}>
-      <PanelBody>
-        <PanelSection>
-          <Box display="flex" alignItems="center" gap="2" css={{ marginBottom: '$3' }}>
-            <Settings size={20} />
-            <Text size="md" weight="medium">Object Interaction</Text>
-          </Box>
+    <Box
+      style={{
+        padding: '16px',
+        backgroundColor: 'var(--colors-gray900)',
+        borderLeft: '1px solid var(--colors-gray800)',
+        width: '320px',
+        height: '100%',
+        overflowY: 'auto'
+      }}
+    >
+      <Box style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <Settings size={20} />
+          <Text
+            variant="body"
+            size="md"
+            style={{
+              fontWeight: '500',
+              margin: 0,
+              color: 'var(--colors-gray100)'
+            }}
+          >
+            Object Interaction
+          </Text>
+        </Box>
 
-          {/* Interaction Type Selection */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Interaction Type</FieldLabel>
-            <Select
-              value={interaction.interactionType || ''}
-              onValueChange={handleInteractionTypeChange}
-              placeholder="Select interaction type..."
+        {/* Interaction Type Selection */}
+        <Box style={{ marginBottom: '16px' }}>
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--colors-gray200)',
+              fontWeight: '500'
+            }}
+          >
+            Interaction Type
+          </Text>
+          <Select
+            value={interaction.interactionType || ''}
+            onValueChange={handleInteractionTypeChange}
+          >
+            <option value="">Select interaction type...</option>
+            {Object.values(INTERACTION_TYPES).map((type) => (
+              <option key={type} value={type}>
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </option>
+            ))}
+          </Select>
+        </Box>
+
+        {/* Preset Selection */}
+        <Box style={{ marginBottom: '16px' }}>
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--colors-gray200)',
+              fontWeight: '500'
+            }}
+          >
+            Preset Objects
+          </Text>
+          <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+            {interactionPresets
+              .filter(preset => !interaction.interactionType || preset.type === interaction.interactionType)
+              .map((preset) => (
+              <Button
+                key={preset.id}
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const presetData = INTERACTION_PRESETS[preset.id as keyof typeof INTERACTION_PRESETS]
+                  onInteractionChange({
+                    ...presetData,
+                    type: 'interaction',
+                    interactionType: presetData.type as InteractionEventData['interactionType'],
+                    action: getDefaultAction(presetData.type),
+                    duration: INTERACTION_DURATIONS.NORMAL,
+                    effect: INTERACTION_EFFECTS.GLOW,
+                    dc: 'lockDC' in presetData ? (presetData.lockDC as number) : ('detectionDC' in presetData ? (presetData.detectionDC as number) : ('disarmDC' in presetData ? (presetData.disarmDC as number) : 15))
+                  })
+                }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '8px',
+                  height: 'auto',
+                  backgroundColor: 'var(--colors-gray800)'
+                }}
+              >
+                {preset.icon}
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{
+                    margin: 0,
+                    color: 'var(--colors-gray200)'
+                  }}
+                >
+                  {preset.name}
+                </Text>
+              </Button>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Action Selection */}
+        {interaction.interactionType && (
+          <Box style={{ marginBottom: '16px' }}>
+            <Text
+              variant="label"
+              size="sm"
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500'
+              }}
             >
-              {Object.values(INTERACTION_TYPES).map((type) => (
-                <SelectOption key={type} value={type}>
-                  <Box display="flex" alignItems="center" gap="2">
-                    {getInteractionIcon(type)}
-                    <Text>{type.charAt(0).toUpperCase() + type.slice(1)}</Text>
-                  </Box>
-                </SelectOption>
+              Action
+            </Text>
+            <Select
+              value={interaction.action || ''}
+              onValueChange={(action) => onInteractionChange({ ...interaction, action: action as InteractionEventData['action'] })}
+            >
+              <option value="">Select action...</option>
+              {getAvailableActions(interaction.interactionType).map((action) => (
+                <option key={action} value={action}>
+                  {action.charAt(0).toUpperCase() + action.slice(1)}
+                </option>
               ))}
             </Select>
           </Box>
+        )}
 
-          {/* Preset Selection */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Preset Objects</FieldLabel>
-            <Box display="grid" css={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '$2' }}>
-              {interactionPresets
-                .filter(preset => !interaction.interactionType || preset.type === interaction.interactionType)
-                .map((preset) => (
-                <Button
-                  key={preset.id}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const presetData = INTERACTION_PRESETS[preset.id as keyof typeof INTERACTION_PRESETS]
-                    onInteractionChange({
-                      type: 'interaction',
-                      interactionType: presetData.type as any,
-                      action: getDefaultAction(presetData.type),
-                      duration: INTERACTION_DURATIONS.NORMAL,
-                      effect: INTERACTION_EFFECTS.GLOW,
-                      dc: presetData.lockDC || presetData.detectionDC || presetData.disarmDC,
-                      ...presetData
-                    })
-                  }}
-                  css={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '$1',
-                    padding: '$2',
-                    height: 'auto',
-                    backgroundColor: '$gray800',
-                    '&:hover': {
-                      backgroundColor: '$gray700'
-                    }
-                  }}
-                >
-                  {preset.icon}
-                  <Text size="xs">{preset.name}</Text>
-                </Button>
-              ))}
+        {/* Skill Check Configuration */}
+        <Box style={{ marginBottom: '16px' }}>
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--colors-gray200)',
+              fontWeight: '500'
+            }}
+          >
+            Skill Check
+          </Text>
+          <Box style={{ display: 'flex', gap: '8px' }}>
+            <Box style={{ flex: 1 }}>
+              <Input
+                placeholder="Skill (e.g., lockpicking)"
+                value={interaction.skill || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onInteractionChange({ ...interaction, skill: e.target.value })}
+              />
             </Box>
-          </Box>
-
-          {/* Action Selection */}
-          {interaction.interactionType && (
-            <Box css={{ marginBottom: '$4' }}>
-              <FieldLabel css={{ marginBottom: '$2' }}>Action</FieldLabel>
+            <Box style={{ width: '80px' }}>
               <Select
-                value={interaction.action || ''}
-                onValueChange={(action) => onInteractionChange({ ...interaction, action })}
-                placeholder="Select action..."
+                value={interaction.dc?.toString() || ''}
+                onValueChange={(dc) => onInteractionChange({ ...interaction, dc: parseInt(dc) })}
               >
-                {getAvailableActions(interaction.interactionType).map((action) => (
-                  <SelectOption key={action} value={action}>
-                    <Text>{action.charAt(0).toUpperCase() + action.slice(1)}</Text>
-                  </SelectOption>
-                ))}
+                <option value="">DC</option>
+                <option value={DIFFICULTY_CLASSES.EASY.toString()}>DC {DIFFICULTY_CLASSES.EASY}</option>
+                <option value={DIFFICULTY_CLASSES.MODERATE.toString()}>DC {DIFFICULTY_CLASSES.MODERATE}</option>
+                <option value={DIFFICULTY_CLASSES.HARD.toString()}>DC {DIFFICULTY_CLASSES.HARD}</option>
+                <option value={DIFFICULTY_CLASSES.VERY_HARD.toString()}>DC {DIFFICULTY_CLASSES.VERY_HARD}</option>
               </Select>
             </Box>
-          )}
-
-          {/* Skill Check Configuration */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Skill Check</FieldLabel>
-            <Box display="flex" gap="2">
-              <Box css={{ flex: 1 }}>
-                <Input
-                  placeholder="Skill (e.g., lockpicking)"
-                  value={interaction.skill || ''}
-                  onChange={(e) => onInteractionChange({ ...interaction, skill: e.target.value })}
-                  size="sm"
-                />
-              </Box>
-              <Box css={{ width: '80px' }}>
-                <Select
-                  value={interaction.dc?.toString() || ''}
-                  onValueChange={(dc) => onInteractionChange({ ...interaction, dc: parseInt(dc) })}
-                  placeholder="DC"
-                  size="sm"
-                >
-                  <SelectOption value={DIFFICULTY_CLASSES.EASY.toString()}>DC {DIFFICULTY_CLASSES.EASY}</SelectOption>
-                  <SelectOption value={DIFFICULTY_CLASSES.MODERATE.toString()}>DC {DIFFICULTY_CLASSES.MODERATE}</SelectOption>
-                  <SelectOption value={DIFFICULTY_CLASSES.HARD.toString()}>DC {DIFFICULTY_CLASSES.HARD}</SelectOption>
-                  <SelectOption value={DIFFICULTY_CLASSES.VERY_HARD.toString()}>DC {DIFFICULTY_CLASSES.VERY_HARD}</SelectOption>
-                </Select>
-              </Box>
-            </Box>
           </Box>
+        </Box>
 
-          {/* Visual Effect */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Visual Effect</FieldLabel>
-            <Select
-              value={interaction.effect || INTERACTION_EFFECTS.GLOW}
-              onValueChange={(effect) => onInteractionChange({ ...interaction, effect })}
-            >
-              {Object.values(INTERACTION_EFFECTS).map((effect) => (
-                <SelectOption key={effect} value={effect}>
-                  <Text>{effect.replace('_', ' ').toLowerCase()}</Text>
-                </SelectOption>
-              ))}
-            </Select>
-          </Box>
+        {/* Visual Effect */}
+        <Box style={{ marginBottom: '16px' }}>
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--colors-gray200)',
+              fontWeight: '500'
+            }}
+          >
+            Visual Effect
+          </Text>
+          <Select
+            value={interaction.effect || INTERACTION_EFFECTS.GLOW}
+            onValueChange={(effect) => onInteractionChange({ ...interaction, effect })}
+          >
+            {Object.values(INTERACTION_EFFECTS).map((effect) => (
+              <option key={effect} value={effect}>
+                {effect.replace('_', ' ').toLowerCase()}
+              </option>
+            ))}
+          </Select>
+        </Box>
 
-          {/* Duration */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Animation Duration</FieldLabel>
-            <Select
-              value={interaction.duration?.toString() || INTERACTION_DURATIONS.NORMAL.toString()}
-              onValueChange={(duration) => onInteractionChange({ ...interaction, duration: parseInt(duration) })}
-            >
-              <SelectOption value={INTERACTION_DURATIONS.INSTANT.toString()}>Instant</SelectOption>
-              <SelectOption value={INTERACTION_DURATIONS.QUICK.toString()}>Quick (300ms)</SelectOption>
-              <SelectOption value={INTERACTION_DURATIONS.NORMAL.toString()}>Normal (600ms)</SelectOption>
-              <SelectOption value={INTERACTION_DURATIONS.SLOW.toString()}>Slow (1s)</SelectOption>
-              <SelectOption value={INTERACTION_DURATIONS.VERY_SLOW.toString()}>Very Slow (1.5s)</SelectOption>
-            </Select>
-          </Box>
+        {/* Duration */}
+        <Box style={{ marginBottom: '16px' }}>
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--colors-gray200)',
+              fontWeight: '500'
+            }}
+          >
+            Animation Duration
+          </Text>
+          <Select
+            value={interaction.duration?.toString() || INTERACTION_DURATIONS.NORMAL.toString()}
+            onValueChange={(duration) => onInteractionChange({ ...interaction, duration: parseInt(duration) })}
+          >
+            <option value={INTERACTION_DURATIONS.INSTANT.toString()}>Instant</option>
+            <option value={INTERACTION_DURATIONS.QUICK.toString()}>Quick (300ms)</option>
+            <option value={INTERACTION_DURATIONS.NORMAL.toString()}>Normal (600ms)</option>
+            <option value={INTERACTION_DURATIONS.SLOW.toString()}>Slow (1s)</option>
+            <option value={INTERACTION_DURATIONS.VERY_SLOW.toString()}>Very Slow (1.5s)</option>
+          </Select>
+        </Box>
 
-          {/* Result Description */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Result Description</FieldLabel>
-            <Input
-              placeholder="Describe what happens..."
-              value={interaction.result || ''}
-              onChange={(e) => onInteractionChange({ ...interaction, result: e.target.value })}
-              size="sm"
-            />
-          </Box>
-        </PanelSection>
-      </PanelBody>
-    </Panel>
+        {/* Result Description */}
+        <Box style={{ marginBottom: '16px' }}>
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--colors-gray200)',
+              fontWeight: '500'
+            }}
+          >
+            Result Description
+          </Text>
+          <Input
+            placeholder="Describe what happens..."
+            value={interaction.result || ''}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onInteractionChange({ ...interaction, result: e.target.value })}
+          />
+        </Box>
+      </Box>
+    </Box>
   )
 }
 

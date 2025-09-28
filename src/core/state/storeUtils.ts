@@ -210,12 +210,14 @@ export const debugHelpers = {
     property: K,
     storeName: string
   ) => {
-    return store.subscribe(
-      state => state[property],
-      (value, previousValue) => {
-        console.log(`🎯 ${storeName}.${String(property)}:`, previousValue, '→', value)
+    let previousValue = store.getState()[property]
+    return store.subscribe((state) => {
+      const currentValue = state[property]
+      if (currentValue !== previousValue) {
+        console.log(`🎯 ${storeName}.${String(property)}:`, previousValue, '→', currentValue)
+        previousValue = currentValue
       }
-    )
+    })
   }
 }
 
@@ -259,7 +261,7 @@ export const performanceHelpers = {
   /**
    * Batch store updates
    */
-  batch: <T>(updates: Array<() => void>): void => {
+  batch: (updates: Array<() => void>): void => {
     // Execute all updates in a single frame
     requestAnimationFrame(() => {
       updates.forEach(update => update())

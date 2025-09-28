@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { Group, Ellipse, Circle, Arc } from 'react-konva'
-import Konva from 'konva'
+import { Group, Ellipse, Circle } from 'react-konva'
+import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
 import { snapToGrid } from '@/utils/grid'
 
@@ -31,7 +31,7 @@ export const AdvancedCircleTool: React.FC<AdvancedCircleToolProps> = ({
   const [currentPoint, setCurrentPoint] = useState<Point | null>(null)
   const [isShiftPressed, setIsShiftPressed] = useState(false)
   const [isAltPressed, setIsAltPressed] = useState(false)
-  const [isCtrlPressed, setIsCtrlPressed] = useState(false)
+  const [_isCtrlPressed, setIsCtrlPressed] = useState(false)
 
   // Handle keyboard modifiers for drawing modes
   useEffect(() => {

@@ -4,7 +4,8 @@
  */
 
 import React from 'react'
-import { styled } from '@/foundation/theme'
+import { Box } from '@/components/primitives/BoxVE'
+import { Button } from '@/components/primitives/ButtonVE'
 
 export type SearchBarProps = {
   searchQuery: string
@@ -16,119 +17,6 @@ export type SearchBarProps = {
   className?: string
 }
 
-const Container = styled('div', {
-  position: 'relative',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2'
-})
-
-const SearchInputContainer = styled('div', {
-  position: 'relative',
-  flex: 1
-})
-
-const SearchInput = styled('input', {
-  width: '100%',
-  padding: '$3 $4 $3 $12',
-  backgroundColor: '$gray800',
-  border: '1px solid $gray600',
-  borderRadius: '$lg',
-  color: '$gray100',
-  fontSize: '$2',
-  outline: 'none',
-  transition: 'all 0.2s ease',
-
-  '&::placeholder': {
-    color: '$gray400'
-  },
-
-  '&:focus': {
-    borderColor: '$dndRed',
-    backgroundColor: '$gray750',
-    boxShadow: '0 0 0 3px rgba(146, 38, 16, 0.1)'
-  }
-})
-
-const SearchIcon = styled('div', {
-  position: 'absolute',
-  left: '$3',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  color: '$gray400',
-  fontSize: '$3',
-  pointerEvents: 'none'
-})
-
-const ClearButton = styled('button', {
-  position: 'absolute',
-  right: '$2',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  width: 24,
-  height: 24,
-  borderRadius: '$sm',
-  border: 'none',
-  background: 'transparent',
-  color: '$gray400',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    background: '$gray700',
-    color: '$gray200'
-  },
-
-  variants: {
-    visible: {
-      true: {
-        opacity: 1,
-        pointerEvents: 'auto'
-      },
-      false: {
-        opacity: 0,
-        pointerEvents: 'none'
-      }
-    }
-  }
-})
-
-const FilterToggle = styled('button', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2',
-  padding: '$2 $3',
-  borderRadius: '$md',
-  border: '1px solid $gray600',
-  background: '$gray800',
-  color: '$gray300',
-  fontSize: '$2',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-  whiteSpace: 'nowrap',
-
-  '&:hover': {
-    background: '$gray700',
-    borderColor: '$gray500'
-  },
-
-  variants: {
-    active: {
-      true: {
-        background: '$purple700',
-        borderColor: '$purple600',
-        color: '$purple100'
-      }
-    }
-  }
-})
-
-const ToggleIcon = styled('span', {
-  fontSize: '$3'
-})
 
 /**
  * Search bar with custom actions toggle
@@ -160,35 +48,123 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }
 
   return (
-    <Container className={className}>
-      <SearchInputContainer>
-        <SearchIcon>🔍</SearchIcon>
-        <SearchInput
+    <Box
+      className={className}
+      style={{
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      }}
+    >
+      {/* Search Input Container */}
+      <Box
+        style={{
+          position: 'relative',
+          flex: 1
+        }}
+      >
+        {/* Search Icon */}
+        <Box
+          style={{
+            position: 'absolute',
+            left: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'var(--colors-gray400)',
+            fontSize: '16px',
+            pointerEvents: 'none',
+            zIndex: 1
+          }}
+        >
+          🔍
+        </Box>
+
+        {/* Search Input */}
+        <input
           type="text"
           value={searchQuery}
           placeholder={placeholder}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          style={{
+            width: '100%',
+            padding: '12px 16px 12px 48px',
+            backgroundColor: 'var(--colors-gray800)',
+            border: '1px solid var(--colors-gray600)',
+            borderRadius: '8px',
+            color: 'var(--colors-gray100)',
+            fontSize: '14px',
+            outline: 'none',
+            transition: 'all 0.2s ease'
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = 'var(--colors-dndRed)'
+            e.target.style.backgroundColor = 'var(--colors-gray750)'
+            e.target.style.boxShadow = '0 0 0 3px rgba(146, 38, 16, 0.1)'
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = 'var(--colors-gray600)'
+            e.target.style.backgroundColor = 'var(--colors-gray800)'
+            e.target.style.boxShadow = 'none'
+          }}
         />
-        <ClearButton
-          visible={searchQuery.length > 0}
-          onClick={handleClear}
-          title="Clear search"
-        >
-          ✕
-        </ClearButton>
-      </SearchInputContainer>
 
+        {/* Clear Button */}
+        {searchQuery.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClear}
+            title="Clear search"
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '24px',
+              height: '24px',
+              borderRadius: '4px',
+              border: 'none',
+              backgroundColor: 'transparent',
+              color: 'var(--colors-gray400)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              padding: 0,
+              minWidth: 'auto'
+            }}
+          >
+            ✕
+          </Button>
+        )}
+      </Box>
+
+      {/* Custom Actions Toggle */}
       {onToggleCustomActions && (
-        <FilterToggle
-          active={showCustomActions}
+        <Button
+          variant={showCustomActions ? 'primary' : 'outline'}
+          size="sm"
           onClick={onToggleCustomActions}
           title="Show custom actions"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            whiteSpace: 'nowrap',
+            backgroundColor: showCustomActions ? 'var(--colors-purple700)' : 'var(--colors-gray800)',
+            borderColor: showCustomActions ? 'var(--colors-purple600)' : 'var(--colors-gray600)',
+            color: showCustomActions ? 'var(--colors-purple100)' : 'var(--colors-gray300)'
+          }}
         >
-          <ToggleIcon>✨</ToggleIcon>
+          <span style={{ fontSize: '16px' }}>✨</span>
           Custom
-        </FilterToggle>
+        </Button>
       )}
-    </Container>
+    </Box>
   )
 }

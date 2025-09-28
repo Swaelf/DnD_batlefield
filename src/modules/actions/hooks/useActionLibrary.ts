@@ -5,13 +5,13 @@
 
 import { useMemo, useCallback } from 'react'
 import { useActionStore } from '../store'
-import type { ActionType, ActionCategory, ActionSearchCriteria, UnifiedAction, ActionId } from '../types'
+import type { ActionType, ActionCategory, ActionSearchCriteria } from '../types'
 
 /**
  * Main action library hook
  */
 export const useActionLibrary = () => {
-  const store = useActionStore()
+  const store = useActionStore((state: any) => state)
 
   // Memoized library service access
   const categories = useMemo(() => {
@@ -86,7 +86,7 @@ export const useActionLibrary = () => {
  * Hook for specific action type
  */
 export const useActionsByType = (type: ActionType) => {
-  const store = useActionStore()
+  const store = useActionStore((state: any) => state)
 
   const actions = useMemo(() => {
     return store.getActionsByType(type)
@@ -102,7 +102,7 @@ export const useActionsByType = (type: ActionType) => {
  * Hook for specific action category
  */
 export const useActionsByCategory = (category: ActionCategory) => {
-  const store = useActionStore()
+  const store = useActionStore((state: any) => state)
 
   const actions = useMemo(() => {
     return store.getActionsByCategory(category)
@@ -118,7 +118,7 @@ export const useActionsByCategory = (category: ActionCategory) => {
  * Hook for action selection state
  */
 export const useActionSelection = () => {
-  const store = useActionStore()
+  const store = useActionStore((state: any) => state)
 
   const selectedAction = useMemo(() => {
     return store.getSelectedAction()
@@ -136,7 +136,7 @@ export const useActionSelection = () => {
  * Hook for action customization
  */
 export const useActionCustomization = () => {
-  const store = useActionStore()
+  const store = useActionStore((state: any) => state)
 
   return {
     isCustomizing: store.isCustomizing,

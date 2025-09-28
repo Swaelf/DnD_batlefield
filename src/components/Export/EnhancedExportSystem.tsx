@@ -1,11 +1,17 @@
-import React, { useCallback, useState, useRef } from 'react'
-import useMapStore from '@store/mapStore'
-import { BattleMap } from '@/types'
-import { Box, Text, Button, Select, Input, Checkbox } from '@/components/ui'
-import { Download, FileText, Image, Printer, Settings, X } from 'lucide-react'
-import Konva from 'konva'
+/**
+ * Enhanced Export System Component
+ * Advanced export functionality with multiple formats and options
+ */
 
-interface ExportFormat {
+import React, { useCallback, useState } from 'react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Download, FileText, Image, Printer, X } from 'lucide-react'
+import useMapStore from '@/store/mapStore'
+import type Konva from 'konva'
+
+export interface ExportFormat {
   id: string
   name: string
   extension: string
@@ -14,7 +20,7 @@ interface ExportFormat {
   supportsOptions: string[]
 }
 
-interface ExportOptions {
+export interface ExportOptions {
   // Image options
   resolution: number // DPI
   format: 'png' | 'jpg' | 'webp' | 'svg'
@@ -46,7 +52,7 @@ interface ExportOptions {
   compressData: boolean
 }
 
-interface EnhancedExportSystemProps {
+export interface EnhancedExportSystemProps {
   isOpen: boolean
   onClose: () => void
   stageRef?: React.RefObject<Konva.Stage>
@@ -150,15 +156,6 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
 
   const currentFormat = exportFormats.find(f => f.id === selectedFormat)
 
-  // Paper size dimensions (inches)
-  const paperSizes = {
-    letter: { width: 8.5, height: 11 },
-    a4: { width: 8.27, height: 11.69 },
-    a3: { width: 11.69, height: 16.54 },
-    tabloid: { width: 11, height: 17 },
-    custom: exportOptions.customSize
-  }
-
   // Update export options
   const updateOptions = useCallback((updates: Partial<ExportOptions>) => {
     setExportOptions(prev => ({ ...prev, ...updates }))
@@ -171,7 +168,6 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
     }
 
     const stage = stageRef.current
-    const originalSize = { width: stage.width(), height: stage.height() }
 
     // Apply scale for high-resolution export
     const pixelRatio = exportOptions.resolution / 96 * exportOptions.scale
@@ -179,7 +175,15 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
     setExportProgress({ stage: 'Preparing canvas', progress: 20 })
 
     // Create export configuration
-    const exportConfig: any = {
+    const exportConfig: {
+      pixelRatio: number
+      mimeType: string
+      quality: number
+      x?: number
+      y?: number
+      width?: number
+      height?: number
+    } = {
       pixelRatio,
       mimeType: `image/${exportOptions.format}`,
       quality: exportOptions.format === 'jpg' ? exportOptions.quality / 100 : 1
@@ -197,15 +201,19 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
     setExportProgress({ stage: 'Rendering image', progress: 60 })
 
     // Generate image data
-    const dataURL = stage.toDataURL(exportConfig)
+    const dataURL = stage.toDataURL({
+      pixelRatio: exportConfig.pixelRatio || 2,
+      mimeType: exportConfig.mimeType || 'image/png',
+      quality: exportConfig.quality || 1
+    })
 
     setExportProgress({ stage: 'Converting to blob', progress: 80 })
 
     // Convert to blob
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      const img = new Image()
+      const ctx = canvas.getContext('2d')!
+      const img = new (window as any).Image() as HTMLImageElement
 
       img.onload = () => {
         canvas.width = img.width
@@ -286,31 +294,24 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
     // Convert map objects to SVG
     currentMap.objects.forEach(obj => {
       if (obj.type === 'shape') {
-        if (obj.shapeType === 'rect') {
+        const shapeObj = obj as any // Simplified for this implementation
+        if (shapeObj.shapeType === 'rectangle') {
           svgContent += `
   <rect x="${obj.position.x}" y="${obj.position.y}"
-        width="${obj.width || 50}" height="${obj.height || 50}"
-        fill="${obj.fill || 'none'}"
-        stroke="${obj.stroke || '#000'}"
-        stroke-width="${obj.strokeWidth || 1}"
-        transform="rotate(${obj.rotation || 0} ${obj.position.x + (obj.width || 50)/2} ${obj.position.y + (obj.height || 50)/2})"/>
+        width="${shapeObj.width || 50}" height="${shapeObj.height || 50}"
+        fill="${shapeObj.fill || 'none'}"
+        stroke="${shapeObj.stroke || '#000'}"
+        stroke-width="${shapeObj.strokeWidth || 1}"
+        transform="rotate(${obj.rotation || 0} ${obj.position.x + (shapeObj.width || 50)/2} ${obj.position.y + (shapeObj.height || 50)/2})"/>
 `
-        } else if (obj.shapeType === 'circle') {
-          const radius = (obj.width || 50) / 2
+        } else if (shapeObj.shapeType === 'circle') {
+          const radius = (shapeObj.width || 50) / 2
           svgContent += `
   <circle cx="${obj.position.x + radius}" cy="${obj.position.y + radius}"
           r="${radius}"
-          fill="${obj.fill || 'none'}"
-          stroke="${obj.stroke || '#000'}"
-          stroke-width="${obj.strokeWidth || 1}"/>
-`
-        } else if (obj.pathData) {
-          svgContent += `
-  <path d="${obj.pathData}"
-        fill="${obj.fill || 'none'}"
-        stroke="${obj.stroke || '#000'}"
-        stroke-width="${obj.strokeWidth || 1}"
-        transform="translate(${obj.position.x},${obj.position.y})"/>
+          fill="${shapeObj.fill || 'none'}"
+          stroke="${shapeObj.stroke || '#000'}"
+          stroke-width="${shapeObj.strokeWidth || 1}"/>
 `
         }
       }
@@ -431,9 +432,9 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
     <>
       {/* Backdrop */}
       <Box
-        css={{
+        style={{
           position: 'fixed',
-          inset: 0,
+          inset: '0',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
           zIndex: 1000
         }}
@@ -442,53 +443,94 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
 
       {/* Main Dialog */}
       <Box
-        css={{
+        style={{
           position: 'fixed',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 700,
+          width: '700px',
           maxHeight: '90vh',
-          backgroundColor: '$dndBlack',
-          border: '1px solid $gray800',
-          borderRadius: '$md',
+          backgroundColor: 'var(--colors-dndBlack)',
+          border: '1px solid var(--colors-gray700)',
+          borderRadius: '12px',
           zIndex: 1001,
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
         }}
       >
         {/* Header */}
         <Box
-          css={{
-            padding: '$4',
-            borderBottom: '1px solid $gray800',
+          style={{
+            padding: '16px',
+            borderBottom: '1px solid var(--colors-gray700)',
+            backgroundColor: 'var(--colors-gray800)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}
         >
-          <Text size="lg" weight="semibold">Enhanced Export System</Text>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Text
+            variant="heading"
+            size="lg"
+            style={{
+              margin: 0,
+              fontWeight: '600',
+              color: 'var(--colors-gray100)'
+            }}
+          >
+            Enhanced Export System
+          </Text>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              padding: '8px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              color: 'var(--colors-gray400)'
+            }}
+          >
             <X size={16} />
           </Button>
         </Box>
 
-        <Box css={{ flex: 1, padding: '$4', overflow: 'auto' }}>
+        <Box style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
           {/* Format Selection */}
-          <Box css={{ marginBottom: '$4' }}>
-            <Text size="sm" css={{ marginBottom: '$2' }}>Export Format:</Text>
+          <Box style={{ marginBottom: '16px' }}>
+            <Text
+              variant="body"
+              size="sm"
+              style={{
+                margin: '0 0 8px 0',
+                color: 'var(--colors-gray300)',
+                fontWeight: '500'
+              }}
+            >
+              Export Format:
+            </Text>
             <select
               value={selectedFormat}
-              onChange={(e) => setSelectedFormat(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedFormat(e.target.value)}
               style={{
                 width: '100%',
                 padding: '8px 12px',
                 backgroundColor: 'var(--colors-gray800)',
-                border: '1px solid var(--colors-gray700)',
-                borderRadius: '4px',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
                 color: 'var(--colors-gray100)',
-                fontSize: '14px'
+                fontSize: '14px',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'var(--colors-dndGold)'
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'var(--colors-gray600)'
               }}
             >
               {exportFormats.map(format => (
@@ -501,27 +543,53 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
 
           {/* Export Options */}
           {currentFormat && (
-            <Box css={{ marginBottom: '$4' }}>
-              <Text size="sm" css={{ marginBottom: '$3' }}>Export Options:</Text>
+            <Box style={{ marginBottom: '16px' }}>
+              <Text
+                variant="body"
+                size="sm"
+                style={{
+                  margin: '0 0 12px 0',
+                  color: 'var(--colors-gray300)',
+                  fontWeight: '500'
+                }}
+              >
+                Export Options:
+              </Text>
 
               {/* Image Options */}
               {currentFormat.supportsOptions.includes('resolution') && (
-                <Box css={{ marginBottom: '$3' }}>
-                  <Text size="xs" css={{ marginBottom: '$1' }}>Resolution (DPI):</Text>
+                <Box style={{ marginBottom: '12px' }}>
+                  <Text
+                    variant="body"
+                    size="xs"
+                    style={{
+                      margin: '0 0 4px 0',
+                      color: 'var(--colors-gray400)'
+                    }}
+                  >
+                    Resolution (DPI):
+                  </Text>
                   <input
                     type="number"
                     value={exportOptions.resolution}
-                    onChange={(e) => updateOptions({ resolution: Number(e.target.value) })}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOptions({ resolution: Number(e.target.value) })}
                     min="72"
                     max="600"
                     style={{
                       width: '100px',
                       padding: '4px 8px',
                       backgroundColor: 'var(--colors-gray800)',
-                      border: '1px solid var(--colors-gray700)',
+                      border: '1px solid var(--colors-gray600)',
                       borderRadius: '4px',
                       color: 'var(--colors-gray100)',
-                      fontSize: '12px'
+                      fontSize: '12px',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--colors-dndGold)'
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'var(--colors-gray600)'
                     }}
                   />
                 </Box>
@@ -529,107 +597,215 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
 
               {/* Scale */}
               {currentFormat.supportsOptions.includes('scale') && (
-                <Box css={{ marginBottom: '$3' }}>
-                  <Text size="xs" css={{ marginBottom: '$1' }}>Scale Multiplier:</Text>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="4"
-                    step="0.1"
-                    value={exportOptions.scale}
-                    onChange={(e) => updateOptions({ scale: Number(e.target.value) })}
-                    style={{ width: '200px', accentColor: 'var(--colors-secondary)' }}
-                  />
-                  <Text size="xs" css={{ color: '$gray400', marginLeft: '$2' }}>
-                    {exportOptions.scale}x
+                <Box style={{ marginBottom: '12px' }}>
+                  <Text
+                    variant="body"
+                    size="xs"
+                    style={{
+                      margin: '0 0 4px 0',
+                      color: 'var(--colors-gray400)'
+                    }}
+                  >
+                    Scale Multiplier:
                   </Text>
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="4"
+                      step="0.1"
+                      value={exportOptions.scale}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOptions({ scale: Number(e.target.value) })}
+                      style={{
+                        width: '200px',
+                        accentColor: 'var(--colors-dndGold)'
+                      }}
+                    />
+                    <Text
+                      variant="body"
+                      size="xs"
+                      style={{
+                        margin: 0,
+                        color: 'var(--colors-gray400)'
+                      }}
+                    >
+                      {exportOptions.scale}x
+                    </Text>
+                  </Box>
                 </Box>
               )}
 
               {/* Quality (JPG/WebP) */}
               {currentFormat.supportsOptions.includes('quality') && exportOptions.format !== 'png' && (
-                <Box css={{ marginBottom: '$3' }}>
-                  <Text size="xs" css={{ marginBottom: '$1' }}>Quality:</Text>
-                  <input
-                    type="range"
-                    min="10"
-                    max="100"
-                    value={exportOptions.quality}
-                    onChange={(e) => updateOptions({ quality: Number(e.target.value) })}
-                    style={{ width: '200px', accentColor: 'var(--colors-secondary)' }}
-                  />
-                  <Text size="xs" css={{ color: '$gray400', marginLeft: '$2' }}>
-                    {exportOptions.quality}%
+                <Box style={{ marginBottom: '12px' }}>
+                  <Text
+                    variant="body"
+                    size="xs"
+                    style={{
+                      margin: '0 0 4px 0',
+                      color: 'var(--colors-gray400)'
+                    }}
+                  >
+                    Quality:
                   </Text>
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      value={exportOptions.quality}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOptions({ quality: Number(e.target.value) })}
+                      style={{
+                        width: '200px',
+                        accentColor: 'var(--colors-dndGold)'
+                      }}
+                    />
+                    <Text
+                      variant="body"
+                      size="xs"
+                      style={{
+                        margin: 0,
+                        color: 'var(--colors-gray400)'
+                      }}
+                    >
+                      {exportOptions.quality}%
+                    </Text>
+                  </Box>
                 </Box>
               )}
 
               {/* Checkboxes */}
-              <Box css={{ display: 'flex', flexDirection: 'column', gap: '$2' }}>
+              <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {currentFormat.supportsOptions.includes('grid') && (
-                  <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                    <Checkbox
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="checkbox"
                       checked={exportOptions.includeGrid}
-                      onCheckedChange={(checked) => updateOptions({ includeGrid: !!checked })}
+                      onChange={(e) => updateOptions({ includeGrid: e.target.checked })}
+                      style={{
+                        accentColor: 'var(--colors-dndGold)',
+                        width: '16px',
+                        height: '16px'
+                      }}
                     />
-                    <Text size="xs">Include grid lines</Text>
+                    <Text
+                      variant="body"
+                      size="xs"
+                      style={{
+                        margin: 0,
+                        color: 'var(--colors-gray300)'
+                      }}
+                    >
+                      Include grid lines
+                    </Text>
                   </Box>
                 )}
 
                 {currentFormat.supportsOptions.includes('transparency') && (
-                  <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                    <Checkbox
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="checkbox"
                       checked={exportOptions.transparency}
-                      onCheckedChange={(checked) => updateOptions({ transparency: !!checked })}
+                      onChange={(e) => updateOptions({ transparency: e.target.checked })}
+                      style={{
+                        accentColor: 'var(--colors-dndGold)',
+                        width: '16px',
+                        height: '16px'
+                      }}
                     />
-                    <Text size="xs">Preserve transparency</Text>
+                    <Text
+                      variant="body"
+                      size="xs"
+                      style={{
+                        margin: 0,
+                        color: 'var(--colors-gray300)'
+                      }}
+                    >
+                      Preserve transparency
+                    </Text>
                   </Box>
                 )}
 
                 {currentFormat.supportsOptions.includes('metadata') && (
-                  <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                    <Checkbox
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="checkbox"
                       checked={exportOptions.includeMetadata}
-                      onCheckedChange={(checked) => updateOptions({ includeMetadata: !!checked })}
+                      onChange={(e) => updateOptions({ includeMetadata: e.target.checked })}
+                      style={{
+                        accentColor: 'var(--colors-dndGold)',
+                        width: '16px',
+                        height: '16px'
+                      }}
                     />
-                    <Text size="xs">Include metadata</Text>
+                    <Text
+                      variant="body"
+                      size="xs"
+                      style={{
+                        margin: 0,
+                        color: 'var(--colors-gray300)'
+                      }}
+                    >
+                      Include metadata
+                    </Text>
                   </Box>
                 )}
 
-                {currentFormat.supportsOptions.includes('embedImages') && (
-                  <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                    <Checkbox
-                      checked={exportOptions.embedImages}
-                      onCheckedChange={(checked) => updateOptions({ embedImages: !!checked })}
-                    />
-                    <Text size="xs">Embed images in file</Text>
-                  </Box>
-                )}
-
-                <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                  <Checkbox
+                <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="checkbox"
                     checked={exportOptions.cropToContent}
-                    onCheckedChange={(checked) => updateOptions({ cropToContent: !!checked })}
+                    onChange={(e) => updateOptions({ cropToContent: e.target.checked })}
+                    style={{
+                      accentColor: 'var(--colors-dndGold)',
+                      width: '16px',
+                      height: '16px'
+                    }}
                   />
-                  <Text size="xs">Crop to content bounds</Text>
+                  <Text
+                    variant="body"
+                    size="xs"
+                    style={{
+                      margin: 0,
+                      color: 'var(--colors-gray300)'
+                    }}
+                  >
+                    Crop to content bounds
+                  </Text>
                 </Box>
               </Box>
 
               {/* Paper Size (PDF/Print) */}
               {currentFormat.supportsOptions.includes('paperSize') && (
-                <Box css={{ marginTop: '$3' }}>
-                  <Text size="xs" css={{ marginBottom: '$1' }}>Paper Size:</Text>
+                <Box style={{ marginTop: '12px' }}>
+                  <Text
+                    variant="body"
+                    size="xs"
+                    style={{
+                      margin: '0 0 4px 0',
+                      color: 'var(--colors-gray400)'
+                    }}
+                  >
+                    Paper Size:
+                  </Text>
                   <select
                     value={exportOptions.paperSize}
-                    onChange={(e) => updateOptions({ paperSize: e.target.value as any })}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateOptions({ paperSize: e.target.value as any })}
                     style={{
-                      width: '150px',
+                      width: '200px',
                       padding: '4px 8px',
                       backgroundColor: 'var(--colors-gray800)',
-                      border: '1px solid var(--colors-gray700)',
+                      border: '1px solid var(--colors-gray600)',
                       borderRadius: '4px',
                       color: 'var(--colors-gray100)',
-                      fontSize: '12px'
+                      fontSize: '12px',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--colors-dndGold)'
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'var(--colors-gray600)'
                     }}
                   >
                     <option value="letter">Letter (8.5" × 11")</option>
@@ -639,24 +815,48 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
                     <option value="custom">Custom</option>
                   </select>
 
-                  <Box css={{ marginTop: '$2', display: 'flex', gap: '$2' }}>
-                    <Box css={{ display: 'flex', alignItems: 'center', gap: '$1' }}>
-                      <Checkbox
+                  <Box style={{ marginTop: '8px', display: 'flex', gap: '16px' }}>
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <input
+                        type="radio"
+                        name="orientation"
                         checked={exportOptions.orientation === 'portrait'}
-                        onCheckedChange={(checked) =>
-                          updateOptions({ orientation: checked ? 'portrait' : 'landscape' })
-                        }
+                        onChange={() => updateOptions({ orientation: 'portrait' })}
+                        style={{
+                          accentColor: 'var(--colors-dndGold)'
+                        }}
                       />
-                      <Text size="xs">Portrait</Text>
+                      <Text
+                        variant="body"
+                        size="xs"
+                        style={{
+                          margin: 0,
+                          color: 'var(--colors-gray300)'
+                        }}
+                      >
+                        Portrait
+                      </Text>
                     </Box>
-                    <Box css={{ display: 'flex', alignItems: 'center', gap: '$1' }}>
-                      <Checkbox
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <input
+                        type="radio"
+                        name="orientation"
                         checked={exportOptions.orientation === 'landscape'}
-                        onCheckedChange={(checked) =>
-                          updateOptions({ orientation: checked ? 'landscape' : 'portrait' })
-                        }
+                        onChange={() => updateOptions({ orientation: 'landscape' })}
+                        style={{
+                          accentColor: 'var(--colors-dndGold)'
+                        }}
                       />
-                      <Text size="xs">Landscape</Text>
+                      <Text
+                        variant="body"
+                        size="xs"
+                        style={{
+                          margin: 0,
+                          color: 'var(--colors-gray300)'
+                        }}
+                      >
+                        Landscape
+                      </Text>
                     </Box>
                   </Box>
                 </Box>
@@ -666,23 +866,32 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
 
           {/* Progress */}
           {exportProgress && (
-            <Box css={{ marginBottom: '$4' }}>
-              <Text size="sm" css={{ marginBottom: '$2' }}>{exportProgress.stage}</Text>
+            <Box style={{ marginBottom: '16px' }}>
+              <Text
+                variant="body"
+                size="sm"
+                style={{
+                  margin: '0 0 8px 0',
+                  color: 'var(--colors-gray200)'
+                }}
+              >
+                {exportProgress.stage}
+              </Text>
               <Box
-                css={{
+                style={{
                   width: '100%',
-                  height: 8,
-                  backgroundColor: '$gray800',
-                  borderRadius: '$sm',
+                  height: '8px',
+                  backgroundColor: 'var(--colors-gray800)',
+                  borderRadius: '4px',
                   overflow: 'hidden'
                 }}
               >
                 <Box
-                  css={{
+                  style={{
                     width: `${exportProgress.progress}%`,
                     height: '100%',
-                    backgroundColor: '$primary',
-                    transition: 'width 0.3s'
+                    backgroundColor: 'var(--colors-dndGold)',
+                    transition: 'width 0.3s ease'
                   }}
                 />
               </Box>
@@ -690,8 +899,23 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
           )}
 
           {/* Preview Info */}
-          <Box css={{ padding: '$3', backgroundColor: '$gray800', borderRadius: '$sm' }}>
-            <Text size="xs" css={{ color: '$gray400' }}>
+          <Box
+            style={{
+              padding: '12px',
+              backgroundColor: 'var(--colors-gray800)',
+              borderRadius: '6px',
+              border: '1px solid var(--colors-gray700)'
+            }}
+          >
+            <Text
+              variant="body"
+              size="xs"
+              style={{
+                margin: 0,
+                color: 'var(--colors-gray400)',
+                lineHeight: 1.5
+              }}
+            >
               Export Preview:<br />
               Map: {currentMap.name}<br />
               Size: {currentMap.width}×{currentMap.height}<br />
@@ -703,22 +927,48 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
 
         {/* Footer */}
         <Box
-          css={{
-            padding: '$4',
-            borderTop: '1px solid $gray800',
+          style={{
+            padding: '16px',
+            borderTop: '1px solid var(--colors-gray700)',
+            backgroundColor: 'var(--colors-gray800)',
             display: 'flex',
             justifyContent: 'space-between'
           }}
         >
-          <Button variant="ghost" onClick={onClose}>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            style={{
+              backgroundColor: 'var(--colors-gray800)',
+              borderColor: 'var(--colors-gray600)',
+              color: 'var(--colors-gray300)'
+            }}
+          >
             Cancel
           </Button>
 
           <Button
+            variant="primary"
             onClick={handleExport}
             disabled={!currentMap || isExporting}
+            style={{
+              backgroundColor: !currentMap || isExporting ? 'var(--colors-gray700)' : 'var(--colors-dndRed)',
+              borderColor: !currentMap || isExporting ? 'var(--colors-gray600)' : 'var(--colors-dndRed)',
+              color: !currentMap || isExporting ? 'var(--colors-gray500)' : 'white',
+              opacity: !currentMap || isExporting ? 0.6 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
           >
-            {isExporting ? 'Exporting...' : 'Export'}
+            {isExporting ? (
+              <>Exporting...</>
+            ) : (
+              <>
+                <Download size={14} />
+                Export
+              </>
+            )}
           </Button>
         </Box>
       </Box>

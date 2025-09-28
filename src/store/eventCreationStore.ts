@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
-import { EventCreationState } from '../types'
-import { Position } from '../types'
+import type { EventCreationState } from '../types'
+import type { Position } from '../types'
 import useRoundStore from './roundStore'
 import useMapStore from './mapStore'
 
@@ -221,7 +221,7 @@ const useEventCreationStore = create<EventCreationState>()(
         previewToPosition: currentPreview?.toPosition
       })
 
-      let expectedPosition = calculateTokenExpectedPosition(id, currentPreview)
+      const expectedPosition = calculateTokenExpectedPosition(id, currentPreview)
 
       return expectedPosition
     },

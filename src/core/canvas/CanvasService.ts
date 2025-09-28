@@ -282,12 +282,28 @@ export class CanvasService {
   /**
    * Find nodes at a specific point
    */
-  getNodesAtPoint(point: Point, shape?: (node: Konva.Node) => boolean): Konva.Node[] {
+  getNodesAtPoint(point: Point, selector?: string): Konva.Node[] {
     if (!this.stage) {
       throw new Error('Canvas not initialized')
     }
 
-    return this.stage.getIntersection(point, shape)
+    const node = this.stage.getIntersection(point)
+    if (!node) return []
+
+    // If selector provided, find all matching nodes in the parent chain
+    if (selector) {
+      const nodes: Konva.Node[] = []
+      let current: Konva.Node | null = node
+      while (current) {
+        if (current.getClassName() === selector || current.name() === selector) {
+          nodes.push(current)
+        }
+        current = current.parent as Konva.Node | null
+      }
+      return nodes
+    }
+
+    return [node]
   }
 
   /**

@@ -1,214 +1,49 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, forwardRef } from 'react'
 import { createPortal } from 'react-dom'
-import { styled, keyframes } from '@/styles/theme.config'
-import type { ComponentProps } from '@/types'
-import { Box } from '@/components/primitives'
+import { Button } from '@/components/primitives/ButtonVE'
 
-// Animations
-const fadeIn = keyframes({
-  '0%': { opacity: 0 },
-  '100%': { opacity: 1 },
-})
-
-const slideIn = keyframes({
-  '0%': {
-    opacity: 0,
-    transform: 'translate(-50%, -50%) scale(0.95)',
-  },
-  '100%': {
-    opacity: 1,
-    transform: 'translate(-50%, -50%) scale(1)',
-  },
-})
-
-const slideOut = keyframes({
-  '0%': {
-    opacity: 1,
-    transform: 'translate(-50%, -50%) scale(1)',
-  },
-  '100%': {
-    opacity: 0,
-    transform: 'translate(-50%, -50%) scale(0.95)',
-  },
-})
-
-// Overlay/Backdrop
-const ModalOverlay = styled('div', {
-  position: 'fixed',
-  inset: 0,
-  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  zIndex: '$modal',
-  animation: `${fadeIn} 150ms ease-out`,
-  backdropFilter: 'blur(2px)',
-
-  variants: {
-    blur: {
-      none: { backdropFilter: 'none' },
-      sm: { backdropFilter: 'blur(2px)' },
-      md: { backdropFilter: 'blur(4px)' },
-      lg: { backdropFilter: 'blur(8px)' },
-    },
-  },
-
-  defaultVariants: {
-    blur: 'sm',
-  },
-})
-
-// Modal Content Container
-const ModalContent = styled(Box, {
-  position: 'fixed',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  zIndex: '$modal',
-  backgroundColor: '$surface',
-  border: '1px solid $gray700',
-  borderRadius: '$xl',
-  boxShadow: '$2xl',
-  animation: `${slideIn} 200ms ease-out`,
-  maxHeight: '90vh',
-  maxWidth: '90vw',
-
-  // Focus management
-  '&:focus': {
-    outline: 'none',
-  },
-
-  variants: {
-    size: {
-      sm: {
-        width: '400px',
-        maxWidth: '90vw',
-      },
-      md: {
-        width: '500px',
-        maxWidth: '90vw',
-      },
-      lg: {
-        width: '700px',
-        maxWidth: '90vw',
-      },
-      xl: {
-        width: '900px',
-        maxWidth: '95vw',
-      },
-      full: {
-        width: '95vw',
-        height: '95vh',
-      },
-      auto: {
-        width: 'auto',
-        minWidth: '300px',
-      },
-    },
-
-    padding: {
-      none: { padding: 0 },
-      sm: { padding: '$4' },
-      md: { padding: '$6' },
-      lg: { padding: '$8' },
-    },
-
-    centered: {
-      true: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-      },
-    },
-  },
-
-  defaultVariants: {
-    size: 'md',
-    padding: 'md',
-  },
-})
-
-const ModalHeader = styled(Box, {
-  borderBottom: '1px solid $gray700',
-  marginBottom: '$6',
-  paddingBottom: '$4',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-})
-
-const ModalTitle = styled('h2', {
-  margin: 0,
-  fontSize: '$xl',
-  fontWeight: '$semibold',
-  color: '$gray100',
-  fontFamily: '$dnd',
-})
-
-const ModalCloseButton = styled('button', {
-  all: 'unset',
-  width: '32px',
-  height: '32px',
-  borderRadius: '$md',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '$gray400',
-  cursor: 'pointer',
-  transition: '$fast',
-
-  '&:hover': {
-    backgroundColor: '$gray800',
-    color: '$gray200',
-  },
-
-  '&:focus': {
-    backgroundColor: '$gray700',
-    color: '$gray100',
-  },
-})
-
-const ModalBody = styled(Box, {
-  flex: 1,
-  overflow: 'auto',
-
-  variants: {
-    scrollable: {
-      true: {
-        maxHeight: '60vh',
-        overflowY: 'auto',
-      },
-    },
-  },
-})
-
-const ModalFooter = styled(Box, {
-  borderTop: '1px solid $gray700',
-  marginTop: '$6',
-  paddingTop: '$4',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-end',
-  gap: '$3',
-})
-
-// Main Modal Component
-type ModalProps = {
-  isOpen: boolean
+// Modal event handlers
+type ModalEventHandlers = {
   onClose: () => void
+  onOpen?: () => void
+  onOverlayClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onContentClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onEscapeKeyDown?: (event: KeyboardEvent) => void
+}
+
+// Modal component props with exact typing
+export type ModalProps = {
+  isOpen: boolean
   children: React.ReactNode
-  size?: ComponentProps<typeof ModalContent>['size']
-  padding?: ComponentProps<typeof ModalContent>['padding']
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto'
+  padding?: 'none' | 'sm' | 'md' | 'lg'
   centered?: boolean
   closeOnOverlayClick?: boolean
   closeOnEscape?: boolean
-  blur?: ComponentProps<typeof ModalOverlay>['blur']
+  blur?: 'none' | 'sm' | 'md' | 'lg'
   title?: string
   showCloseButton?: boolean
-}
+  className?: string
+  style?: React.CSSProperties
 
-export const Modal: React.FC<ModalProps> = ({
+  // HTML attributes
+  id?: string
+  role?: string
+
+  // ARIA attributes
+  'aria-label'?: string
+  'aria-labelledby'?: string
+  'aria-describedby'?: string
+  'aria-modal'?: boolean
+
+  // Data attributes
+  'data-testid'?: string
+  'data-test-id'?: string
+  'data-state'?: string
+} & ModalEventHandlers
+
+export const Modal = ({
   isOpen,
-  onClose,
   children,
   size = 'md',
   padding = 'md',
@@ -218,7 +53,23 @@ export const Modal: React.FC<ModalProps> = ({
   blur = 'sm',
   title,
   showCloseButton = true,
-}) => {
+  className,
+  style,
+  id,
+  role = 'dialog',
+  onClose,
+  onOpen,
+  onOverlayClick,
+  onContentClick,
+  onEscapeKeyDown,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledby,
+  'aria-describedby': ariaDescribedby,
+  'aria-modal': ariaModal = true,
+  'data-testid': dataTestId,
+  'data-test-id': dataTestId2,
+  'data-state': dataState,
+}: ModalProps) => {
   // Handle escape key
   useEffect(() => {
     if (!isOpen || !closeOnEscape) return
@@ -226,13 +77,14 @@ export const Modal: React.FC<ModalProps> = ({
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
+        onEscapeKeyDown?.(e)
         onClose()
       }
     }
 
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
-  }, [isOpen, closeOnEscape, onClose])
+  }, [isOpen, closeOnEscape, onClose, onEscapeKeyDown])
 
   // Focus management
   useEffect(() => {
@@ -255,48 +107,139 @@ export const Modal: React.FC<ModalProps> = ({
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
+      onOpen?.()
       const originalOverflow = document.body.style.overflow
       document.body.style.overflow = 'hidden'
       return () => {
         document.body.style.overflow = originalOverflow
       }
     }
-  }, [isOpen])
+    // Return undefined cleanup function for else case
+    return undefined
+  }, [isOpen, onOpen])
 
   if (!isOpen) return null
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget && closeOnOverlayClick) {
+      onOverlayClick?.(e)
       onClose()
     }
   }
 
+  // Overlay styles
+  const blurStyles = {
+    none: { backdropFilter: 'none' },
+    sm: { backdropFilter: 'blur(2px)' },
+    md: { backdropFilter: 'blur(4px)' },
+    lg: { backdropFilter: 'blur(8px)' },
+  }
+
+  const overlayStyles: React.CSSProperties = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
+    animation: 'modalFadeIn 150ms ease-out',
+    ...blurStyles[blur],
+  }
+
+  // Content styles
+  const sizeStyles = {
+    sm: { width: '400px', maxWidth: '90vw' },
+    md: { width: '500px', maxWidth: '90vw' },
+    lg: { width: '700px', maxWidth: '90vw' },
+    xl: { width: '900px', maxWidth: '95vw' },
+    full: { width: '95vw', height: '95vh' },
+    auto: { width: 'auto', minWidth: '300px' },
+  }
+
+  const paddingStyles = {
+    none: { padding: '0' },
+    sm: { padding: '16px' },
+    md: { padding: '24px' },
+    lg: { padding: '32px' },
+  }
+
+  const contentStyles: React.CSSProperties = {
+    position: 'fixed',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    zIndex: 1001,
+    backgroundColor: 'var(--surface)',
+    border: '1px solid var(--gray700)',
+    borderRadius: '12px',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    animation: 'modalSlideIn 200ms ease-out',
+    maxHeight: '90vh',
+    maxWidth: '90vw',
+    outline: 'none',
+    display: 'flex',
+    flexDirection: 'column',
+    ...(centered && {
+      alignItems: 'center',
+      justifyContent: 'center',
+      textAlign: 'center',
+    }),
+    ...sizeStyles[size],
+    ...paddingStyles[padding],
+    ...style,
+  }
+
   const modalContent = (
     <>
-      <ModalOverlay blur={blur} onClick={handleOverlayClick} />
-      <ModalContent
-        size={size}
-        padding={padding}
-        centered={centered}
+      <div style={overlayStyles} onClick={handleOverlayClick} />
+      <div
+        style={contentStyles}
+        className={className}
+        id={id}
+        role={role}
+        tabIndex={-1}
+        onClick={onContentClick}
+        aria-label={ariaLabel || title}
+        aria-labelledby={ariaLabelledby}
+        aria-describedby={ariaDescribedby}
+        aria-modal={ariaModal}
         data-modal-content
-        data-test-id="modal-content"
-        display="flex"
-        flexDirection="column"
+        data-testid={dataTestId}
+        data-test-id={dataTestId2}
+        data-state={dataState || (isOpen ? 'open' : 'closed')}
+        data-size={size}
+        data-padding={padding}
+        data-centered={centered}
       >
         {(title || showCloseButton) && (
           <ModalHeader>
             {title && <ModalTitle>{title}</ModalTitle>}
             {showCloseButton && (
-              <ModalCloseButton onClick={onClose}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M12.207 3.793a1 1 0 0 0-1.414 0L8 6.586 5.207 3.793a1 1 0 0 0-1.414 1.414L6.586 8l-2.793 2.793a1 1 0 1 0 1.414 1.414L8 9.414l2.793 2.793a1 1 0 0 0 1.414-1.414L9.414 8l2.793-2.793a1 1 0 0 0 0-1.414z"/>
-                </svg>
-              </ModalCloseButton>
+              <ModalCloseButton onClick={onClose} aria-label="Close modal" />
             )}
           </ModalHeader>
         )}
         {children}
-      </ModalContent>
+      </div>
+
+      {/* Add CSS animations */}
+      <style>{`
+        @keyframes modalFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes modalSlideIn {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+          }
+        }
+      `}</style>
     </>
   )
 
@@ -304,13 +247,220 @@ export const Modal: React.FC<ModalProps> = ({
   return createPortal(modalContent, document.body)
 }
 
+Modal.displayName = 'Modal'
+
+// Modal Header component
+export type ModalHeaderProps = {
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}
+
+export const ModalHeader = forwardRef<HTMLDivElement, ModalHeaderProps>(
+  ({ children, className, style }, ref) => {
+    const headerStyles: React.CSSProperties = {
+      borderBottom: '1px solid var(--gray700)',
+      marginBottom: '24px',
+      paddingBottom: '16px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      ...style,
+    }
+
+    return (
+      <div ref={ref} style={headerStyles} className={className}>
+        {children}
+      </div>
+    )
+  }
+)
+
+ModalHeader.displayName = 'ModalHeader'
+
+// Modal Title component
+export type ModalTitleProps = {
+  children: React.ReactNode
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+  className?: string
+  style?: React.CSSProperties
+  id?: string
+}
+
+export const ModalTitle = forwardRef<HTMLHeadingElement, ModalTitleProps>(
+  ({ children, as: Component = 'h2', className, style, id }, ref) => {
+    const titleStyles: React.CSSProperties = {
+      margin: 0,
+      fontSize: '20px',
+      fontWeight: '600',
+      color: 'var(--gray100)',
+      fontFamily: 'system-ui, sans-serif',
+      lineHeight: 1.2,
+      ...style,
+    }
+
+    return React.createElement(
+      Component,
+      {
+        ref,
+        style: titleStyles,
+        className,
+        id,
+      },
+      children
+    )
+  }
+)
+
+ModalTitle.displayName = 'ModalTitle'
+
+// Modal Close Button component
+export type ModalCloseButtonProps = {
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  className?: string
+  style?: React.CSSProperties
+  'aria-label'?: string
+}
+
+export const ModalCloseButton = forwardRef<HTMLButtonElement, ModalCloseButtonProps>(
+  ({ onClick, className, style, 'aria-label': ariaLabel = 'Close' }, ref) => {
+    const buttonStyles: React.CSSProperties = {
+      width: '32px',
+      height: '32px',
+      borderRadius: '8px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: 'var(--gray400)',
+      backgroundColor: 'transparent',
+      border: 'none',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      outline: 'none',
+      ...style,
+    }
+
+    return (
+      <button
+        ref={ref}
+        type="button"
+        onClick={onClick}
+        style={buttonStyles}
+        className={className}
+        aria-label={ariaLabel}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--gray800)'
+          e.currentTarget.style.color = 'var(--gray200)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent'
+          e.currentTarget.style.color = 'var(--gray400)'
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--gray700)'
+          e.currentTarget.style.color = 'var(--gray100)'
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent'
+          e.currentTarget.style.color = 'var(--gray400)'
+        }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M12.207 3.793a1 1 0 0 0-1.414 0L8 6.586 5.207 3.793a1 1 0 0 0-1.414 1.414L6.586 8l-2.793 2.793a1 1 0 1 0 1.414 1.414L8 9.414l2.793 2.793a1 1 0 0 0 1.414-1.414L9.414 8l2.793-2.793a1 1 0 0 0 0-1.414z"/>
+        </svg>
+      </button>
+    )
+  }
+)
+
+ModalCloseButton.displayName = 'ModalCloseButton'
+
+// Modal Body component
+export type ModalBodyProps = {
+  children: React.ReactNode
+  scrollable?: boolean
+  className?: string
+  style?: React.CSSProperties
+  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void
+}
+
+export const ModalBody = forwardRef<HTMLDivElement, ModalBodyProps>(
+  ({ children, scrollable = false, className, style, onScroll }, ref) => {
+    const bodyStyles: React.CSSProperties = {
+      flex: 1,
+      ...(scrollable && {
+        maxHeight: '60vh',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+      }),
+      ...style,
+    }
+
+    return (
+      <div
+        ref={ref}
+        style={bodyStyles}
+        className={className}
+        onScroll={onScroll}
+        data-scrollable={scrollable}
+      >
+        {children}
+      </div>
+    )
+  }
+)
+
+ModalBody.displayName = 'ModalBody'
+
+// Modal Footer component
+export type ModalFooterProps = {
+  children: React.ReactNode
+  justify?: 'start' | 'center' | 'end' | 'between'
+  className?: string
+  style?: React.CSSProperties
+}
+
+export const ModalFooter = forwardRef<HTMLDivElement, ModalFooterProps>(
+  ({ children, justify = 'end', className, style }, ref) => {
+    const justifyContentValues = {
+      start: 'flex-start',
+      center: 'center',
+      end: 'flex-end',
+      between: 'space-between',
+    }
+
+    const footerStyles: React.CSSProperties = {
+      borderTop: '1px solid var(--gray700)',
+      marginTop: '24px',
+      paddingTop: '16px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: justifyContentValues[justify],
+      gap: '12px',
+      ...style,
+    }
+
+    return (
+      <div ref={ref} style={footerStyles} className={className} data-justify={justify}>
+        {children}
+      </div>
+    )
+  }
+)
+
+ModalFooter.displayName = 'ModalFooter'
+
 // Dialog variant (simpler modal)
-export const Dialog: React.FC<Omit<ModalProps, 'title' | 'showCloseButton'>> = (props) => {
+export type DialogProps = Omit<ModalProps, 'title' | 'showCloseButton'>
+
+export const Dialog = (props: DialogProps) => {
   return <Modal {...props} showCloseButton={false} />
 }
 
+Dialog.displayName = 'Dialog'
+
 // Confirmation Dialog
-type ConfirmDialogProps = {
+export type ConfirmDialogProps = {
   isOpen: boolean
   onClose: () => void
   onConfirm: () => void
@@ -319,9 +469,11 @@ type ConfirmDialogProps = {
   confirmLabel?: string
   cancelLabel?: string
   variant?: 'default' | 'danger'
+  className?: string
+  style?: React.CSSProperties
 }
 
-export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+export const ConfirmDialog = ({
   isOpen,
   onClose,
   onConfirm,
@@ -330,7 +482,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   variant = 'default',
-}) => {
+  className,
+  style,
+}: ConfirmDialogProps) => {
   const handleConfirm = () => {
     onConfirm()
     onClose()
@@ -343,52 +497,34 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       title={title}
       size="sm"
       centered
+      className={className}
+      style={style}
     >
       <ModalBody>
-        <div style={{ marginBottom: '24px', color: 'var(--colors-gray300)' }}>
+        <div style={{ marginBottom: '24px', color: 'var(--gray300)', lineHeight: 1.5 }}>
           {message}
         </div>
       </ModalBody>
       <ModalFooter>
-        <button
+        <Button
+          variant="outline"
           onClick={onClose}
           style={{
-            padding: '8px 16px',
-            border: '1px solid var(--colors-gray600)',
-            borderRadius: '6px',
-            backgroundColor: 'transparent',
-            color: 'var(--colors-gray200)',
-            cursor: 'pointer',
+            borderColor: 'var(--gray600)',
+            color: 'var(--gray200)',
           }}
         >
           {cancelLabel}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant={variant === 'danger' ? 'destructive' : 'primary'}
           onClick={handleConfirm}
-          style={{
-            padding: '8px 16px',
-            border: 'none',
-            borderRadius: '6px',
-            backgroundColor: variant === 'danger' ? 'var(--colors-error)' : 'var(--colors-primary)',
-            color: 'white',
-            cursor: 'pointer',
-          }}
         >
           {confirmLabel}
-        </button>
+        </Button>
       </ModalFooter>
     </Modal>
   )
 }
 
-// Export individual components for composition
-export {
-  ModalHeader,
-  ModalTitle,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-}
-
-export type ModalProps_Export = ModalProps
-export type ConfirmDialogProps_Export = ConfirmDialogProps
+ConfirmDialog.displayName = 'ConfirmDialog'

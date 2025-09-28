@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { ActionLibraryService } from './ActionLibraryService'
-import type { ActionSearchCriteria } from '../types'
+// import type { ActionSearchCriteria } from '@/types/unifiedAction'
 
 describe('ActionLibraryService', () => {
   let service: ActionLibraryService
@@ -40,9 +40,9 @@ describe('ActionLibraryService', () => {
     })
 
     it('filters by category', () => {
-      const combatResults = service.searchActions({ category: 'combat' })
-      expect(combatResults.every(action => action.category === 'combat')).toBe(true)
-      expect(combatResults.length).toBeGreaterThan(0)
+      const attackResults = service.searchActions({ category: 'attack' })
+      expect(attackResults.every(action => action.category === 'attack')).toBe(true)
+      expect(attackResults.length).toBeGreaterThan(0)
     })
 
     it('filters by tags', () => {
@@ -59,7 +59,7 @@ describe('ActionLibraryService', () => {
 
       lowLevelResults.forEach(action => {
         if (action.type === 'spell') {
-          const template = service.getTemplateById(action.templateId)
+          const template = service.getTemplateById(action.templateId || null)
           if (template?.level !== undefined) {
             expect(template.level).toBeGreaterThanOrEqual(1)
             expect(template.level).toBeLessThanOrEqual(2)
@@ -72,12 +72,12 @@ describe('ActionLibraryService', () => {
       const results = service.searchActions({
         query: 'attack',
         type: 'attack',
-        category: 'combat'
+        category: 'attack'
       })
 
       expect(results.every(action =>
         action.type === 'attack' &&
-        action.category === 'combat'
+        action.category === 'attack'
       )).toBe(true)
     })
   })
@@ -99,10 +99,10 @@ describe('ActionLibraryService', () => {
 
   describe('getActionsByCategory', () => {
     it('returns only actions of specified category', () => {
-      const combat = service.getActionsByCategory('combat')
+      const attack = service.getActionsByCategory('attack')
       const utility = service.getActionsByCategory('utility')
 
-      expect(combat.every(action => action.category === 'combat')).toBe(true)
+      expect(attack.every(action => action.category === 'attack')).toBe(true)
       expect(utility.every(action => action.category === 'utility')).toBe(true)
     })
   })
@@ -124,10 +124,10 @@ describe('ActionLibraryService', () => {
 
     it('calculates correct category counts', () => {
       const categories = service.getCategories()
-      const combatCategory = categories.find(cat => cat.id === 'combat')
-      const combatActions = service.getActionsByCategory('combat')
+      const attackCategory = categories.find(cat => cat.id === 'attack')
+      const attackActions = service.getActionsByCategory('attack')
 
-      expect(combatCategory?.count).toBe(combatActions.length)
+      expect(attackCategory?.count).toBe(attackActions.length)
     })
   })
 

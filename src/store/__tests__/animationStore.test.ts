@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import useAnimationStore from '../animationStore'
-import { Position } from '@/types'
+import type { Position } from '@/types'
 
 describe('animationStore', () => {
   beforeEach(() => {

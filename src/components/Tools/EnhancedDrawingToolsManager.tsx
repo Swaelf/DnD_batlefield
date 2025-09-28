@@ -2,21 +2,18 @@ import React, { useCallback } from 'react'
 import { Group } from 'react-konva'
 import useToolStore from '@store/toolStore'
 import useMapStore from '@store/mapStore'
+import type { Point } from '@/types'
 import { AdvancedRectangleTool } from './AdvancedRectangleTool'
 import { AdvancedCircleTool } from './AdvancedCircleTool'
 import { AdvancedLineTool } from './AdvancedLineTool'
 import { AdvancedTextTool } from './AdvancedTextTool'
 import { AdvancedPolygonTool } from './AdvancedPolygonTool'
-import { snapToGrid } from '@/utils/grid'
-import type { Point } from '@/types/geometry'
 
 interface EnhancedDrawingToolsManagerProps {
-  stageRef?: React.RefObject<any>
   gridSize: number
 }
 
 export const EnhancedDrawingToolsManager: React.FC<EnhancedDrawingToolsManagerProps> = ({
-  stageRef,
   gridSize
 }) => {
   const currentTool = useToolStore(state => state.currentTool)
@@ -170,9 +167,7 @@ export const EnhancedDrawingToolsManager: React.FC<EnhancedDrawingToolsManagerPr
   }, [addObject])
 
   // Handle polygon completion (from existing AdvancedPolygonTool)
-  const handlePolygonComplete = useCallback((polygon: {
-    points: number[]
-  }) => {
+  const handlePolygonComplete = useCallback((points: Point[]) => {
     const polygonObject = {
       id: crypto.randomUUID(),
       type: 'shape' as const,
@@ -180,7 +175,7 @@ export const EnhancedDrawingToolsManager: React.FC<EnhancedDrawingToolsManagerPr
       position: { x: 0, y: 0 }, // Points are absolute
       rotation: 0,
       layer: 4,
-      points: polygon.points,
+      points: points.flatMap(p => [p.x, p.y]),
       fill: '#3D3D2E',
       stroke: '#C9AD6A',
       strokeWidth: 2,

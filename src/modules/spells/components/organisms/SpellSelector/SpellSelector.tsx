@@ -1,14 +1,13 @@
 /**
  * SpellSelector Organism Component
- *
- * Complete spell selection modal interface replacing SpellSelectionModal.
- * Maintains API compatibility while using atomic design patterns.
- * Follows organism design patterns with 100-150 line constraint.
+ * Complete spell selection modal interface
  */
 
 import React, { useEffect } from 'react'
 import { X } from 'lucide-react'
-import { styled } from '@/styles/theme.config'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import { useSpellLibrary } from '../../../hooks'
 import { SpellSearch, SpellGrid } from '../../molecules'
 import type { UnifiedSpell } from '../../../types'
@@ -20,127 +19,6 @@ interface SpellSelectorProps {
   onEdit?: (spell: UnifiedSpell) => void
 }
 
-const ModalOverlay = styled('div', {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  background: 'rgba(0, 0, 0, 0.5)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 1000
-})
-
-const ModalContent = styled('div', {
-  background: 'white',
-  borderRadius: '$3',
-  width: '90vw',
-  maxWidth: '1000px',
-  height: '90vh',
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.2)'
-})
-
-const ModalHeader = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '$4',
-  borderBottom: '1px solid $gray300',
-  background: '$gray50'
-})
-
-const ModalTitle = styled('h2', {
-  margin: 0,
-  fontSize: '$lg',
-  fontWeight: 600,
-  color: '$gray900'
-})
-
-const CloseButton = styled('button', {
-  background: 'none',
-  border: 'none',
-  padding: '$2',
-  borderRadius: '$2',
-  cursor: 'pointer',
-  color: '$gray600',
-
-  '&:hover': {
-    background: '$gray200',
-    color: '$gray800'
-  }
-})
-
-const ModalBody = styled('div', {
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden'
-})
-
-const SearchSection = styled('div', {
-  padding: '$4',
-  borderBottom: '1px solid $gray300'
-})
-
-const GridSection = styled('div', {
-  flex: 1,
-  padding: '$4',
-  overflow: 'auto'
-})
-
-const ModalFooter = styled('div', {
-  padding: '$4',
-  borderTop: '1px solid $gray300',
-  background: '$gray50',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between'
-})
-
-const FooterInfo = styled('div', {
-  fontSize: '$sm',
-  color: '$gray600'
-})
-
-const FooterActions = styled('div', {
-  display: 'flex',
-  gap: '$2'
-})
-
-const Button = styled('button', {
-  padding: '$2 $4',
-  borderRadius: '$2',
-  border: 'none',
-  cursor: 'pointer',
-  fontSize: '$sm',
-  fontWeight: 500,
-
-  variants: {
-    variant: {
-      primary: {
-        background: '$dndRed',
-        color: 'white',
-
-        '&:hover': {
-          background: '$red700'
-        }
-      },
-      secondary: {
-        background: '$gray200',
-        color: '$gray800',
-
-        '&:hover': {
-          background: '$gray300'
-        }
-      }
-    }
-  }
-})
 
 export const SpellSelector: React.FC<SpellSelectorProps> = ({
   isOpen,
@@ -204,53 +82,170 @@ export const SpellSelector: React.FC<SpellSelectorProps> = ({
   if (!isOpen) return null
 
   return (
-    <ModalOverlay onClick={onClose}>
-      <ModalContent onClick={(e) => e.stopPropagation()}>
-        <ModalHeader>
-          <ModalTitle>Select Spell</ModalTitle>
-          <CloseButton onClick={onClose} title="Close">
+    <Box
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+      }}
+    >
+      <Box
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: 'var(--colors-gray900)',
+          borderRadius: '12px',
+          width: '90vw',
+          maxWidth: '1000px',
+          height: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+          border: '1px solid var(--colors-gray700)'
+        }}
+      >
+        {/* Modal Header */}
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '16px',
+            borderBottom: '1px solid var(--colors-gray700)',
+            backgroundColor: 'var(--colors-gray800)'
+          }}
+        >
+          <Text
+            variant="heading"
+            size="lg"
+            style={{
+              margin: 0,
+              fontWeight: '600',
+              color: 'var(--colors-gray100)'
+            }}
+          >
+            Select Spell
+          </Text>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            title="Close"
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              padding: '8px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              color: 'var(--colors-gray400)'
+            }}
+          >
             <X size={20} />
-          </CloseButton>
-        </ModalHeader>
+          </Button>
+        </Box>
 
-        <ModalBody>
-          <SearchSection>
+        {/* Modal Body */}
+        <Box
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}
+        >
+          {/* Search Section */}
+          <Box
+            style={{
+              padding: '16px',
+              borderBottom: '1px solid var(--colors-gray700)'
+            }}
+          >
             <SpellSearch />
-          </SearchSection>
+          </Box>
 
-          <GridSection>
+          {/* Grid Section */}
+          <Box
+            style={{
+              flex: 1,
+              padding: '16px',
+              overflow: 'auto'
+            }}
+          >
             <SpellGrid
-              spells={searchResults}
+              spells={[...searchResults]}
               selectedSpellId={selection.selectedSpellId}
               onSpellSelect={handleSpellSelect}
               onSpellEdit={onEdit ? handleSpellEdit : undefined}
               showEditButtons={!!onEdit}
             />
-          </GridSection>
-        </ModalBody>
+          </Box>
+        </Box>
 
-        <ModalFooter>
-          <FooterInfo>
+        {/* Modal Footer */}
+        <Box
+          style={{
+            padding: '16px',
+            borderTop: '1px solid var(--colors-gray700)',
+            backgroundColor: 'var(--colors-gray800)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <Text
+            variant="body"
+            size="sm"
+            style={{
+              color: 'var(--colors-gray400)'
+            }}
+          >
             {libraryStats.totalSpells} spells available
             {libraryStats.customSpells > 0 && (
               <span> • {libraryStats.customSpells} custom</span>
             )}
-          </FooterInfo>
+          </Text>
 
-          <FooterActions>
-            <Button variant="secondary" onClick={onClose}>
+          <Box
+            style={{
+              display: 'flex',
+              gap: '8px'
+            }}
+          >
+            <Button
+              variant="outline"
+              onClick={onClose}
+              style={{
+                backgroundColor: 'var(--colors-gray800)',
+                borderColor: 'var(--colors-gray600)',
+                color: 'var(--colors-gray300)'
+              }}
+            >
               Cancel
             </Button>
             <Button
               variant="primary"
               onClick={handleSelect}
               disabled={!selectedSpell}
+              style={{
+                backgroundColor: selectedSpell ? 'var(--colors-dndRed)' : 'var(--colors-gray700)',
+                borderColor: selectedSpell ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+                color: selectedSpell ? 'white' : 'var(--colors-gray500)',
+                opacity: selectedSpell ? 1 : 0.6
+              }}
             >
               Select Spell
             </Button>
-          </FooterActions>
-        </ModalFooter>
-      </ModalContent>
-    </ModalOverlay>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   )
 }

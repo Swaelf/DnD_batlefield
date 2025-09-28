@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
-import { BattleMap } from '@/types/map'
+import type { BattleMap } from '@/types/map'
 
 const MAX_HISTORY_SIZE = 50
 

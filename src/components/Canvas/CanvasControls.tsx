@@ -1,82 +1,134 @@
-import React, { memo } from 'react'
-import { Box, Button, Text } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import React, { memo, forwardRef } from 'react'
+import { Text } from '@/components/primitives/TextVE'
 
-const ControlsPanel = styled(Box, {
-  position: 'absolute',
-  top: '$4',
-  right: '$4',
-  zIndex: 50,
-  backgroundColor: '$dndBlack/80',
-  borderRadius: '$lg',
-  padding: '$2',
-  backdropFilter: 'blur(4px)',
-})
-
-const ControlButton = styled(Button, {
-  paddingX: '$2',
-  paddingY: '$1',
-  backgroundColor: '$gray800',
-  '&:hover': {
-    backgroundColor: '$gray700',
-  },
-  borderRadius: '$md',
-  transition: '$fast',
-})
-
-type CanvasControlsProps = {
+export type CanvasControlsProps = {
   stageScale: number
   zoomIn: () => void
   zoomOut: () => void
   resetView: () => void
   centerView: () => void
+  className?: string
+  style?: React.CSSProperties
 }
 
-const CanvasControlsComponent: React.FC<CanvasControlsProps> = ({
+// Control Button component
+export type ControlButtonProps = {
+  onClick: () => void
+  title: string
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}
+
+export const ControlButton = forwardRef<HTMLButtonElement, ControlButtonProps>(
+  ({ onClick, title, children, className, style }, ref) => {
+    const buttonStyles: React.CSSProperties = {
+      padding: '6px 8px',
+      backgroundColor: 'var(--gray800)',
+      border: '1px solid var(--gray700)',
+      borderRadius: '6px',
+      color: 'var(--gray200)',
+      cursor: 'pointer',
+      fontSize: '14px',
+      fontWeight: '500',
+      transition: 'all 0.2s ease',
+      outline: 'none',
+      ...style,
+    }
+
+    return (
+      <button
+        ref={ref}
+        onClick={onClick}
+        title={title}
+        style={buttonStyles}
+        className={className}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--gray700)'
+          e.currentTarget.style.color = 'var(--gray100)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--gray800)'
+          e.currentTarget.style.color = 'var(--gray200)'
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--gray700)'
+          e.currentTarget.style.color = 'var(--gray100)'
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--gray800)'
+          e.currentTarget.style.color = 'var(--gray200)'
+        }}
+      >
+        {children}
+      </button>
+    )
+  }
+)
+
+ControlButton.displayName = 'ControlButton'
+
+const CanvasControlsComponent = ({
   stageScale,
   zoomIn,
   zoomOut,
   resetView,
-  centerView
-}) => {
+  centerView,
+  className,
+  style
+}: CanvasControlsProps) => {
+  const panelStyles: React.CSSProperties = {
+    position: 'absolute',
+    top: '16px',
+    right: '16px',
+    zIndex: 50,
+    backgroundColor: 'rgba(26, 26, 26, 0.8)',
+    borderRadius: '12px',
+    padding: '8px',
+    backdropFilter: 'blur(4px)',
+    border: '1px solid var(--gray700)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+    ...style,
+  }
+
+  const containerStyles: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  }
+
   return (
-    <ControlsPanel>
-      <Box display="flex" alignItems="center" gap="2">
-        <Text size="sm" color="gray300">Zoom: {Math.round(stageScale * 100)}%</Text>
+    <div style={panelStyles} className={className}>
+      <div style={containerStyles}>
+        <Text style={{ fontSize: '14px', color: 'var(--gray300)' }}>
+          Zoom: {Math.round(stageScale * 100)}%
+        </Text>
         <ControlButton
           onClick={zoomOut}
           title="Zoom Out"
-          variant="ghost"
-          size="sm"
         >
           −
         </ControlButton>
         <ControlButton
           onClick={zoomIn}
           title="Zoom In"
-          variant="ghost"
-          size="sm"
         >
           +
         </ControlButton>
         <ControlButton
           onClick={resetView}
           title="Reset View (Ctrl+0)"
-          variant="ghost"
-          size="sm"
         >
           Reset
         </ControlButton>
         <ControlButton
           onClick={centerView}
           title="Fit to Screen"
-          variant="ghost"
-          size="sm"
         >
           Fit
         </ControlButton>
-      </Box>
-    </ControlsPanel>
+      </div>
+    </div>
   )
 }
 

@@ -18,17 +18,10 @@ import {
   Gem
 } from 'lucide-react'
 import useToolStore from '@/store/toolStore'
-import {
-  Panel,
-  PanelHeader,
-  PanelTitle,
-  PanelBody,
-  PanelSection,
-  Button,
-  Grid,
-  Box,
-  Text
-} from '@/components/ui'
+import { Box, Text, Button } from '@/components/primitives'
+import { PanelSection, Grid } from '@/components/ui'
+
+// Component uses primitive components with style prop for styling
 
 type StaticObjectTemplate = {
   id: string
@@ -126,18 +119,45 @@ export const StaticObjectLibrary: React.FC = () => {
 
 
   return (
-    <Panel size="sidebar" css={{ borderLeft: '1px solid $gray800' }}>
-      <PanelHeader>
-        <Box display="flex" alignItems="center" gap="2">
+    <Box
+      style={{
+        width: '320px',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        borderLeft: '1px solid var(--gray-700)',
+        backgroundColor: 'var(--surface)',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Header */}
+      <Box
+        style={{
+          padding: '16px',
+          borderBottom: '1px solid var(--gray-700)',
+          flexShrink: 0
+        }}
+      >
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Home size={20} />
-          <PanelTitle>Static Objects</PanelTitle>
+          <Text style={{ fontSize: '18px', fontWeight: '600', color: 'var(--gray-100)' }}>
+            Static Objects
+          </Text>
         </Box>
-        <Text size="xs" color="gray500" css={{ marginTop: '$1' }}>
+        <Text style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
           Click an object then click on the map to place
         </Text>
-      </PanelHeader>
+      </Box>
 
-      <PanelBody>
+      {/* Scroll Area */}
+      <Box
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: '16px'
+        }}
+      >
         {categories.map(category => {
           const categoryObjects = staticObjectTemplates.filter(
             obj => obj.category === category.id
@@ -145,25 +165,34 @@ export const StaticObjectLibrary: React.FC = () => {
           const isExpanded = expandedCategories.has(category.id)
 
           return (
-            <PanelSection key={category.id} css={{ marginBottom: '$4' }}>
+            <PanelSection key={category.id} spacing="md">
+              {/* Category Toggle */}
               <Button
                 onClick={() => toggleCategory(category.id)}
-                variant="ghost"
-                fullWidth
-                css={{
+                style={{
+                  width: '100%',
                   justifyContent: 'space-between',
-                  padding: '$2',
-                  '&:hover': {
-                    backgroundColor: '$gray800',
-                  },
+                  padding: '8px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  color: 'var(--gray-300)',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--gray-800)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
                 }}
               >
-                <Box display="flex" alignItems="center" gap="2">
+                <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {category.icon}
-                  <Text size="sm" weight="semibold" color="gray300">
+                  <Text style={{ fontSize: '14px', fontWeight: '600', color: 'var(--gray-300)' }}>
                     {category.name}
                   </Text>
-                  <Text size="xs" color="gray500">
+                  <Text style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
                     ({categoryObjects.length})
                   </Text>
                 </Box>
@@ -174,70 +203,94 @@ export const StaticObjectLibrary: React.FC = () => {
                 )}
               </Button>
 
+              {/* Objects Grid */}
               {isExpanded && (
-                <Grid columns={3} gap={2} css={{ marginTop: '$2' }}>
-                  {categoryObjects.map(template => (
-                    <Button
-                      key={template.id}
-                      onClick={() => handleSelectTemplate(template)}
-                      variant="ghost"
-                      css={{
-                        height: 'auto',
-                        padding: '$3',
-                        flexDirection: 'column',
-                        gap: '$1',
-                        border: '2px solid',
-                        borderColor: selectedTemplate?.id === template.id
-                          ? '$secondary'
-                          : '$gray700',
-                        backgroundColor: selectedTemplate?.id === template.id
-                          ? '$gray800'
-                          : 'transparent',
-                        '&:hover': {
-                          borderColor: selectedTemplate?.id === template.id
-                            ? '$secondary'
-                            : '$gray600',
-                          backgroundColor: '$gray800',
-                        },
-                      }}
-                      title={template.name}
-                    >
-                      <Box display="flex" flexDirection="column" alignItems="center" gap="1">
-                        <Box css={{ color: '$gray400' }}>
-                          {template.icon}
+                <Box marginTop={2}>
+                  <Grid columns={3} gap={2}>
+                  {categoryObjects.map(template => {
+                    const isSelected = selectedTemplate?.id === template.id
+                    return (
+                      <Button
+                        key={template.id}
+                        onClick={() => handleSelectTemplate(template)}
+                        title={template.name}
+                        style={{
+                          height: 'auto',
+                          padding: '12px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '4px',
+                          border: '2px solid',
+                          borderColor: isSelected ? 'var(--secondary)' : 'var(--gray-700)',
+                          backgroundColor: isSelected ? 'var(--gray-800)' : 'transparent',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = 'var(--gray-800)'
+                            e.currentTarget.style.borderColor = 'var(--gray-600)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = 'transparent'
+                            e.currentTarget.style.borderColor = 'var(--gray-700)'
+                          }
+                        }}
+                      >
+                        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                          <Box style={{ color: 'var(--gray-400)' }}>
+                            {template.icon}
+                          </Box>
+                          <Text style={{
+                            fontSize: '12px',
+                            color: 'var(--gray-400)',
+                            textAlign: 'center',
+                            wordBreak: 'break-word'
+                          }}>
+                            {template.name}
+                          </Text>
                         </Box>
-                        <Text size="xs" color="gray400" align="center" css={{ wordBreak: 'break-words' }}>
-                          {template.name}
-                        </Text>
-                      </Box>
-                    </Button>
-                  ))}
-                </Grid>
+                      </Button>
+                    )
+                  })}
+                  </Grid>
+                </Box>
               )}
             </PanelSection>
           )
         })}
-      </PanelBody>
 
-      {/* Selected Object Info */}
-      {selectedTemplate && (
-        <PanelSection divider css={{ backgroundColor: '$gray800/50' }}>
-          <Box display="flex" flexDirection="column" gap="2">
-            <Text size="sm" weight="semibold" color="secondary">
-              {selectedTemplate.name}
-            </Text>
-            <Box display="flex" flexDirection="column" gap="1">
-              <Text size="xs" color="gray400">
-                Size: {selectedTemplate.width}x{selectedTemplate.height || selectedTemplate.width}
+        {/* Selected Object Info */}
+        {selectedTemplate && (
+          <Box
+            style={{
+              marginTop: '16px',
+              padding: '12px',
+              backgroundColor: 'rgba(55, 65, 81, 0.5)',
+              borderRadius: '6px',
+              borderTop: '1px solid var(--gray-700)'
+            }}
+          >
+            <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Text style={{ fontSize: '14px', fontWeight: '600', color: 'var(--secondary)' }}>
+                {selectedTemplate.name}
               </Text>
-              <Text size="xs" color="gray400">
-                Click on the map to place
-              </Text>
+              <Box style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <Text style={{ fontSize: '12px', color: 'var(--gray-400)' }}>
+                  Size: {selectedTemplate.width}x{selectedTemplate.height || selectedTemplate.width}
+                </Text>
+                <Text style={{ fontSize: '12px', color: 'var(--gray-400)' }}>
+                  Click on the map to place
+                </Text>
+              </Box>
             </Box>
           </Box>
-        </PanelSection>
-      )}
-    </Panel>
+        )}
+      </Box>
+    </Box>
   )
 }
 

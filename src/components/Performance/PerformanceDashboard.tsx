@@ -1,29 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor'
-import { Box, Text, Button } from '@/components/ui'
-import { Modal } from '@/components/ui'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Modal } from '@/components/ui/Modal'
 import {
   Activity,
   Cpu,
   HardDrive,
   Clock,
-  TrendingUp,
   AlertTriangle,
   Download,
   Play,
-  Square,
-  BarChart3
+  Square
 } from 'lucide-react'
 
-interface PerformanceDashboardProps {
+type PerformanceDashboardProps = {
   isOpen: boolean
   onClose: () => void
 }
 
-export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
+export const PerformanceDashboard = ({
   isOpen,
   onClose
-}) => {
+}: PerformanceDashboardProps) => {
   const {
     metrics,
     history,
@@ -103,43 +103,68 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
 
   }, [history.samples])
 
-  const getScoreColor = (score: number): string => {
-    if (score >= 80) return '$success'
-    if (score >= 60) return '$warning'
-    return '$error'
-  }
+  const getScoreColor = useCallback((score: number): string => {
+    if (score >= 80) return 'var(--colors-success)'
+    if (score >= 60) return 'var(--colors-warning)'
+    return 'var(--colors-error)'
+  }, [])
 
-  const getScoreLabel = (score: number): string => {
+  const getScoreLabel = useCallback((score: number): string => {
     if (score >= 90) return 'Excellent'
     if (score >= 80) return 'Good'
     if (score >= 70) return 'Fair'
     if (score >= 60) return 'Poor'
     return 'Critical'
-  }
+  }, [])
 
   if (!isOpen) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Performance Dashboard">
-      <Box css={{ display: 'flex', flexDirection: 'column', gap: '$4', minWidth: 700, maxHeight: '80vh', overflow: 'auto' }}>
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <Box
+        padding={4}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+          minWidth: '700px',
+          maxHeight: '80vh',
+          overflow: 'auto'
+        }}
+      >
+        <Text variant="heading" size="lg" style={{ marginBottom: '8px' }}>
+          Performance Dashboard
+        </Text>
 
         {/* Performance Score */}
         <Box
-          css={{
+          padding={4}
+          style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '$4',
-            backgroundColor: '$gray800',
-            borderRadius: '$md',
-            border: `2px solid var(--colors-${getScoreColor(score)})`
+            backgroundColor: 'var(--colors-gray800)',
+            borderRadius: '8px',
+            border: `2px solid ${getScoreColor(score)}`
           }}
         >
-          <Box css={{ textAlign: 'center' }}>
-            <Text css={{ fontSize: '$2xl', fontWeight: '$bold', color: getScoreColor(score) }}>
+          <Box style={{ textAlign: 'center' }}>
+            <Text
+              variant="heading"
+              size="xl"
+              style={{
+                color: getScoreColor(score),
+                fontWeight: 'bold',
+                marginBottom: '4px'
+              }}
+            >
               {score}
             </Text>
-            <Text css={{ fontSize: '$sm', color: '$gray400' }}>
+            <Text
+              variant="body"
+              size="sm"
+              style={{ color: 'var(--colors-gray400)' }}
+            >
               Performance Score - {getScoreLabel(score)}
             </Text>
           </Box>
@@ -147,72 +172,88 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
 
         {/* Current Metrics */}
         {metrics && (
-          <Box css={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '$3' }}>
+          <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
             <Box
-              css={{
-                padding: '$3',
-                backgroundColor: '$gray900',
-                borderRadius: '$md',
+              padding={3}
+              style={{
+                backgroundColor: 'var(--colors-gray900)',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '$2'
+                gap: '8px'
               }}
             >
               <Activity size={20} color="#10B981" />
               <Box>
-                <Text css={{ fontSize: '$lg', fontWeight: '$semibold' }}>{metrics.fps}</Text>
-                <Text css={{ fontSize: '$xs', color: '$gray400' }}>FPS</Text>
+                <Text variant="body" size="lg" style={{ fontWeight: '600' }}>
+                  {metrics.fps}
+                </Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
+                  FPS
+                </Text>
               </Box>
             </Box>
 
             <Box
-              css={{
-                padding: '$3',
-                backgroundColor: '$gray900',
-                borderRadius: '$md',
+              padding={3}
+              style={{
+                backgroundColor: 'var(--colors-gray900)',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '$2'
+                gap: '8px'
               }}
             >
               <HardDrive size={20} color="#F59E0B" />
               <Box>
-                <Text css={{ fontSize: '$lg', fontWeight: '$semibold' }}>{metrics.memoryUsage}MB</Text>
-                <Text css={{ fontSize: '$xs', color: '$gray400' }}>Memory</Text>
+                <Text variant="body" size="lg" style={{ fontWeight: '600' }}>
+                  {metrics.memoryUsage}MB
+                </Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
+                  Memory
+                </Text>
               </Box>
             </Box>
 
             <Box
-              css={{
-                padding: '$3',
-                backgroundColor: '$gray900',
-                borderRadius: '$md',
+              padding={3}
+              style={{
+                backgroundColor: 'var(--colors-gray900)',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '$2'
+                gap: '8px'
               }}
             >
               <Clock size={20} color="#8B5CF6" />
               <Box>
-                <Text css={{ fontSize: '$lg', fontWeight: '$semibold' }}>{metrics.renderTime.toFixed(2)}ms</Text>
-                <Text css={{ fontSize: '$xs', color: '$gray400' }}>Render Time</Text>
+                <Text variant="body" size="lg" style={{ fontWeight: '600' }}>
+                  {metrics.renderTime.toFixed(2)}ms
+                </Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
+                  Render Time
+                </Text>
               </Box>
             </Box>
 
             <Box
-              css={{
-                padding: '$3',
-                backgroundColor: '$gray900',
-                borderRadius: '$md',
+              padding={3}
+              style={{
+                backgroundColor: 'var(--colors-gray900)',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '$2'
+                gap: '8px'
               }}
             >
               <Cpu size={20} color="#EC4899" />
               <Box>
-                <Text css={{ fontSize: '$lg', fontWeight: '$semibold' }}>{metrics.canvasObjects}</Text>
-                <Text css={{ fontSize: '$xs', color: '$gray400' }}>Objects</Text>
+                <Text variant="body" size="lg" style={{ fontWeight: '600' }}>
+                  {metrics.canvasObjects}
+                </Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
+                  Objects
+                </Text>
               </Box>
             </Box>
           </Box>
@@ -220,22 +261,59 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
 
         {/* Performance Chart */}
         <Box
-          css={{
-            padding: '$3',
-            backgroundColor: '$gray900',
-            borderRadius: '$md'
+          padding={3}
+          style={{
+            backgroundColor: 'var(--colors-gray900)',
+            borderRadius: '8px'
           }}
         >
-          <Box css={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '$3' }}>
-            <Text css={{ fontSize: '$sm', fontWeight: '$medium' }}>Performance History</Text>
-            <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$1' }}>
-                <Box css={{ width: 12, height: 2, backgroundColor: '$success' }} />
-                <Text css={{ fontSize: '$xs', color: '$gray400' }}>FPS</Text>
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '12px'
+            }}
+          >
+            <Text
+              variant="body"
+              size="sm"
+              style={{ fontWeight: '500' }}
+            >
+              Performance History
+            </Text>
+            <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Box
+                  style={{
+                    width: '12px',
+                    height: '2px',
+                    backgroundColor: 'var(--colors-success)'
+                  }}
+                />
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{ color: 'var(--colors-gray400)' }}
+                >
+                  FPS
+                </Text>
               </Box>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$1' }}>
-                <Box css={{ width: 12, height: 2, backgroundColor: '$warning' }} />
-                <Text css={{ fontSize: '$xs', color: '$gray400' }}>Memory</Text>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Box
+                  style={{
+                    width: '12px',
+                    height: '2px',
+                    backgroundColor: 'var(--colors-warning)'
+                  }}
+                />
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{ color: 'var(--colors-gray400)' }}
+                >
+                  Memory
+                </Text>
               </Box>
             </Box>
           </Box>
@@ -250,20 +328,86 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
 
         {/* Performance History Stats */}
         {history.samples.length > 0 && (
-          <Box css={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '$3' }}>
-            <Box css={{ textAlign: 'center', padding: '$2', backgroundColor: '$gray800', borderRadius: '$sm' }}>
-              <Text css={{ fontSize: '$lg', fontWeight: '$semibold', color: '$success' }}>{history.averageFPS}</Text>
-              <Text css={{ fontSize: '$xs', color: '$gray400' }}>Avg FPS</Text>
+          <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+            <Box
+              padding={2}
+              style={{
+                textAlign: 'center',
+                backgroundColor: 'var(--colors-gray800)',
+                borderRadius: '4px'
+              }}
+            >
+              <Text
+                variant="body"
+                size="lg"
+                style={{
+                  fontWeight: '600',
+                  color: 'var(--colors-success)'
+                }}
+              >
+                {history.averageFPS}
+              </Text>
+              <Text
+                variant="body"
+                size="xs"
+                style={{ color: 'var(--colors-gray400)' }}
+              >
+                Avg FPS
+              </Text>
             </Box>
 
-            <Box css={{ textAlign: 'center', padding: '$2', backgroundColor: '$gray800', borderRadius: '$sm' }}>
-              <Text css={{ fontSize: '$lg', fontWeight: '$semibold', color: '$warning' }}>{history.peakMemory}MB</Text>
-              <Text css={{ fontSize: '$xs', color: '$gray400' }}>Peak Memory</Text>
+            <Box
+              padding={2}
+              style={{
+                textAlign: 'center',
+                backgroundColor: 'var(--colors-gray800)',
+                borderRadius: '4px'
+              }}
+            >
+              <Text
+                variant="body"
+                size="lg"
+                style={{
+                  fontWeight: '600',
+                  color: 'var(--colors-warning)'
+                }}
+              >
+                {history.peakMemory}MB
+              </Text>
+              <Text
+                variant="body"
+                size="xs"
+                style={{ color: 'var(--colors-gray400)' }}
+              >
+                Peak Memory
+              </Text>
             </Box>
 
-            <Box css={{ textAlign: 'center', padding: '$2', backgroundColor: '$gray800', borderRadius: '$sm' }}>
-              <Text css={{ fontSize: '$lg', fontWeight: '$semibold', color: '$primary' }}>{history.averageRenderTime}ms</Text>
-              <Text css={{ fontSize: '$xs', color: '$gray400' }}>Avg Render</Text>
+            <Box
+              padding={2}
+              style={{
+                textAlign: 'center',
+                backgroundColor: 'var(--colors-gray800)',
+                borderRadius: '4px'
+              }}
+            >
+              <Text
+                variant="body"
+                size="lg"
+                style={{
+                  fontWeight: '600',
+                  color: 'var(--colors-primary)'
+                }}
+              >
+                {history.averageRenderTime}ms
+              </Text>
+              <Text
+                variant="body"
+                size="xs"
+                style={{ color: 'var(--colors-gray400)' }}
+              >
+                Avg Render
+              </Text>
             </Box>
           </Box>
         )}
@@ -271,21 +415,44 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
         {/* Performance Warnings */}
         {warnings.length > 0 && (
           <Box
-            css={{
-              padding: '$3',
-              backgroundColor: '$gray900',
-              border: '1px solid $warning',
-              borderRadius: '$md'
+            padding={3}
+            style={{
+              backgroundColor: 'var(--colors-gray900)',
+              border: '1px solid var(--colors-warning)',
+              borderRadius: '8px'
             }}
           >
-            <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', marginBottom: '$2' }}>
+            <Box
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px'
+              }}
+            >
               <AlertTriangle size={16} color="#F59E0B" />
-              <Text css={{ fontSize: '$sm', fontWeight: '$medium', color: '$warning' }}>
+              <Text
+                variant="body"
+                size="sm"
+                style={{
+                  fontWeight: '500',
+                  color: 'var(--colors-warning)'
+                }}
+              >
                 Performance Warnings
               </Text>
             </Box>
             {warnings.map((warning, index) => (
-              <Text key={index} css={{ fontSize: '$xs', color: '$gray400', display: 'block', marginBottom: '$1' }}>
+              <Text
+                key={index}
+                variant="body"
+                size="xs"
+                style={{
+                  color: 'var(--colors-gray400)',
+                  display: 'block',
+                  marginBottom: '4px'
+                }}
+              >
                 • {warning}
               </Text>
             ))}
@@ -293,12 +460,23 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
         )}
 
         {/* Controls */}
-        <Box css={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box css={{ display: 'flex', gap: '$2' }}>
+        <Box
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <Box style={{ display: 'flex', gap: '8px' }}>
             <Button
               variant={isRecording ? 'destructive' : 'primary'}
               size="sm"
               onClick={isRecording ? stopRecording : startRecording}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
             >
               {isRecording ? <Square size={16} /> : <Play size={16} />}
               {isRecording ? 'Stop Recording' : 'Start Recording'}
@@ -306,9 +484,14 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
 
             {history.samples.length > 0 && (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={exportMetrics}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
               >
                 <Download size={16} />
                 Export Data
@@ -316,34 +499,67 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
             )}
           </Box>
 
-          <Text css={{ fontSize: '$xs', color: '$gray500' }}>
+          <Text
+            variant="body"
+            size="xs"
+            style={{ color: 'var(--colors-gray500)' }}
+          >
             {history.samples.length} samples recorded
           </Text>
         </Box>
 
         {/* Performance Tips */}
         <Box
-          css={{
-            padding: '$3',
-            backgroundColor: '$gray800',
-            borderRadius: '$md',
-            border: '1px solid $gray700'
+          padding={3}
+          style={{
+            backgroundColor: 'var(--colors-gray800)',
+            borderRadius: '8px',
+            border: '1px solid var(--colors-gray700)'
           }}
         >
-          <Text css={{ fontSize: '$sm', fontWeight: '$medium', marginBottom: '$2' }}>
+          <Text
+            variant="body"
+            size="sm"
+            style={{
+              fontWeight: '500',
+              marginBottom: '8px'
+            }}
+          >
             Performance Tips:
           </Text>
-          <Box css={{ display: 'flex', flexDirection: 'column', gap: '$1' }}>
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>
+          <Box
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px'
+            }}
+          >
+            <Text
+              variant="body"
+              size="xs"
+              style={{ color: 'var(--colors-gray400)' }}
+            >
               • Target 60 FPS for smooth interactions
             </Text>
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>
+            <Text
+              variant="body"
+              size="xs"
+              style={{ color: 'var(--colors-gray400)' }}
+            >
               • Keep memory usage under 300MB for best performance
             </Text>
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>
+            <Text
+              variant="body"
+              size="xs"
+              style={{ color: 'var(--colors-gray400)' }}
+            >
               • Limit canvas objects to under 1000 for optimal rendering
             </Text>
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>
+            <Text
+              variant="body"
+              size="xs"
+              style={{ color: 'var(--colors-gray400)' }}
+            >
               • Use layers to organize and hide complex objects when not needed
             </Text>
           </Box>

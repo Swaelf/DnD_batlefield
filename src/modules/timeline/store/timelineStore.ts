@@ -147,9 +147,12 @@ export const useTimelineStore = createStore<TimelineStore>(
         state.eventCreationData = null
 
         // Reset playback state
-        state.playback.isPlaying = false
-        state.playback.currentRound = 1
-        state.playback.currentEventIndex = 0
+        state.playback = {
+          ...state.playback,
+          isPlaying: false,
+          currentRound: 1,
+          currentEventIndex: 0
+        }
       }))
     },
 
@@ -184,7 +187,10 @@ export const useTimelineStore = createStore<TimelineStore>(
           const updatedTimeline = timelineService.startCombat(timeline)
           const index = state.timelines.findIndex(t => t.id === activeTimelineId)
           state.timelines[index] = updatedTimeline
-          state.playback.isPlaying = false
+          state.playback = {
+            ...state.playback,
+            isPlaying: false
+          }
         }
       }))
     },
@@ -199,7 +205,10 @@ export const useTimelineStore = createStore<TimelineStore>(
           const updatedTimeline = timelineService.endCombat(timeline)
           const index = state.timelines.findIndex(t => t.id === activeTimelineId)
           state.timelines[index] = updatedTimeline
-          state.playback.isPlaying = false
+          state.playback = {
+            ...state.playback,
+            isPlaying: false
+          }
         }
       }))
     },
@@ -261,8 +270,11 @@ export const useTimelineStore = createStore<TimelineStore>(
         set(produce((state: TimelineState) => {
           const index = state.timelines.findIndex(t => t.id === activeTimelineId)
           state.timelines[index] = updatedTimeline
-          state.playback.currentRound = updatedTimeline.currentRound
-          state.playback.currentEventIndex = 0
+          state.playback = {
+            ...state.playback,
+            currentRound: updatedTimeline.currentRound,
+            currentEventIndex: 0
+          }
         }))
       } catch (error) {
         console.error('Failed to advance to next round:', error)
@@ -279,8 +291,11 @@ export const useTimelineStore = createStore<TimelineStore>(
           const updatedTimeline = timelineService.previousRound(timeline)
           const index = state.timelines.findIndex(t => t.id === activeTimelineId)
           state.timelines[index] = updatedTimeline
-          state.playback.currentRound = updatedTimeline.currentRound
-          state.playback.currentEventIndex = 0
+          state.playback = {
+            ...state.playback,
+            currentRound: updatedTimeline.currentRound,
+            currentEventIndex: 0
+          }
         }
       }))
     },
@@ -295,8 +310,11 @@ export const useTimelineStore = createStore<TimelineStore>(
           const updatedTimeline = timelineService.goToRound(timeline, roundNumber)
           const index = state.timelines.findIndex(t => t.id === activeTimelineId)
           state.timelines[index] = updatedTimeline
-          state.playback.currentRound = roundNumber
-          state.playback.currentEventIndex = 0
+          state.playback = {
+            ...state.playback,
+            currentRound: roundNumber,
+            currentEventIndex: 0
+          }
         }
       }))
     },
@@ -456,19 +474,19 @@ export const useTimelineStore = createStore<TimelineStore>(
     // Playback actions
     setPlaybackSpeed: (speed: number) => {
       set(produce((state: TimelineState) => {
-        state.playback.playbackSpeed = Math.max(0.25, Math.min(4.0, speed))
+        state.playback = { ...state.playback, playbackSpeed: Math.max(0.25, Math.min(4.0, speed)) }
       }))
     },
 
     setAutoAdvanceRounds: (enabled: boolean) => {
       set(produce((state: TimelineState) => {
-        state.playback.autoAdvanceRounds = enabled
+        state.playback = { ...state.playback, autoAdvanceRounds: enabled }
       }))
     },
 
     togglePlayback: () => {
       set(produce((state: TimelineState) => {
-        state.playback.isPlaying = !state.playback.isPlaying
+        state.playback = { ...state.playback, isPlaying: !state.playback.isPlaying }
       }))
     },
 
@@ -581,15 +599,5 @@ export const useTimelineStore = createStore<TimelineStore>(
       }
       return null
     }
-  }),
-  {
-    name: 'timeline-store',
-    persist: {
-      partialize: (state) => ({
-        timelines: state.timelines,
-        activeTimelineId: state.activeTimelineId,
-        playback: state.playback
-      })
-    }
-  }
+  })
 )

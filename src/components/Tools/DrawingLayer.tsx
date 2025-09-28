@@ -1,12 +1,12 @@
 import React from 'react'
 import { Layer, Rect, Circle, Line, Group } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 import useToolStore from '@store/toolStore'
 import { Token } from '../Token/Token'
 import { MeasurementOverlay } from './MeasurementOverlay'
 
 type DrawingLayerProps = {
-  stageRef: React.RefObject<Konva.Stage>
+  stageRef?: React.RefObject<Konva.Stage | null>
   gridSize?: number
 }
 

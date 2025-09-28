@@ -3,6 +3,8 @@ import type { Point } from './geometry'
 // Core unified action type
 export type UnifiedAction = {
   id: string
+  name: string // Action display name
+  description: string // Action description
   type: 'spell' | 'attack' | 'interaction' | 'move'
   category: string // subcategory for each type (e.g., 'projectile', 'melee', 'door')
   source: Point | string // position or tokenId
@@ -12,6 +14,16 @@ export type UnifiedAction = {
   metadata: ActionMetadata
   timestamp: number
   duration: number // Total action duration in ms
+  tags: string[] // Action tags for filtering
+  templateId?: string // Template identifier for built-in actions
+  isCustom?: boolean // Whether this is a custom user action
+  customizable?: boolean // Whether this action can be customized
+  range?: number // range in feet for D&D spells/attacks
+  areaOfEffect?: AreaShape | number // area of effect for spells/abilities (number = radius, AreaShape = complex area)
+  damage?: string // damage dice notation (e.g., "2d6+3")
+  damageType?: string // type of damage (fire, cold, piercing, etc.)
+  spellLevel?: number // D&D spell level (0-9)
+  castingTime?: string // D&D casting time (e.g., "1 action", "1 bonus action")
 }
 
 // Animation configuration
@@ -22,7 +34,7 @@ export type AnimationConfig = {
   size?: number
   customParams?: Record<string, any>
   startDelay?: number
-  easing?: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut'
+  easing?: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' | 'ease-in' | 'ease-out' | 'ease-in-out'
 
   // Projectile properties
   speed?: number
@@ -52,6 +64,30 @@ export type AnimationConfig = {
   radiance?: boolean
   sparks?: boolean
   persistent?: boolean
+
+  // Additional animation properties
+  arc?: number // arc radius for curved attacks
+  spin?: boolean // spinning animation for weapons
+  impact?: boolean // impact effect on hit
+  multiple?: number | boolean // multiple target support (number = count, boolean = enabled)
+  pulse?: boolean // pulsing animation effect
+  scan?: boolean // scanning animation for detection
+  precision?: boolean // precision targeting animation
+  sweep?: boolean // sweeping area animation
+  motion?: string | boolean // specific motion type for complex animations (string = type, boolean = enabled)
+  quick?: boolean // quick animation for fast actions
+  swirl?: boolean // swirling animation effect
+  instant?: boolean // instant animation (no duration)
+  curveRandomSeed?: number // seed for randomizing curve animations
+  opacity?: number // animation opacity (0-1)
+  vertical?: boolean // vertical movement animation
+  fluid?: boolean // fluid motion animation
+  elevation?: number | boolean // elevation for flying/jumping animations (number = height, boolean = enabled)
+  cautious?: boolean // cautious movement animation
+  defensive?: boolean // defensive positioning animation
+  secondaryColor?: string // secondary color for complex animations
+  burstCount?: number // number of burst effects for multi-burst animations
+  burstInterval?: number // interval between bursts in milliseconds
 }
 
 // Action effects and targeting
@@ -108,13 +144,16 @@ export type LineArea = {
 
 // Roll result for D&D mechanics
 export type RollResult = {
-  rolls: number[]
-  modifier: number
-  total: number
+  rolls?: number[]
+  modifier?: number
+  total?: number
   criticalHit?: boolean
   criticalFail?: boolean
   advantage?: boolean
   disadvantage?: boolean
+  skill?: string // skill check type (e.g., 'investigation', 'perception', 'stealth')
+  dc?: number // difficulty class for skill checks
+  success?: boolean // whether the roll was successful
 }
 
 // Action template for pre-configured actions
@@ -149,4 +188,28 @@ export type ActionFilter = {
     end: number
   }
   searchText?: string
+}
+
+// Additional types for actions module
+export type ActionCategory = 'spell' | 'attack' | 'interaction' | 'movement' | 'environmental' | 'utility' | 'sequence'
+export type ActionSortBy = 'name' | 'type' | 'category' | 'level' | 'recent'
+export type ActionType = 'spell' | 'attack' | 'interaction' | 'move' | 'environmental' | 'utility' | 'sequence'
+
+export type ActionCategoryInfo = {
+  readonly id: ActionCategory
+  readonly name: string
+  readonly description: string
+  readonly icon: string
+  readonly color: string
+  readonly count: number
+}
+
+export type ActionSearchCriteria = {
+  readonly query?: string
+  readonly type?: ActionType
+  readonly category?: ActionCategory
+  readonly tags?: string[]
+  readonly includeCustom?: boolean
+  readonly minLevel?: number
+  readonly maxLevel?: number
 }

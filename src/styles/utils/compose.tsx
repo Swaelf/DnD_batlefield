@@ -1,4 +1,5 @@
-import React, { type ReactElement, type ComponentProps } from 'react'
+import type React from 'react';
+import { type ReactElement, type ComponentProps, createElement } from 'react'
 import { clsx } from 'clsx'
 import { sprinkles, type Sprinkles } from '../sprinkles.css'
 
@@ -78,7 +79,7 @@ export function extractSprinkles<T extends Record<string, any>>(
 }
 
 // Create a stylable component wrapper
-export function createStylableComponent<T extends keyof JSX.IntrinsicElements>(
+export function createStylableComponent<T extends keyof React.JSX.IntrinsicElements>(
   element: T,
   baseClassName?: string
 ) {
@@ -88,12 +89,12 @@ export function createStylableComponent<T extends keyof JSX.IntrinsicElements>(
   }: ComponentProps<T> & StylableProps) {
     const [sprinkleProps, elementProps] = extractSprinkles(props)
 
-    const Element = element
-    return (
-      <Element
-        {...elementProps}
-        className={mergeStyles(baseClassName, sprinkleProps, className)}
-      />
+    return createElement(
+      element,
+      {
+        ...elementProps,
+        className: mergeStyles(baseClassName, sprinkleProps, className)
+      }
     ) as ReactElement
   }
 }
@@ -209,7 +210,8 @@ export function applyStyleGroup(
   size?: string,
   additionalProps?: Sprinkles
 ): Sprinkles {
-  const baseStyles = styleGroups[group].base
+  const styleGroup = styleGroups[group] as any
+  const baseStyles = styleGroup.base
 
   let variantStyles = {}
   if (variant && 'variants' in styleGroups[group]) {

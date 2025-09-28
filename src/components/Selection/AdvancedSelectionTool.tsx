@@ -1,14 +1,19 @@
+/**
+ * Advanced Selection Tool Component
+ * Konva-based selection tool with multiple selection modes
+ */
+
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { Group, Rect, Line, Circle } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
-import { MapObject } from '@/types/map'
-import useMapStore from '@store/mapStore'
+import type { MapObject, Shape } from '@/types/map'
+import useMapStore from '@/store/mapStore'
 import { snapToGrid } from '@/utils/grid'
 
-type SelectionMode = 'rectangle' | 'lasso' | 'magic-wand' | 'by-type' | 'by-layer'
+export type SelectionMode = 'rectangle' | 'lasso' | 'magic-wand' | 'by-type' | 'by-layer'
 
-interface AdvancedSelectionToolProps {
+export interface AdvancedSelectionToolProps {
   isActive: boolean
   gridSize: number
   gridSnap: boolean
@@ -35,8 +40,7 @@ export const AdvancedSelectionTool: React.FC<AdvancedSelectionToolProps> = ({
 
   const currentMap = useMapStore(state => state.currentMap)
   const selectedObjects = useMapStore(state => state.selectedObjects)
-  const selectObject = useMapStore(state => state.selectObject)
-  const selectMultipleObjects = useMapStore(state => state.selectMultipleObjects)
+  const selectMultipleObjects = useMapStore(state => state.selectMultiple)
 
   // Handle keyboard modifiers
   useEffect(() => {
@@ -127,19 +131,20 @@ export const AdvancedSelectionTool: React.FC<AdvancedSelectionToolProps> = ({
       case 'token':
         return obj.position
       case 'shape':
-        if (obj.shapeType === 'rectangle') {
+        const shapeObj = obj as Shape
+        if (shapeObj.shapeType === 'rectangle') {
           return {
-            x: obj.position.x + (obj.width || 0) / 2,
-            y: obj.position.y + (obj.height || 0) / 2
+            x: shapeObj.position.x + (shapeObj.width || 0) / 2,
+            y: shapeObj.position.y + (shapeObj.height || 0) / 2
           }
-        } else if (obj.shapeType === 'circle') {
-          return obj.position
-        } else if (obj.shapeType === 'line' && obj.points) {
-          const avgX = obj.points.reduce((sum, _, i) => i % 2 === 0 ? sum + obj.points![i] : sum, 0) / (obj.points.length / 2)
-          const avgY = obj.points.reduce((sum, _, i) => i % 2 === 1 ? sum + obj.points![i] : sum, 0) / (obj.points.length / 2)
+        } else if (shapeObj.shapeType === 'circle') {
+          return shapeObj.position
+        } else if (shapeObj.shapeType === 'line' && shapeObj.points) {
+          const avgX = shapeObj.points.reduce((sum, _, i) => i % 2 === 0 ? sum + shapeObj.points![i] : sum, 0) / (shapeObj.points.length / 2)
+          const avgY = shapeObj.points.reduce((sum, _, i) => i % 2 === 1 ? sum + shapeObj.points![i] : sum, 0) / (shapeObj.points.length / 2)
           return { x: avgX, y: avgY }
         }
-        return obj.position
+        return shapeObj.position
       case 'text':
         return obj.position
       default:
@@ -173,36 +178,6 @@ export const AdvancedSelectionTool: React.FC<AdvancedSelectionToolProps> = ({
       })
       .map(obj => obj.id)
   }, [currentMap, getObjectCenter, isPointInPolygon])
-
-  // Magic wand selection (select similar objects)
-  const getSimularObjects = useCallback((targetId: string): string[] => {
-    if (!currentMap) return []
-
-    const targetObject = currentMap.objects.find(obj => obj.id === targetId)
-    if (!targetObject) return []
-
-    return currentMap.objects
-      .filter(obj => {
-        // Same type
-        if (obj.type !== targetObject.type) return false
-
-        // Additional similarity checks based on type
-        switch (obj.type) {
-          case 'token':
-            return obj.size === (targetObject as any).size
-          case 'shape':
-            return obj.shapeType === (targetObject as any).shapeType &&
-                   Math.abs((obj.width || 0) - ((targetObject as any).width || 0)) < 10 &&
-                   Math.abs((obj.height || 0) - ((targetObject as any).height || 0)) < 10
-          case 'text':
-            return obj.fontSize === (targetObject as any).fontSize &&
-                   obj.fontFamily === (targetObject as any).fontFamily
-          default:
-            return true
-        }
-      })
-      .map(obj => obj.id)
-  }, [currentMap])
 
   const handleMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
     if (!isActive || e.target !== e.target.getStage()) return
@@ -319,7 +294,7 @@ export const AdvancedSelectionTool: React.FC<AdvancedSelectionToolProps> = ({
           width={Math.abs(currentPoint.x - startPoint.x)}
           height={Math.abs(currentPoint.y - startPoint.y)}
           fill="rgba(201, 173, 106, 0.1)"
-          stroke="#C9AD6A"
+          stroke="var(--colors-dndGold)"
           strokeWidth={1}
           dash={[4, 4]}
           listening={false}
@@ -330,7 +305,7 @@ export const AdvancedSelectionTool: React.FC<AdvancedSelectionToolProps> = ({
       {selectionMode === 'lasso' && lassoPoints.length > 1 && (
         <Line
           points={lassoPoints.flatMap(p => [p.x, p.y])}
-          stroke="#C9AD6A"
+          stroke="var(--colors-dndGold)"
           strokeWidth={2}
           lineCap="round"
           lineJoin="round"
@@ -348,7 +323,7 @@ export const AdvancedSelectionTool: React.FC<AdvancedSelectionToolProps> = ({
         <Circle
           radius={10}
           fill="transparent"
-          stroke="#C9AD6A"
+          stroke="var(--colors-dndGold)"
           strokeWidth={1}
           dash={selectionMode === 'lasso' ? [2, 2] : undefined}
         />

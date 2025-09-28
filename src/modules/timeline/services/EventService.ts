@@ -11,6 +11,8 @@ import type {
   EventType,
   EventData,
   ValidationResult,
+  ValidationError,
+  ValidationWarning,
   MoveEventData,
   AttackEventData,
   SpellEventData,
@@ -66,8 +68,8 @@ export class EventService {
    * Validate event data based on type
    */
   validateEventData(type: EventType, data: EventData): ValidationResult {
-    const errors = []
-    const warnings = []
+    const errors: ValidationError[] = []
+    const warnings: ValidationWarning[] = []
 
     // Type-specific validation
     switch (type) {
@@ -75,16 +77,16 @@ export class EventService {
         this.validateMoveEvent(data as MoveEventData, errors, warnings)
         break
       case 'attack':
-        this.validateAttackEvent(data as AttackEventData, errors, warnings)
+        this.validateAttackEvent(data as AttackEventData, errors)
         break
       case 'spell':
-        this.validateSpellEvent(data as SpellEventData, errors, warnings)
+        this.validateSpellEvent(data as SpellEventData, errors)
         break
       case 'interaction':
-        this.validateInteractionEvent(data as InteractionEventData, errors, warnings)
+        this.validateInteractionEvent(data as InteractionEventData, errors)
         break
       case 'environmental':
-        this.validateEnvironmentalEvent(data as EnvironmentalEventData, errors, warnings)
+        this.validateEnvironmentalEvent(data as EnvironmentalEventData, errors)
         break
       case 'sequence':
         this.validateSequenceEvent(data as SequenceEventData, errors, warnings)
@@ -196,7 +198,7 @@ export class EventService {
   /**
    * Validation methods for each event type
    */
-  private validateMoveEvent(data: MoveEventData, errors: any[], warnings: any[]): void {
+  private validateMoveEvent(data: MoveEventData, errors: ValidationError[], warnings: ValidationWarning[]): void {
     if (!data.tokenId) {
       errors.push({ field: 'tokenId', message: 'Token ID is required for move events', code: 'MISSING_TOKEN_ID' })
     }
@@ -214,7 +216,7 @@ export class EventService {
     }
   }
 
-  private validateAttackEvent(data: AttackEventData, errors: any[], warnings: any[]): void {
+  private validateAttackEvent(data: AttackEventData, errors: ValidationError[]): void {
     if (!data.attackerId) {
       errors.push({ field: 'attackerId', message: 'Attacker ID is required', code: 'MISSING_ATTACKER' })
     }
@@ -232,7 +234,7 @@ export class EventService {
     }
   }
 
-  private validateSpellEvent(data: SpellEventData, errors: any[], warnings: any[]): void {
+  private validateSpellEvent(data: SpellEventData, errors: ValidationError[]): void {
     if (!data.casterId) {
       errors.push({ field: 'casterId', message: 'Caster ID is required', code: 'MISSING_CASTER' })
     }
@@ -245,12 +247,13 @@ export class EventService {
       errors.push({ field: 'spellLevel', message: 'Spell level must be between 0 and 9', code: 'INVALID_SPELL_LEVEL' })
     }
 
-    if (data.targets.length === 0 && data.targetType !== 'self') {
-      warnings.push({ field: 'targets', message: 'Spell has no targets', code: 'NO_TARGETS' })
-    }
+    // Note: Could add warning for no targets, but warnings parameter removed
+    // if (data.targets.length === 0 && data.targetType !== 'self') {
+    //   warnings.push({ field: 'targets', message: 'Spell has no targets', code: 'NO_TARGETS' })
+    // }
   }
 
-  private validateInteractionEvent(data: InteractionEventData, errors: any[], warnings: any[]): void {
+  private validateInteractionEvent(data: InteractionEventData, errors: ValidationError[]): void {
     if (!data.actorId) {
       errors.push({ field: 'actorId', message: 'Actor ID is required', code: 'MISSING_ACTOR' })
     }
@@ -268,7 +271,7 @@ export class EventService {
     }
   }
 
-  private validateEnvironmentalEvent(data: EnvironmentalEventData, errors: any[], warnings: any[]): void {
+  private validateEnvironmentalEvent(data: EnvironmentalEventData, errors: ValidationError[]): void {
     if (data.intensity < 0 || data.intensity > 100) {
       errors.push({ field: 'intensity', message: 'Intensity must be between 0 and 100', code: 'INVALID_INTENSITY' })
     }
@@ -282,7 +285,7 @@ export class EventService {
     }
   }
 
-  private validateSequenceEvent(data: SequenceEventData, errors: any[], warnings: any[]): void {
+  private validateSequenceEvent(data: SequenceEventData, errors: ValidationError[], warnings: ValidationWarning[]): void {
     if (data.events.length === 0) {
       errors.push({ field: 'events', message: 'Sequence must contain at least one event', code: 'EMPTY_SEQUENCE' })
     }

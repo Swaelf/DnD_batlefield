@@ -1,6 +1,6 @@
 import React from 'react';
 import useMapStore from '@/store/mapStore';
-import { MapObject } from '@/types/map';
+import type { MapObject } from '@/types/map';
 import { ArrowUp, ArrowDown, ArrowUpToLine, ArrowDownToLine } from 'lucide-react';
 
 type LayerControlsProps = {

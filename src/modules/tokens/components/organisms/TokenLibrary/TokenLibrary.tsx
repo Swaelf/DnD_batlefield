@@ -1,14 +1,13 @@
 /**
  * TokenLibrary Organism Component
- *
- * Complete token template browser and custom token creation interface.
- * Replaces the legacy TokenLibrary.tsx with modular architecture.
- * Organism design: 100-150 lines, full library functionality.
+ * Complete token template browser and custom token creation interface
  */
 
 import React from 'react'
-import { styled } from '@/styles/theme.config'
-import { X, Search, Plus, Filter } from 'lucide-react'
+import { X, Search } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import { TokenTemplate } from '../../molecules'
 import type { TokenTemplate as TemplateType, TemplateCategory } from '../../../types'
 import { TemplateService } from '../../../services'
@@ -20,124 +19,6 @@ export interface TokenLibraryProps {
   readonly activeTemplate?: TemplateType | null
 }
 
-const LibraryContainer = styled('div', {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 1000,
-
-  variants: {
-    open: {
-      true: {
-        display: 'flex'
-      },
-      false: {
-        display: 'none'
-      }
-    }
-  }
-})
-
-const LibraryModal = styled('div', {
-  backgroundColor: '$gray900',
-  borderRadius: '$lg',
-  width: '90vw',
-  maxWidth: '800px',
-  height: '80vh',
-  maxHeight: '600px',
-  display: 'flex',
-  flexDirection: 'column',
-  border: '2px solid $dndGold'
-})
-
-const LibraryHeader = styled('div', {
-  padding: '$4',
-  borderBottom: '1px solid $gray700',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between'
-})
-
-const LibraryTitle = styled('h2', {
-  color: '$dndGold',
-  fontSize: '$lg',
-  fontWeight: '600',
-  margin: 0
-})
-
-const CloseButton = styled('button', {
-  backgroundColor: 'transparent',
-  border: 'none',
-  color: '$gray400',
-  cursor: 'pointer',
-  padding: '$2',
-
-  '&:hover': {
-    color: '$gray100'
-  }
-})
-
-const LibraryControls = styled('div', {
-  padding: '$3',
-  borderBottom: '1px solid $gray700',
-  display: 'flex',
-  gap: '$3',
-  alignItems: 'center',
-  flexWrap: 'wrap'
-})
-
-const SearchInput = styled('input', {
-  flex: 1,
-  minWidth: '200px',
-  padding: '$2',
-  backgroundColor: '$gray800',
-  border: '1px solid $gray600',
-  borderRadius: '$md',
-  color: '$gray100',
-  fontSize: '$sm',
-
-  '&::placeholder': {
-    color: '$gray400'
-  },
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$dndGold'
-  }
-})
-
-const CategoryFilter = styled('select', {
-  padding: '$2',
-  backgroundColor: '$gray800',
-  border: '1px solid $gray600',
-  borderRadius: '$md',
-  color: '$gray100',
-  fontSize: '$sm',
-  cursor: 'pointer',
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$dndGold'
-  }
-})
-
-const LibraryContent = styled('div', {
-  flex: 1,
-  padding: '$4',
-  overflowY: 'auto'
-})
-
-const TemplateGrid = styled('div', {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-  gap: '$3'
-})
 
 const categories: TemplateCategory[] = ['players', 'enemies', 'npcs', 'objects', 'environment']
 
@@ -194,17 +75,89 @@ export const TokenLibrary: React.FC<TokenLibraryProps> = React.memo(({
   if (!isOpen) return null
 
   return (
-    <LibraryContainer open={isOpen} onClick={handleClose}>
-      <LibraryModal>
-        <LibraryHeader>
-          <LibraryTitle>Token Library</LibraryTitle>
-          <CloseButton onClick={onClose}>
+    <Box
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        display: isOpen ? 'flex' : 'none',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+      }}
+      onClick={handleClose}
+    >
+      <Box
+        style={{
+          backgroundColor: 'var(--colors-gray900)',
+          borderRadius: '8px',
+          width: '90vw',
+          maxWidth: '800px',
+          height: '80vh',
+          maxHeight: '600px',
+          display: 'flex',
+          flexDirection: 'column',
+          border: '2px solid var(--colors-dndGold)'
+        }}
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <Box
+          style={{
+            padding: '16px',
+            borderBottom: '1px solid var(--colors-gray700)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <Text
+            variant="heading"
+            size="lg"
+            style={{
+              color: 'var(--colors-dndGold)',
+              fontWeight: '600',
+              margin: 0
+            }}
+          >
+            Token Library
+          </Text>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            style={{
+              backgroundColor: 'transparent',
+              color: 'var(--colors-gray400)',
+              padding: '8px'
+            }}
+          >
             <X size={20} />
-          </CloseButton>
-        </LibraryHeader>
+          </Button>
+        </Box>
 
-        <LibraryControls>
-          <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+        {/* Controls */}
+        <Box
+          style={{
+            padding: '12px',
+            borderBottom: '1px solid var(--colors-gray700)',
+            display: 'flex',
+            gap: '12px',
+            alignItems: 'center',
+            flexWrap: 'wrap'
+          }}
+        >
+          {/* Search Input */}
+          <Box
+            style={{
+              position: 'relative',
+              flex: 1,
+              minWidth: '200px'
+            }}
+          >
             <Search
               size={16}
               style={{
@@ -215,18 +168,39 @@ export const TokenLibrary: React.FC<TokenLibraryProps> = React.memo(({
                 color: '#9CA3AF'
               }}
             />
-            <SearchInput
+            <input
               type="text"
               placeholder="Search templates..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '32px' }}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                padding: '8px',
+                paddingLeft: '32px',
+                backgroundColor: 'var(--colors-gray800)',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
+                color: 'var(--colors-gray100)',
+                fontSize: '14px',
+                width: '100%'
+              }}
             />
-          </div>
+          </Box>
 
-          <CategoryFilter
+          {/* Category Filter */}
+          <select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value as TemplateCategory | 'all')}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value as TemplateCategory | 'all')}
+            style={{
+              padding: '8px',
+              backgroundColor: 'var(--colors-gray800)',
+              border: '1px solid var(--colors-gray600)',
+              borderRadius: '6px',
+              color: 'var(--colors-gray100)',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
           >
             <option value="all">All Categories</option>
             {categories.map(category => (
@@ -234,11 +208,25 @@ export const TokenLibrary: React.FC<TokenLibraryProps> = React.memo(({
                 {category.charAt(0).toUpperCase() + category.slice(1)}
               </option>
             ))}
-          </CategoryFilter>
-        </LibraryControls>
+          </select>
+        </Box>
 
-        <LibraryContent>
-          <TemplateGrid>
+        {/* Content */}
+        <Box
+          style={{
+            flex: 1,
+            padding: '16px',
+            overflowY: 'auto'
+          }}
+        >
+          {/* Template Grid */}
+          <Box
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+              gap: '12px'
+            }}
+          >
             {filteredTemplates.map(template => (
               <TokenTemplate
                 key={template.id}
@@ -248,10 +236,11 @@ export const TokenLibrary: React.FC<TokenLibraryProps> = React.memo(({
                 showDescription={true}
               />
             ))}
-          </TemplateGrid>
+          </Box>
 
+          {/* Empty State */}
           {filteredTemplates.length === 0 && (
-            <div
+            <Box
               style={{
                 textAlign: 'center',
                 color: '#9CA3AF',
@@ -259,11 +248,17 @@ export const TokenLibrary: React.FC<TokenLibraryProps> = React.memo(({
                 fontSize: '14px'
               }}
             >
-              No templates found matching your criteria
-            </div>
+              <Text
+                variant="body"
+                size="sm"
+                style={{ color: 'var(--colors-gray400)' }}
+              >
+                No templates found matching your criteria
+              </Text>
+            </Box>
           )}
-        </LibraryContent>
-      </LibraryModal>
-    </LibraryContainer>
+        </Box>
+      </Box>
+    </Box>
   )
 })

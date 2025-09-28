@@ -62,6 +62,7 @@ describe('useTokenAnimation', () => {
   let mockGroup: any
   let mockTokenNode: any
   let mockTween: any
+  let mockRoundStore: any
 
   beforeEach(() => {
     // Reset all mocks
@@ -165,7 +166,7 @@ describe('useTokenAnimation', () => {
       updateObjectPosition: vi.fn()
     }
 
-    const mockRoundStore = {
+    mockRoundStore = {
       currentRound: 1,
       isInCombat: true,
       timeline: {

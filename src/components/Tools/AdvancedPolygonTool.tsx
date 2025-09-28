@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { Group, Line, Circle } from 'react-konva'
-import Konva from 'konva'
-import { Point } from '@/types/geometry'
+import type Konva from 'konva'
+import type { Point } from '@/types/geometry'
 import { snapToGrid } from '@/utils/grid'
 import useToolStore from '@store/toolStore'
 
@@ -43,7 +43,7 @@ export const AdvancedPolygonTool: React.FC<AdvancedPolygonToolProps> = ({
     dragVertexIndex: null
   })
 
-  const stageRef = useRef<Konva.Stage | null>(null)
+  // const _stageRef = useRef<Konva.Stage | null>(null) // unused
 
   // Reset state when tool becomes inactive
   useEffect(() => {

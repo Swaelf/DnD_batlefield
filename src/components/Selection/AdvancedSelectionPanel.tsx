@@ -1,6 +1,12 @@
-import React, { useState, useCallback } from 'react'
-import { Box, Text, Button } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+/**
+ * Advanced Selection Panel Component
+ * Professional selection tools and statistics interface
+ */
+
+import React, { useState, useCallback, useMemo } from 'react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import {
   MousePointer,
   Square,
@@ -12,105 +18,17 @@ import {
   RotateCw,
   Copy,
   Trash2,
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
-  DistributeHorizontally,
-  DistributeVertically,
-  Move,
-  RotateCw as Rotate,
   Maximize,
   Shuffle,
   Target,
   Plus,
   Minus,
-  Eye,
-  EyeOff,
-  Lock,
-  Unlock,
   Palette
 } from 'lucide-react'
-import useMapStore from '@store/mapStore'
-import useToolStore from '@store/toolStore'
+import useMapStore from '@/store/mapStore'
 import type { SelectionMode, SelectionFilter } from './SelectionManager'
 
-const PanelContainer = styled(Box, {
-  width: 320,
-  height: '100%',
-  backgroundColor: '$dndBlack',
-  borderLeft: '1px solid $gray800',
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden'
-})
-
-const PanelHeader = styled(Box, {
-  padding: '$4',
-  borderBottom: '1px solid $gray800',
-  backgroundColor: '$gray900'
-})
-
-const PanelContent = styled(Box, {
-  flex: 1,
-  padding: '$4',
-  overflow: 'auto'
-})
-
-const Section = styled(Box, {
-  marginBottom: '$6'
-})
-
-const SectionTitle = styled(Text, {
-  fontSize: '$sm',
-  fontWeight: '$semibold',
-  color: '$secondary',
-  marginBottom: '$3',
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px'
-})
-
-const ButtonGrid = styled(Box, {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(4, 1fr)',
-  gap: '$2',
-  marginBottom: '$3'
-})
-
-const ToolButton = styled(Button, {
-  height: 40,
-  padding: '$2',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$secondary',
-        color: '$dndBlack',
-        '&:hover': {
-          backgroundColor: '$secondary'
-        }
-      }
-    }
-  }
-})
-
-const StatCard = styled(Box, {
-  padding: '$3',
-  backgroundColor: '$gray800',
-  borderRadius: '$sm',
-  borderLeft: '3px solid $secondary',
-  marginBottom: '$2'
-})
-
-const ActionGrid = styled(Box, {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(2, 1fr)',
-  gap: '$2'
-})
-
-interface AdvancedSelectionPanelProps {
+export interface AdvancedSelectionPanelProps {
   selectionMode: SelectionMode
   selectionFilter: SelectionFilter
   onSelectionModeChange: (mode: SelectionMode) => void
@@ -129,8 +47,8 @@ export const AdvancedSelectionPanel: React.FC<AdvancedSelectionPanelProps> = ({
   selectionFilter,
   onSelectionModeChange,
   onSelectionFilterChange,
-  onSelectByType,
-  onSelectByLayer,
+  onSelectByType: _onSelectByType,
+  onSelectByLayer: _onSelectByLayer,
   onSelectSimilar,
   onGrowSelection,
   onShrinkSelection,
@@ -138,16 +56,17 @@ export const AdvancedSelectionPanel: React.FC<AdvancedSelectionPanelProps> = ({
   onRedoSelection
 }) => {
   const [showAdvancedTools, setShowAdvancedTools] = useState(false)
-  const [alignmentMode, setAlignmentMode] = useState<'objects' | 'selection'>('objects')
+  // Alignment mode could be used for future UI features
+  // const [alignmentMode, setAlignmentMode] = useState<'objects' | 'selection'>('objects')
 
   const currentMap = useMapStore(state => state.currentMap)
   const selectedObjects = useMapStore(state => state.selectedObjects)
-  const selectMultipleObjects = useMapStore(state => state.selectMultipleObjects)
-  const deleteSelectedObjects = useMapStore(state => state.deleteSelectedObjects)
-  const duplicateObjects = useMapStore(state => state.duplicateObjects)
+  const selectMultipleObjects = useMapStore(state => state.selectMultiple)
+  const deleteSelectedObjects = useMapStore(state => state.deleteSelected)
+  const duplicateObjects = useMapStore(state => state.duplicateSelected)
 
   // Calculate selection statistics
-  const selectionStats = React.useMemo(() => {
+  const selectionStats = useMemo(() => {
     if (!currentMap || selectedObjects.length === 0) {
       return null
     }
@@ -199,244 +118,662 @@ export const AdvancedSelectionPanel: React.FC<AdvancedSelectionPanelProps> = ({
   }, [currentMap, selectedObjects, selectMultipleObjects])
 
   return (
-    <PanelContainer>
-      <PanelHeader>
-        <Text size="lg" weight="semibold" color="secondary">
+    <Box
+      style={{
+        width: '320px',
+        height: '100%',
+        backgroundColor: 'var(--colors-dndBlack)',
+        borderLeft: '1px solid var(--colors-gray700)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Panel Header */}
+      <Box
+        style={{
+          padding: '16px',
+          borderBottom: '1px solid var(--colors-gray700)',
+          backgroundColor: 'var(--colors-gray800)'
+        }}
+      >
+        <Text
+          variant="heading"
+          size="lg"
+          style={{
+            margin: '0 0 4px 0',
+            fontWeight: '600',
+            color: 'var(--colors-dndGold)'
+          }}
+        >
           Advanced Selection
         </Text>
-        <Text size="xs" color="gray400">
-          Phase 18: Professional selection tools
+        <Text
+          variant="body"
+          size="xs"
+          style={{
+            margin: 0,
+            color: 'var(--colors-gray400)'
+          }}
+        >
+          Professional selection tools
         </Text>
-      </PanelHeader>
+      </Box>
 
-      <PanelContent>
+      {/* Panel Content */}
+      <Box
+        style={{
+          flex: 1,
+          padding: '16px',
+          overflow: 'auto'
+        }}
+      >
         {/* Selection Mode */}
-        <Section>
-          <SectionTitle>Selection Mode</SectionTitle>
-          <ButtonGrid>
+        <Box style={{ marginBottom: '24px' }}>
+          <Text
+            variant="heading"
+            size="sm"
+            style={{
+              margin: '0 0 12px 0',
+              fontWeight: '500',
+              color: 'var(--colors-dndGold)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontSize: '12px'
+            }}
+          >
+            Selection Mode
+          </Text>
+          <Box
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '8px',
+              marginBottom: '12px'
+            }}
+          >
             {selectionModes.map(mode => (
-              <ToolButton
+              <Button
                 key={mode.id}
-                active={selectionMode === mode.id}
+                variant={selectionMode === mode.id ? 'primary' : 'outline'}
+                size="sm"
                 onClick={() => onSelectionModeChange(mode.id)}
                 title={mode.name}
+                style={{
+                  height: '40px',
+                  padding: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: selectionMode === mode.id ? 'var(--colors-dndGold)' : 'var(--colors-gray800)',
+                  borderColor: selectionMode === mode.id ? 'var(--colors-dndGold)' : 'var(--colors-gray600)',
+                  color: selectionMode === mode.id ? 'var(--colors-dndBlack)' : 'var(--colors-gray300)'
+                }}
               >
                 {mode.icon}
-              </ToolButton>
-            ))}
-          </ButtonGrid>
-        </Section>
-
-        {/* Selection Filter */}
-        <Section>
-          <SectionTitle>Object Filter</SectionTitle>
-          <Box display="flex" flexDirection="column" gap="$2">
-            {selectionFilters.map(filter => (
-              <ToolButton
-                key={filter.id}
-                active={selectionFilter === filter.id}
-                onClick={() => onSelectionFilterChange(filter.id)}
-                css={{ height: 32, justifyContent: 'flex-start', paddingLeft: '$3' }}
-              >
-                <Text size="xs">{filter.name}</Text>
-              </ToolButton>
+              </Button>
             ))}
           </Box>
-        </Section>
+        </Box>
+
+        {/* Selection Filter */}
+        <Box style={{ marginBottom: '24px' }}>
+          <Text
+            variant="heading"
+            size="sm"
+            style={{
+              margin: '0 0 12px 0',
+              fontWeight: '500',
+              color: 'var(--colors-dndGold)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontSize: '12px'
+            }}
+          >
+            Object Filter
+          </Text>
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {selectionFilters.map(filter => (
+              <Button
+                key={filter.id}
+                variant={selectionFilter === filter.id ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => onSelectionFilterChange(filter.id)}
+                style={{
+                  height: '32px',
+                  justifyContent: 'flex-start',
+                  paddingLeft: '12px',
+                  backgroundColor: selectionFilter === filter.id ? 'var(--colors-purple700)' : 'transparent',
+                  borderColor: selectionFilter === filter.id ? 'var(--colors-purple600)' : 'transparent',
+                  color: selectionFilter === filter.id ? 'var(--colors-purple100)' : 'var(--colors-gray300)'
+                }}
+              >
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{
+                    margin: 0,
+                    color: 'inherit'
+                  }}
+                >
+                  {filter.name}
+                </Text>
+              </Button>
+            ))}
+          </Box>
+        </Box>
 
         {/* Quick Actions */}
-        <Section>
-          <SectionTitle>Quick Actions</SectionTitle>
-          <ActionGrid>
-            <Button onClick={handleSelectAll} title="Select All (Ctrl+A)">
+        <Box style={{ marginBottom: '24px' }}>
+          <Text
+            variant="heading"
+            size="sm"
+            style={{
+              margin: '0 0 12px 0',
+              fontWeight: '500',
+              color: 'var(--colors-dndGold)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontSize: '12px'
+            }}
+          >
+            Quick Actions
+          </Text>
+          <Box
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '8px'
+            }}
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSelectAll}
+              title="Select All (Ctrl+A)"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                height: '48px',
+                backgroundColor: 'var(--colors-gray800)',
+                borderColor: 'var(--colors-gray600)',
+                color: 'var(--colors-gray300)'
+              }}
+            >
               <Target size={14} />
-              <Text size="xs">All</Text>
-            </Button>
-            <Button onClick={handleDeselectAll} title="Deselect All">
-              <MousePointer size={14} />
-              <Text size="xs">None</Text>
-            </Button>
-            <Button onClick={handleInvertSelection} title="Invert Selection (Ctrl+I)">
-              <Shuffle size={14} />
-              <Text size="xs">Invert</Text>
+              <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>All</Text>
             </Button>
             <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDeselectAll}
+              title="Deselect All"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                height: '48px',
+                backgroundColor: 'var(--colors-gray800)',
+                borderColor: 'var(--colors-gray600)',
+                color: 'var(--colors-gray300)'
+              }}
+            >
+              <MousePointer size={14} />
+              <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>None</Text>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleInvertSelection}
+              title="Invert Selection (Ctrl+I)"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                height: '48px',
+                backgroundColor: 'var(--colors-gray800)',
+                borderColor: 'var(--colors-gray600)',
+                color: 'var(--colors-gray300)'
+              }}
+            >
+              <Shuffle size={14} />
+              <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>Invert</Text>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setShowAdvancedTools(!showAdvancedTools)}
               title="Advanced Tools"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                height: '48px',
+                backgroundColor: showAdvancedTools ? 'var(--colors-blue700)' : 'var(--colors-gray800)',
+                borderColor: showAdvancedTools ? 'var(--colors-blue600)' : 'var(--colors-gray600)',
+                color: showAdvancedTools ? 'var(--colors-blue100)' : 'var(--colors-gray300)'
+              }}
             >
               <Plus size={14} />
-              <Text size="xs">More</Text>
+              <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>More</Text>
             </Button>
-          </ActionGrid>
-        </Section>
+          </Box>
+        </Box>
 
         {/* Advanced Tools */}
         {showAdvancedTools && (
-          <Section>
-            <SectionTitle>Advanced Tools</SectionTitle>
-            <ActionGrid>
-              <Button onClick={() => onSelectSimilar?.('type')} title="Select Similar Type">
+          <Box style={{ marginBottom: '24px' }}>
+            <Text
+              variant="heading"
+              size="sm"
+              style={{
+                margin: '0 0 12px 0',
+                fontWeight: '500',
+                color: 'var(--colors-dndGold)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                fontSize: '12px'
+              }}
+            >
+              Advanced Tools
+            </Text>
+            <Box
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '8px'
+              }}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSelectSimilar?.('type')}
+                title="Select Similar Type"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  height: '48px',
+                  backgroundColor: 'var(--colors-gray800)',
+                  borderColor: 'var(--colors-gray600)',
+                  color: 'var(--colors-gray300)'
+                }}
+              >
                 <Type size={14} />
-                <Text size="xs">Type</Text>
+                <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>Type</Text>
               </Button>
-              <Button onClick={() => onSelectSimilar?.('color')} title="Select Similar Color">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSelectSimilar?.('color')}
+                title="Select Similar Color"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  height: '48px',
+                  backgroundColor: 'var(--colors-gray800)',
+                  borderColor: 'var(--colors-gray600)',
+                  color: 'var(--colors-gray300)'
+                }}
+              >
                 <Palette size={14} />
-                <Text size="xs">Color</Text>
+                <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>Color</Text>
               </Button>
-              <Button onClick={() => onSelectSimilar?.('size')} title="Select Similar Size">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSelectSimilar?.('size')}
+                title="Select Similar Size"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  height: '48px',
+                  backgroundColor: 'var(--colors-gray800)',
+                  borderColor: 'var(--colors-gray600)',
+                  color: 'var(--colors-gray300)'
+                }}
+              >
                 <Maximize size={14} />
-                <Text size="xs">Size</Text>
+                <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>Size</Text>
               </Button>
-              <Button onClick={() => onSelectSimilar?.('layer')} title="Select Same Layer">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSelectSimilar?.('layer')}
+                title="Select Same Layer"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  height: '48px',
+                  backgroundColor: 'var(--colors-gray800)',
+                  borderColor: 'var(--colors-gray600)',
+                  color: 'var(--colors-gray300)'
+                }}
+              >
                 <Layers size={14} />
-                <Text size="xs">Layer</Text>
+                <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>Layer</Text>
               </Button>
-              <Button onClick={onGrowSelection} title="Grow Selection">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onGrowSelection}
+                title="Grow Selection"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  height: '48px',
+                  backgroundColor: 'var(--colors-gray800)',
+                  borderColor: 'var(--colors-gray600)',
+                  color: 'var(--colors-gray300)'
+                }}
+              >
                 <Plus size={14} />
-                <Text size="xs">Grow</Text>
+                <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>Grow</Text>
               </Button>
-              <Button onClick={onShrinkSelection} title="Shrink Selection">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onShrinkSelection}
+                title="Shrink Selection"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  height: '48px',
+                  backgroundColor: 'var(--colors-gray800)',
+                  borderColor: 'var(--colors-gray600)',
+                  color: 'var(--colors-gray300)'
+                }}
+              >
                 <Minus size={14} />
-                <Text size="xs">Shrink</Text>
+                <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>Shrink</Text>
               </Button>
-            </ActionGrid>
-          </Section>
+            </Box>
+          </Box>
         )}
 
         {/* Selection History */}
-        <Section>
-          <SectionTitle>Selection History</SectionTitle>
-          <ActionGrid>
-            <Button onClick={onUndoSelection} title="Undo Selection">
+        <Box style={{ marginBottom: '24px' }}>
+          <Text
+            variant="heading"
+            size="sm"
+            style={{
+              margin: '0 0 12px 0',
+              fontWeight: '500',
+              color: 'var(--colors-dndGold)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontSize: '12px'
+            }}
+          >
+            Selection History
+          </Text>
+          <Box
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '8px'
+            }}
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onUndoSelection}
+              title="Undo Selection"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                height: '48px',
+                backgroundColor: 'var(--colors-gray800)',
+                borderColor: 'var(--colors-gray600)',
+                color: 'var(--colors-gray300)'
+              }}
+            >
               <RotateCcw size={14} />
-              <Text size="xs">Undo</Text>
+              <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>Undo</Text>
             </Button>
-            <Button onClick={onRedoSelection} title="Redo Selection">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRedoSelection}
+              title="Redo Selection"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                height: '48px',
+                backgroundColor: 'var(--colors-gray800)',
+                borderColor: 'var(--colors-gray600)',
+                color: 'var(--colors-gray300)'
+              }}
+            >
               <RotateCw size={14} />
-              <Text size="xs">Redo</Text>
+              <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>Redo</Text>
             </Button>
-          </ActionGrid>
-        </Section>
+          </Box>
+        </Box>
 
         {/* Selection Statistics */}
         {selectionStats && (
-          <Section>
-            <SectionTitle>Selection ({selectionStats.total} objects)</SectionTitle>
-            <StatCard>
-              <Text size="sm" weight="semibold" color="secondary">
+          <Box style={{ marginBottom: '24px' }}>
+            <Text
+              variant="heading"
+              size="sm"
+              style={{
+                margin: '0 0 12px 0',
+                fontWeight: '500',
+                color: 'var(--colors-dndGold)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                fontSize: '12px'
+              }}
+            >
+              Selection ({selectionStats.total} objects)
+            </Text>
+            <Box
+              style={{
+                padding: '12px',
+                backgroundColor: 'var(--colors-gray800)',
+                borderRadius: '6px',
+                borderLeft: '3px solid var(--colors-dndGold)',
+                marginBottom: '8px'
+              }}
+            >
+              <Text
+                variant="body"
+                size="sm"
+                style={{
+                  margin: '0 0 8px 0',
+                  fontWeight: '600',
+                  color: 'var(--colors-dndGold)'
+                }}
+              >
                 Selected Objects
               </Text>
-              <Box marginTop="$2">
+              <Box>
                 {Object.entries(selectionStats.types).map(([type, count]) => (
-                  <Box key={type} display="flex" justifyContent="space-between">
-                    <Text size="xs" css={{ textTransform: 'capitalize' }}>{type}:</Text>
-                    <Text size="xs" color="secondary">{count}</Text>
+                  <Box
+                    key={type}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginBottom: '2px'
+                    }}
+                  >
+                    <Text
+                      variant="body"
+                      size="xs"
+                      style={{
+                        margin: 0,
+                        textTransform: 'capitalize',
+                        color: 'var(--colors-gray300)'
+                      }}
+                    >
+                      {type}:
+                    </Text>
+                    <Text
+                      variant="body"
+                      size="xs"
+                      style={{
+                        margin: 0,
+                        color: 'var(--colors-dndGold)'
+                      }}
+                    >
+                      {count}
+                    </Text>
                   </Box>
                 ))}
               </Box>
-            </StatCard>
-          </Section>
+            </Box>
+          </Box>
         )}
 
         {/* Object Actions */}
         {selectedObjects.length > 0 && (
-          <Section>
-            <SectionTitle>Object Actions</SectionTitle>
-            <ActionGrid>
-              <Button onClick={() => duplicateObjects?.()} title="Duplicate (Ctrl+D)">
+          <Box style={{ marginBottom: '24px' }}>
+            <Text
+              variant="heading"
+              size="sm"
+              style={{
+                margin: '0 0 12px 0',
+                fontWeight: '500',
+                color: 'var(--colors-dndGold)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                fontSize: '12px'
+              }}
+            >
+              Object Actions
+            </Text>
+            <Box
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '8px'
+              }}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => duplicateObjects?.()}
+                title="Duplicate (Ctrl+D)"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  height: '48px',
+                  backgroundColor: 'var(--colors-gray800)',
+                  borderColor: 'var(--colors-gray600)',
+                  color: 'var(--colors-gray300)'
+                }}
+              >
                 <Copy size={14} />
-                <Text size="xs">Duplicate</Text>
+                <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>Duplicate</Text>
               </Button>
-              <Button onClick={() => deleteSelectedObjects?.()} title="Delete (Del)">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => deleteSelectedObjects?.()}
+                title="Delete (Del)"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  height: '48px',
+                  backgroundColor: 'var(--colors-gray800)',
+                  borderColor: 'var(--colors-red600)',
+                  color: 'var(--colors-red400)'
+                }}
+              >
                 <Trash2 size={14} />
-                <Text size="xs">Delete</Text>
+                <Text variant="body" size="xs" style={{ margin: 0, color: 'inherit' }}>Delete</Text>
               </Button>
-            </ActionGrid>
-          </Section>
-        )}
-
-        {/* Transform Controls */}
-        {selectedObjects.length > 0 && (
-          <Section>
-            <SectionTitle>Transform</SectionTitle>
-            <ActionGrid>
-              <Button title="Move Mode (M)">
-                <Move size={14} />
-                <Text size="xs">Move</Text>
-              </Button>
-              <Button title="Rotate Mode (R)">
-                <Rotate size={14} />
-                <Text size="xs">Rotate</Text>
-              </Button>
-              <Button title="Scale Mode (S)">
-                <Maximize size={14} />
-                <Text size="xs">Scale</Text>
-              </Button>
-            </ActionGrid>
-          </Section>
-        )}
-
-        {/* Alignment Tools */}
-        {selectedObjects.length > 1 && (
-          <Section>
-            <SectionTitle>Alignment</SectionTitle>
-            <Box marginBottom="$2">
-              <Text size="xs" color="gray400">Align:</Text>
-              <ActionGrid css={{ marginTop: '$1' }}>
-                <Button title="Align Left">
-                  <AlignLeft size={14} />
-                </Button>
-                <Button title="Align Center">
-                  <AlignCenter size={14} />
-                </Button>
-                <Button title="Align Right">
-                  <AlignRight size={14} />
-                </Button>
-              </ActionGrid>
             </Box>
-
-            <Box>
-              <Text size="xs" color="gray400">Distribute:</Text>
-              <ActionGrid css={{ marginTop: '$1' }}>
-                <Button title="Distribute Horizontally">
-                  <DistributeHorizontally size={14} />
-                </Button>
-                <Button title="Distribute Vertically">
-                  <DistributeVertically size={14} />
-                </Button>
-              </ActionGrid>
-            </Box>
-          </Section>
+          </Box>
         )}
 
         {/* Keyboard Shortcuts */}
-        <Section>
-          <SectionTitle>Keyboard Shortcuts</SectionTitle>
-          <Box display="flex" flexDirection="column" gap="$1">
-            <Box display="flex" justifyContent="space-between">
-              <Text size="xs">Select All:</Text>
-              <Text size="xs" color="gray400" fontFamily="$mono">Ctrl+A</Text>
-            </Box>
-            <Box display="flex" justifyContent="space-between">
-              <Text size="xs">Invert Selection:</Text>
-              <Text size="xs" color="gray400" fontFamily="$mono">Ctrl+I</Text>
-            </Box>
-            <Box display="flex" justifyContent="space-between">
-              <Text size="xs">Duplicate:</Text>
-              <Text size="xs" color="gray400" fontFamily="$mono">Ctrl+D</Text>
-            </Box>
-            <Box display="flex" justifyContent="space-between">
-              <Text size="xs">Delete:</Text>
-              <Text size="xs" color="gray400" fontFamily="$mono">Del</Text>
-            </Box>
-            <Box display="flex" justifyContent="space-between">
-              <Text size="xs">Deselect:</Text>
-              <Text size="xs" color="gray400" fontFamily="$mono">Esc</Text>
-            </Box>
+        <Box style={{ marginBottom: '24px' }}>
+          <Text
+            variant="heading"
+            size="sm"
+            style={{
+              margin: '0 0 12px 0',
+              fontWeight: '500',
+              color: 'var(--colors-dndGold)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontSize: '12px'
+            }}
+          >
+            Keyboard Shortcuts
+          </Text>
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {[
+              { action: 'Select All', shortcut: 'Ctrl+A' },
+              { action: 'Invert Selection', shortcut: 'Ctrl+I' },
+              { action: 'Duplicate', shortcut: 'Ctrl+D' },
+              { action: 'Delete', shortcut: 'Del' },
+              { action: 'Deselect', shortcut: 'Esc' }
+            ].map(({ action, shortcut }) => (
+              <Box
+                key={action}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}
+              >
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{
+                    margin: 0,
+                    color: 'var(--colors-gray300)'
+                  }}
+                >
+                  {action}:
+                </Text>
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{
+                    margin: 0,
+                    color: 'var(--colors-gray400)',
+                    fontFamily: 'monospace',
+                    backgroundColor: 'var(--colors-gray800)',
+                    padding: '2px 4px',
+                    borderRadius: '3px'
+                  }}
+                >
+                  {shortcut}
+                </Text>
+              </Box>
+            ))}
           </Box>
-        </Section>
-      </PanelContent>
-    </PanelContainer>
+        </Box>
+      </Box>
+    </Box>
   )
 }
 

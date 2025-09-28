@@ -3,11 +3,13 @@ import { Plus, X, Sparkles } from 'lucide-react'
 import useRoundStore from '@/store/roundStore'
 import useMapStore from '@/store/mapStore'
 import useEventCreationStore from '@/store/eventCreationStore'
-import { EventType, MoveEventData, AppearEventData, DisappearEventData, SpellEventData, AttackEventData, InteractionEventData, EnvironmentalEventData, SequenceEventData } from '@/types/timeline'
-import { Token } from '@/types/token'
-import { Position } from '@/types/map'
-import { Modal, ModalBody, Box, Text, Button } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import type { EventType, MoveEventData, AppearEventData, DisappearEventData, SpellEventData, AttackEventData, InteractionEventData, EnvironmentalEventData, SequenceEventData } from '@/types/timeline'
+import type { Token } from '@/types/token'
+import type { Position } from '@/types/map'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Modal } from '@/components/ui/Modal'
 import { SpellSelectionModal } from './SpellSelectionModal'
 import { AttackActionConfig } from '@/components/Actions/ActionEditor/AttackActionConfig'
 import { InteractionActionConfig } from '@/components/Actions/ActionEditor/InteractionActionConfig'
@@ -21,58 +23,6 @@ import {
   EventsList
 } from './EventEditor/index'
 
-const StyledFooter = styled(Box, {
-  padding: '$6',
-  borderTop: '1px solid $gray700',
-  backgroundColor: '$gray800/80',
-  backdropFilter: 'blur(8px)'
-})
-
-const StyledSpellPreviewButton = styled(Button, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2',
-  padding: '$2 $3',
-  borderRadius: '$md',
-  transition: '$fast',
-
-  variants: {
-    enabled: {
-      true: {
-        backgroundColor: '$secondary/20',
-        color: '$secondary',
-        border: '1px solid $secondary',
-        '&:hover': {
-          backgroundColor: '$secondary/30',
-          color: '$secondary'
-        }
-      },
-      false: {
-        backgroundColor: '$gray700',
-        color: '$gray400',
-        border: '1px solid $gray600',
-        '&:hover': {
-          backgroundColor: '$gray600',
-          color: '$white'
-        }
-      }
-    }
-  }
-})
-
-const StyledCloseButton = styled(Button, {
-  backgroundColor: '$gray700',
-  color: '$gray300',
-  border: '1px solid $gray600',
-  '&:hover': {
-    backgroundColor: '$gray600'
-  }
-})
-
-const StyledPreviewText = styled(Text, {
-  fontSize: '$xs',
-  fontWeight: '$medium'
-})
 
 type EventEditorProps = {
   isOpen: boolean
@@ -513,47 +463,97 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
       <Modal
         isOpen={isOpen && !isTemporarilyHidden}
         onClose={onClose}
-        title=""
-        size="xl"
-        closeOnOverlayClick={true}
-        closeOnEscape={true}
       >
-        <ModalBody data-test-id="event-popup" display="flex" flexDirection="column" css={{ padding: 0, backgroundColor: '$gray900' }}>
-          <Box display="flex" css={{ height: '75vh' }}>
+        <Box
+          data-test-id="event-popup"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            padding: 0,
+            backgroundColor: 'var(--colors-gray900)',
+            borderRadius: '12px',
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            overflow: 'hidden'
+          }}
+        >
+          <Box style={{ display: 'flex', height: '75vh' }}>
             {/* Main Content */}
-            <Box display="flex" flexDirection="column" css={{ flex: 1, padding: '$6', overflowY: 'auto', maxHeight: '75vh' }}>
-              <Box display="flex" flexDirection="column" css={{
-                padding: '$6',
-                backgroundColor: '$gray800',
-                borderRadius: '$xl',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
-                border: '1px solid $gray700'
-              }}>
-                <Box display="flex" alignItems="center" css={{ marginBottom: '$6' }}>
-                  <Box css={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '$round',
-                    backgroundColor: '$secondary',
+            <Box
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                flexGrow: 1,
+                padding: '24px',
+                overflowY: 'auto',
+                maxHeight: '75vh'
+              }}
+            >
+              <Box
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  padding: '24px',
+                  backgroundColor: 'var(--colors-gray800)',
+                  borderRadius: '16px',
+                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                  border: '1px solid var(--colors-gray700)'
+                }}
+              >
+                <Box
+                  style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    marginRight: '$4',
-                    boxShadow: '0 4px 12px rgba(201, 173, 106, 0.3)'
-                  }}>
+                    marginBottom: '24px'
+                  }}
+                >
+                  <Box
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--colors-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: '16px',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                    }}
+                  >
                     <Plus size={24} color="#1A1A1A" />
                   </Box>
                   <Box>
-                    <Text css={{ fontSize: '$xl', fontWeight: '$semibold', color: '$white' }}>
+                    <Text
+                      variant="heading"
+                      size="xl"
+                      style={{
+                        margin: 0,
+                        fontWeight: '600',
+                        color: 'var(--colors-gray100)'
+                      }}
+                    >
                       Create Event
                     </Text>
-                    <Text css={{ fontSize: '$sm', color: '$gray400', marginTop: '$1' }}>
+                    <Text
+                      variant="body"
+                      size="sm"
+                      style={{
+                        margin: '4px 0 0 0',
+                        color: 'var(--colors-gray400)'
+                      }}
+                    >
                       Schedule actions for Round {targetRound}
                     </Text>
                   </Box>
                 </Box>
 
-                <Box display="flex" flexDirection="column" gap="4">
+                <Box
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '16px'
+                  }}
+                >
                   {/* Token Selection */}
                   <TokenSelector
                     selectedToken={selectedToken}
@@ -623,26 +623,32 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
                   />
 
                   {/* Action Buttons */}
-                  <Box display="flex" gap="2" css={{ marginTop: '$2' }}>
+                  <Box
+                    style={{
+                      display: 'flex',
+                      gap: '8px',
+                      marginTop: '8px'
+                    }}
+                  >
                     <Button
+                      variant="primary"
+                      size="md"
                       onClick={handleAddEvent}
                       disabled={!canAddEvent()}
-                      variant="primary"
-                      css={{
+                      style={{
                         flex: 1,
-                        backgroundColor: '$secondary',
-                        color: '$dndBlack',
-                        fontWeight: '$bold',
-                        '&:hover:not(:disabled)': {
-                          backgroundColor: '$yellow500'
-                        },
-                        '&:disabled': {
-                          opacity: 0.5,
-                          cursor: 'not-allowed'
-                        }
+                        backgroundColor: 'var(--colors-secondary)',
+                        color: 'var(--colors-dndBlack)',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        opacity: !canAddEvent() ? 0.5 : 1,
+                        cursor: !canAddEvent() ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      <Plus size={16} style={{ marginRight: '8px' }} />
+                      <Plus size={16} />
                       Add Event
                     </Button>
                   </Box>
@@ -660,34 +666,69 @@ const EventEditorComponent: React.FC<EventEditorProps> = ({
           </Box>
 
           {/* Footer */}
-          <StyledFooter
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
+          <Box
+            style={{
+              padding: '24px',
+              borderTop: '1px solid var(--colors-gray700)',
+              backgroundColor: 'rgba(31, 41, 55, 0.8)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}
           >
             {/* Spell Preview Toggle */}
-            <Box display="flex" alignItems="center">
-              <StyledSpellPreviewButton
+            <Box style={{ display: 'flex', alignItems: 'center' }}>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={toggleSpellPreview}
-                enabled={spellPreviewEnabled}
                 title={spellPreviewEnabled ? 'Disable Spell Preview' : 'Enable Spell Preview'}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  transition: 'all 0.2s ease',
+                  backgroundColor: spellPreviewEnabled ? 'rgba(201, 173, 106, 0.2)' : 'var(--colors-gray700)',
+                  color: spellPreviewEnabled ? 'var(--colors-secondary)' : 'var(--colors-gray400)',
+                  border: `1px solid ${spellPreviewEnabled ? 'var(--colors-secondary)' : 'var(--colors-gray600)'}`
+                }}
               >
                 <Sparkles size={14} />
-                <StyledPreviewText>
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{
+                    fontWeight: '500',
+                    color: 'inherit'
+                  }}
+                >
                   {spellPreviewEnabled ? 'Preview: ON' : 'Preview: OFF'}
-                </StyledPreviewText>
-              </StyledSpellPreviewButton>
+                </Text>
+              </Button>
             </Box>
 
             {/* Close Button */}
-            <StyledCloseButton
+            <Button
+              variant="outline"
+              size="sm"
               onClick={onClose}
+              style={{
+                backgroundColor: 'var(--colors-gray700)',
+                color: 'var(--colors-gray300)',
+                border: '1px solid var(--colors-gray600)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
             >
-              <X size={16} style={{ marginRight: '4px' }} />
+              <X size={16} />
               Close
-            </StyledCloseButton>
-          </StyledFooter>
-        </ModalBody>
+            </Button>
+          </Box>
+        </Box>
       </Modal>
 
       {/* Spell Selection Modal */}

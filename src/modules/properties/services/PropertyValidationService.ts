@@ -103,11 +103,11 @@ export class PropertyValidationService {
 
       if (!result.isValid) {
         overallValid = false
-        errors[field.key] = result.errors
+        errors[field.key] = [...result.errors]
       }
 
       if (result.warnings.length > 0) {
-        warnings[field.key] = result.warnings
+        warnings[field.key] = [...result.warnings]
       }
 
       if (!result.dndCompliant) {
@@ -127,7 +127,7 @@ export class PropertyValidationService {
   /**
    * Validate a specific validation rule
    */
-  private validateRule(rule: ValidationRule, value: unknown, field: PropertyField): { isValid: boolean; message: string } {
+  private validateRule(rule: ValidationRule, value: unknown, _field: PropertyField): { isValid: boolean; message: string } {
     switch (rule.type) {
       case 'required':
         return {
@@ -194,7 +194,7 @@ export class PropertyValidationService {
   private validateFieldType(
     type: PropertyFieldType,
     value: unknown,
-    field: PropertyField
+    _field: PropertyField
   ): { isValid: boolean; errors: string[]; warnings: string[] } {
     const errors: string[] = []
     const warnings: string[] = []
@@ -299,7 +299,7 @@ export class PropertyValidationService {
   private validateDNDRule(
     rule: DNDValidationRule,
     value: unknown,
-    field: PropertyField
+    _field: PropertyField
   ): { isValid: boolean; errors: string[]; warnings: string[] } {
     const errors: string[] = []
     const warnings: string[] = []
@@ -415,11 +415,15 @@ export class PropertyValidationService {
     // Validate conditions
     if (token.conditions) {
       token.conditions.forEach(condition => {
-        if (!DND_CONDITIONS[condition.id]) {
+        // Handle both string and object conditions
+        const conditionId = typeof condition === 'string' ? condition : (condition as any).id
+        const conditionName = typeof condition === 'string' ? condition : (condition as any).name
+
+        if (!DND_CONDITIONS[conditionId]) {
           if (this.enforceOfficialRules) {
-            errors.push(`Unknown D&D condition: ${condition.name}`)
+            errors.push(`Unknown D&D condition: ${conditionName}`)
           } else {
-            warnings.push(`Custom condition: ${condition.name}`)
+            warnings.push(`Custom condition: ${conditionName}`)
           }
         }
       })

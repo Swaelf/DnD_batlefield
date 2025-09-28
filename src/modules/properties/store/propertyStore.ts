@@ -20,7 +20,6 @@ import type {
   PropertyHistoryEntry,
   MultiPropertyState,
   MapObject,
-  PropertyId,
   PropertyGroupId
 } from '../types'
 import { PropertyValidationService, PropertySchemaService } from '../services'
@@ -115,6 +114,11 @@ type PropertyStore = {
   getDirtyObjects: () => string[]
   saveAll: () => Promise<void>
   discardChanges: (objectId?: string) => void
+
+  // Helper Methods
+  createMultiSelectionState: (objectIds: readonly string[]) => MultiPropertyState
+  inferObjectType: (objectId: string) => MapObject['type'] | null
+  addHistoryEntry: (entry: { changes: PropertyChange[]; description: string }) => void
 }
 
 /**
@@ -170,10 +174,12 @@ export const usePropertyStore = create<PropertyStore>()(
       // Object Selection Actions
       selectObjects: (objectIds) => {
         set((state) => {
-          state.editing.selectedObjectIds = objectIds
-          state.multiSelection = objectIds.length > 1
-            ? get().createMultiSelectionState(objectIds)
-            : null
+          state.editing.selectedObjectIds = [...objectIds]
+          if (objectIds.length > 1) {
+            state.multiSelection = get().createMultiSelectionState(objectIds) as any
+          } else {
+            state.multiSelection = null
+          }
 
           // Load property values for selected objects
           for (const objectId of objectIds) {
@@ -223,7 +229,7 @@ export const usePropertyStore = create<PropertyStore>()(
             state.editing.selectedObjectIds = [...state.editing.selectedObjectIds, objectId]
 
             if (state.editing.selectedObjectIds.length > 1) {
-              state.multiSelection = get().createMultiSelectionState(state.editing.selectedObjectIds)
+              state.multiSelection = get().createMultiSelectionState(state.editing.selectedObjectIds) as any
             }
           }
         })
@@ -236,7 +242,7 @@ export const usePropertyStore = create<PropertyStore>()(
           if (state.editing.selectedObjectIds.length <= 1) {
             state.multiSelection = null
           } else {
-            state.multiSelection = get().createMultiSelectionState(state.editing.selectedObjectIds)
+            state.multiSelection = get().createMultiSelectionState(state.editing.selectedObjectIds) as any
           }
         })
       },
@@ -344,7 +350,7 @@ export const usePropertyStore = create<PropertyStore>()(
         const validationResults = validationService.validateProperties(fields, propertyValues)
 
         set((state) => {
-          state.editing.validationResults[objectId] = validationResults.results
+          state.editing.validationResults[objectId] = [...validationResults.results] as any
           const values = state.editing.currentValues[objectId]
           if (values) {
             values.isValid = validationResults.isValid
@@ -438,7 +444,7 @@ export const usePropertyStore = create<PropertyStore>()(
       // Multi-Selection Actions
       enableMultiSelection: (objectIds) => {
         set((state) => {
-          state.multiSelection = get().createMultiSelectionState(objectIds)
+          state.multiSelection = get().createMultiSelectionState(objectIds) as any
         })
       },
 
@@ -483,7 +489,7 @@ export const usePropertyStore = create<PropertyStore>()(
       },
 
       undo: () => {
-        const { history, historyIndex } = get()
+        const { historyIndex } = get()
         if (historyIndex > 0) {
           // Implement undo logic
           set((state) => {
@@ -631,7 +637,7 @@ export const usePropertyStore = create<PropertyStore>()(
         }
       },
 
-      inferObjectType: (objectId: string): MapObject['type'] | null => {
+      inferObjectType: (_objectId: string): MapObject['type'] | null => {
         // This would typically look up the object type from the map store
         // For now, return 'token' as default
         return 'token'
@@ -651,8 +657,8 @@ export const usePropertyStore = create<PropertyStore>()(
           // Remove any history after current index
           state.history = state.history.slice(0, state.historyIndex + 1)
 
-          // Add new entry
-          state.history = [...state.history, historyEntry]
+          // Add new entry (spread to ensure mutability)
+          state.history = [...state.history, { ...historyEntry, objectIds: [...historyEntry.objectIds] } as any]
           state.historyIndex = state.history.length - 1
 
           // Limit history size

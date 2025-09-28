@@ -32,7 +32,7 @@ export const TokenBorder: React.FC<TokenBorderProps> = React.memo(({
   borderWidth = 2
 }) => {
   const borderRef = useRef<any>(null)
-  const animationRef = useRef<number>()
+  const animationRef = useRef<number>(0)
 
   const radius = size / 2
   const strokeColor = isDragging ? '#FFD700' : borderColor

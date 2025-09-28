@@ -67,7 +67,7 @@ export function useDragAndDrop(options: UseDragAndDropOptions = {}) {
         options.onDragStart?.(item)
       },
 
-      onDragEnd: (e: React.DragEvent) => {
+      onDragEnd: (_e: React.DragEvent) => {
         const item = draggedItemRef.current
         if (item) {
           options.onDragEnd?.(item)
@@ -126,7 +126,7 @@ export function useDragAndDrop(options: UseDragAndDropOptions = {}) {
         dragCounterRef.current += 1
       },
 
-      onDragLeave: (e: React.DragEvent) => {
+      onDragLeave: (_e: React.DragEvent) => {
         dragCounterRef.current -= 1
 
         if (dragCounterRef.current === 0) {

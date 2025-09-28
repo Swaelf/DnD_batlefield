@@ -1,9 +1,9 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react'
 import { Group, Rect, Line } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
-import { Point, MapObject } from '@/types'
-import { SelectionMode } from './AdvancedSelectionManager'
+import type { Point } from '@/types'
+import type { SelectionMode } from './AdvancedSelectionManager'
 
 interface MultiSelectToolProps {
   isActive: boolean
@@ -186,7 +186,7 @@ export const MultiSelectTool: React.FC<MultiSelectToolProps> = ({
   useEffect(() => {
     if (!isActive) return
 
-    const handleGlobalMouseMove = (e: MouseEvent) => {
+    const handleGlobalMouseMove = (_e: MouseEvent) => {
       if (stageRef.current) {
         handleMouseMove({
           target: stageRef.current,

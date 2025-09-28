@@ -1,9 +1,7 @@
 import React, { useMemo } from 'react'
 import useMapStore from '@store/mapStore'
-import useToolStore from '@store/toolStore'
 import { useContextMenu } from '@hooks/useContextMenu'
 import { ContextMenu, createObjectContextMenu, createCanvasContextMenu } from './ContextMenu'
-import { MapObject } from '@/types/map'
 
 interface ContextMenuManagerProps {
   children: React.ReactNode
@@ -22,9 +20,6 @@ export const ContextMenuManager: React.FC<ContextMenuManagerProps> = ({ children
   const selectObject = useMapStore(state => state.selectObject)
   const clearSelection = useMapStore(state => state.clearSelection)
   const toggleGridVisibility = useMapStore(state => state.toggleGridVisibility)
-
-  // Tool store state
-  const setTool = useToolStore(state => state.setTool)
 
   // Get context menu items based on target
   const contextMenuItems = useMemo(() => {

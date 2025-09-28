@@ -27,15 +27,17 @@ const mockSettings: CanvasSettings = {
   grid: {
     size: 50,
     visible: true,
-    snapEnabled: true,
     color: '#333',
-    opacity: 0.5,
-    type: 'square'
+    opacity: 0.5
   },
   viewport: {
     position: { x: 0, y: 0 },
-    scale: 1,
-    bounds: { x: 0, y: 0, width: 1920, height: 1080 }
+    zoom: 1,
+    rotation: 0,
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+    worldBounds: { x: 0, y: 0, width: 1920, height: 1080 },
+    isTransitioning: false,
+    transitionId: null
   }
 }
 

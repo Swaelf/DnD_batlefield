@@ -4,8 +4,8 @@
  */
 
 import React from 'react'
-import { styled } from '@/foundation/theme'
-import type { ActionCategory, ActionCategoryInfo } from '../../types'
+import { Box } from '@/components/primitives'
+import type { ActionCategory, ActionCategoryInfo } from '@/types/unifiedAction'
 
 export type CategoryFilterProps = {
   categories: ActionCategoryInfo[]
@@ -14,66 +14,46 @@ export type CategoryFilterProps = {
   className?: string
 }
 
-const Container = styled('div', {
+// Helper functions for styling
+const getContainerStyles = (): React.CSSProperties => ({
   display: 'flex',
-  gap: '$2',
-  flexWrap: 'wrap',
+  gap: '8px',
+  flexWrap: 'wrap' as const,
   alignItems: 'center'
 })
 
-const CategoryButton = styled('button', {
+const getCategoryButtonStyles = (active = false): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '$2',
-  padding: '$2 $3',
-  borderRadius: '$lg',
-  border: '1px solid $gray600',
-  background: '$gray800',
-  color: '$gray300',
-  fontSize: '$2',
+  gap: '8px',
+  padding: '8px 12px',
+  borderRadius: '8px',
+  border: `1px solid ${active ? 'var(--dnd-red)' : 'var(--gray-600)'}`,
+  background: active ? 'var(--dnd-red)' : 'var(--gray-800)',
+  color: active ? 'white' : 'var(--gray-300)',
+  fontSize: '14px',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-  whiteSpace: 'nowrap',
-
-  '&:hover': {
-    background: '$gray700',
-    borderColor: '$gray500',
-    color: '$gray100'
-  },
-
-  variants: {
-    active: {
-      true: {
-        background: '$dndRed',
-        borderColor: '$dndRed',
-        color: 'white',
-
-        '&:hover': {
-          background: '$dndRedDark',
-          borderColor: '$dndRedDark'
-        }
-      }
-    }
-  }
+  whiteSpace: 'nowrap' as const
 })
 
-const CategoryIcon = styled('span', {
-  fontSize: '$3',
+const getCategoryIconStyles = (): React.CSSProperties => ({
+  fontSize: '16px',
   lineHeight: 1
 })
 
-const CategoryLabel = styled('span', {
-  fontWeight: 500
+const getCategoryLabelStyles = (): React.CSSProperties => ({
+  fontWeight: '500'
 })
 
-const CategoryCount = styled('span', {
-  fontSize: '$1',
+const getCategoryCountStyles = (): React.CSSProperties => ({
+  fontSize: '12px',
   opacity: 0.8,
   background: 'rgba(255, 255, 255, 0.1)',
   padding: '2px 6px',
-  borderRadius: '$sm',
-  minWidth: 20,
-  textAlign: 'center'
+  borderRadius: '4px',
+  minWidth: '20px',
+  textAlign: 'center' as const
 })
 
 /**
@@ -87,29 +67,55 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 }) => {
   const totalCount = categories.reduce((sum, cat) => sum + cat.count, 0)
 
+  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>, active: boolean) => {
+    if (!active) {
+      e.currentTarget.style.background = 'var(--gray-700)'
+      e.currentTarget.style.borderColor = 'var(--gray-500)'
+      e.currentTarget.style.color = 'var(--gray-100)'
+    } else {
+      e.currentTarget.style.background = 'var(--dnd-red-dark)'
+      e.currentTarget.style.borderColor = 'var(--dnd-red-dark)'
+    }
+  }
+
+  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>, active: boolean) => {
+    if (!active) {
+      e.currentTarget.style.background = 'var(--gray-800)'
+      e.currentTarget.style.borderColor = 'var(--gray-600)'
+      e.currentTarget.style.color = 'var(--gray-300)'
+    } else {
+      e.currentTarget.style.background = 'var(--dnd-red)'
+      e.currentTarget.style.borderColor = 'var(--dnd-red)'
+    }
+  }
+
   return (
-    <Container className={className}>
-      <CategoryButton
-        active={activeCategory === 'all'}
+    <Box className={className} style={getContainerStyles()}>
+      <button
         onClick={() => onCategoryChange('all')}
+        onMouseEnter={(e) => handleMouseEnter(e, activeCategory === 'all')}
+        onMouseLeave={(e) => handleMouseLeave(e, activeCategory === 'all')}
+        style={getCategoryButtonStyles(activeCategory === 'all')}
       >
-        <CategoryIcon>🎯</CategoryIcon>
-        <CategoryLabel>All</CategoryLabel>
-        <CategoryCount>{totalCount}</CategoryCount>
-      </CategoryButton>
+        <span style={getCategoryIconStyles()}>🎯</span>
+        <span style={getCategoryLabelStyles()}>All</span>
+        <span style={getCategoryCountStyles()}>{totalCount}</span>
+      </button>
 
       {categories.map(category => (
-        <CategoryButton
+        <button
           key={category.id}
-          active={activeCategory === category.id}
           onClick={() => onCategoryChange(category.id)}
+          onMouseEnter={(e) => handleMouseEnter(e, activeCategory === category.id)}
+          onMouseLeave={(e) => handleMouseLeave(e, activeCategory === category.id)}
           title={category.description}
+          style={getCategoryButtonStyles(activeCategory === category.id)}
         >
-          <CategoryIcon>{category.icon}</CategoryIcon>
-          <CategoryLabel>{category.name}</CategoryLabel>
-          <CategoryCount>{category.count}</CategoryCount>
-        </CategoryButton>
+          <span style={getCategoryIconStyles()}>{category.icon}</span>
+          <span style={getCategoryLabelStyles()}>{category.name}</span>
+          <span style={getCategoryCountStyles()}>{category.count}</span>
+        </button>
       ))}
-    </Container>
+    </Box>
   )
 }

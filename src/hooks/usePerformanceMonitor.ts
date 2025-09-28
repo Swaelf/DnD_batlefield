@@ -31,7 +31,7 @@ export const usePerformanceMonitor = (enabled: boolean = true) => {
   })
   const [isRecording, setIsRecording] = useState(false)
 
-  const frameRef = useRef<number>()
+  const frameRef = useRef<number>(0)
   const lastTimeRef = useRef<number>(performance.now())
   const frameCountRef = useRef<number>(0)
   const renderStartRef = useRef<number>(0)
@@ -59,8 +59,8 @@ export const usePerformanceMonitor = (enabled: boolean = true) => {
   // Memory Usage Calculation
   const getMemoryUsage = useCallback((): number => {
     if ('memory' in performance) {
-      // @ts-ignore - Chrome specific API
-      const memory = performance.memory
+      // Chrome specific API
+      const memory = (performance as any).memory as { usedJSHeapSize: number }
       return Math.round(memory.usedJSHeapSize / 1024 / 1024) // MB
     }
     return 0

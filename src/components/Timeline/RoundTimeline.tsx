@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { Timeline } from '@/types'
+import type { Timeline } from '@/types'
 import { Box } from '@/components/primitives'
 import {
   TimelineContainer,

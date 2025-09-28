@@ -1,12 +1,12 @@
 import React, { useCallback, useRef, useState } from 'react'
 import { Group, Layer } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
 import { MultiSelectTool } from '@/components/Selection/MultiSelectTool'
 import { TransformControls } from '@/components/Selection/TransformControls'
 import { ObjectAlignmentSystem } from '@/components/Selection/ObjectAlignmentSystem'
-import { SelectionMode } from '@/components/Selection/AdvancedSelectionManager'
+import type { SelectionMode } from '@/components/Selection/AdvancedSelectionManager'
 
 interface AdvancedCanvasInteractionLayerProps {
   width: number
@@ -15,13 +15,13 @@ interface AdvancedCanvasInteractionLayerProps {
 }
 
 export const AdvancedCanvasInteractionLayer: React.FC<AdvancedCanvasInteractionLayerProps> = ({
-  width,
-  height,
-  stageRef
+  width: _width,
+  height: _height,
+  stageRef: _stageRef
 }) => {
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('pointer')
   const [isTransforming, setIsTransforming] = useState(false)
-  const [showAlignment, setShowAlignment] = useState(true)
+  const [showAlignment, _setShowAlignment] = useState(true)
 
   const layerRef = useRef<Konva.Layer>(null)
 
@@ -30,12 +30,7 @@ export const AdvancedCanvasInteractionLayer: React.FC<AdvancedCanvasInteractionL
 
   const isSelectToolActive = currentTool === 'select'
 
-  // Handle selection mode changes
-  const handleSelectionModeChange = useCallback((mode: SelectionMode) => {
-    setSelectionMode(mode)
-  }, [])
-
-  // Handle multi-selection complete
+// Handle multi-selection complete
   const handleSelectionComplete = useCallback((selectedIds: string[]) => {
     console.log('Multi-selection completed:', selectedIds)
   }, [])

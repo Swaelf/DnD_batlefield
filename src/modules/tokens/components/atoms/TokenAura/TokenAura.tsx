@@ -29,7 +29,7 @@ export const TokenAura: React.FC<TokenAuraProps> = React.memo(({
   pulseSpeed = 0.02
 }) => {
   const auraRef = useRef<any>(null)
-  const animationRef = useRef<number>()
+  const animationRef = useRef<number>(0)
 
   useEffect(() => {
     if (!animated || !auraRef.current) return

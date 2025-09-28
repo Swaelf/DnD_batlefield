@@ -1,45 +1,85 @@
 # Components Directory
 
-## Overview
-This directory contains all React components for the MapMaker application. Components are organized by feature/domain into subdirectories.
+## 🚀 Component Architecture (January 2025)
 
-## Directory Structure
+This directory contains all React components for the MapMaker application, organized using a **systematic 5-level hierarchy** for optimal type safety, performance, and maintainability.
+
+## Hierarchical Structure
 ```
 components/
-├── Actions/          # Advanced action sequencing and coordination
-├── Canvas/           # Core canvas rendering components
-├── ContextMenu/      # Right-click context menus
-├── HelpDialog/       # Help and documentation dialogs
-├── Menu/             # Application menus (File, Edit, etc.)
-├── Properties/       # Property editing panels
-├── Spells/           # D&D spell effect animations
-├── StatusBar/        # Status information display
-├── Timeline/         # Timeline and event management
-├── Token/            # Token-specific components
-├── Toolbar/          # Tool selection and controls
-└── Tools/            # Drawing tool implementations
+├── primitives/       # Level 1: Base components (BoxVE, TextVE, ButtonVE)
+├── ui/              # Level 2-3: UI components (Input, Modal, Panel, FieldLabel)
+├── Actions/         # Level 5: Advanced action sequencing and coordination
+├── Canvas/          # Level 4: Core canvas rendering components
+├── ContextMenu/     # Level 3: Right-click context menus
+├── Properties/      # Level 4: Property editing panels
+├── Timeline/        # Level 5: Timeline and event management
+├── Token/           # Level 4: Token-specific components
+└── [other features] # Level 4-5: Domain-specific components
 ```
+
+## Component Hierarchy Levels
+
+### Level 0: Style System Foundation
+- **Theme System** (`/styles/theme.css.ts`): Design tokens and CSS variables
+- **Sprinkles** (`/styles/sprinkles.css.ts`): Atomic utility classes
+- **Recipes** (`/styles/recipes/`): Component-specific styling with variants
+
+### Level 1: Primitive Components (`/primitives/`)
+- **BoxVE**: Polymorphic container with sprinkles integration
+- **TextVE**: Typography with semantic variants (Heading, Label, Code, etc.)
+- **ButtonVE**: Interactive elements with comprehensive variants
+- **Zero dependencies**: Only depend on style system
+
+### Level 2: Basic UI Components (`/ui/`)
+- **Input**: Form inputs with exact typing
+- **Badge**: Status indicators with semantic variants
+- **Checkbox**: Form controls with group support
+- **Avatar**: User representations with fallbacks
+- **FieldLabel**: Form field labels (newly created)
+- **Dependencies**: Use Level 1 primitives only
+
+### Level 3: Composite UI Components (`/ui/`)
+- **Modal**: Portal-based modals with focus management
+- **Panel**: Content containers with variants
+- **Select**: Dropdown selections (needs Vanilla Extract migration)
+- **Popover**: Floating content containers
+- **Dependencies**: Use Level 1-2 components
+
+### Level 4: Feature Components
+- **Canvas/**: Core rendering with Konva integration
+- **Properties/**: Dynamic property editing
+- **Token/**: D&D token system
+- **Dependencies**: Use Level 1-3 components
+
+### Level 5: Complex Feature Components
+- **Actions/**: Advanced action sequencing (CustomActionBuilder)
+- **Timeline/**: Combat encounter management
+- **Layers/**: Advanced layer management
+- **Dependencies**: Use Level 1-4 components
 
 ## Component Rules & Guidelines
 
-### 1. Component Structure
-- **One component per file** - Each component should have its own .tsx file
-- **Folder organization** - Related components grouped in feature folders
-- **Index exports** - Use index.ts for clean imports when multiple related components exist
-- **Type definitions** - Component props should be defined as interfaces, not types
+### 1. Type Safety Rules (ENFORCED)
+- **NEVER use `any`** - Use exact types or `unknown` with type guards
+- **Use `type` declarations** - Avoid `interface`, prefer `type` with intersections (`&`)
+- **Exact event typing** - `onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void`
+- **forwardRef with exact types** - `forwardRef<HTMLElement, Props>`
+- **Comprehensive prop types** - Include ARIA, data attributes, HTML attributes
 
-### 2. Naming Conventions
-- **PascalCase** for component names (e.g., `MapCanvas`, `TokenLibrary`)
-- **Props interfaces** should end with `Props` (e.g., `MapCanvasProps`)
-- **Event handlers** should start with `handle` or `on` (e.g., `handleClick`, `onClose`)
-- **Boolean props** should start with `is`, `has`, or `show` (e.g., `isOpen`, `hasError`)
+### 2. Styling Guidelines (VANILLA EXTRACT)
+- **Sprinkles for simple props**: `<Box padding={3} backgroundColor="surface" />`
+- **Style prop for unsupported**: `<Box style={{ gridTemplateColumns: 'repeat(2, 1fr)' }} />`
+- **Recipes for complex styling**: Component-specific variants and states
+- **No mixed approaches**: Choose one styling method per component
+- **Theme variables**: Use `var(--token-name)` for custom styles
 
-### 3. Component Best Practices
-- **Functional components only** - No class components
-- **TypeScript strict mode** - All props must be typed
-- **React.FC discouraged** - Use explicit typing: `const Component: React.FC<Props>` → `const Component = (props: Props) => {}`
-- **Memoization** - Use React.memo for expensive renders, especially canvas components
-- **Hooks organization** - Custom hooks at top, then useState, useEffect, etc.
+### 3. Component Architecture Rules
+- **Hierarchical dependencies**: Level N can only use Level N-1 and below
+- **Single responsibility**: Each component has one clear purpose
+- **Composable design**: Build complex components from simpler ones
+- **Performance by default**: Proper memoization, zero-runtime CSS
+- **Accessibility first**: Comprehensive ARIA support, keyboard navigation
 
 ### 4. State Management
 - **Local state** for UI-only concerns (modals, tooltips, hover states)

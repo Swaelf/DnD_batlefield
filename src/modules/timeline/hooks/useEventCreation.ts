@@ -9,6 +9,7 @@ import type {
   EventType,
   EventData,
   RoundId,
+  RoundEvent,
   MoveEventData,
   AttackEventData,
   SpellEventData,
@@ -117,7 +118,7 @@ export const useEventCreation = () => {
     const round = timeline.getRoundById(roundId)
     if (!round || round.events.length === 0) return 1
 
-    const maxOrder = Math.max(...round.events.map(e => e.order))
+    const maxOrder = Math.max(...round.events.map((e: RoundEvent) => e.order))
     return maxOrder + 1
   }, [timeline])
 

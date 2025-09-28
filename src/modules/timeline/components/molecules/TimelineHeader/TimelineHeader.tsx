@@ -1,10 +1,12 @@
 /**
- * Timeline Header Component
+ * TimelineHeader Molecule Component
  * Header with controls and round information
  */
 
 import React from 'react'
-import { styled } from '@/foundation/theme'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import { RoundCounter, PlayButton } from '../../atoms'
 import type { Timeline, TimelinePlaybackState } from '../../../types'
 
@@ -21,149 +23,6 @@ export type TimelineHeaderProps = {
   className?: string
 }
 
-const Header = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '$3',
-  borderBottom: '1px solid $gray600',
-  background: '$gray900'
-})
-
-const LeftSection = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$4'
-})
-
-const CenterSection = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$3'
-})
-
-const RightSection = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$3'
-})
-
-const TimelineName = styled('h2', {
-  margin: 0,
-  fontSize: '$3',
-  fontWeight: 600,
-  color: '$gray100'
-})
-
-const CombatButton = styled('button', {
-  padding: '$2 $3',
-  borderRadius: '$md',
-  border: '1px solid',
-  background: 'transparent',
-  cursor: 'pointer',
-  fontSize: '$2',
-  fontWeight: 500,
-  transition: 'all 0.2s ease',
-
-  variants: {
-    variant: {
-      start: {
-        borderColor: '$green600',
-        color: '$green400',
-
-        '&:hover': {
-          background: '$green900',
-          borderColor: '$green500'
-        }
-      },
-      end: {
-        borderColor: '$red600',
-        color: '$red400',
-
-        '&:hover': {
-          background: '$red900',
-          borderColor: '$red500'
-        }
-      }
-    },
-
-    disabled: {
-      true: {
-        opacity: 0.5,
-        cursor: 'not-allowed'
-      }
-    }
-  }
-})
-
-const PlaybackControls = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2'
-})
-
-const SpeedControl = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2'
-})
-
-const SpeedButton = styled('button', {
-  padding: '$1 $2',
-  borderRadius: '$sm',
-  border: '1px solid $gray600',
-  background: '$gray800',
-  color: '$gray300',
-  fontSize: '$1',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    background: '$gray700',
-    borderColor: '$gray500'
-  },
-
-  variants: {
-    active: {
-      true: {
-        background: '$dndRed',
-        borderColor: '$dndRed',
-        color: 'white'
-      }
-    }
-  }
-})
-
-const SpeedLabel = styled('span', {
-  fontSize: '$1',
-  color: '$gray400',
-  minWidth: 30,
-  textAlign: 'center'
-})
-
-const StatusBadge = styled('div', {
-  padding: '$1 $2',
-  borderRadius: '$sm',
-  fontSize: '$1',
-  fontWeight: 500,
-
-  variants: {
-    status: {
-      inactive: {
-        background: '$gray700',
-        color: '$gray300'
-      },
-      active: {
-        background: '$dndRed',
-        color: 'white'
-      },
-      playing: {
-        background: '$orange500',
-        color: 'white'
-      }
-    }
-  }
-})
 
 const SPEED_OPTIONS = [0.25, 0.5, 1, 2, 4]
 
@@ -184,8 +43,8 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
 }) => {
   const canStartCombat = timeline && !timeline.isActive && timeline.rounds.length > 0
   const canEndCombat = timeline?.isActive
-  const canGoBack = timeline && timeline.currentRound > 1
-  const canGoForward = timeline && timeline.currentRound < timeline.rounds.length
+  const canGoBack = timeline ? timeline.currentRound > 1 : false
+  const canGoForward = timeline ? timeline.currentRound < timeline.rounds.length : false
   const totalRounds = timeline?.rounds.length || 0
 
   const getStatus = () => {
@@ -202,20 +61,62 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
   }
 
   return (
-    <Header className={className}>
-      <LeftSection>
+    <Box
+      className={className}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px',
+        borderBottom: '1px solid var(--colors-gray600)',
+        backgroundColor: 'var(--colors-gray900)'
+      }}
+    >
+      {/* Left Section */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px'
+        }}
+      >
         {timeline && (
-          <TimelineName>
+          <Text
+            variant="heading"
+            size="lg"
+            style={{
+              margin: 0,
+              fontWeight: '600',
+              color: 'var(--colors-gray100)'
+            }}
+          >
             {timeline.name}
-          </TimelineName>
+          </Text>
         )}
-        <StatusBadge status={getStatus()}>
+        <Box
+          style={{
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            fontWeight: '500',
+            backgroundColor: getStatus() === 'playing' ? 'var(--colors-orange500)' :
+                           getStatus() === 'active' ? 'var(--colors-dndRed)' : 'var(--colors-gray700)',
+            color: getStatus() === 'inactive' ? 'var(--colors-gray300)' : 'white'
+          }}
+        >
           {getStatus() === 'playing' ? 'Playing' :
            getStatus() === 'active' ? 'Combat Active' : 'Inactive'}
-        </StatusBadge>
-      </LeftSection>
+        </Box>
+      </Box>
 
-      <CenterSection>
+      {/* Center Section */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }}
+      >
         {timeline && (
           <RoundCounter
             currentRound={timeline.currentRound}
@@ -228,10 +129,24 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
             isInCombat={timeline.isActive}
           />
         )}
-      </CenterSection>
+      </Box>
 
-      <RightSection>
-        <PlaybackControls>
+      {/* Right Section */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }}
+      >
+        {/* Playback Controls */}
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
           <PlayButton
             isPlaying={playback.isPlaying}
             isDisabled={!timeline?.isActive}
@@ -239,39 +154,76 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
             size="md"
           />
 
-          <SpeedControl>
-            <SpeedLabel>{playback.playbackSpeed}x</SpeedLabel>
+          {/* Speed Control */}
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <Text
+              variant="body"
+              size="xs"
+              style={{
+                color: 'var(--colors-gray400)',
+                minWidth: '30px',
+                textAlign: 'center'
+              }}
+            >
+              {playback.playbackSpeed}x
+            </Text>
             {SPEED_OPTIONS.map(speed => (
-              <SpeedButton
+              <Button
                 key={speed}
-                active={playback.playbackSpeed === speed}
+                variant={playback.playbackSpeed === speed ? 'primary' : 'outline'}
+                size="sm"
                 onClick={() => handleSpeedChange(speed)}
                 title={`Set speed to ${speed}x`}
+                style={{
+                  fontSize: '12px',
+                  backgroundColor: playback.playbackSpeed === speed ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+                  borderColor: playback.playbackSpeed === speed ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+                  color: playback.playbackSpeed === speed ? 'white' : 'var(--colors-gray300)'
+                }}
               >
                 {speed}x
-              </SpeedButton>
+              </Button>
             ))}
-          </SpeedControl>
-        </PlaybackControls>
+          </Box>
+        </Box>
 
+        {/* Combat Controls */}
         {canStartCombat && (
-          <CombatButton
-            variant="start"
+          <Button
+            variant="outline"
+            size="md"
             onClick={onStartCombat}
+            style={{
+              borderColor: 'var(--colors-green600)',
+              color: 'var(--colors-green400)',
+              backgroundColor: 'transparent'
+            }}
           >
             Start Combat
-          </CombatButton>
+          </Button>
         )}
 
         {canEndCombat && (
-          <CombatButton
-            variant="end"
+          <Button
+            variant="outline"
+            size="md"
             onClick={onEndCombat}
+            style={{
+              borderColor: 'var(--colors-red600)',
+              color: 'var(--colors-red400)',
+              backgroundColor: 'transparent'
+            }}
           >
             End Combat
-          </CombatButton>
+          </Button>
         )}
-      </RightSection>
-    </Header>
+      </Box>
+    </Box>
   )
 }

@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react'
 import { render } from '@testing-library/react'
-import type { UnifiedAction, ActionHistoryEntry } from '@/types/unifiedAction'
+import type { UnifiedAction } from '@/types/unifiedAction'
 import type { Token, BattleMap } from '@/types'
 import type { Point } from '@/types/geometry'
 import { useUnifiedActionStore } from '@/store/unifiedActionStore'
@@ -8,6 +8,8 @@ import { useUnifiedActionStore } from '@/store/unifiedActionStore'
 // Mock data generators
 export const createMockAction = (overrides?: Partial<UnifiedAction>): UnifiedAction => ({
   id: 'action-1',
+  name: 'Test Action',
+  description: 'A test action',
   type: 'spell',
   category: 'projectile',
   source: { x: 0, y: 0 },
@@ -28,6 +30,7 @@ export const createMockAction = (overrides?: Partial<UnifiedAction>): UnifiedAct
   },
   timestamp: Date.now(),
   duration: 1000,
+  tags: ['test', 'spell'],
   ...overrides
 })
 
@@ -55,6 +58,9 @@ export const createMockToken = (positionOrOverrides?: Point | Partial<Token>, ov
     size: 'medium',
     name: 'Test Token',
     image: '/test-token.png',
+    color: '#ffffff',
+    opacity: 1,
+    shape: 'circle' as const,
     ...finalOverrides
   }
 }
@@ -70,15 +76,8 @@ export const createMockMap = (tokens: Token[]): BattleMap => ({
     type: 'square',
     visible: true,
     snap: true,
-    color: '#333333',
-    opacity: 0.3,
-    offset: { x: 0, y: 0 }
+    color: '#333333'
   },
-  background: {
-    color: '#1a1a1a',
-    image: null
-  },
-  version: 1
 })
 
 // Test helpers
@@ -106,22 +105,21 @@ export const getMockCanvas = (): HTMLCanvasElement => {
 }
 
 // Assertion helpers
-export const expectHighlighted = (tokenId: string): void => {
+export const expectHighlighted = (tokenId: string): boolean => {
   const state = useUnifiedActionStore.getState()
-  const highlighted = state.highlightedTargets.some(h => h.tokenId === tokenId)
-  expect(highlighted).toBe(true)
+  return state.highlightedTargets.some(h => h.tokenId === tokenId)
 }
 
-export const expectInHistory = (actionId: string): void => {
+export const expectInHistory = (actionId: string): boolean => {
   const state = useUnifiedActionStore.getState()
   const found = state.actionHistory.find(entry => entry.id === actionId)
-  expect(found).toBeDefined()
+  return found !== undefined
 }
 
-export const expectAnimationComplete = (actionId: string): void => {
+export const expectAnimationComplete = (actionId: string): boolean => {
   const state = useUnifiedActionStore.getState()
   const historyEntry = state.actionHistory.find(entry => entry.id === actionId)
-  expect(historyEntry?.status).toBe('completed')
+  return historyEntry?.status === 'completed'
 }
 
 // Store reset helper

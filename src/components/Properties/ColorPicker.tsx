@@ -3,9 +3,9 @@ import { HexColorPicker } from 'react-colorful';
 import { Pipette } from 'lucide-react';
 
 type ColorPickerProps = {
-  color: string;
-  onChange: (color: string) => void;
-  label?: string;
+  color: string
+  onChange: (color: string) => void
+  label?: string
 }
 
 // Preset colors for quick selection
@@ -99,7 +99,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ color, onChange, label
               <input
                 type="text"
                 value={tempColor}
-                onChange={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   const value = e.target.value;
                   if (/^#[0-9A-Fa-f]{0,6}$/.test(value)) {
                     setTempColor(value);

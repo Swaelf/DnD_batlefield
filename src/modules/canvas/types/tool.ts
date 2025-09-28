@@ -17,7 +17,7 @@ export interface ToolConfig {
   readonly name: string
   readonly type: ToolType
   readonly cursor: ToolCursor
-  readonly settings: ToolSettings
+  readonly settings: Partial<ToolSettings>
   readonly keyboardShortcuts: readonly string[]
   readonly enabled: boolean
 }
@@ -158,6 +158,7 @@ export interface ToolCursor {
 
 export type ToolType =
   | 'select'
+  | 'move'
   | 'draw'
   | 'erase'
   | 'text'
@@ -203,10 +204,13 @@ export type ToolCursorType =
   | 'default'
   | 'crosshair'
   | 'brush'
+  | 'draw'
   | 'eraser'
   | 'text'
   | 'move'
   | 'resize'
+  | 'zoom-in'
+  | 'zoom-out'
   | 'custom'
 
 export type ToolLineCap =

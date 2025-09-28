@@ -5,7 +5,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { SpellTemplateService } from './SpellTemplateService'
 import type {
-  SpellSearchCriteria,
+  SpellId
+} from '../types'
+import {
   createSpellSchoolId,
   createSpellCategoryId,
   createSpellTemplateId
@@ -198,7 +200,7 @@ describe('SpellTemplateService', () => {
     it('creates custom spell from template', () => {
       const customSpell = service.createCustomSpellFromTemplate(
         createSpellTemplateId('fireball'),
-        { name: 'Epic Fireball' }
+        { spellId: 'custom-fireball' as SpellId, name: 'Epic Fireball' }
       )
 
       expect(customSpell.name).toBe('Epic Fireball')
@@ -210,6 +212,7 @@ describe('SpellTemplateService', () => {
       const customSpell = service.createCustomSpellFromTemplate(
         createSpellTemplateId('fireball'),
         {
+          spellId: 'custom-cold-fireball' as SpellId,
           name: 'Cold Fireball',
           color: '#0000ff',
           opacity: 0.5,

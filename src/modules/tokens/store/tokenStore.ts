@@ -5,6 +5,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { devtools } from 'zustand/middleware'
+import { current } from 'immer'
 import type { Point } from '@/types/geometry'
 import type {
   Token,
@@ -13,12 +14,10 @@ import type {
   TokenTemplate,
   CreateTokenData,
   TokenUpdate,
-  TokenSelection,
   TokenFilters,
   AnimationHandle
 } from '../types'
 import { TokenService } from '../services/TokenService'
-import { TemplateService } from '../services/TemplateService'
 import { AnimationService } from '../services/AnimationService'
 import { ValidationService } from '../services/ValidationService'
 
@@ -129,7 +128,7 @@ export type TokenStore = TokenState & TokenActions
 
 // Services instances
 const tokenService = new TokenService()
-const templateService = TemplateService.getInstance()
+// const templateService = TemplateService.getInstance() // TODO: Use when needed
 const animationService = AnimationService.getInstance()
 const validationService = ValidationService.getInstance()
 
@@ -167,7 +166,10 @@ export const useTokenStore = create<TokenStore>()(
       // CRUD operations
       addToken: (token) =>
         set((state) => {
-          state.tokens.set(token.id, token)
+          state.tokens.set(token.id, {
+            ...token,
+            conditions: [...(token.conditions || [])]
+          })
           state.visibleTokens.add(token.id)
         }),
 
@@ -182,7 +184,10 @@ export const useTokenStore = create<TokenStore>()(
           const existing = state.tokens.get(id)
           if (existing) {
             const updated = tokenService.updateToken(existing, updates)
-            state.tokens.set(id, updated)
+            state.tokens.set(id, {
+              ...updated,
+              conditions: [...(updated.conditions || [])]
+            })
           }
         }),
 
@@ -298,17 +303,17 @@ export const useTokenStore = create<TokenStore>()(
       // Template management
       setActiveTemplate: (template) =>
         set((state) => {
-          state.activeTemplate = template
+          Object.assign(state, { activeTemplate: template })
         }),
 
       saveCustomTemplate: (template) =>
         set((state) => {
-          const existing = state.customTemplates.find(t => t.id === template.id)
-          if (existing) {
-            const index = state.customTemplates.indexOf(existing)
-            state.customTemplates[index] = template
+          const currentTemplates = current(state.customTemplates)
+          const existingIndex = currentTemplates.findIndex(t => t.id === template.id)
+          if (existingIndex >= 0) {
+            Object.assign(state.customTemplates[existingIndex], template)
           } else {
-            state.customTemplates = [...state.customTemplates, template]
+            state.customTemplates.push(template as any)
           }
         }),
 
@@ -377,7 +382,7 @@ export const useTokenStore = create<TokenStore>()(
       // Filters and sorting
       setFilters: (filters) =>
         set((state) => {
-          state.filters = { ...state.filters, ...filters }
+          Object.assign(state.filters, filters)
         }),
 
       setSortBy: (sortBy) =>
@@ -402,7 +407,10 @@ export const useTokenStore = create<TokenStore>()(
           set((state) => {
             state.selectedTokenIds.clear()
             for (const token of duplicated) {
-              state.tokens.set(token.id, token)
+              state.tokens.set(token.id, {
+                ...token,
+                conditions: [...(token.conditions || [])]
+              })
               state.selectedTokenIds.add(token.id)
               state.visibleTokens.add(token.id)
             }
@@ -420,7 +428,10 @@ export const useTokenStore = create<TokenStore>()(
           const aligned = tokenService.alignTokens(selectedTokens, alignment)
           set((state) => {
             for (const token of aligned) {
-              state.tokens.set(token.id, token)
+              state.tokens.set(token.id, {
+                ...token,
+                conditions: [...(token.conditions || [])]
+              })
             }
           })
         }
@@ -428,19 +439,19 @@ export const useTokenStore = create<TokenStore>()(
 
       copySelected: () => {
         const state = get()
-        const selectedTokens = Array.from(state.selectedTokenIds)
+        const selectedTokens: Token[] = Array.from(state.selectedTokenIds)
           .map(id => state.tokens.get(id))
-          .filter(token => token !== undefined)
+          .filter((token): token is Token => token !== undefined)
 
         set((state) => {
-          state.clipboard = selectedTokens
+          Object.assign(state, { clipboard: selectedTokens })
         })
       },
 
       pasteFromClipboard: (position) => {
         const state = get()
         if (state.clipboard.length > 0) {
-          const duplicated = tokenService.duplicateTokens(state.clipboard, {
+          const duplicated = tokenService.duplicateTokens([...state.clipboard], {
             x: position.x - state.clipboard[0].position.x,
             y: position.y - state.clipboard[0].position.y
           })
@@ -448,7 +459,10 @@ export const useTokenStore = create<TokenStore>()(
           set((state) => {
             state.selectedTokenIds.clear()
             for (const token of duplicated) {
-              state.tokens.set(token.id, token)
+              state.tokens.set(token.id, {
+                ...token,
+                conditions: [...(token.conditions || [])]
+              })
               state.selectedTokenIds.add(token.id)
               state.visibleTokens.add(token.id)
             }
@@ -461,8 +475,11 @@ export const useTokenStore = create<TokenStore>()(
         set((state) => {
           const token = state.tokens.get(id)
           if (token) {
-            const updated = tokenService.updateToken(token, { position })
-            state.tokens.set(id, updated)
+            const updated = tokenService.updateToken(token, { position, lastModified: new Date() })
+            state.tokens.set(id, {
+              ...updated,
+              conditions: [...(updated.conditions || [])]
+            })
           }
         }),
 
@@ -475,8 +492,11 @@ export const useTokenStore = create<TokenStore>()(
                 x: token.position.x + offset.x,
                 y: token.position.y + offset.y
               }
-              const updated = tokenService.updateToken(token, { position: newPosition })
-              state.tokens.set(id, updated)
+              const updated = tokenService.updateToken(token, { position: newPosition, lastModified: new Date() })
+              state.tokens.set(id, {
+                ...updated,
+                conditions: [...(updated.conditions || [])]
+              })
             }
           }
         }),
@@ -486,8 +506,11 @@ export const useTokenStore = create<TokenStore>()(
           const token = state.tokens.get(id)
           if (token) {
             const snappedPosition = tokenService.snapToGrid(token.position, gridSize)
-            const updated = tokenService.updateToken(token, { position: snappedPosition })
-            state.tokens.set(id, updated)
+            const updated = tokenService.updateToken(token, { position: snappedPosition, lastModified: new Date() })
+            state.tokens.set(id, {
+              ...updated,
+              conditions: [...(updated.conditions || [])]
+            })
           }
         }),
 
@@ -509,7 +532,10 @@ export const useTokenStore = create<TokenStore>()(
             // Validate and add token
             const validation = validationService.validateToken(token)
             if (validation.isValid) {
-              state.tokens.set(token.id, token)
+              state.tokens.set(token.id, {
+                ...token,
+                conditions: [...(token.conditions || [])]
+              })
               state.visibleTokens.add(token.id)
             } else {
               console.warn(`Skipping invalid token: ${token.name}`, validation.errors)
@@ -547,14 +573,14 @@ export const useTokenStore = create<TokenStore>()(
     })),
     {
       name: 'token-store',
-      partialize: (state) => ({
+      partialize: (state: TokenStore) => ({
         tokens: Array.from(state.tokens.entries()),
         customTemplates: state.customTemplates,
         filters: state.filters,
         sortBy: state.sortBy,
         sortOrder: state.sortOrder
       }),
-      merge: (persistedState: any, currentState) => ({
+      merge: (persistedState: Partial<TokenStore>, currentState: TokenStore) => ({
         ...currentState,
         ...persistedState,
         // Restore Map from serialized array

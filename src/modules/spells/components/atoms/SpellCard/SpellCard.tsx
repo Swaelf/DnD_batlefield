@@ -1,14 +1,14 @@
 /**
  * SpellCard Atom Component
- *
- * Rich spell display with school badges, level indicators, and interaction controls.
- * Follows atomic design patterns similar to ActionCard from Actions module.
+ * Rich spell display with school badges, level indicators, and interaction controls
  */
 
 import React from 'react'
 import { Edit2 } from 'lucide-react'
-import { styled } from '@/styles/theme.config'
-import type { UnifiedSpell } from '../../types'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import type { UnifiedSpell } from '../../../types/spells'
 import { SpellIcon } from '../SpellIcon'
 import { SpellBadge } from '../SpellBadge'
 
@@ -21,112 +21,6 @@ interface SpellCardProps {
   className?: string
 }
 
-const Card = styled('div', {
-  position: 'relative',
-  padding: '$3',
-  borderRadius: '$3',
-  background: '$gray100',
-  border: '2px solid transparent',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    background: '$gray200',
-    transform: 'translateY(-1px)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-  },
-
-  variants: {
-    selected: {
-      true: {
-        borderColor: '$dndRed',
-        background: '$gray200'
-      }
-    }
-  }
-})
-
-const Header = styled('div', {
-  display: 'flex',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  marginBottom: '$2'
-})
-
-const SpellName = styled('h3', {
-  margin: 0,
-  fontSize: '$sm',
-  fontWeight: 600,
-  color: '$gray900',
-  lineHeight: 1.3
-})
-
-const SpellDescription = styled('p', {
-  margin: '$1 0 $2 0',
-  fontSize: '$xs',
-  color: '$gray700',
-  lineHeight: 1.4,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  display: '-webkit-box',
-  '-webkit-line-clamp': 2,
-  '-webkit-box-orient': 'vertical'
-})
-
-const BadgeRow = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  marginBottom: '$2'
-})
-
-const TagsRow = styled('div', {
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '$1',
-  alignItems: 'center'
-})
-
-const Tag = styled('span', {
-  fontSize: '$xs',
-  color: '$gray600',
-  background: '$gray300',
-  padding: '1px 4px',
-  borderRadius: '$1'
-})
-
-const EditButton = styled('button', {
-  position: 'absolute',
-  top: '$2',
-  right: '$2',
-  padding: '$1',
-  background: '$gray800',
-  color: 'white',
-  border: 'none',
-  borderRadius: '$2',
-  cursor: 'pointer',
-  opacity: 0,
-  transition: 'opacity 0.2s ease',
-  zIndex: 1,
-
-  '&:hover': {
-    background: '$gray900'
-  },
-
-  [`${Card}:hover &`]: {
-    opacity: 1
-  }
-})
-
-const CustomIndicator = styled('div', {
-  position: 'absolute',
-  top: '$1',
-  left: '$1',
-  width: 8,
-  height: 8,
-  borderRadius: '50%',
-  background: '$violet600'
-})
 
 export const SpellCard: React.FC<SpellCardProps> = ({
   spell,
@@ -155,18 +49,64 @@ export const SpellCard: React.FC<SpellCardProps> = ({
   const remainingTagsCount = spell.tags.length - 3
 
   return (
-    <Card
-      selected={isSelected}
-      onClick={handleCardClick}
+    <Box
       className={className}
+      onClick={handleCardClick}
+      style={{
+        position: 'relative',
+        padding: '12px',
+        borderRadius: '12px',
+        backgroundColor: isSelected ? 'var(--colors-gray200)' : 'var(--colors-gray100)',
+        border: `2px solid ${isSelected ? 'var(--colors-dndRed)' : 'transparent'}`,
+        cursor: 'pointer',
+        transition: 'all 0.2s ease'
+      }}
     >
-      {spell.isCustom && <CustomIndicator />}
+      {/* Custom Indicator */}
+      {spell.isCustom && (
+        <Box
+          style={{
+            position: 'absolute',
+            top: '4px',
+            left: '4px',
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--colors-violet600)'
+          }}
+        />
+      )}
 
-      <Header>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {/* Header */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          marginBottom: '8px'
+        }}
+      >
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
           <SpellIcon school={spell.school} category={spell.category} />
-          <SpellName>{spell.name}</SpellName>
-        </div>
+          <Text
+            variant="heading"
+            size="sm"
+            style={{
+              margin: 0,
+              fontWeight: '600',
+              color: 'var(--colors-gray900)',
+              lineHeight: '1.3'
+            }}
+          >
+            {spell.name}
+          </Text>
+        </Box>
         {spell.type === 'area' && spell.size?.radius && (
           <SpellBadge
             variant="level"
@@ -174,9 +114,17 @@ export const SpellCard: React.FC<SpellCardProps> = ({
             title="Radius (5ft squares)"
           />
         )}
-      </Header>
+      </Box>
 
-      <BadgeRow>
+      {/* Badge Row */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          marginBottom: '8px'
+        }}
+      >
         <SpellBadge
           variant="school"
           content={spell.school.toUpperCase()}
@@ -185,31 +133,91 @@ export const SpellCard: React.FC<SpellCardProps> = ({
           variant="type"
           content={spell.type.toUpperCase()}
         />
-      </BadgeRow>
+      </Box>
 
+      {/* Description */}
       {description && (
-        <SpellDescription>{description}</SpellDescription>
+        <Text
+          variant="body"
+          size="xs"
+          style={{
+            margin: '4px 0 8px 0',
+            color: 'var(--colors-gray700)',
+            lineHeight: '1.4',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical'
+          }}
+        >
+          {description}
+        </Text>
       )}
 
-      <TagsRow>
-        {visibleTags.map((tag, index) => (
-          <Tag key={index}>{tag}</Tag>
+      {/* Tags Row */}
+      <Box
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '4px',
+          alignItems: 'center'
+        }}
+      >
+        {visibleTags.map((tag: string, index: number) => (
+          <Text
+            key={index}
+            variant="body"
+            size="xs"
+            style={{
+              color: 'var(--colors-gray600)',
+              backgroundColor: 'var(--colors-gray300)',
+              padding: '1px 4px',
+              borderRadius: '4px'
+            }}
+          >
+            {tag}
+          </Text>
         ))}
         {remainingTagsCount > 0 && (
-          <Tag title={spell.tags.slice(3).join(', ')}>
+          <Text
+            variant="body"
+            size="xs"
+            title={spell.tags.slice(3).join(', ')}
+            style={{
+              color: 'var(--colors-gray600)',
+              backgroundColor: 'var(--colors-gray300)',
+              padding: '1px 4px',
+              borderRadius: '4px'
+            }}
+          >
             +{remainingTagsCount}
-          </Tag>
+          </Text>
         )}
-      </TagsRow>
+      </Box>
 
+      {/* Edit Button */}
       {showEditButton && spell.customizable && (
-        <EditButton
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleEditClick}
           title="Edit spell"
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            padding: '4px',
+            backgroundColor: 'var(--colors-gray800)',
+            color: 'white',
+            opacity: 0,
+            transition: 'opacity 0.2s ease',
+            zIndex: 1
+          }}
         >
           <Edit2 size={12} />
-        </EditButton>
+        </Button>
       )}
-    </Card>
+    </Box>
   )
 }

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react'
-import { Box, Text, Button } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import {
   Droplets,
   Sun,
@@ -11,100 +12,22 @@ import {
   Snowflake,
   Flame,
   Waves,
-  Eye,
-  Palette,
-  Sliders,
   RotateCcw,
-  Settings
+  Settings,
+  Trash2
 } from 'lucide-react'
-import { useLayerStore, LayerDefinition, LayerEffect } from '@store/layerStore'
-import useMapStore from '@store/mapStore'
-
-const EffectsContainer = styled(Box, {
-  padding: '$4',
-  backgroundColor: '$gray900',
-  borderRadius: '$sm',
-  border: '1px solid $gray700'
-})
-
-const EffectsGrid = styled(Box, {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: '$2',
-  marginBottom: '$4'
-})
-
-const EffectButton = styled(Button, {
-  height: 60,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '$1',
-  padding: '$2',
-
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$secondary',
-        color: '$dndBlack',
-        '&:hover': {
-          backgroundColor: '$secondary'
-        }
-      }
-    }
-  }
-})
-
-const SliderContainer = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$3',
-  marginBottom: '$3'
-})
-
-const Slider = styled('input', {
-  flex: 1,
-  height: 4,
-  borderRadius: 2,
-  background: '$gray700',
-  outline: 'none',
-  appearance: 'none',
-
-  '&::-webkit-slider-thumb': {
-    appearance: 'none',
-    width: 16,
-    height: 16,
-    borderRadius: '50%',
-    background: '$secondary',
-    cursor: 'pointer'
-  },
-
-  '&::-moz-range-thumb': {
-    width: 16,
-    height: 16,
-    borderRadius: '50%',
-    background: '$secondary',
-    cursor: 'pointer',
-    border: 'none'
-  }
-})
-
-const BlendModeSelect = styled('select', {
-  width: '100%',
-  padding: '$2',
-  backgroundColor: '$gray800',
-  border: '1px solid $gray600',
-  borderRadius: '$sm',
-  color: '$gray100',
-  fontSize: '$sm',
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$secondary'
-  }
-})
+import type { LayerEffect } from '@/store/layerStore'
+import { useLayerStore } from '@/store/layerStore'
 
 type BlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'soft-light' | 'hard-light' | 'color-dodge' | 'color-burn'
+
+interface EffectTemplate {
+  id: string
+  name: string
+  icon: React.ReactNode
+  color: string
+  defaultSettings: Record<string, any>
+}
 
 interface LayerEffectsManagerProps {
   layerId: string
@@ -116,23 +39,117 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
   onEffectChange
 }) => {
   const [selectedEffect, setSelectedEffect] = useState<string | null>(null)
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   const { layers, updateLayer } = useLayerStore()
   const layer = layers.find(l => l.id === layerId)
 
-  const availableEffects = [
-    { id: 'drop-shadow', name: 'Drop Shadow', icon: <Droplets size={16} />, color: '#1F2937' },
-    { id: 'inner-shadow', name: 'Inner Shadow', icon: <Moon size={16} />, color: '#4B5563' },
-    { id: 'glow', name: 'Glow', icon: <Sun size={16} />, color: '#FBBF24' },
-    { id: 'blur', name: 'Blur', icon: <Wind size={16} />, color: '#60A5FA' },
-    { id: 'sharpen', name: 'Sharpen', icon: <Zap size={16} />, color: '#F87171' },
-    { id: 'noise', name: 'Noise', icon: <Sparkles size={16} />, color: '#A78BFA' },
-    { id: 'frost', name: 'Frost', icon: <Snowflake size={16} />, color: '#93C5FD' },
-    { id: 'fire', name: 'Fire', icon: <Flame size={16} />, color: '#FB923C' },
-    { id: 'water', name: 'Water', icon: <Waves size={16} />, color: '#06B6D4' }
-  ]
+  const availableEffects: EffectTemplate[] = useMemo(() => [
+    {
+      id: 'drop-shadow',
+      name: 'Drop Shadow',
+      icon: <Droplets size={16} />,
+      color: '#1F2937',
+      defaultSettings: {
+        offsetX: 4,
+        offsetY: 4,
+        blur: 8,
+        color: '#000000',
+        opacity: 0.5
+      }
+    },
+    {
+      id: 'inner-shadow',
+      name: 'Inner Shadow',
+      icon: <Moon size={16} />,
+      color: '#4B5563',
+      defaultSettings: {
+        offsetX: 2,
+        offsetY: 2,
+        blur: 6,
+        color: '#000000',
+        opacity: 0.3
+      }
+    },
+    {
+      id: 'glow',
+      name: 'Glow',
+      icon: <Sun size={16} />,
+      color: '#FBBF24',
+      defaultSettings: {
+        blur: 10,
+        color: '#FBBF24',
+        opacity: 0.8,
+        spread: 2
+      }
+    },
+    {
+      id: 'blur',
+      name: 'Blur',
+      icon: <Wind size={16} />,
+      color: '#60A5FA',
+      defaultSettings: {
+        amount: 5,
+        quality: 1
+      }
+    },
+    {
+      id: 'sharpen',
+      name: 'Sharpen',
+      icon: <Zap size={16} />,
+      color: '#F87171',
+      defaultSettings: {
+        amount: 0.5,
+        radius: 1
+      }
+    },
+    {
+      id: 'noise',
+      name: 'Noise',
+      icon: <Sparkles size={16} />,
+      color: '#A78BFA',
+      defaultSettings: {
+        amount: 0.2,
+        size: 1,
+        monochrome: false
+      }
+    },
+    {
+      id: 'frost',
+      name: 'Frost',
+      icon: <Snowflake size={16} />,
+      color: '#93C5FD',
+      defaultSettings: {
+        intensity: 0.5,
+        pattern: 'crystalline',
+        opacity: 0.7
+      }
+    },
+    {
+      id: 'fire',
+      name: 'Fire',
+      icon: <Flame size={16} />,
+      color: '#FB923C',
+      defaultSettings: {
+        intensity: 0.6,
+        flicker: true,
+        heat: 0.8
+      }
+    },
+    {
+      id: 'water',
+      name: 'Water',
+      icon: <Waves size={16} />,
+      color: '#06B6D4',
+      defaultSettings: {
+        ripple: 0.3,
+        flow: 0.5,
+        transparency: 0.6
+      }
+    }
+  ], [])
 
-  const blendModes: { value: BlendMode; label: string }[] = [
+  const blendModes: { value: BlendMode; label: string }[] = useMemo(() => [
     { value: 'normal', label: 'Normal' },
     { value: 'multiply', label: 'Multiply' },
     { value: 'screen', label: 'Screen' },
@@ -141,347 +158,458 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
     { value: 'hard-light', label: 'Hard Light' },
     { value: 'color-dodge', label: 'Color Dodge' },
     { value: 'color-burn', label: 'Color Burn' }
-  ]
+  ], [])
 
-  // Get current layer effects
-  const layerEffects = useMemo(() => {
-    return layer?.effects || []
-  }, [layer])
-
-  // Check if an effect is active
-  const isEffectActive = useCallback((effectId: string): boolean => {
-    return layerEffects.some(effect => effect.type === effectId && effect.enabled)
-  }, [layerEffects])
-
-  // Get effect settings
-  const getEffectSettings = useCallback((effectId: string) => {
-    const effect = layerEffects.find(e => e.type === effectId)
-    return effect?.settings || {}
-  }, [layerEffects])
-
-  // Toggle effect
-  const toggleEffect = useCallback((effectId: string) => {
+  // Add effect to layer
+  const addEffect = useCallback((effectTemplate: EffectTemplate) => {
     if (!layer) return
 
-    const existingEffects = layer.effects || []
-    const existingIndex = existingEffects.findIndex(e => e.type === effectId)
-
-    let newEffects: LayerEffect[]
-
-    if (existingIndex >= 0) {
-      // Toggle existing effect
-      newEffects = existingEffects.map((effect, index) =>
-        index === existingIndex ? { ...effect, enabled: !effect.enabled } : effect
-      )
-    } else {
-      // Add new effect with default settings
-      const defaultSettings = getDefaultEffectSettings(effectId)
-      newEffects = [
-        ...existingEffects,
-        {
-          id: crypto.randomUUID(),
-          type: effectId,
-          enabled: true,
-          settings: defaultSettings
-        }
-      ]
+    const newEffect: LayerEffect = {
+      id: crypto.randomUUID(),
+      type: effectTemplate.id,
+      enabled: true,
+      settings: effectTemplate.defaultSettings
     }
 
-    updateLayer(layerId, { effects: newEffects })
-    onEffectChange?.(layerId, newEffects)
+    const updatedEffects = [...(layer.effects || []), newEffect]
+    updateLayer(layerId, { effects: updatedEffects })
+    onEffectChange?.(layerId, updatedEffects)
+    setSelectedEffect(newEffect.id)
   }, [layer, layerId, updateLayer, onEffectChange])
+
+  // Remove effect from layer
+  const removeEffect = useCallback((effectId: string) => {
+    if (!layer) return
+
+    const updatedEffects = (layer.effects || []).filter(effect => effect.id !== effectId)
+    updateLayer(layerId, { effects: updatedEffects })
+    onEffectChange?.(layerId, updatedEffects)
+
+    if (selectedEffect === effectId) {
+      setSelectedEffect(null)
+    }
+  }, [layer, layerId, updateLayer, onEffectChange, selectedEffect])
 
   // Update effect setting
   const updateEffectSetting = useCallback((effectId: string, setting: string, value: any) => {
     if (!layer) return
 
-    const existingEffects = layer.effects || []
-    const effectIndex = existingEffects.findIndex(e => e.type === effectId)
+    const updatedEffects = (layer.effects || []).map(effect =>
+      effect.id === effectId
+        ? { ...effect, settings: { ...effect.settings, [setting]: value } }
+        : effect
+    )
 
-    if (effectIndex >= 0) {
-      const newEffects = existingEffects.map((effect, index) =>
-        index === effectIndex
-          ? {
-              ...effect,
-              settings: {
-                ...effect.settings,
-                [setting]: value
-              }
-            }
-          : effect
-      )
-
-      updateLayer(layerId, { effects: newEffects })
-      onEffectChange?.(layerId, newEffects)
-    }
+    updateLayer(layerId, { effects: updatedEffects })
+    onEffectChange?.(layerId, updatedEffects)
   }, [layer, layerId, updateLayer, onEffectChange])
 
-  // Update blend mode
-  const updateBlendMode = useCallback((blendMode: BlendMode) => {
-    updateLayer(layerId, { blendMode })
-  }, [layerId, updateLayer])
+  // Toggle effect enabled state
+  const toggleEffect = useCallback((effectId: string) => {
+    if (!layer) return
 
-  // Clear all effects
-  const clearAllEffects = useCallback(() => {
+    const updatedEffects = (layer.effects || []).map(effect =>
+      effect.id === effectId
+        ? { ...effect, enabled: !effect.enabled }
+        : effect
+    )
+
+    updateLayer(layerId, { effects: updatedEffects })
+    onEffectChange?.(layerId, updatedEffects)
+  }, [layer, layerId, updateLayer, onEffectChange])
+
+  // Reset all effects
+  const resetEffects = useCallback(() => {
     updateLayer(layerId, { effects: [] })
     onEffectChange?.(layerId, [])
     setSelectedEffect(null)
   }, [layerId, updateLayer, onEffectChange])
 
-  if (!layer) {
-    return null
-  }
+  // Render effect settings based on type
+  const renderEffectSettings = useCallback((effect: LayerEffect) => {
+    const template = availableEffects.find(t => t.id === effect.type)
+    if (!template) return null
 
-  return (
-    <EffectsContainer>
-      <Box display="flex" alignItems="center" justifyContent="space-between" marginBottom="$4">
-        <Text size="sm" weight="semibold" color="secondary">
-          Layer Effects
+    return (
+      <Box style={{ padding: '12px', borderTop: '1px solid var(--colors-gray700)' }}>
+        <Text variant="body" size="sm" style={{ marginBottom: '12px', fontWeight: '500' }}>
+          {template.name} Settings
         </Text>
-        <Box display="flex" gap="$2">
-          <Button onClick={clearAllEffects} title="Clear All Effects">
-            <RotateCcw size={12} />
-          </Button>
-          <Button title="Effect Settings">
-            <Settings size={12} />
-          </Button>
+
+        {/* Common settings for all effects */}
+        <Box style={{ marginBottom: '12px' }}>
+          <Text variant="body" size="xs" style={{ marginBottom: '4px' }}>
+            Layer Opacity: {Math.round((layer?.opacity ?? 1) * 100)}%
+          </Text>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={layer?.opacity ?? 1}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              updateLayer(layerId, { opacity: Number(e.target.value) })
+            }
+            style={{
+              width: '100%',
+              accentColor: template.color
+            }}
+          />
         </Box>
-      </Box>
 
-      {/* Blend Mode */}
-      <Box marginBottom="$4">
-        <Text size="xs" color="gray400" marginBottom="$2">
-          Blend Mode:
-        </Text>
-        <BlendModeSelect
-          value={layer.blendMode || 'normal'}
-          onChange={(e) => updateBlendMode(e.target.value as BlendMode)}
-        >
-          {blendModes.map(mode => (
-            <option key={mode.value} value={mode.value}>
-              {mode.label}
-            </option>
-          ))}
-        </BlendModeSelect>
-      </Box>
-
-      {/* Effect Buttons */}
-      <EffectsGrid>
-        {availableEffects.map(effect => (
-          <EffectButton
-            key={effect.id}
-            active={isEffectActive(effect.id)}
-            onClick={() => toggleEffect(effect.id)}
-            title={effect.name}
+        <Box style={{ marginBottom: '12px' }}>
+          <Text variant="body" size="xs" style={{ marginBottom: '4px' }}>
+            Blend Mode
+          </Text>
+          <select
+            value={layer?.blendMode || 'normal'}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              updateLayer(layerId, { blendMode: e.target.value as BlendMode })
+            }
+            style={{
+              width: '100%',
+              padding: '4px',
+              backgroundColor: 'var(--colors-gray800)',
+              color: 'var(--colors-gray200)',
+              border: '1px solid var(--colors-gray600)',
+              borderRadius: '4px'
+            }}
           >
-            <Box style={{ color: effect.color }}>
-              {effect.icon}
-            </Box>
-            <Text size="xs">{effect.name.split(' ')[0]}</Text>
-          </EffectButton>
-        ))}
-      </EffectsGrid>
+            {blendModes.map(mode => (
+              <option key={mode.value} value={mode.value}>
+                {mode.label}
+              </option>
+            ))}
+          </select>
+        </Box>
 
-      {/* Active Effect Settings */}
-      {layerEffects
-        .filter(effect => effect.enabled)
-        .map(effect => (
-          <Box key={effect.id} marginBottom="$4">
-            <Text size="xs" color="secondary" marginBottom="$2" weight="semibold">
-              {availableEffects.find(e => e.id === effect.type)?.name} Settings
-            </Text>
-
-            {renderEffectSettings(effect.type, effect.settings, (setting, value) =>
-              updateEffectSetting(effect.type, setting, value)
-            )}
-          </Box>
-        ))}
-    </EffectsContainer>
-  )
-
-  // Render settings for specific effect types
-  function renderEffectSettings(
-    effectType: string,
-    settings: Record<string, any>,
-    updateSetting: (setting: string, value: any) => void
-  ) {
-    switch (effectType) {
-      case 'drop-shadow':
-        return (
+        {/* Effect-specific settings */}
+        {effect.type === 'drop-shadow' && (
           <>
-            <SliderContainer>
-              <Text size="xs" css={{ minWidth: 60 }}>Offset X:</Text>
-              <Slider
+            <Box style={{ marginBottom: '8px' }}>
+              <Text variant="body" size="xs">Offset X: {effect.settings.offsetX || 4}</Text>
+              <input
                 type="range"
                 min="-20"
                 max="20"
-                value={settings.offsetX || 5}
-                onChange={(e) => updateSetting('offsetX', parseInt(e.target.value))}
+                value={effect.settings.offsetX || 4}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  updateEffectSetting(effect.id, 'offsetX', Number(e.target.value))
+                }
+                style={{ width: '100%', accentColor: template.color }}
               />
-              <Text size="xs" css={{ minWidth: 20 }}>{settings.offsetX || 5}</Text>
-            </SliderContainer>
-
-            <SliderContainer>
-              <Text size="xs" css={{ minWidth: 60 }}>Offset Y:</Text>
-              <Slider
+            </Box>
+            <Box style={{ marginBottom: '8px' }}>
+              <Text variant="body" size="xs">Offset Y: {effect.settings.offsetY || 4}</Text>
+              <input
                 type="range"
                 min="-20"
                 max="20"
-                value={settings.offsetY || 5}
-                onChange={(e) => updateSetting('offsetY', parseInt(e.target.value))}
+                value={effect.settings.offsetY || 4}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  updateEffectSetting(effect.id, 'offsetY', Number(e.target.value))
+                }
+                style={{ width: '100%', accentColor: template.color }}
               />
-              <Text size="xs" css={{ minWidth: 20 }}>{settings.offsetY || 5}</Text>
-            </SliderContainer>
+            </Box>
+            <Box style={{ marginBottom: '8px' }}>
+              <Text variant="body" size="xs">Blur: {effect.settings.blur || 8}</Text>
+              <input
+                type="range"
+                min="0"
+                max="50"
+                value={effect.settings.blur || 8}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  updateEffectSetting(effect.id, 'blur', Number(e.target.value))
+                }
+                style={{ width: '100%', accentColor: template.color }}
+              />
+            </Box>
+          </>
+        )}
 
-            <SliderContainer>
-              <Text size="xs" css={{ minWidth: 60 }}>Blur:</Text>
-              <Slider
+        {effect.type === 'glow' && (
+          <>
+            <Box style={{ marginBottom: '8px' }}>
+              <Text variant="body" size="xs">Blur: {effect.settings.blur || 10}</Text>
+              <input
+                type="range"
+                min="0"
+                max="50"
+                value={effect.settings.blur || 10}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  updateEffectSetting(effect.id, 'blur', Number(e.target.value))
+                }
+                style={{ width: '100%', accentColor: template.color }}
+              />
+            </Box>
+            <Box style={{ marginBottom: '8px' }}>
+              <Text variant="body" size="xs">Spread: {effect.settings.spread || 2}</Text>
+              <input
                 type="range"
                 min="0"
                 max="20"
-                value={settings.blur || 3}
-                onChange={(e) => updateSetting('blur', parseInt(e.target.value))}
+                value={effect.settings.spread || 2}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  updateEffectSetting(effect.id, 'spread', Number(e.target.value))
+                }
+                style={{ width: '100%', accentColor: template.color }}
               />
-              <Text size="xs" css={{ minWidth: 20 }}>{settings.blur || 3}px</Text>
-            </SliderContainer>
+            </Box>
+          </>
+        )}
 
-            <SliderContainer>
-              <Text size="xs" css={{ minWidth: 60 }}>Opacity:</Text>
-              <Slider
+        {effect.type === 'blur' && (
+          <Box style={{ marginBottom: '8px' }}>
+            <Text variant="body" size="xs">Amount: {effect.settings.amount || 5}</Text>
+            <input
+              type="range"
+              min="0"
+              max="50"
+              value={effect.settings.amount || 5}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                updateEffectSetting(effect.id, 'amount', Number(e.target.value))
+              }
+              style={{ width: '100%', accentColor: template.color }}
+            />
+          </Box>
+        )}
+
+        {effect.type === 'noise' && (
+          <>
+            <Box style={{ marginBottom: '8px' }}>
+              <Text variant="body" size="xs">Amount: {Math.round((effect.settings.amount || 0.2) * 100)}%</Text>
+              <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.1"
-                value={settings.opacity || 0.5}
-                onChange={(e) => updateSetting('opacity', parseFloat(e.target.value))}
-              />
-              <Text size="xs" css={{ minWidth: 20 }}>{Math.round((settings.opacity || 0.5) * 100)}%</Text>
-            </SliderContainer>
-
-            <Box display="flex" alignItems="center" gap="$2">
-              <Text size="xs" css={{ minWidth: 60 }}>Color:</Text>
-              <input
-                type="color"
-                value={settings.color || '#000000'}
-                onChange={(e) => updateSetting('color', e.target.value)}
-                style={{ width: 30, height: 20, border: 'none', borderRadius: 4 }}
+                value={effect.settings.amount || 0.2}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  updateEffectSetting(effect.id, 'amount', Number(e.target.value))
+                }
+                style={{ width: '100%', accentColor: template.color }}
               />
             </Box>
+            <Box style={{ marginBottom: '8px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+                <input
+                  type="checkbox"
+                  checked={effect.settings.monochrome || false}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    updateEffectSetting(effect.id, 'monochrome', e.target.checked)
+                  }
+                />
+                Monochrome
+              </label>
+            </Box>
           </>
-        )
+        )}
+      </Box>
+    )
+  }, [availableEffects, blendModes, updateEffectSetting, updateLayer, layerId])
 
-      case 'glow':
-        return (
+  if (!layer) return null
+
+  const activeEffects = layer.effects || []
+
+  return (
+    <Box
+      style={{
+        width: '100%',
+        backgroundColor: 'var(--colors-gray900)',
+        border: '1px solid var(--colors-gray700)',
+        borderRadius: '8px'
+      }}
+    >
+      {/* Header */}
+      <Box
+        style={{
+          padding: '12px',
+          borderBottom: '1px solid var(--colors-gray700)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}
+      >
+        <Text variant="heading" size="sm" style={{ fontWeight: '600' }}>
+          Layer Effects
+        </Text>
+        <Box style={{ display: 'flex', gap: '8px' }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+          >
+            <Settings size={14} />
+          </Button>
+          {activeEffects.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetEffects}
+            >
+              <RotateCcw size={14} />
+            </Button>
+          )}
+        </Box>
+      </Box>
+
+      {/* Effect Grid */}
+      <Box style={{ padding: '12px' }}>
+        <Text variant="body" size="xs" style={{ marginBottom: '8px', color: 'var(--colors-gray400)' }}>
+          Available Effects
+        </Text>
+
+        <Box
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '8px',
+            marginBottom: '16px'
+          }}
+        >
+          {availableEffects.map(effect => (
+            <Button
+              key={effect.id}
+              variant="outline"
+              size="sm"
+              onClick={() => addEffect(effect)}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '8px 4px',
+                height: 'auto',
+                fontSize: '10px'
+              }}
+            >
+              <Box style={{ color: effect.color }}>
+                {effect.icon}
+              </Box>
+              {effect.name}
+            </Button>
+          ))}
+        </Box>
+
+        {/* Active Effects */}
+        {activeEffects.length > 0 && (
           <>
-            <SliderContainer>
-              <Text size="xs" css={{ minWidth: 60 }}>Radius:</Text>
-              <Slider
-                type="range"
-                min="1"
-                max="50"
-                value={settings.radius || 10}
-                onChange={(e) => updateSetting('radius', parseInt(e.target.value))}
-              />
-              <Text size="xs" css={{ minWidth: 20 }}>{settings.radius || 10}px</Text>
-            </SliderContainer>
+            <Text variant="body" size="xs" style={{ marginBottom: '8px', color: 'var(--colors-gray400)' }}>
+              Active Effects ({activeEffects.length})
+            </Text>
 
-            <SliderContainer>
-              <Text size="xs" css={{ minWidth: 60 }}>Intensity:</Text>
-              <Slider
-                type="range"
-                min="0"
-                max="2"
-                step="0.1"
-                value={settings.intensity || 1}
-                onChange={(e) => updateSetting('intensity', parseFloat(e.target.value))}
-              />
-              <Text size="xs" css={{ minWidth: 20 }}>{settings.intensity || 1}</Text>
-            </SliderContainer>
+            {activeEffects.map(effect => {
+              const template = availableEffects.find(t => t.id === effect.type)
+              if (!template) return null
 
-            <Box display="flex" alignItems="center" gap="$2">
-              <Text size="xs" css={{ minWidth: 60 }}>Color:</Text>
-              <input
-                type="color"
-                value={settings.color || '#FBBF24'}
-                onChange={(e) => updateSetting('color', e.target.value)}
-                style={{ width: 30, height: 20, border: 'none', borderRadius: 4 }}
-              />
-            </Box>
+              return (
+                <Box
+                  key={effect.id}
+                  style={{
+                    backgroundColor: selectedEffect === effect.id ? 'var(--colors-gray800)' : 'var(--colors-gray850)',
+                    border: '1px solid var(--colors-gray700)',
+                    borderRadius: '6px',
+                    marginBottom: '8px'
+                  }}
+                >
+                  {/* Effect Header */}
+                  <Box
+                    style={{
+                      padding: '8px 12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => setSelectedEffect(selectedEffect === effect.id ? null : effect.id)}
+                  >
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Box style={{ color: template.color }}>
+                        {template.icon}
+                      </Box>
+                      <Text variant="body" size="sm">
+                        {template.name}
+                      </Text>
+                    </Box>
+
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation()
+                          toggleEffect(effect.id)
+                        }}
+                        style={{
+                          padding: '2px',
+                          opacity: effect.enabled ? 1 : 0.5
+                        }}
+                      >
+                        {effect.enabled ? '👁️' : '🙈'}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation()
+                          removeEffect(effect.id)
+                        }}
+                        style={{ padding: '2px' }}
+                      >
+                        <Trash2 size={12} />
+                      </Button>
+                    </Box>
+                  </Box>
+
+                  {/* Effect Settings */}
+                  {selectedEffect === effect.id && renderEffectSettings(effect)}
+                </Box>
+              )
+            })}
           </>
-        )
+        )}
 
-      case 'blur':
-        return (
-          <SliderContainer>
-            <Text size="xs" css={{ minWidth: 60 }}>Amount:</Text>
-            <Slider
-              type="range"
-              min="0"
-              max="20"
-              value={settings.amount || 2}
-              onChange={(e) => updateSetting('amount', parseInt(e.target.value))}
-            />
-            <Text size="xs" css={{ minWidth: 20 }}>{settings.amount || 2}px</Text>
-          </SliderContainer>
-        )
+        {/* Advanced Settings */}
+        {showAdvanced && (
+          <Box
+            style={{
+              marginTop: '16px',
+              padding: '12px',
+              backgroundColor: 'var(--colors-gray800)',
+              borderRadius: '6px'
+            }}
+          >
+            <Text variant="body" size="sm" style={{ marginBottom: '8px', fontWeight: '500' }}>
+              Advanced Settings
+            </Text>
 
-      default:
-        return (
-          <Text size="xs" color="gray400">
-            No settings available for this effect.
+            <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
+              • Effects are applied in order from top to bottom
+              • Use blend modes to change how effects interact
+              • Disable effects temporarily with the eye icon
+              • Reset all effects with the refresh button
+            </Text>
+          </Box>
+        )}
+
+        {/* Status */}
+        <Box
+          style={{
+            marginTop: '12px',
+            padding: '8px',
+            backgroundColor: 'var(--colors-gray800)',
+            borderRadius: '4px'
+          }}
+        >
+          <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>
+            Layer: {layer.name} • Effects: {activeEffects.filter(e => e.enabled).length}/{activeEffects.length}
           </Text>
-        )
-    }
-  }
-}
-
-// Default settings for each effect type
-function getDefaultEffectSettings(effectType: string): Record<string, any> {
-  switch (effectType) {
-    case 'drop-shadow':
-      return {
-        offsetX: 5,
-        offsetY: 5,
-        blur: 3,
-        opacity: 0.5,
-        color: '#000000'
-      }
-
-    case 'inner-shadow':
-      return {
-        offsetX: 0,
-        offsetY: 0,
-        blur: 5,
-        opacity: 0.3,
-        color: '#000000'
-      }
-
-    case 'glow':
-      return {
-        radius: 10,
-        intensity: 1,
-        color: '#FBBF24'
-      }
-
-    case 'blur':
-      return {
-        amount: 2
-      }
-
-    case 'sharpen':
-      return {
-        amount: 1
-      }
-
-    case 'noise':
-      return {
-        amount: 0.1,
-        type: 'gaussian'
-      }
-
-    default:
-      return {}
-  }
+        </Box>
+      </Box>
+    </Box>
+  )
 }
 
 export default LayerEffectsManager

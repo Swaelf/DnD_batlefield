@@ -12,7 +12,7 @@ import {
   EyeOff
 } from 'lucide-react'
 import useMapStore from '@/store/mapStore'
-import { Token } from '@/types/token'
+import type { Token } from '@/types/token'
 import { nanoid } from 'nanoid'
 
 type ObjectContextMenuProps = {

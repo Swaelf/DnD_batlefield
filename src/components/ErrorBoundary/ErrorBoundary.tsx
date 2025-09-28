@@ -1,5 +1,8 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react'
-import { Box, Text, Button } from '@/components/ui'
+import type { ErrorInfo, ReactNode } from 'react';
+import React, { Component } from 'react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import { AlertTriangle, RefreshCw, Copy, Bug, Home } from 'lucide-react'
 
 interface ErrorBoundaryState {
@@ -52,7 +55,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
-    const errorId = `ERR_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const errorId = `ERR_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
 
     return {
       hasError: true,
@@ -82,7 +85,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         stack: error.stack
       },
       errorInfo: {
-        componentStack: errorInfo.componentStack
+        componentStack: errorInfo.componentStack || ''
       },
       userAgent: navigator.userAgent,
       url: window.location.href,
@@ -134,7 +137,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
   }
 
-  private reportToService = (errorReport: ErrorReport) => {
+  private reportToService = (_errorReport: ErrorReport) => {
     // In a real application, you would send this to an error tracking service
     // like Sentry, Bugsnag, or your own endpoint
     if (process.env.NODE_ENV === 'production') {
@@ -203,31 +206,31 @@ ${error?.stack}
 
       return (
         <Box
-          css={{
-            padding: isAppLevel ? '$8' : '$6',
+          style={{
+            padding: isAppLevel ? '32px' : '24px',
             textAlign: 'center',
-            backgroundColor: isAppLevel ? '$background' : '$gray900',
-            borderRadius: isAppLevel ? '0' : '$md',
-            border: isAppLevel ? 'none' : '1px solid $error',
+            backgroundColor: isAppLevel ? 'var(--colors-background)' : 'var(--colors-gray900)',
+            borderRadius: isAppLevel ? '0' : '8px',
+            border: isAppLevel ? 'none' : '1px solid var(--colors-error)',
             minHeight: isAppLevel ? '100vh' : 'auto',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: isAppLevel ? 'center' : 'flex-start',
-            gap: '$4'
+            gap: '16px'
           }}
         >
           {/* Error Icon */}
           <Box
-            css={{
-              width: isAppLevel ? 80 : 60,
-              height: isAppLevel ? 80 : 60,
+            style={{
+              width: isAppLevel ? '80px' : '60px',
+              height: isAppLevel ? '80px' : '60px',
               borderRadius: '50%',
-              backgroundColor: '$error',
+              backgroundColor: 'var(--colors-error)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '$2'
+              marginBottom: '8px'
             }}
           >
             <AlertTriangle size={isAppLevel ? 40 : 30} color="white" />
@@ -235,11 +238,12 @@ ${error?.stack}
 
           {/* Error Title */}
           <Text
-            css={{
-              fontSize: isAppLevel ? '$2xl' : '$lg',
-              fontWeight: '$bold',
-              color: '$error',
-              marginBottom: '$2'
+            variant="heading"
+            size={isAppLevel ? '2xl' : 'lg'}
+            style={{
+              fontWeight: '700',
+              color: 'var(--colors-error)',
+              marginBottom: '8px'
             }}
           >
             {isAppLevel && 'Application Error'}
@@ -248,7 +252,7 @@ ${error?.stack}
           </Text>
 
           {/* Error Message */}
-          <Text css={{ fontSize: '$md', color: '$gray300', maxWidth: 500, marginBottom: '$4' }}>
+          <Text variant="body" size="md" style={{ color: 'var(--colors-gray300)', maxWidth: '500px', marginBottom: '16px' }}>
             {isAppLevel && 'The application has encountered an unexpected error and needs to restart.'}
             {isFeatureLevel && `The ${name} feature encountered an error and couldn't load properly.`}
             {level === 'component' && `A component in ${name} has crashed. You can try refreshing or continue using other features.`}
@@ -257,29 +261,29 @@ ${error?.stack}
           {/* Error Details (Development) */}
           {process.env.NODE_ENV === 'development' && error && (
             <Box
-              css={{
-                padding: '$3',
-                backgroundColor: '$gray800',
-                borderRadius: '$md',
-                border: '1px solid $gray700',
+              style={{
+                padding: '12px',
+                backgroundColor: 'var(--colors-gray800)',
+                borderRadius: '8px',
+                border: '1px solid var(--colors-gray700)',
                 maxWidth: '100%',
                 overflow: 'auto',
-                marginBottom: '$4'
+                marginBottom: '16px'
               }}
             >
-              <Text css={{ fontSize: '$xs', fontFamily: 'monospace', color: '$gray400' }}>
+              <Text variant="body" size="xs" style={{ fontFamily: 'monospace', color: 'var(--colors-gray400)' }}>
                 {error.name}: {error.message}
               </Text>
             </Box>
           )}
 
           {/* Error ID */}
-          <Text css={{ fontSize: '$xs', color: '$gray500', fontFamily: 'monospace' }}>
+          <Text variant="body" size="xs" style={{ color: 'var(--colors-gray500)', fontFamily: 'monospace' }}>
             Error ID: {errorId}
           </Text>
 
           {/* Action Buttons */}
-          <Box css={{ display: 'flex', gap: '$3', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Box style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
             {level === 'component' && (
               <Button variant="primary" onClick={this.handleReset}>
                 <RefreshCw size={16} />
@@ -309,8 +313,8 @@ ${error?.stack}
 
           {/* Development Tools */}
           {process.env.NODE_ENV === 'development' && (
-            <Box css={{ marginTop: '$4' }}>
-              <Text css={{ fontSize: '$xs', color: '$gray500', marginBottom: '$2' }}>
+            <Box style={{ marginTop: '16px' }}>
+              <Text variant="body" size="xs" style={{ color: 'var(--colors-gray500)', marginBottom: '8px' }}>
                 Development Tools:
               </Text>
               <Button
@@ -330,29 +334,29 @@ ${error?.stack}
           {/* Recovery Instructions */}
           {!isAppLevel && (
             <Box
-              css={{
-                marginTop: '$6',
-                padding: '$3',
-                backgroundColor: '$gray800',
-                borderRadius: '$md',
-                maxWidth: 400,
+              style={{
+                marginTop: '24px',
+                padding: '12px',
+                backgroundColor: 'var(--colors-gray800)',
+                borderRadius: '8px',
+                maxWidth: '400px',
                 textAlign: 'left'
               }}
             >
-              <Text css={{ fontSize: '$sm', fontWeight: '$medium', marginBottom: '$2' }}>
+              <Text variant="body" size="sm" style={{ fontWeight: '500', marginBottom: '8px' }}>
                 What you can try:
               </Text>
-              <Text css={{ fontSize: '$xs', color: '$gray400', display: 'block', marginBottom: '$1' }}>
+              <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)', display: 'block', marginBottom: '4px' }}>
                 • Refresh the page to restore functionality
               </Text>
-              <Text css={{ fontSize: '$xs', color: '$gray400', display: 'block', marginBottom: '$1' }}>
+              <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)', display: 'block', marginBottom: '4px' }}>
                 • Save your work and restart the application
               </Text>
-              <Text css={{ fontSize: '$xs', color: '$gray400', display: 'block', marginBottom: '$1' }}>
+              <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)', display: 'block', marginBottom: '4px' }}>
                 • Report this error with the Error ID above
               </Text>
               {level === 'component' && (
-                <Text css={{ fontSize: '$xs', color: '$gray400', display: 'block' }}>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)', display: 'block' }}>
                   • Continue using other features normally
                 </Text>
               )}

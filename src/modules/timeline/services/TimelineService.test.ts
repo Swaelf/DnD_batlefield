@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { TimelineService } from './TimelineService'
-import type { Timeline, TimelineId, CreateTimelineData, CreateRoundData } from '../types'
+import type { Timeline, CreateTimelineData } from '../types'
 
 describe('TimelineService', () => {
   let timelineService: TimelineService

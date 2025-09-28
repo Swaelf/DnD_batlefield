@@ -205,7 +205,7 @@ describe('SpellCard Component', () => {
   it('renders spell without description', () => {
     const noDescriptionSpell = {
       ...mockAreaSpell,
-      description: undefined
+      description: ''
     }
 
     render(<SpellCard spell={noDescriptionSpell} />)

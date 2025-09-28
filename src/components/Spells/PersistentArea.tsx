@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react'
 import { Circle, Group } from 'react-konva'
 import Konva from 'konva'
-import { Position } from '@/types/map'
+import type { Position } from '@/types/map'
 
 type PersistentAreaProps = {
   position: Position
@@ -17,8 +17,8 @@ export const PersistentArea: React.FC<PersistentAreaProps> = ({
   radius,
   color,
   opacity,
-  spellName,
-  roundCreated
+  spellName: _spellName,
+  roundCreated: _roundCreated
 }) => {
   const groupRef = useRef<Konva.Group>(null)
   const animationRef = useRef<Konva.Animation | null>(null)

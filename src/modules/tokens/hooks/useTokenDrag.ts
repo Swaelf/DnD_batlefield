@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useRef, useState } from 'react'
-import Konva from 'konva'
+import type Konva from 'konva'
 import { useTokenStore } from '../store'
 import type { TokenId } from '../types'
 import type { Point } from '@/types/geometry'
@@ -80,7 +80,7 @@ export function useTokenDrag(options: UseTokenDragOptions): UseTokenDragResult {
   }, [snapToGrid, gridSize])
 
   // Validation utility
-  const isValidDropPosition = useCallback((position: Point): boolean => {
+  const isValidDropPosition = useCallback((_position: Point): boolean => {
     // In a real implementation, this would check:
     // - Map boundaries
     // - Collision with other tokens
@@ -281,8 +281,8 @@ export interface UseMultiTokenDragResult {
 
 export function useMultiTokenDrag(): UseMultiTokenDragResult {
   const [isDraggingMultiple, setIsDraggingMultiple] = useState(false)
-  const [dragLeader, setDragLeader] = useState<TokenId | null>(null)
-  const [initialPositions, setInitialPositions] = useState<Map<TokenId, Point>>(new Map())
+  const [, setDragLeader] = useState<TokenId | null>(null)
+  const [, setInitialPositions] = useState<Map<TokenId, Point>>(new Map())
 
   // Store state and actions
   const selectedTokenIds = useTokenStore(state => state.selectedTokenIds)
@@ -292,7 +292,7 @@ export function useMultiTokenDrag(): UseMultiTokenDragResult {
   const setDragging = useTokenStore(state => state.setDragging)
   const tokens = useTokenStore(state => state.tokens)
 
-  const startMultiDrag = useCallback((leadTokenId: TokenId, position: Point) => {
+  const startMultiDrag = useCallback((leadTokenId: TokenId) => {
     if (selectedTokenIds.size <= 1) return
 
     // Store initial positions of all selected tokens

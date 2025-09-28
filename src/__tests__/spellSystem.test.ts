@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import useMapStore from '@/store/mapStore'
 import useRoundStore from '@/store/roundStore'
-import { SpellEventData } from '@/types/timeline'
+import type { SpellEventData } from '@/types/timeline'
 
 describe('Spell System', () => {
   beforeEach(() => {

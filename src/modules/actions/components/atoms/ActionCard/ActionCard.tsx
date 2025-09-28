@@ -1,11 +1,14 @@
 /**
- * Action Card Component
- * Displays an action with type, description, and controls
+ * ActionCard Atom Component
+ * Rich action display with type badges, level indicators, and interaction controls
  */
 
 import React from 'react'
-import { styled } from '@/foundation/theme'
-import type { UnifiedAction } from '../../types'
+import { Edit2 } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import type { UnifiedAction } from '@/types/unifiedAction'
 
 export type ActionCardProps = {
   action: UnifiedAction
@@ -16,175 +19,8 @@ export type ActionCardProps = {
   className?: string
 }
 
-const Card = styled('div', {
-  position: 'relative',
-  padding: '$3',
-  borderRadius: '$md',
-  border: '1px solid $gray600',
-  background: '$gray800',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
 
-  '&:hover': {
-    borderColor: '$gray500',
-    background: '$gray750',
-    transform: 'translateY(-2px)',
-    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)'
-  },
 
-  variants: {
-    selected: {
-      true: {
-        borderColor: '$dndRed',
-        background: '$gray750',
-        boxShadow: '0 0 0 1px $dndRed'
-      }
-    }
-  }
-})
-
-const Header = styled('div', {
-  display: 'flex',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  gap: '$2',
-  marginBottom: '$2'
-})
-
-const ActionName = styled('div', {
-  fontSize: '$2',
-  fontWeight: 600,
-  color: '$gray100',
-  lineHeight: 1.3
-})
-
-const ActionType = styled('span', {
-  fontSize: '$1',
-  fontWeight: 500,
-  padding: '$1 $2',
-  borderRadius: '$sm',
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px',
-  whiteSpace: 'nowrap',
-
-  variants: {
-    type: {
-      spell: {
-        background: '$purple900',
-        color: '$purple200'
-      },
-      attack: {
-        background: '$red900',
-        color: '$red200'
-      },
-      movement: {
-        background: '$blue900',
-        color: '$blue200'
-      },
-      interaction: {
-        background: '$green900',
-        color: '$green200'
-      },
-      environmental: {
-        background: '$yellow900',
-        color: '$yellow200'
-      },
-      sequence: {
-        background: '$gray700',
-        color: '$gray200'
-      },
-      utility: {
-        background: '$orange900',
-        color: '$orange200'
-      }
-    }
-  }
-})
-
-const Description = styled('div', {
-  fontSize: '$1',
-  color: '$gray400',
-  lineHeight: 1.4,
-  marginBottom: '$2'
-})
-
-const Footer = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '$2'
-})
-
-const Tags = styled('div', {
-  display: 'flex',
-  gap: '$1',
-  flexWrap: 'wrap'
-})
-
-const Tag = styled('span', {
-  fontSize: '$1',
-  padding: '2px $1',
-  borderRadius: '$sm',
-  background: '$gray700',
-  color: '$gray300'
-})
-
-const Actions = styled('div', {
-  display: 'flex',
-  gap: '$1',
-  opacity: 0,
-  transition: 'opacity 0.2s ease',
-
-  [`${Card}:hover &`]: {
-    opacity: 1
-  }
-})
-
-const ActionButton = styled('button', {
-  width: 24,
-  height: 24,
-  borderRadius: '$sm',
-  border: 'none',
-  background: '$gray700',
-  color: '$gray300',
-  cursor: 'pointer',
-  fontSize: '$1',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    background: '$blue700',
-    color: 'white'
-  }
-})
-
-const CustomBadge = styled('div', {
-  position: 'absolute',
-  top: 4,
-  right: 4,
-  width: 8,
-  height: 8,
-  borderRadius: '$round',
-  background: '$purple500',
-  opacity: 0.8
-})
-
-const LevelBadge = styled('div', {
-  fontSize: '$1',
-  fontWeight: 600,
-  color: '$yellow400',
-  background: '$yellow900',
-  padding: '2px $1',
-  borderRadius: '$sm',
-  minWidth: 20,
-  textAlign: 'center'
-})
-
-/**
- * Action card component
- */
 export const ActionCard: React.FC<ActionCardProps> = ({
   action,
   isSelected = false,
@@ -193,78 +29,223 @@ export const ActionCard: React.FC<ActionCardProps> = ({
   onEdit,
   className
 }) => {
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
-    if (onSelect) {
-      onSelect(action)
-    }
+    onSelect?.(action)
   }
 
-  const handleEdit = (e: React.MouseEvent) => {
+  const handleEdit = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
-    if (onEdit) {
-      onEdit(action)
-    }
+    onEdit?.(action)
   }
 
   // Get level for spells
-  const level = action.type === 'spell' && (action.data as any).level
+  const level = action.type === 'spell' && action.spellLevel
 
   // Limit tags to first 3
   const displayTags = action.tags.slice(0, 3)
+  const remainingTagsCount = action.tags.length - 3
+
+  // Get action type badge styling
+  const getActionTypeStyle = (type: string) => {
+    const styles = {
+      spell: { backgroundColor: 'var(--colors-purple900)', color: 'var(--colors-purple200)' },
+      attack: { backgroundColor: 'var(--colors-red900)', color: 'var(--colors-red200)' },
+      movement: { backgroundColor: 'var(--colors-blue900)', color: 'var(--colors-blue200)' },
+      interaction: { backgroundColor: 'var(--colors-green900)', color: 'var(--colors-green200)' },
+      environmental: { backgroundColor: 'var(--colors-yellow900)', color: 'var(--colors-yellow200)' },
+      sequence: { backgroundColor: 'var(--colors-gray700)', color: 'var(--colors-gray200)' },
+      utility: { backgroundColor: 'var(--colors-orange900)', color: 'var(--colors-orange200)' }
+    }
+    return styles[type as keyof typeof styles] || styles.utility
+  }
+
+  const actionTypeStyle = getActionTypeStyle(action.type)
+
+  // Truncate description if too long
+  const description = action.description && action.description.length > 100
+    ? `${action.description.substring(0, 97)}...`
+    : action.description
 
   return (
-    <Card
-      selected={isSelected}
-      onClick={handleClick}
+    <Box
       className={className}
+      onClick={handleClick}
+      style={{
+        position: 'relative',
+        padding: '12px',
+        borderRadius: '12px',
+        border: `2px solid ${isSelected ? 'var(--colors-dndRed)' : 'var(--colors-gray600)'}`,
+        backgroundColor: isSelected ? 'var(--colors-gray750)' : 'var(--colors-gray800)',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        transform: 'translateY(0)',
+        boxShadow: isSelected ? '0 0 0 1px var(--colors-dndRed)' : 'none'
+      }}
     >
-      {action.isCustom && <CustomBadge />}
+      {/* Custom Indicator */}
+      {action.isCustom && (
+        <Box
+          style={{
+            position: 'absolute',
+            top: '4px',
+            right: '4px',
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--colors-purple500)',
+            opacity: 0.8
+          }}
+        />
+      )}
 
-      <Header>
-        <ActionName title={action.name}>
+      {/* Header */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: '8px',
+          marginBottom: '8px'
+        }}
+      >
+        <Text
+          variant="heading"
+          size="sm"
+          title={action.name}
+          style={{
+            margin: 0,
+            fontWeight: '600',
+            color: 'var(--colors-gray100)',
+            lineHeight: '1.3',
+            flex: 1
+          }}
+        >
           {action.name}
-        </ActionName>
-        <ActionType type={action.type}>
+        </Text>
+        <Text
+          variant="body"
+          size="xs"
+          style={{
+            ...actionTypeStyle,
+            fontWeight: '500',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            whiteSpace: 'nowrap'
+          }}
+        >
           {action.type}
-        </ActionType>
-      </Header>
+        </Text>
+      </Box>
 
-      <Description title={action.description}>
-        {action.description.length > 100
-          ? `${action.description.slice(0, 97)}...`
-          : action.description
-        }
-      </Description>
+      {/* Description */}
+      {description && (
+        <Text
+          variant="body"
+          size="sm"
+          title={action.description}
+          style={{
+            margin: '0 0 8px 0',
+            color: 'var(--colors-gray400)',
+            lineHeight: '1.4'
+          }}
+        >
+          {description}
+        </Text>
+      )}
 
-      <Footer>
-        <Tags>
+      {/* Footer */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '8px'
+        }}
+      >
+        {/* Tags */}
+        <Box
+          style={{
+            display: 'flex',
+            gap: '4px',
+            flexWrap: 'wrap',
+            alignItems: 'center'
+          }}
+        >
           {level !== undefined && (
-            <LevelBadge title="Spell Level">
-              {level}
-            </LevelBadge>
-          )}
-          {displayTags.map(tag => (
-            <Tag key={tag}>{tag}</Tag>
-          ))}
-          {action.tags.length > 3 && (
-            <Tag title={action.tags.slice(3).join(', ')}>
-              +{action.tags.length - 3}
-            </Tag>
-          )}
-        </Tags>
-
-        <Actions>
-          {showEditButton && action.customizable && (
-            <ActionButton
-              onClick={handleEdit}
-              title="Edit action"
+            <Text
+              variant="body"
+              size="xs"
+              title="Spell Level"
+              style={{
+                fontWeight: '600',
+                color: 'var(--colors-yellow400)',
+                backgroundColor: 'var(--colors-yellow900)',
+                padding: '2px 4px',
+                borderRadius: '4px',
+                minWidth: '20px',
+                textAlign: 'center'
+              }}
             >
-              ✏
-            </ActionButton>
+              {level}
+            </Text>
           )}
-        </Actions>
-      </Footer>
-    </Card>
+          {displayTags.map((tag: string, index: number) => (
+            <Text
+              key={index}
+              variant="body"
+              size="xs"
+              style={{
+                padding: '2px 4px',
+                borderRadius: '4px',
+                backgroundColor: 'var(--colors-gray700)',
+                color: 'var(--colors-gray300)'
+              }}
+            >
+              {tag}
+            </Text>
+          ))}
+          {remainingTagsCount > 0 && (
+            <Text
+              variant="body"
+              size="xs"
+              title={action.tags.slice(3).join(', ')}
+              style={{
+                padding: '2px 4px',
+                borderRadius: '4px',
+                backgroundColor: 'var(--colors-gray700)',
+                color: 'var(--colors-gray300)'
+              }}
+            >
+              +{remainingTagsCount}
+            </Text>
+          )}
+        </Box>
+
+        {/* Actions */}
+        {showEditButton && action.customizable && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleEdit}
+            title="Edit action"
+            style={{
+              width: '24px',
+              height: '24px',
+              padding: '0',
+              borderRadius: '4px',
+              backgroundColor: 'var(--colors-gray700)',
+              color: 'var(--colors-gray300)',
+              opacity: 0.7,
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <Edit2 size={12} />
+          </Button>
+        )}
+      </Box>
+    </Box>
   )
 }

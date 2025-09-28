@@ -1,6 +1,6 @@
-import Konva from 'konva'
-import { Position } from '@/types/map'
-import { BattleMap } from '@/types/map'
+import type Konva from 'konva'
+import type { Position } from '@/types/map'
+import type { BattleMap } from '@/types/map'
 
 // Grid Utility Types
 export type GridUtilParams = {

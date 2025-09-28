@@ -22,7 +22,6 @@ import {
   LIGHTING_TYPES,
   HAZARD_TYPES,
   ATMOSPHERE_TYPES,
-  WEATHER_INTENSITIES,
   EFFECT_INTENSITIES,
   EFFECT_AREAS,
   ENVIRONMENTAL_DURATIONS,
@@ -57,7 +56,7 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
     // Reset configuration when type changes
     onEnvironmentalChange({
       type: 'environmental',
-      environmentalType: environmentalType as any,
+      environmentalType: environmentalType as EnvironmentalEventData['environmentalType'],
       effectName: '',
       category: '',
       intensity: 'moderate',
@@ -73,7 +72,7 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
     const preset = ENVIRONMENTAL_PRESETS[presetKey as keyof typeof ENVIRONMENTAL_PRESETS]
     onEnvironmentalChange({
       type: 'environmental',
-      environmentalType: preset.type as any,
+      environmentalType: preset.type as EnvironmentalEventData['environmentalType'],
       effectName: preset.name,
       category: getPresetCategory(preset),
       intensity: preset.opacity <= 0.3 ? 'subtle' :
@@ -83,18 +82,23 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
       color: preset.color,
       opacity: preset.opacity,
       duration: preset.duration || ENVIRONMENTAL_DURATIONS.PERMANENT,
-      particleCount: preset.particleCount,
-      effects: preset.effects,
+      particleCount: 'particleCount' in preset ? preset.particleCount : 20,
+      effects: preset.effects ? {
+        ...preset.effects,
+        disadvantage: 'disadvantage' in preset.effects && Array.isArray(preset.effects.disadvantage) ? [...preset.effects.disadvantage] : undefined,
+        advantage: 'advantage' in preset.effects && Array.isArray(preset.effects.advantage) ? [...preset.effects.advantage] : undefined,
+        conditions: 'conditions' in preset.effects && Array.isArray(preset.effects.conditions) ? [...preset.effects.conditions] : undefined
+      } : {},
       description: preset.description
     })
   }
 
-  const getPresetCategory = (preset: any): string => {
-    if (preset.weatherType) return preset.weatherType
-    if (preset.terrainType) return preset.terrainType
-    if (preset.lightingType) return preset.lightingType
-    if (preset.hazardType) return preset.hazardType
-    if (preset.atmosphereType) return preset.atmosphereType
+  const getPresetCategory = (preset: typeof ENVIRONMENTAL_PRESETS[keyof typeof ENVIRONMENTAL_PRESETS]): string => {
+    if ('weatherType' in preset) return preset.weatherType
+    if ('terrainType' in preset) return preset.terrainType
+    if ('lightingType' in preset) return preset.lightingType
+    if ('hazardType' in preset) return preset.hazardType
+    if ('atmosphereType' in preset) return preset.atmosphereType
     return 'custom'
   }
 
@@ -123,7 +127,7 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
       case WEATHER_TYPES.BLIZZARD:
         return <CloudSnow size={16} />
       case WEATHER_TYPES.STORM:
-      case WEATHER_TYPES.LIGHTNING:
+      case WEATHER_TYPES.MAGICAL_STORM:
         return <Zap size={16} />
       case WEATHER_TYPES.FOG:
         return <Eye size={16} />
@@ -183,12 +187,12 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
     }
   }
 
-  const getPresetIcon = (preset: any) => {
-    if (preset.weatherType) return getWeatherIcon(preset.weatherType)
-    if (preset.terrainType) return getTerrainIcon(preset.terrainType)
-    if (preset.lightingType) return getLightingIcon(preset.lightingType)
-    if (preset.hazardType) return getHazardIcon(preset.hazardType)
-    if (preset.atmosphereType) return getAtmosphereIcon(preset.atmosphereType)
+  const getPresetIcon = (preset: typeof ENVIRONMENTAL_PRESETS[keyof typeof ENVIRONMENTAL_PRESETS]) => {
+    if ('weatherType' in preset) return getWeatherIcon(preset.weatherType)
+    if ('terrainType' in preset) return getTerrainIcon(preset.terrainType)
+    if ('lightingType' in preset) return getLightingIcon(preset.lightingType)
+    if ('hazardType' in preset) return getHazardIcon(preset.hazardType)
+    if ('atmosphereType' in preset) return getAtmosphereIcon(preset.atmosphereType)
     return <Cloud size={16} />
   }
 
@@ -210,7 +214,7 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
   }
 
   const filteredPresets = Object.entries(ENVIRONMENTAL_PRESETS)
-    .filter(([key, preset]) =>
+    .filter(([, preset]) =>
       !environmental.environmentalType || preset.type === environmental.environmentalType
     )
     .map(([key, preset]) => ({
@@ -222,17 +226,17 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
     }))
 
   return (
-    <Panel size="sidebar" css={{ borderLeft: '1px solid $gray800' }}>
+    <Panel size="sidebar" style={{ borderLeft: '1px solid var(--colors-gray800)' }}>
       <PanelBody>
         <PanelSection>
-          <Box display="flex" alignItems="center" gap="2" css={{ marginBottom: '$3' }}>
+          <Box display="flex" alignItems="center" gap={2} marginBottom={3}>
             <Cloud size={20} />
             <Text size="md" weight="medium">Environmental Effects</Text>
           </Box>
 
           {/* Environmental Type Selection */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Effect Type</FieldLabel>
+          <Box marginBottom={4} >
+            <FieldLabel style={{ marginBottom: 'var(--space-2)' }}>Effect Type</FieldLabel>
             <Select
               value={environmental.environmentalType || ''}
               onValueChange={handleTypeChange}
@@ -240,7 +244,7 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
             >
               {Object.values(ENVIRONMENTAL_TYPES).map((type) => (
                 <SelectOption key={type} value={type}>
-                  <Box display="flex" alignItems="center" gap="2">
+                  <Box display="flex" alignItems="center" gap={2}>
                     {getEnvironmentalIcon(type)}
                     <Text>{type.charAt(0).toUpperCase() + type.slice(1)}</Text>
                   </Box>
@@ -250,30 +254,26 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
           </Box>
 
           {/* Preset Selection */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Environmental Presets</FieldLabel>
-            <Box display="grid" css={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '$2', maxHeight: '200px', overflowY: 'auto' }}>
+          <Box marginBottom={4} >
+            <FieldLabel style={{ marginBottom: 'var(--space-2)' }}>Environmental Presets</FieldLabel>
+            <Box display="grid" gridTemplateColumns={2} gap={2} style={{ maxHeight: '200px', overflowY: 'auto' }}>
               {filteredPresets.map((preset) => (
                 <Button
                   key={preset.id}
-                  variant="outline"
-                  size="sm"
+                  variant="outline" size="sm"
                   onClick={() => handlePresetSelect(preset.id)}
-                  css={{
+                  style={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '$1',
-                    padding: '$2',
+                    gap: 'var(--space-1)',
+                    padding: 'var(--space-2)',
                     height: 'auto',
-                    backgroundColor: '$gray800',
-                    '&:hover': {
-                      backgroundColor: '$gray700'
-                    }
+                    backgroundColor: 'var(--colors-gray800)'
                   }}
                 >
                   {preset.icon}
-                  <Text size="xs" css={{ textAlign: 'center' }}>{preset.name}</Text>
+                  <Text size="xs" align="center">{preset.name}</Text>
                 </Button>
               ))}
             </Box>
@@ -281,8 +281,8 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
 
           {/* Category Selection */}
           {environmental.environmentalType && (
-            <Box css={{ marginBottom: '$4' }}>
-              <FieldLabel css={{ marginBottom: '$2' }}>Category</FieldLabel>
+            <Box marginBottom={4} >
+              <FieldLabel style={{ marginBottom: 'var(--space-2)' }}>Category</FieldLabel>
               <Select
                 value={environmental.category || ''}
                 onValueChange={(category) => onEnvironmentalChange({ ...environmental, category })}
@@ -298,22 +298,21 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
           )}
 
           {/* Effect Name */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Effect Name</FieldLabel>
+          <Box marginBottom={4} >
+            <FieldLabel style={{ marginBottom: 'var(--space-2)' }}>Effect Name</FieldLabel>
             <Input
               placeholder="Custom effect name..."
               value={environmental.effectName || ''}
-              onChange={(e) => onEnvironmentalChange({ ...environmental, effectName: e.target.value })}
-              size="sm"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, effectName: e.target.value })}
             />
           </Box>
 
           {/* Intensity */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Intensity</FieldLabel>
+          <Box marginBottom={4} >
+            <FieldLabel style={{ marginBottom: 'var(--space-2)' }}>Intensity</FieldLabel>
             <Select
               value={environmental.intensity || 'moderate'}
-              onValueChange={(intensity) => onEnvironmentalChange({ ...environmental, intensity: intensity as any })}
+              onValueChange={(intensity) => onEnvironmentalChange({ ...environmental, intensity: intensity as EnvironmentalEventData['intensity'] })}
             >
               {Object.keys(EFFECT_INTENSITIES).map((intensity) => (
                 <SelectOption key={intensity} value={intensity.toLowerCase()}>
@@ -324,11 +323,11 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
           </Box>
 
           {/* Area of Effect */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Area of Effect</FieldLabel>
+          <Box marginBottom={4} >
+            <FieldLabel style={{ marginBottom: 'var(--space-2)' }}>Area of Effect</FieldLabel>
             <Select
               value={environmental.area || 'medium'}
-              onValueChange={(area) => onEnvironmentalChange({ ...environmental, area: area as any })}
+              onValueChange={(area) => onEnvironmentalChange({ ...environmental, area: area as EnvironmentalEventData['area'] })}
             >
               {Object.values(EFFECT_AREAS).map((area) => (
                 <SelectOption key={area} value={area}>
@@ -339,29 +338,28 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
           </Box>
 
           {/* Color */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Effect Color</FieldLabel>
-            <Box display="flex" gap="2" alignItems="center">
+          <Box marginBottom={4} >
+            <FieldLabel style={{ marginBottom: 'var(--space-2)' }}>Effect Color</FieldLabel>
+            <Box display="flex" gap={2} alignItems="center">
               <Input
                 type="color"
                 value={environmental.color || '#FFFFFF'}
-                onChange={(e) => onEnvironmentalChange({ ...environmental, color: e.target.value })}
-                css={{ width: '60px', height: '32px', padding: '2px' }}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, color: e.target.value })}
+                style={{ width: '60px', height: '32px', padding: '2px' }}
               />
               <Input
                 type="text"
                 value={environmental.color || '#FFFFFF'}
-                onChange={(e) => onEnvironmentalChange({ ...environmental, color: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, color: e.target.value })}
                 placeholder="#FFFFFF"
-                size="sm"
-                css={{ flex: 1 }}
+                style={{ flex: 1 }}
               />
             </Box>
           </Box>
 
           {/* Duration */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Duration</FieldLabel>
+          <Box marginBottom={4} >
+            <FieldLabel style={{ marginBottom: 'var(--space-2)' }}>Duration</FieldLabel>
             <Select
               value={environmental.duration?.toString() || ENVIRONMENTAL_DURATIONS.LONG.toString()}
               onValueChange={(duration) => onEnvironmentalChange({ ...environmental, duration: parseInt(duration) })}
@@ -375,13 +373,12 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
           </Box>
 
           {/* Description */}
-          <Box css={{ marginBottom: '$4' }}>
-            <FieldLabel css={{ marginBottom: '$2' }}>Effect Description</FieldLabel>
+          <Box marginBottom={4} >
+            <FieldLabel style={{ marginBottom: 'var(--space-2)' }}>Effect Description</FieldLabel>
             <Input
               placeholder="Describe the environmental effect..."
               value={environmental.description || ''}
-              onChange={(e) => onEnvironmentalChange({ ...environmental, description: e.target.value })}
-              size="sm"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, description: e.target.value })}
             />
           </Box>
         </PanelSection>

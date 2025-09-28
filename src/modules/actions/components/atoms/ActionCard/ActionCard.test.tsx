@@ -10,41 +10,47 @@ import type { UnifiedAction } from '../../../types'
 
 describe('ActionCard Component', () => {
   const mockSpellAction: UnifiedAction = {
-    id: 'action-1' as any,
-    templateId: 'fireball' as any,
+    id: 'action-1',
     name: 'Fireball',
     description: 'A bright flash and a burst of flame at a target location',
     type: 'spell',
     category: 'combat',
-    data: {
-      type: 'spell',
-      level: 3
-    } as any,
+    source: { x: 0, y: 0 },
+    target: { x: 100, y: 100 },
+    animation: { type: 'burst', duration: 1000, color: '#ff4500' },
+    effects: { affectedTargets: [] },
+    metadata: { name: 'Fireball' },
+    timestamp: Date.now(),
+    duration: 1000,
+    tags: ['fire', 'evocation', 'area', 'damage'],
+    templateId: 'fireball',
     customizable: true,
     isCustom: false,
-    tags: ['fire', 'evocation', 'area', 'damage'],
-    createdAt: new Date()
+    spellLevel: 3
   }
 
   const mockAttackAction: UnifiedAction = {
-    id: 'action-2' as any,
-    templateId: 'sword_attack' as any,
+    id: 'action-2',
     name: 'Sword Attack',
     description: 'A standard melee sword attack with sharp blade',
     type: 'attack',
     category: 'combat',
-    data: {
-      type: 'attack'
-    } as any,
-    customizable: true,
-    isCustom: false,
+    source: { x: 0, y: 0 },
+    target: { x: 50, y: 50 },
+    animation: { type: 'melee_slash', duration: 800, color: '#c0c0c0' },
+    effects: { affectedTargets: [] },
+    metadata: { name: 'Sword Attack' },
+    timestamp: Date.now(),
+    duration: 800,
     tags: ['melee', 'weapon', 'sword'],
-    createdAt: new Date()
+    templateId: 'sword_attack',
+    customizable: true,
+    isCustom: false
   }
 
   const mockCustomAction: UnifiedAction = {
     ...mockSpellAction,
-    id: 'custom-1' as any,
+    id: 'custom-1',
     name: 'Custom Fireball',
     isCustom: true,
     category: 'custom',

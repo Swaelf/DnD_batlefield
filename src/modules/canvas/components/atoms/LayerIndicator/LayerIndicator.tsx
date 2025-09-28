@@ -7,8 +7,7 @@
 
 import React from 'react'
 import { Eye, EyeOff, Lock, Unlock } from 'lucide-react'
-import { Box } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { Box } from '@/components/primitives'
 
 export interface LayerIndicatorProps {
   readonly isVisible: boolean
@@ -18,46 +17,37 @@ export interface LayerIndicatorProps {
   readonly onToggleLock?: () => void
 }
 
-const IndicatorContainer = styled(Box, {
+// Helper functions for styling
+const getIndicatorContainerStyles = (isActive = false): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '$1',
-  padding: '$1',
-  borderRadius: '$sm',
-
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$dndRed/10',
-        borderLeft: '2px solid $dndRed'
-      }
-    }
-  }
+  gap: '4px',
+  padding: '4px',
+  borderRadius: '4px',
+  backgroundColor: isActive ? 'rgba(146, 38, 16, 0.1)' : 'transparent',
+  borderLeft: isActive ? '2px solid var(--dnd-red)' : 'none'
 })
 
-const IconButton = styled(Box, {
+const getIconButtonStyles = (): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  width: '$4',
-  height: '$4',
-  borderRadius: '$xs',
+  width: '16px',
+  height: '16px',
+  borderRadius: '2px',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    backgroundColor: '$gray700'
-  },
-
-  variants: {
-    state: {
-      visible: { color: '$success' },
-      hidden: { color: '$gray500' },
-      locked: { color: '$warning' },
-      unlocked: { color: '$gray400' }
-    }
-  }
+  transition: 'all 0.2s ease'
 })
+
+const getIconButtonColor = (state: 'visible' | 'hidden' | 'locked' | 'unlocked') => {
+  const colors = {
+    visible: 'var(--success)',
+    hidden: 'var(--gray-500)',
+    locked: 'var(--warning)',
+    unlocked: 'var(--gray-400)'
+  }
+  return colors[state]
+}
 
 export const LayerIndicator: React.FC<LayerIndicatorProps> = React.memo(({
   isVisible,
@@ -66,24 +56,45 @@ export const LayerIndicator: React.FC<LayerIndicatorProps> = React.memo(({
   onToggleVisible,
   onToggleLock
 }) => {
+  const visibilityState = isVisible ? 'visible' : 'hidden'
+  const lockState = isLocked ? 'locked' : 'unlocked'
+
   return (
-    <IndicatorContainer active={isActive}>
-      <IconButton
-        state={isVisible ? 'visible' : 'hidden'}
+    <Box style={getIndicatorContainerStyles(isActive)}>
+      <Box
         onClick={onToggleVisible}
         title={isVisible ? 'Hide layer' : 'Show layer'}
+        style={{
+          ...getIconButtonStyles(),
+          color: getIconButtonColor(visibilityState)
+        }}
+        onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+          e.currentTarget.style.backgroundColor = 'var(--gray-700)'
+        }}
+        onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+          e.currentTarget.style.backgroundColor = 'transparent'
+        }}
       >
         {isVisible ? <Eye size={12} /> : <EyeOff size={12} />}
-      </IconButton>
+      </Box>
 
-      <IconButton
-        state={isLocked ? 'locked' : 'unlocked'}
+      <Box
         onClick={onToggleLock}
         title={isLocked ? 'Unlock layer' : 'Lock layer'}
+        style={{
+          ...getIconButtonStyles(),
+          color: getIconButtonColor(lockState)
+        }}
+        onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+          e.currentTarget.style.backgroundColor = 'var(--gray-700)'
+        }}
+        onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+          e.currentTarget.style.backgroundColor = 'transparent'
+        }}
       >
         {isLocked ? <Lock size={12} /> : <Unlock size={12} />}
-      </IconButton>
-    </IndicatorContainer>
+      </Box>
+    </Box>
   )
 })
 

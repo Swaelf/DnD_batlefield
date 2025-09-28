@@ -7,19 +7,19 @@ import {
   EyeOff,
   Lock,
   Unlock,
-  RotateCw,
-  FlipHorizontal,
-  FlipVertical,
   Layers,
   Move,
-  Palette,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  MousePointer2,
+  ZoomIn,
+  Grid3X3
 } from 'lucide-react'
-import { styled } from '@/styles/theme.config'
-import { Box, Text } from '@/components/ui'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 
-interface ContextMenuItem {
+export interface ContextMenuItem {
   id: string
   label: string
   icon?: React.ReactNode
@@ -29,95 +29,12 @@ interface ContextMenuItem {
   divider?: boolean
 }
 
-interface ContextMenuProps {
+export interface ContextMenuProps {
   isOpen: boolean
   position: { x: number; y: number }
   items: ContextMenuItem[]
   onClose: () => void
 }
-
-const MenuContainer = styled(Box, {
-  position: 'fixed',
-  backgroundColor: '$dndBlack',
-  border: '1px solid $gray700',
-  borderRadius: '$md',
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-  minWidth: '200px',
-  zIndex: 1000,
-  overflow: 'hidden',
-
-  // Animation
-  opacity: 0,
-  transform: 'scale(0.95) translateY(-4px)',
-  transition: 'all 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
-
-  '&[data-open="true"]': {
-    opacity: 1,
-    transform: 'scale(1) translateY(0)',
-  }
-})
-
-const MenuItem = styled('button', {
-  width: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$3',
-  padding: '$2 $3',
-  backgroundColor: 'transparent',
-  border: 'none',
-  color: '$gray200',
-  fontSize: '$sm',
-  textAlign: 'left',
-  cursor: 'pointer',
-  transition: 'background-color 0.1s ease',
-
-  '&:hover:not(:disabled)': {
-    backgroundColor: '$gray800',
-    color: '$gray100'
-  },
-
-  '&:disabled': {
-    color: '$gray600',
-    cursor: 'not-allowed'
-  },
-
-  '&:focus': {
-    outline: 'none',
-    backgroundColor: '$gray800'
-  }
-})
-
-const MenuIcon = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '16px',
-  height: '16px',
-  flexShrink: 0,
-
-  '& svg': {
-    width: '14px',
-    height: '14px'
-  }
-})
-
-const MenuLabel = styled(Text, {
-  flex: 1,
-  fontSize: '$sm',
-  fontWeight: '$normal'
-})
-
-const MenuShortcut = styled(Text, {
-  fontSize: '$xs',
-  color: '$gray500',
-  fontFamily: '$mono'
-})
-
-const MenuDivider = styled(Box, {
-  height: '1px',
-  backgroundColor: '$gray700',
-  marginY: '$1'
-})
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
   isOpen,
@@ -168,10 +85,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
   // Handle clicks outside menu
   const handleClickOutside = useCallback((e: MouseEvent) => {
+    if (!isOpen) return
+
     if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
       onClose()
     }
-  }, [onClose])
+  }, [onClose, isOpen])
 
   // Auto-positioning to stay within viewport
   const getMenuStyle = useCallback(() => {
@@ -204,20 +123,18 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   }, [position])
 
   useEffect(() => {
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown)
-      document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('mousedown', handleClickOutside)
 
-      // Focus first item
-      setTimeout(() => {
-        const firstItem = menuRef.current?.querySelector('button:not(:disabled)') as HTMLElement
-        firstItem?.focus()
-      }, 50)
+    // Focus first item
+    setTimeout(() => {
+      const firstItem = menuRef.current?.querySelector('button:not(:disabled)') as HTMLElement
+      firstItem?.focus()
+    }, 50)
 
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown)
-        document.removeEventListener('mousedown', handleClickOutside)
-      }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [isOpen, handleKeyDown, handleClickOutside])
 
@@ -229,52 +146,129 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     <>
       {/* Backdrop */}
       <Box
-        css={{
+        style={{
           position: 'fixed',
-          inset: 0,
+          inset: '0',
           zIndex: 999
         }}
       />
 
-      <MenuContainer
+      <Box
         ref={menuRef}
-        data-open={isOpen}
-        style={menuStyle}
+        style={{
+          position: 'fixed',
+          backgroundColor: 'var(--colors-dndBlack)',
+          border: '1px solid var(--colors-gray700)',
+          borderRadius: '8px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          minWidth: '200px',
+          zIndex: 1000,
+          overflow: 'hidden',
+          opacity: isOpen ? 1 : 0,
+          transform: isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-4px)',
+          transition: 'all 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
+          ...menuStyle
+        }}
       >
         {items.map((item) => (
           <React.Fragment key={item.id}>
-            {item.divider && <MenuDivider />}
-            <MenuItem
+            {item.divider && (
+              <Box
+                style={{
+                  height: '1px',
+                  backgroundColor: 'var(--colors-gray700)',
+                  margin: '4px 0'
+                }}
+              />
+            )}
+            <Button
+              variant="ghost"
               disabled={item.disabled}
-              onClick={(e) => {
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                 e.preventDefault()
                 e.stopPropagation()
                 item.onClick()
                 onClose()
               }}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '8px 12px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: item.disabled ? 'var(--colors-gray600)' : 'var(--colors-gray200)',
+                fontSize: '14px',
+                textAlign: 'left',
+                cursor: item.disabled ? 'not-allowed' : 'pointer',
+                transition: 'background-color 0.1s ease',
+                justifyContent: 'flex-start'
+              }}
+              onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                if (!item.disabled) {
+                  e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+                  e.currentTarget.style.color = 'var(--colors-gray100)'
+                }
+              }}
+              onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                if (!item.disabled) {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                  e.currentTarget.style.color = 'var(--colors-gray200)'
+                }
+              }}
             >
-              <MenuIcon>
+              <Box
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '16px',
+                  height: '16px',
+                  flexShrink: 0
+                }}
+              >
                 {item.icon}
-              </MenuIcon>
-              <MenuLabel>{item.label}</MenuLabel>
+              </Box>
+              <Text
+                variant="body"
+                size="sm"
+                style={{
+                  flex: 1,
+                  margin: 0,
+                  fontWeight: 'normal'
+                }}
+              >
+                {item.label}
+              </Text>
               {item.shortcut && (
-                <MenuShortcut>{item.shortcut}</MenuShortcut>
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{
+                    margin: 0,
+                    color: 'var(--colors-gray500)',
+                    fontFamily: 'monospace'
+                  }}
+                >
+                  {item.shortcut}
+                </Text>
               )}
-            </MenuItem>
+            </Button>
           </React.Fragment>
         ))}
-      </MenuContainer>
+      </Box>
     </>
   )
 }
 
 // Predefined context menu configurations
 export const createObjectContextMenu = (
-  objectId: string,
-  objectType: string,
+  _objectId: string,
+  _objectType: string,
   isVisible: boolean,
   isLocked: boolean,
-  isSelected: boolean,
+  _isSelected: boolean,
   callbacks: {
     onCopy: () => void
     onDelete: () => void
@@ -394,7 +388,7 @@ export const createCanvasContextMenu = (
   {
     id: 'toggle-grid',
     label: 'Toggle Grid',
-    icon: <Grid3x3 />,
+    icon: <Grid3X3 />,
     shortcut: 'G',
     onClick: callbacks.onToggleGrid
   }

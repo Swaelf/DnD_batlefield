@@ -27,19 +27,21 @@ const ProjectileAnimationComponent = ({ action, onComplete }: ProjectileAnimatio
     if (!projectile) return
 
     // Parse source and target positions
-    const source = typeof action.source === 'object' ? action.source : { x: 0, y: 0 }
-    const target = typeof action.target === 'object'
-      ? action.target
-      : Array.isArray(action.target) && action.target.length > 0
-        ? { x: 100, y: 100 } // Default if targeting tokens
-        : { x: 100, y: 100 }
+    const source = typeof action.source === 'object' && !Array.isArray(action.source)
+      ? action.source as Point
+      : { x: 0, y: 0 }
+
+    // Parse target position
+    const target = Array.isArray(action.target)
+      ? { x: 100, y: 100 } // Default if targeting tokens
+      : action.target as Point
 
     const targetPoint = target as Point
 
     // Calculate distance and angle
     const dx = targetPoint.x - source.x
     const dy = targetPoint.y - source.y
-    const distance = Math.sqrt(dx * dx + dy * dy)
+    // const distance = Math.sqrt(dx * dx + dy * dy) // Unused - may need for speed calc later
     const angle = Math.atan2(dy, dx)
 
     // Position at source
@@ -48,7 +50,7 @@ const ProjectileAnimationComponent = ({ action, onComplete }: ProjectileAnimatio
 
     // Set initial projectile properties
     projectile.visible(true)
-    const size = action.animation.size || 10
+    // const size = action.animation.size || 10 // Unused - defined inline below
 
     // Configure trail if present
     const trailPoints: number[] = []

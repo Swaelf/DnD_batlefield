@@ -5,6 +5,3 @@
  */
 
 export { useSpellStore } from './spellStore'
-export type {
-  SpellStore
-} from './spellStore'

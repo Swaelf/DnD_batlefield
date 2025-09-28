@@ -7,7 +7,7 @@
 
 import React from 'react'
 import { ChevronDown } from 'lucide-react'
-import { styled } from '@/styles/theme.config'
+import { Box } from '@/components/primitives'
 import type { PropertyFieldOption } from '../../../types'
 
 interface FieldSelectProps {
@@ -19,46 +19,34 @@ interface FieldSelectProps {
   className?: string
 }
 
-const SelectContainer = styled('div', {
-  position: 'relative',
+// Helper functions for styling
+const getSelectContainerStyles = (): React.CSSProperties => ({
+  position: 'relative' as const,
   width: '100%'
 })
 
-const Select = styled('select', {
+const getSelectStyles = (disabled = false): React.CSSProperties => ({
   width: '100%',
-  padding: '$2',
-  paddingRight: '$8',
-  borderRadius: '$2',
-  border: '1px solid $gray400',
-  fontSize: '$sm',
-  background: '$gray100',
-  color: '$gray900',
-  cursor: 'pointer',
-  appearance: 'none',
+  padding: '8px',
+  paddingRight: '32px',
+  borderRadius: '4px',
+  border: '1px solid var(--gray-400)',
+  fontSize: '14px',
+  background: disabled ? 'var(--gray-200)' : 'var(--gray-100)',
+  color: disabled ? 'var(--gray-600)' : 'var(--gray-900)',
+  cursor: disabled ? 'not-allowed' : 'pointer',
+  appearance: 'none' as const,
   transition: 'all 0.2s ease',
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$dndRed',
-    background: 'white',
-    boxShadow: '0 0 0 1px $colors$dndRed'
-  },
-
-  '&:disabled': {
-    background: '$gray200',
-    color: '$gray600',
-    cursor: 'not-allowed'
-  }
+  outline: 'none'
 })
 
-const ChevronIcon = styled(ChevronDown, {
-  position: 'absolute',
-  right: '$2',
+const getChevronIconStyles = (): React.CSSProperties => ({
+  position: 'absolute' as const,
+  right: '8px',
   top: '50%',
   transform: 'translateY(-50%)',
-  color: '$gray600',
-  pointerEvents: 'none',
-  size: 16
+  color: 'var(--gray-600)',
+  pointerEvents: 'none' as const
 })
 
 export const FieldSelect: React.FC<FieldSelectProps> = ({
@@ -74,11 +62,24 @@ export const FieldSelect: React.FC<FieldSelectProps> = ({
   }
 
   return (
-    <SelectContainer className={className}>
-      <Select
+    <Box className={className} style={getSelectContainerStyles()}>
+      <select
         value={value}
         onChange={handleChange}
         disabled={disabled}
+        style={{
+          ...getSelectStyles(disabled)
+        }}
+        onFocus={(e: React.FocusEvent<HTMLSelectElement>) => {
+          e.target.style.borderColor = 'var(--dnd-red)'
+          e.target.style.background = 'white'
+          e.target.style.boxShadow = '0 0 0 1px var(--dnd-red)'
+        }}
+        onBlur={(e: React.FocusEvent<HTMLSelectElement>) => {
+          e.target.style.borderColor = 'var(--gray-400)'
+          e.target.style.background = disabled ? 'var(--gray-200)' : 'var(--gray-100)'
+          e.target.style.boxShadow = 'none'
+        }}
       >
         {placeholder && (
           <option value="" disabled>
@@ -90,8 +91,8 @@ export const FieldSelect: React.FC<FieldSelectProps> = ({
             {option.label}
           </option>
         ))}
-      </Select>
-      <ChevronIcon />
-    </SelectContainer>
+      </select>
+      <ChevronDown size={16} style={getChevronIconStyles()} />
+    </Box>
   )
 }

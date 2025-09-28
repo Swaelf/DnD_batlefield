@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import useMapStore from '@/store/mapStore'
 import useRoundStore from '@/store/roundStore'
+import type { SpellMapObject } from '@/types'
 
 describe('Isolated Fireball Test', () => {
   beforeEach(() => {
@@ -41,9 +42,9 @@ describe('Isolated Fireball Test', () => {
     console.log('Initial objects:', mapStore.currentMap?.objects.length)
 
     // Create a simple persistent area
-    const burnArea = {
+    const burnArea: SpellMapObject = {
       id: 'test-burn',
-      type: 'persistent-area' as const,
+      type: 'persistent-area',
       position: { x: 100, y: 100 },
       rotation: 0,
       layer: 0,
@@ -99,9 +100,9 @@ describe('Isolated Fireball Test', () => {
     const mapStore = useMapStore.getState()
     const initialObjectCount = mapStore.currentMap?.objects.length || 0
 
-    const burnArea = {
+    const burnArea: SpellMapObject = {
       id: 'test-add-spell',
-      type: 'persistent-area' as const,
+      type: 'persistent-area',
       position: { x: 200, y: 200 },
       rotation: 0,
       layer: 0,
@@ -140,8 +141,8 @@ describe('Isolated Fireball Test', () => {
     const roundStore = useRoundStore.getState()
     const mapStore = useMapStore.getState()
 
-    // Add a test object using the store action
-    mapStore.addObject({
+    // Add a test spell effect using the store action
+    mapStore.addSpellEffect({
       id: 'test-cleanup-call',
       type: 'persistent-area' as const,
       position: { x: 300, y: 300 },

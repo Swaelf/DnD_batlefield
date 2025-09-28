@@ -1,9 +1,9 @@
-import { Position } from '@/types/map'
+import type { Position } from '@/types/map'
 
 /**
  * Snap a position to the nearest grid point
  */
-export const snapToGrid = (position: Position, gridSize: number, enabled: boolean): Position => {
+export const snapToGrid = (position: Position, gridSize: number, enabled: boolean = true): Position => {
   // Validate inputs to prevent NaN
   const safeGridSize = isNaN(gridSize) || !isFinite(gridSize) || gridSize <= 0 ? 50 : gridSize
   const safeX = isNaN(position.x) || !isFinite(position.x) ? 0 : position.x

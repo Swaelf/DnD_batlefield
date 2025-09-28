@@ -136,7 +136,6 @@ type TooltipProps = {
   defaultOpen?: boolean
   onOpenChange?: (open: boolean) => void
   delayDuration?: number
-  skipDelayDuration?: number
   side?: 'top' | 'right' | 'bottom' | 'left'
   sideOffset?: number
   align?: 'start' | 'center' | 'end'
@@ -154,7 +153,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
   defaultOpen,
   onOpenChange,
   delayDuration = 400,
-  skipDelayDuration = 300,
   side = 'top',
   sideOffset = 4,
   align = 'center',
@@ -174,7 +172,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
       defaultOpen={defaultOpen}
       onOpenChange={onOpenChange}
       delayDuration={delayDuration}
-      skipDelayDuration={skipDelayDuration}
     >
       <TooltipPrimitive.Trigger asChild>
         {children}

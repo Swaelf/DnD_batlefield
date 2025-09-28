@@ -5,7 +5,7 @@
  * gesture recognition in the atomic Canvas system.
  */
 
-import type { Point } from '@/types/geometry'
+import type { Point, Rectangle } from '@/types/geometry'
 import type { CanvasEventData, CanvasEventModifiers } from './canvas'
 
 /**

@@ -8,12 +8,6 @@
 import { useMemo, useCallback } from 'react'
 import { usePropertyStore } from '../store'
 import type {
-  PropertyField,
-  PropertyGroup,
-  PropertyValues,
-  PropertyValidationResult,
-  PropertyConfig,
-  MultiPropertyState,
   MapObject,
   PropertyGroupId
 } from '../types'
@@ -48,7 +42,6 @@ export function usePropertyEditor() {
     getFields,
     getGroups,
     getPropertyValues,
-    setPropertyValues,
     resetToDefaults,
     enableMultiSelection,
     disableMultiSelection,
@@ -424,7 +417,6 @@ export function usePropertyValidation(objectId?: string) {
 export function useMultiPropertyEditor() {
   const {
     multiSelection,
-    getCommonProperties,
     updateCommonProperty,
     enableMultiSelection,
     disableMultiSelection

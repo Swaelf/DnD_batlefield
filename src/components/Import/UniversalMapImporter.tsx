@@ -1,7 +1,18 @@
 import React, { useCallback, useState, useRef } from 'react'
 import useMapStore from '@store/mapStore'
-import { BattleMap, MapObject } from '@/types'
-import { Box, Text, Button, Select, Checkbox } from '@/components/ui'
+import type { BattleMap, MapObject, Shape } from '@/types'
+
+// Extended types for import operations
+type ImportedMapObject = MapObject & {
+  // Additional properties that might come from external formats
+  image?: string
+  points?: number[]
+  path?: string
+}
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { Upload, FileText, Map, AlertTriangle, CheckCircle, X } from 'lucide-react'
 
 // Supported map formats
@@ -18,7 +29,7 @@ interface ImportedMapData {
   width: number
   height: number
   gridSize: number
-  objects: MapObject[]
+  objects: ImportedMapObject[]
   background?: string
   layers?: any[]
   metadata?: Record<string, any>
@@ -39,11 +50,11 @@ interface UniversalMapImporterProps {
   onImportComplete?: (map: BattleMap) => void
 }
 
-export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
+export const UniversalMapImporter = ({
   isOpen,
   onClose,
   onImportComplete
-}) => {
+}: UniversalMapImporterProps) => {
   const [selectedFormat, setSelectedFormat] = useState<string>('auto')
   const [importFile, setImportFile] = useState<File | null>(null)
   const [importOptions, setImportOptions] = useState<ImportOptions>({
@@ -68,7 +79,7 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
   } | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { createNewMap, loadMap } = useMapStore()
+  const { loadMap } = useMapStore()
 
   // Supported formats
   const mapFormats: MapFormat[] = [
@@ -147,12 +158,12 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
 
       // Roll20 structure: pages contain objects
       const page = roll20Data.pages?.[0] || roll20Data
-      const objects: MapObject[] = []
+      const objects: ImportedMapObject[] = []
 
       // Convert Roll20 objects to MapMaker objects
       if (page.graphics) {
-        page.graphics.forEach((graphic: any, index: number) => {
-          const obj: MapObject = {
+        page.graphics.forEach((graphic: any) => {
+          const obj: ImportedMapObject = {
             id: importOptions.preserveIds ? graphic._id : crypto.randomUUID(),
             type: graphic._type === 'image' ? 'token' : 'shape',
             position: {
@@ -202,12 +213,12 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
     try {
       const foundryData = JSON.parse(content)
       const scene = foundryData.scenes?.[0] || foundryData
-      const objects: MapObject[] = []
+      const objects: ImportedMapObject[] = []
 
       // Convert Foundry tokens
       if (scene.tokens) {
         scene.tokens.forEach((token: any) => {
-          const obj: MapObject = {
+          const obj: ImportedMapObject = {
             id: importOptions.preserveIds ? token._id : crypto.randomUUID(),
             type: 'token',
             position: {
@@ -230,19 +241,23 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
       // Convert Foundry drawings
       if (scene.drawings) {
         scene.drawings.forEach((drawing: any) => {
-          const obj: MapObject = {
+          const obj: Shape = {
             id: importOptions.preserveIds ? drawing._id : crypto.randomUUID(),
             type: 'shape',
-            shapeType: drawing.type || 'path',
+            shapeType: drawing.type || 'line',
             position: {
               x: drawing.x || 0,
               y: drawing.y || 0
             },
+            rotation: 0,
             width: drawing.shape?.width || 100,
             height: drawing.shape?.height || 100,
-            stroke: drawing.strokeColor,
+            stroke: drawing.strokeColor || '#000000',
+            strokeColor: drawing.strokeColor || '#000000',
             strokeWidth: drawing.strokeWidth || 1,
-            fill: drawing.fillColor,
+            fill: drawing.fillColor || 'transparent',
+            fillColor: drawing.fillColor || 'transparent',
+            opacity: 1,
             layer: 30,
             visible: true,
             locked: false
@@ -302,8 +317,10 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
   const parseImageFormat = useCallback(async (file: File): Promise<ImportedMapData> => {
     return new Promise((resolve, reject) => {
       const img = new Image()
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
+      // Canvas element might be needed for future image processing
+      // const canvas = document.createElement('canvas')
+      // Canvas context might be needed for future image processing
+      // const _ctx = canvas.getContext('2d')
 
       img.onload = () => {
         try {
@@ -312,13 +329,10 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
           reader.onload = (e) => {
             const dataUrl = e.target?.result as string
 
-            const backgroundObj: MapObject = {
+            const backgroundObj: ImportedMapObject = {
               id: crypto.randomUUID(),
-              type: 'shape',
-              shapeType: 'image',
+              type: 'tile',
               position: { x: 0, y: 0 },
-              width: img.width,
-              height: img.height,
               image: dataUrl,
               layer: -10, // Background layer
               rotation: 0,
@@ -453,8 +467,7 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
         snap: true,
         color: '#666666'
       },
-      objects: imported.objects,
-      background: importOptions.importBackground ? imported.background : undefined
+      objects: imported.objects
     }
 
     loadMap(newMap)
@@ -468,7 +481,7 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
     <>
       {/* Backdrop */}
       <Box
-        css={{
+        style={{
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -479,16 +492,16 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
 
       {/* Main Dialog */}
       <Box
-        css={{
+        style={{
           position: 'fixed',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 600,
+          width: '600px',
           maxHeight: '80vh',
-          backgroundColor: '$dndBlack',
-          border: '1px solid $gray800',
-          borderRadius: '$md',
+          backgroundColor: 'var(--colors-dndBlack)',
+          border: '1px solid var(--colors-gray800)',
+          borderRadius: '8px',
           zIndex: 1001,
           display: 'flex',
           flexDirection: 'column',
@@ -497,29 +510,29 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
       >
         {/* Header */}
         <Box
-          css={{
-            padding: '$4',
-            borderBottom: '1px solid $gray800',
+          style={{
+            padding: '16px',
+            borderBottom: '1px solid var(--colors-gray800)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}
         >
-          <Text size="lg" weight="semibold">Universal Map Importer</Text>
+          <Text variant="heading" size="lg" style={{ fontWeight: '600' }}>Universal Map Importer</Text>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X size={16} />
           </Button>
         </Box>
 
-        <Box css={{ flex: 1, padding: '$4', overflow: 'auto' }}>
+        <Box style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
           {!importResults ? (
             <>
               {/* Format Selection */}
-              <Box css={{ marginBottom: '$4' }}>
-                <Text size="sm" css={{ marginBottom: '$2' }}>Map Format:</Text>
+              <Box style={{ marginBottom: '16px' }}>
+                <Text variant="body" size="sm" style={{ marginBottom: '8px' }}>Map Format:</Text>
                 <select
                   value={selectedFormat}
-                  onChange={(e) => setSelectedFormat(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedFormat(e.target.value)}
                   style={{
                     width: '100%',
                     padding: '8px 12px',
@@ -539,19 +552,16 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
               </Box>
 
               {/* File Selection */}
-              <Box css={{ marginBottom: '$4' }}>
-                <Text size="sm" css={{ marginBottom: '$2' }}>Select File:</Text>
+              <Box style={{ marginBottom: '16px' }}>
+                <Text variant="body" size="sm" style={{ marginBottom: '8px' }}>Select File:</Text>
                 <Box
-                  css={{
-                    border: '2px dashed $gray700',
-                    borderRadius: '$md',
-                    padding: '$6',
+                  style={{
+                    border: '2px dashed var(--colors-gray700)',
+                    borderRadius: '8px',
+                    padding: '24px',
                     textAlign: 'center',
                     cursor: 'pointer',
-                    transition: 'border-color 0.2s',
-                    '&:hover': {
-                      borderColor: '$primary'
-                    }
+                    transition: 'border-color 0.2s'
                   }}
                   onClick={() => fileInputRef.current?.click()}
                 >
@@ -559,7 +569,7 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
                   {importFile ? (
                     <Text size="sm">{importFile.name}</Text>
                   ) : (
-                    <Text size="sm" css={{ color: '$gray500' }}>
+                    <Text variant="body" size="sm" style={{ color: 'var(--colors-gray500)' }}>
                       Click to select or drag file here
                     </Text>
                   )}
@@ -574,74 +584,74 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
               </Box>
 
               {/* Import Options */}
-              <Box css={{ marginBottom: '$4' }}>
-                <Text size="sm" css={{ marginBottom: '$2' }}>Import Options:</Text>
-                <Box css={{ display: 'flex', flexDirection: 'column', gap: '$2' }}>
-                  <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+              <Box style={{ marginBottom: '16px' }}>
+                <Text variant="body" size="sm" style={{ marginBottom: '8px' }}>Import Options:</Text>
+                <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Checkbox
                       checked={importOptions.preserveIds}
                       onCheckedChange={(checked) =>
                         setImportOptions(prev => ({ ...prev, preserveIds: !!checked }))
                       }
                     />
-                    <Text size="sm">Preserve original IDs</Text>
+                    <Text variant="body" size="sm">Preserve original IDs</Text>
                   </Box>
 
-                  <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Checkbox
                       checked={importOptions.scaleToFit}
                       onCheckedChange={(checked) =>
                         setImportOptions(prev => ({ ...prev, scaleToFit: !!checked }))
                       }
                     />
-                    <Text size="sm">Scale to fit canvas size</Text>
+                    <Text variant="body" size="sm">Scale to fit canvas size</Text>
                   </Box>
 
-                  <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Checkbox
                       checked={importOptions.importBackground}
                       onCheckedChange={(checked) =>
                         setImportOptions(prev => ({ ...prev, importBackground: !!checked }))
                       }
                     />
-                    <Text size="sm">Import background images</Text>
+                    <Text variant="body" size="sm">Import background images</Text>
                   </Box>
 
-                  <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Checkbox
                       checked={importOptions.convertTokens}
                       onCheckedChange={(checked) =>
                         setImportOptions(prev => ({ ...prev, convertTokens: !!checked }))
                       }
                     />
-                    <Text size="sm">Convert tokens to MapMaker format</Text>
+                    <Text variant="body" size="sm">Convert tokens to MapMaker format</Text>
                   </Box>
                 </Box>
               </Box>
 
               {/* Progress */}
               {importProgress && (
-                <Box css={{ marginBottom: '$4' }}>
-                  <Text size="sm" css={{ marginBottom: '$2' }}>{importProgress.stage}</Text>
+                <Box style={{ marginBottom: '16px' }}>
+                  <Text variant="body" size="sm" style={{ marginBottom: '8px' }}>{importProgress.stage}</Text>
                   <Box
-                    css={{
+                    style={{
                       width: '100%',
-                      height: 8,
-                      backgroundColor: '$gray800',
-                      borderRadius: '$sm',
+                      height: '8px',
+                      backgroundColor: 'var(--colors-gray800)',
+                      borderRadius: '4px',
                       overflow: 'hidden'
                     }}
                   >
                     <Box
-                      css={{
+                      style={{
                         width: `${importProgress.progress}%`,
                         height: '100%',
-                        backgroundColor: '$primary',
+                        backgroundColor: 'var(--colors-secondary)',
                         transition: 'width 0.3s'
                       }}
                     />
                   </Box>
-                  <Text size="xs" css={{ color: '$gray500', marginTop: '$1' }}>
+                  <Text variant="body" size="xs" style={{ color: 'var(--colors-gray500)', marginTop: '4px' }}>
                     {importProgress.message}
                   </Text>
                 </Box>
@@ -651,11 +661,11 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
             /* Import Results */
             <Box>
               <Box
-                css={{
+                style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '$2',
-                  marginBottom: '$3'
+                  gap: '8px',
+                  marginBottom: '12px'
                 }}
               >
                 {importResults.success ? (
@@ -664,25 +674,28 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
                   <AlertTriangle size={20} color="var(--colors-error)" />
                 )}
                 <Text
+                  variant="body"
                   size="md"
-                  weight="semibold"
-                  css={{ color: importResults.success ? '$success' : '$error' }}
+                  style={{
+                    fontWeight: '600',
+                    color: importResults.success ? 'var(--colors-success)' : 'var(--colors-error)'
+                  }}
                 >
                   {importResults.success ? 'Import Successful' : 'Import Failed'}
                 </Text>
               </Box>
 
-              <Text size="sm" css={{ marginBottom: '$3' }}>
+              <Text variant="body" size="sm" style={{ marginBottom: '12px' }}>
                 {importResults.message}
               </Text>
 
               {importResults.warnings.length > 0 && (
-                <Box css={{ marginBottom: '$3' }}>
-                  <Text size="sm" weight="semibold" css={{ color: '$warning', marginBottom: '$1' }}>
+                <Box style={{ marginBottom: '12px' }}>
+                  <Text variant="body" size="sm" style={{ fontWeight: '600', color: 'var(--colors-warning)', marginBottom: '4px' }}>
                     Warnings:
                   </Text>
                   {importResults.warnings.map((warning, index) => (
-                    <Text key={index} size="xs" css={{ color: '$gray400', marginLeft: '$2' }}>
+                    <Text key={index} variant="body" size="xs" style={{ color: 'var(--colors-gray400)', marginLeft: '8px' }}>
                       • {warning}
                     </Text>
                   ))}
@@ -690,8 +703,8 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
               )}
 
               {importResults.imported && (
-                <Box css={{ padding: '$3', backgroundColor: '$gray800', borderRadius: '$sm' }}>
-                  <Text size="xs" css={{ color: '$gray400' }}>
+                <Box style={{ padding: '12px', backgroundColor: 'var(--colors-gray800)', borderRadius: '4px' }}>
+                  <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
                     Map: {importResults.imported.name}<br />
                     Size: {importResults.imported.width}×{importResults.imported.height}<br />
                     Objects: {importResults.imported.objects.length}<br />
@@ -705,9 +718,9 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
 
         {/* Footer */}
         <Box
-          css={{
-            padding: '$4',
-            borderTop: '1px solid $gray800',
+          style={{
+            padding: '16px',
+            borderTop: '1px solid var(--colors-gray800)',
             display: 'flex',
             justifyContent: 'space-between'
           }}
@@ -716,7 +729,7 @@ export const UniversalMapImporter: React.FC<UniversalMapImporterProps> = ({
             Cancel
           </Button>
 
-          <Box css={{ display: 'flex', gap: '$2' }}>
+          <Box style={{ display: 'flex', gap: '8px' }}>
             {importResults?.success ? (
               <Button onClick={createMapFromImport}>
                 Create Map

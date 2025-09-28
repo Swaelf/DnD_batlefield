@@ -14,7 +14,7 @@ import {
 import {
   getAllInteractionTemplates,
   getInteractionTemplate,
-  getInteractionTemplatesByType,
+  // getInteractionTemplatesByType, // Unused
   getInteractionTemplatesWithChecks,
   type InteractionTemplate
 } from './interactionTemplates'

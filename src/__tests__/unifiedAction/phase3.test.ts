@@ -17,7 +17,6 @@ import {
   detectAffectedTokens,
   generateActionArea,
   requiresLineOfSight,
-  filterByLineOfSight,
   groupTokensByDistance,
   calculateOptimalTargetPoint
 } from '@/utils/targetDetection'
@@ -306,7 +305,7 @@ describe('Phase 3: Target Detection & Highlighting', () => {
       const fireAction = createMockAction({
         type: 'spell',
         category: 'fire',
-        target: 'token-1', // String target, not a point
+        target: ['token-1'], // String array target
         animation: { type: 'burst', duration: 1000, color: '#FF0000', size: 100 }
       })
 

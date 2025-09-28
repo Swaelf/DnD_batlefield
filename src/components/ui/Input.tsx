@@ -1,351 +1,530 @@
 import React, { forwardRef } from 'react'
-import { styled } from '@/styles/theme.config'
-import type { ComponentProps } from '@/types'
-import { Box, Text } from '@/components/primitives'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
 
-const InputBase = styled('input', {
-  all: 'unset',
-  width: '100%',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '$base',
-  fontFamily: '$system',
-  color: '$gray100',
-  backgroundColor: '$gray800',
-  border: '1px solid $gray600',
-  borderRadius: '$md',
-  padding: '$3',
-  transition: '$base',
-  boxSizing: 'border-box',
-
-  '&::placeholder': {
-    color: '$gray500',
+// Vanilla Extract recipes (to be created)
+// For now using inline styles with CSS variables
+const inputStyles = {
+  base: {
+    width: '100%',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '14px',
+    fontFamily: 'system-ui, sans-serif',
+    color: 'var(--gray100)',
+    backgroundColor: 'var(--gray800)',
+    border: '1px solid var(--gray600)',
+    borderRadius: '8px',
+    padding: '12px',
+    transition: 'all 0.2s ease',
+    boxSizing: 'border-box' as const,
+    outline: 'none',
   },
-
-  '&:focus': {
-    borderColor: '$primary',
-    boxShadow: '0 0 0 2px rgba($colors$primary, 0.2)',
+  placeholder: {
+    color: 'var(--gray500)',
   },
-
-  '&:hover:not(:focus)': {
-    borderColor: '$gray500',
+  focus: {
+    borderColor: 'var(--primary)',
+    boxShadow: '0 0 0 2px rgba(139, 69, 19, 0.2)',
   },
-
-  '&:disabled': {
+  hover: {
+    borderColor: 'var(--gray500)',
+  },
+  disabled: {
     opacity: 0.5,
     cursor: 'not-allowed',
-    '&:hover': {
-      borderColor: '$gray600',
-    },
   },
+}
 
-  variants: {
-    size: {
-      sm: {
-        fontSize: '$sm',
-        padding: '$2',
-        height: '32px',
-      },
-      md: {
-        fontSize: '$base',
-        padding: '$3',
-        height: '40px',
-      },
-      lg: {
-        fontSize: '$md',
-        padding: '$4',
-        height: '48px',
-      },
+// Exact input event handlers
+type InputEventHandlers = {
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
+  onInput?: (event: React.FormEvent<HTMLInputElement>) => void
+  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
+  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void
+  onKeyUp?: (event: React.KeyboardEvent<HTMLInputElement>) => void
+  onKeyPress?: (event: React.KeyboardEvent<HTMLInputElement>) => void
+  onClick?: (event: React.MouseEvent<HTMLInputElement>) => void
+  onMouseEnter?: (event: React.MouseEvent<HTMLInputElement>) => void
+  onMouseLeave?: (event: React.MouseEvent<HTMLInputElement>) => void
+}
+
+// Exact input HTML attributes
+type InputHTMLAttributes = {
+  type?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search' | 'color' | 'date' | 'datetime-local' | 'month' | 'time' | 'week'
+  value?: string | number | readonly string[]
+  defaultValue?: string | number | readonly string[]
+  placeholder?: string
+  disabled?: boolean
+  readOnly?: boolean
+  required?: boolean
+  autoComplete?: string
+  autoFocus?: boolean
+  name?: string
+  id?: string
+  form?: string
+  maxLength?: number
+  minLength?: number
+  pattern?: string
+  size?: number
+  step?: number | 'any'
+  min?: number | string
+  max?: number | string
+  multiple?: boolean
+  accept?: string
+  capture?: boolean | 'user' | 'environment'
+  list?: string
+}
+
+// ARIA attributes for input
+type InputAriaAttributes = {
+  'aria-label'?: string
+  'aria-labelledby'?: string
+  'aria-describedby'?: string
+  'aria-required'?: boolean
+  'aria-invalid'?: boolean | 'grammar' | 'spelling'
+  'aria-errormessage'?: string
+  'aria-expanded'?: boolean
+  'aria-controls'?: string
+  'aria-activedescendant'?: string
+  'aria-autocomplete'?: 'none' | 'inline' | 'list' | 'both'
+  'aria-multiline'?: boolean
+  'aria-placeholder'?: string
+  'aria-readonly'?: boolean
+}
+
+// Input component props
+export type InputProps = {
+  // Variants
+  size?: 'sm' | 'md' | 'lg'
+  variant?: 'default' | 'outlined' | 'filled' | 'ghost'
+  state?: 'default' | 'error' | 'success' | 'warning'
+  fullWidth?: boolean
+
+  // Styling
+  className?: string
+  style?: React.CSSProperties
+
+  // Data attributes
+  'data-testid'?: string
+  'data-test-id'?: string
+  'data-state'?: string
+} & InputEventHandlers & Omit<InputHTMLAttributes, 'size'> & InputAriaAttributes
+
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  (
+    {
+      size = 'md',
+      variant = 'default',
+      state = 'default',
+      fullWidth = true,
+      className,
+      style,
+      disabled = false,
+      type = 'text',
+      onChange,
+      onInput,
+      onFocus,
+      onBlur,
+      onKeyDown,
+      onKeyUp,
+      onKeyPress,
+      onClick,
+      onMouseEnter,
+      onMouseLeave,
+      // ARIA attributes
+      'aria-label': ariaLabel,
+      'aria-labelledby': ariaLabelledby,
+      'aria-describedby': ariaDescribedby,
+      'aria-required': ariaRequired,
+      'aria-invalid': ariaInvalid,
+      'aria-errormessage': ariaErrormessage,
+      'aria-expanded': ariaExpanded,
+      'aria-controls': ariaControls,
+      'aria-activedescendant': ariaActivedescendant,
+      'aria-autocomplete': ariaAutocomplete,
+      'aria-multiline': ariaMultiline,
+      'aria-placeholder': ariaPlaceholder,
+      'aria-readonly': ariaReadonly,
+      // Data attributes
+      'data-testid': dataTestId,
+      'data-test-id': dataTestId2,
+      'data-state': dataState,
+      ...htmlProps
     },
+    ref
+  ) => {
+    const sizeStyles = {
+      sm: { fontSize: '12px', padding: '8px', height: '32px' },
+      md: { fontSize: '14px', padding: '12px', height: '40px' },
+      lg: { fontSize: '16px', padding: '16px', height: '48px' },
+    }
 
-    variant: {
-      default: {
-        backgroundColor: '$gray800',
-        borderColor: '$gray600',
-      },
-      outlined: {
-        backgroundColor: 'transparent',
-        borderColor: '$gray600',
-      },
-      filled: {
-        backgroundColor: '$gray700',
-        borderColor: 'transparent',
-      },
-      ghost: {
-        backgroundColor: 'transparent',
-        borderColor: 'transparent',
-        '&:hover': {
-          backgroundColor: '$gray800',
-        },
-        '&:focus': {
-          backgroundColor: '$gray800',
-          borderColor: '$primary',
-        },
-      },
-    },
+    const variantStyles = {
+      default: { backgroundColor: 'var(--gray800)', borderColor: 'var(--gray600)' },
+      outlined: { backgroundColor: 'transparent', borderColor: 'var(--gray600)' },
+      filled: { backgroundColor: 'var(--gray700)', borderColor: 'transparent' },
+      ghost: { backgroundColor: 'transparent', borderColor: 'transparent' },
+    }
 
-    state: {
+    const stateStyles = {
       default: {},
-      error: {
-        borderColor: '$error',
-        '&:focus': {
-          borderColor: '$error',
-          boxShadow: '0 0 0 2px rgba($colors$error, 0.2)',
-        },
-      },
-      success: {
-        borderColor: '$success',
-        '&:focus': {
-          borderColor: '$success',
-          boxShadow: '0 0 0 2px rgba($colors$success, 0.2)',
-        },
-      },
-      warning: {
-        borderColor: '$warning',
-        '&:focus': {
-          borderColor: '$warning',
-          boxShadow: '0 0 0 2px rgba($colors$warning, 0.2)',
-        },
-      },
-    },
+      error: { borderColor: 'var(--error)' },
+      success: { borderColor: 'var(--success)' },
+      warning: { borderColor: 'var(--warning)' },
+    }
 
-    fullWidth: {
-      true: {
-        width: '100%',
-      },
-    },
-  },
+    const combinedStyles = {
+      ...inputStyles.base,
+      ...sizeStyles[size],
+      ...variantStyles[variant],
+      ...stateStyles[state],
+      ...(fullWidth && { width: '100%' }),
+      ...(disabled && inputStyles.disabled),
+      ...style,
+    }
 
-  defaultVariants: {
-    size: 'md',
-    variant: 'default',
-    state: 'default',
-  },
-})
-
-export const Input = forwardRef<
-  React.ElementRef<typeof InputBase>,
-  ComponentProps<typeof InputBase>
->(({ ...props }, ref) => {
-  return <InputBase ref={ref} {...props} />
-})
+    return (
+      <input
+        ref={ref}
+        type={type}
+        disabled={disabled}
+        style={combinedStyles}
+        className={className}
+        onChange={disabled ? undefined : onChange}
+        onInput={disabled ? undefined : onInput}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onKeyDown={disabled ? undefined : onKeyDown}
+        onKeyUp={disabled ? undefined : onKeyUp}
+        onKeyPress={disabled ? undefined : onKeyPress}
+        onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledby}
+        aria-describedby={ariaDescribedby}
+        aria-required={ariaRequired}
+        aria-invalid={ariaInvalid}
+        aria-errormessage={ariaErrormessage}
+        aria-expanded={ariaExpanded}
+        aria-controls={ariaControls}
+        aria-activedescendant={ariaActivedescendant}
+        aria-autocomplete={ariaAutocomplete}
+        aria-multiline={ariaMultiline}
+        aria-placeholder={ariaPlaceholder}
+        aria-readonly={ariaReadonly}
+        data-testid={dataTestId}
+        data-test-id={dataTestId2}
+        data-state={dataState || state}
+        {...htmlProps}
+      />
+    )
+  }
+)
 
 Input.displayName = 'Input'
 
 // Number input with built-in controls
-export const NumberInput = forwardRef<
-  React.ElementRef<typeof InputBase>,
-  ComponentProps<typeof InputBase> & {
-    min?: number
-    max?: number
-    step?: number
+export type NumberInputProps = Omit<InputProps, 'type'> & {
+  min?: number
+  max?: number
+  step?: number | 'any'
+  precision?: number
+}
+
+export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
+  ({ min, max, step = 1, precision, onChange, ...props }, ref) => {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (precision !== undefined) {
+        const value = parseFloat(event.target.value)
+        if (!isNaN(value)) {
+          event.target.value = value.toFixed(precision)
+        }
+      }
+      onChange?.(event)
+    }
+
+    return (
+      <Input
+        ref={ref}
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        onChange={handleChange}
+        {...props}
+      />
+    )
   }
->(({ min, max, step = 1, ...props }, ref) => {
-  return (
-    <InputBase
-      ref={ref}
-      type="number"
-      min={min}
-      max={max}
-      step={step}
-      {...props}
-    />
-  )
-})
+)
 
 NumberInput.displayName = 'NumberInput'
 
 // Color input
-export const ColorInput = forwardRef<
-  React.ElementRef<typeof InputBase>,
-  ComponentProps<typeof InputBase>
->(({ ...props }, ref) => {
-  return (
-    <InputBase
-      ref={ref}
-      type="color"
-      css={{
-        padding: '$1',
-        cursor: 'pointer',
-        '&::-webkit-color-swatch-wrapper': {
-          padding: 0,
-          border: 'none',
-        },
-        '&::-webkit-color-swatch': {
-          border: 'none',
-          borderRadius: '$sm',
-        },
-      }}
-      {...props}
-    />
-  )
-})
+export type ColorInputProps = Omit<InputProps, 'type'>
+
+export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
+  ({ style, ...props }, ref) => {
+    const colorInputStyles = {
+      padding: '4px',
+      cursor: 'pointer',
+      height: '40px',
+      ...style,
+    }
+
+    return (
+      <Input
+        ref={ref}
+        type="color"
+        style={colorInputStyles}
+        {...props}
+      />
+    )
+  }
+)
 
 ColorInput.displayName = 'ColorInput'
 
 // Search input with icon
-const SearchInputContainer = styled(Box, {
-  position: 'relative',
-  width: '100%',
-})
+export type SearchInputProps = Omit<InputProps, 'type'> & {
+  icon?: React.ReactNode
+}
 
-const SearchIcon = styled('div', {
-  position: 'absolute',
-  left: '$3',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  color: '$gray500',
-  pointerEvents: 'none',
-  zIndex: 1,
-})
+export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
+  ({ icon, style, ...props }, ref) => {
+    const searchStyles = {
+      paddingLeft: icon ? '40px' : '12px',
+      ...style,
+    }
 
-export const SearchInput = forwardRef<
-  React.ElementRef<typeof InputBase>,
-  ComponentProps<typeof InputBase> & {
-    icon?: React.ReactNode
+    return (
+      <Box style={{ position: 'relative', width: '100%' }}>
+        {icon && (
+          <Box
+            style={{
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--gray500)',
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+          >
+            {icon}
+          </Box>
+        )}
+        <Input
+          ref={ref}
+          type="search"
+          style={searchStyles}
+          {...props}
+        />
+      </Box>
+    )
   }
->(({ icon, ...props }, ref) => {
-  return (
-    <SearchInputContainer>
-      {icon && <SearchIcon>{icon}</SearchIcon>}
-      <InputBase
-        ref={ref}
-        type="search"
-        css={{
-          paddingLeft: icon ? '$10' : '$3',
-        }}
-        {...props}
-      />
-    </SearchInputContainer>
-  )
-})
+)
 
 SearchInput.displayName = 'SearchInput'
 
-// Textarea
-export const Textarea = styled('textarea', {
-  all: 'unset',
-  width: '100%',
-  minHeight: '80px',
-  fontSize: '$base',
-  fontFamily: '$system',
-  color: '$gray100',
-  backgroundColor: '$gray800',
-  border: '1px solid $gray600',
-  borderRadius: '$md',
-  padding: '$3',
-  transition: '$base',
-  resize: 'vertical',
-  boxSizing: 'border-box',
+// Textarea component
+type TextareaEventHandlers = {
+  onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
+  onInput?: (event: React.FormEvent<HTMLTextAreaElement>) => void
+  onFocus?: (event: React.FocusEvent<HTMLTextAreaElement>) => void
+  onBlur?: (event: React.FocusEvent<HTMLTextAreaElement>) => void
+  onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
+  onKeyUp?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
+  onKeyPress?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
+  onClick?: (event: React.MouseEvent<HTMLTextAreaElement>) => void
+  onMouseEnter?: (event: React.MouseEvent<HTMLTextAreaElement>) => void
+  onMouseLeave?: (event: React.MouseEvent<HTMLTextAreaElement>) => void
+  onScroll?: (event: React.UIEvent<HTMLTextAreaElement>) => void
+}
 
-  '&::placeholder': {
-    color: '$gray500',
-  },
+export type TextareaProps = {
+  size?: 'sm' | 'md' | 'lg'
+  resize?: 'none' | 'both' | 'horizontal' | 'vertical'
+  rows?: number
+  cols?: number
+  wrap?: 'hard' | 'soft' | 'off'
+  value?: string
+  defaultValue?: string
+  placeholder?: string
+  disabled?: boolean
+  readOnly?: boolean
+  required?: boolean
+  maxLength?: number
+  minLength?: number
+  name?: string
+  id?: string
+  form?: string
+  autoFocus?: boolean
+  className?: string
+  style?: React.CSSProperties
+} & TextareaEventHandlers & InputAriaAttributes & {
+  'data-testid'?: string
+  'data-test-id'?: string
+  'data-state'?: string
+}
 
-  '&:focus': {
-    borderColor: '$primary',
-    boxShadow: '0 0 0 2px rgba($colors$primary, 0.2)',
-  },
-
-  '&:hover:not(:focus)': {
-    borderColor: '$gray500',
-  },
-
-  '&:disabled': {
-    opacity: 0.5,
-    cursor: 'not-allowed',
-    resize: 'none',
-  },
-
-  variants: {
-    size: {
-      sm: {
-        fontSize: '$sm',
-        padding: '$2',
-        minHeight: '60px',
-      },
-      md: {
-        fontSize: '$base',
-        padding: '$3',
-        minHeight: '80px',
-      },
-      lg: {
-        fontSize: '$md',
-        padding: '$4',
-        minHeight: '120px',
-      },
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+  (
+    {
+      size = 'md',
+      resize = 'vertical',
+      rows = 4,
+      disabled = false,
+      className,
+      style,
+      onChange,
+      onInput,
+      onFocus,
+      onBlur,
+      onKeyDown,
+      onKeyUp,
+      onKeyPress,
+      onClick,
+      onMouseEnter,
+      onMouseLeave,
+      onScroll,
+      ...htmlProps
     },
+    ref
+  ) => {
+    const sizeStyles = {
+      sm: { fontSize: '12px', padding: '8px', minHeight: '60px' },
+      md: { fontSize: '14px', padding: '12px', minHeight: '80px' },
+      lg: { fontSize: '16px', padding: '16px', minHeight: '120px' },
+    }
 
-    resize: {
-      none: { resize: 'none' },
-      both: { resize: 'both' },
-      horizontal: { resize: 'horizontal' },
-      vertical: { resize: 'vertical' },
-    },
-  },
+    const textareaStyles = {
+      ...inputStyles.base,
+      ...sizeStyles[size],
+      resize,
+      minHeight: sizeStyles[size].minHeight,
+      height: 'auto',
+      lineHeight: '1.5',
+      ...(disabled && inputStyles.disabled),
+      ...style,
+    }
 
-  defaultVariants: {
-    size: 'md',
-    resize: 'vertical',
-  },
-})
+    return (
+      <textarea
+        ref={ref}
+        rows={rows}
+        disabled={disabled}
+        style={textareaStyles}
+        className={className}
+        onChange={disabled ? undefined : onChange}
+        onInput={disabled ? undefined : onInput}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onKeyDown={disabled ? undefined : onKeyDown}
+        onKeyUp={disabled ? undefined : onKeyUp}
+        onKeyPress={disabled ? undefined : onKeyPress}
+        onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onScroll={onScroll}
+        {...htmlProps}
+      />
+    )
+  }
+)
+
+Textarea.displayName = 'Textarea'
 
 // Field wrapper for labels and validation messages
-export const Field = styled(Box, {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '$2',
-  width: '100%',
-})
+export type FieldProps = {
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}
 
-export const FieldLabel = styled('label', {
-  fontSize: '$sm',
-  fontWeight: '$medium',
-  color: '$gray300',
-  userSelect: 'none',
-  cursor: 'pointer',
+export const Field = ({ children, className, style }: FieldProps) => (
+  <Box
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+      width: '100%',
+      ...style,
+    }}
+    className={className}
+  >
+    {children}
+  </Box>
+)
 
-  variants: {
-    required: {
-      true: {
-        '&::after': {
-          content: ' *',
-          color: '$error',
-        },
-      },
-    },
+Field.displayName = 'Field'
 
-    disabled: {
-      true: {
-        opacity: 0.5,
-        cursor: 'not-allowed',
-      },
-    },
-  },
-})
+// Field label
+export type FieldLabelProps = {
+  children: React.ReactNode
+  htmlFor?: string
+  required?: boolean
+  disabled?: boolean
+  className?: string
+  style?: React.CSSProperties
+  onClick?: (event: React.MouseEvent<HTMLLabelElement>) => void
+}
 
-export const FieldMessage = styled(Text, {
-  variants: {
-    state: {
-      default: { color: '$gray500' },
-      error: { color: '$error' },
-      success: { color: '$success' },
-      warning: { color: '$warning' },
-    },
-  },
+export const FieldLabel = forwardRef<HTMLLabelElement, FieldLabelProps>(
+  ({ children, htmlFor, required = false, disabled = false, className, style, onClick }, ref) => (
+    <label
+      ref={ref}
+      htmlFor={htmlFor}
+      onClick={disabled ? undefined : onClick}
+      className={className}
+      style={{
+        fontSize: '12px',
+        fontWeight: '500',
+        color: disabled ? 'var(--gray500)' : 'var(--gray300)',
+        userSelect: 'none',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        ...style,
+      }}
+    >
+      {children}
+      {required && <span style={{ color: 'var(--error)' }}> *</span>}
+    </label>
+  )
+)
 
-  defaultVariants: {
-    size: 'sm',
-    state: 'default',
-  },
-})
+FieldLabel.displayName = 'FieldLabel'
 
-export type InputProps = ComponentProps<typeof Input>
-export type NumberInputProps = ComponentProps<typeof NumberInput>
-export type ColorInputProps = ComponentProps<typeof ColorInput>
-export type SearchInputProps = ComponentProps<typeof SearchInput>
-export type TextareaProps = ComponentProps<typeof Textarea>
-export type FieldProps = ComponentProps<typeof Field>
-export type FieldLabelProps = ComponentProps<typeof FieldLabel>
-export type FieldMessageProps = ComponentProps<typeof FieldMessage>
+// Field message for help text and validation
+export type FieldMessageProps = {
+  children: React.ReactNode
+  state?: 'default' | 'error' | 'success' | 'warning'
+  className?: string
+  style?: React.CSSProperties
+}
+
+export const FieldMessage = ({ children, state = 'default', className, style }: FieldMessageProps) => {
+  const stateColors = {
+    default: 'var(--gray500)',
+    error: 'var(--error)',
+    success: 'var(--success)',
+    warning: 'var(--warning)',
+  }
+
+  return (
+    <Text
+      size="sm"
+      className={className}
+      style={{
+        color: stateColors[state],
+        ...style,
+      }}
+    >
+      {children}
+    </Text>
+  )
+}
+
+FieldMessage.displayName = 'FieldMessage'

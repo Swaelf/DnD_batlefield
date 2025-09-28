@@ -1,9 +1,10 @@
 import { useEffect, useRef, useCallback } from 'react'
-import Konva from 'konva'
+import type Konva from 'konva'
 import useRoundStore from '@/store/roundStore'
 import useMapStore from '@/store/mapStore'
 import useAnimationStore from '@/store/animationStore'
-import { RoundEvent, isMoveEvent, isAppearEvent, isDisappearEvent, isSpellEvent } from '@/types/timeline'
+import type { RoundEvent} from '@/types/timeline';
+import { isMoveEvent, isAppearEvent, isDisappearEvent, isSpellEvent } from '@/types/timeline'
 
 export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage | null>) {
   const activeSpellAnimations = useRef<Set<string>>(new Set())
@@ -241,7 +242,7 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
         }
 
         const persistDuration = (spellData.persistDuration || 0) // Already in milliseconds
-        const totalDuration = animDuration // For area spells, only use animation duration
+        // const totalDuration = animDuration // For area spells, only use animation duration (unused)
 
         // Create spell object for initial animation
         const spellObject = {
@@ -272,8 +273,6 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
 
           // For projectile-burst, wait for the explosion to complete
           // For area spells, create immediately after initial animation
-          const delayTime = spellData.category === 'projectile-burst' ? animDuration : animDuration
-
           setTimeout(() => {
             // For tracking spells, we need to get the final target position
             let finalPosition = updatedSpellData.toPosition

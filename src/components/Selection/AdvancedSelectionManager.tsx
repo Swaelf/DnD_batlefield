@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { Box, Text, Button } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import React, { useCallback, useMemo, useState } from 'react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import {
   MousePointer,
   Square,
@@ -21,99 +22,14 @@ import {
 } from 'lucide-react'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
-import { Point, MapObject } from '@/types'
+import type { MapObject } from '@/types'
 
-const SelectionContainer = styled(Box, {
-  width: 280,
-  height: '100%',
-  backgroundColor: '$dndBlack',
-  borderLeft: '1px solid $gray800',
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden'
-})
+// Extended type for grouped objects
+type GroupedMapObject = MapObject & {
+  groupedObjects?: string[]
+  groupId?: string
+}
 
-const SelectionHeader = styled(Box, {
-  padding: '$4',
-  borderBottom: '1px solid $gray800',
-  backgroundColor: '$gray900'
-})
-
-const SelectionModeGrid = styled(Box, {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(2, 1fr)',
-  gap: '$2',
-  marginBottom: '$4'
-})
-
-const ModeButton = styled(Button, {
-  height: 60,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '$1',
-  padding: '$2',
-
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$secondary',
-        color: '$dndBlack',
-        '&:hover': {
-          backgroundColor: '$secondary'
-        }
-      }
-    }
-  }
-})
-
-const ActionGrid = styled(Box, {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: '$2',
-  marginBottom: '$4'
-})
-
-const ActionButton = styled(Button, {
-  height: 40,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '$2',
-  fontSize: '$sm',
-
-  variants: {
-    disabled: {
-      true: {
-        opacity: 0.5,
-        cursor: 'not-allowed',
-        '&:hover': {
-          backgroundColor: '$gray700'
-        }
-      }
-    }
-  }
-})
-
-const AlignmentSection = styled(Box, {
-  padding: '$3',
-  backgroundColor: '$gray800',
-  borderRadius: '$sm',
-  marginBottom: '$3'
-})
-
-const AlignmentGrid = styled(Box, {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: '$2'
-})
-
-const SelectionInfo = styled(Box, {
-  padding: '$3',
-  backgroundColor: '$gray800',
-  borderRadius: '$sm',
-  marginBottom: '$3'
-})
 
 export type SelectionMode = 'pointer' | 'rectangle' | 'lasso' | 'magic'
 
@@ -132,7 +48,6 @@ export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> =
     currentMap,
     selectObject,
     selectMultiple,
-    clearSelection,
     duplicateSelected,
     deleteSelected,
     updateObject,
@@ -183,12 +98,10 @@ export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> =
     })
 
     // Create group object
-    const groupObject: MapObject = {
+    const groupObject: GroupedMapObject = {
       id: crypto.randomUUID(),
-      type: 'group',
+      type: 'shape',
       position: { x: bounds.left, y: bounds.top },
-      width: bounds.right - bounds.left,
-      height: bounds.bottom - bounds.top,
       layer: Math.max(...selectedObjectData.map(obj => obj.layer || 0)),
       rotation: 0,
       visible: true,
@@ -196,10 +109,9 @@ export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> =
       groupedObjects: selectedObjects
     }
 
-    // Update grouped objects to reference the group
+    // Update grouped objects to convert positions to relative within group
     selectedObjectData.forEach(obj => {
       updateObject(obj.id, {
-        groupId: groupObject.id,
         // Convert positions to relative within group
         position: {
           x: obj.position.x - bounds.left,
@@ -214,7 +126,7 @@ export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> =
   }, [selectedObjectData, selectedObjects, updateObject, addObject, selectObject])
 
   const handleUngroupObjects = useCallback(() => {
-    const groupObjects = selectedObjectData.filter(obj => obj.type === 'group')
+    const groupObjects = selectedObjectData.filter(obj => 'groupedObjects' in obj && obj.groupedObjects !== undefined) as GroupedMapObject[]
 
     groupObjects.forEach(group => {
       if (!group.groupedObjects) return
@@ -225,7 +137,6 @@ export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> =
         const obj = currentMap?.objects.find(o => o.id === objId)
         if (obj && obj.position) {
           updateObject(objId, {
-            groupId: undefined,
             position: {
               x: obj.position.x + group.position.x,
               y: obj.position.y + group.position.y
@@ -300,7 +211,7 @@ export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> =
 
     // Apply alignment
     selectedObjectData.forEach(obj => {
-      let newPosition = { ...obj.position }
+      const newPosition = { ...obj.position }
 
       switch (alignment) {
         case 'left':
@@ -337,155 +248,400 @@ export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> =
   const hasSelection = selectedObjects.length > 0
   const hasMultipleSelection = selectedObjects.length > 1
   const hasGroupableObjects = selectedObjects.length > 1
-  const hasGroups = selectedObjectData.some(obj => obj.type === 'group')
+  const hasGroups = selectedObjectData.some(obj => 'groupedObjects' in obj && obj.groupedObjects !== undefined)
   const hasCopiedObjects = copiedObjects.length > 0
 
   return (
-    <SelectionContainer>
-      <SelectionHeader>
-        <Text size="sm" weight="semibold" color="secondary" css={{ marginBottom: '$3' }}>
+    <Box
+      style={{
+        width: '280px',
+        height: '100%',
+        backgroundColor: 'var(--colors-dndBlack)',
+        borderLeft: '1px solid var(--colors-gray700)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Selection Header */}
+      <Box
+        style={{
+          padding: '16px',
+          borderBottom: '1px solid var(--colors-gray700)',
+          backgroundColor: 'var(--colors-gray900)'
+        }}
+      >
+        <Text
+          variant="label"
+          size="sm"
+          style={{
+            marginBottom: '12px',
+            fontWeight: '600',
+            color: 'var(--colors-secondary)'
+          }}
+        >
           Advanced Selection
         </Text>
 
         {/* Selection Mode Grid */}
-        <SelectionModeGrid>
+        <Box
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '8px',
+            marginBottom: '16px'
+          }}
+        >
           {selectionModes.map(mode => (
-            <ModeButton
+            <Button
               key={mode.id}
-              active={selectionMode === mode.id}
+              variant={selectionMode === mode.id ? 'primary' : 'outline'}
               onClick={() => handleSelectionModeChange(mode.id)}
               title={mode.tooltip}
+              style={{
+                height: '60px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '8px',
+                backgroundColor: selectionMode === mode.id ? 'var(--colors-secondary)' : 'var(--colors-gray800)',
+                borderColor: selectionMode === mode.id ? 'var(--colors-secondary)' : 'var(--colors-gray600)',
+                color: selectionMode === mode.id ? 'var(--colors-dndBlack)' : 'var(--colors-gray300)'
+              }}
             >
               {mode.icon}
-              <Text size="xs">{mode.name}</Text>
-            </ModeButton>
+              <Text
+                variant="label"
+                size="xs"
+                style={{
+                  color: 'inherit'
+                }}
+              >
+                {mode.name}
+              </Text>
+            </Button>
           ))}
-        </SelectionModeGrid>
+        </Box>
 
         {/* Quick Actions */}
-        <ActionGrid>
-          <ActionButton
+        <Box
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '8px',
+            marginBottom: '16px'
+          }}
+        >
+          <Button
+            variant="outline"
             disabled={!hasGroupableObjects}
             onClick={handleGroupObjects}
             title="Group Selected Objects"
+            style={{
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px',
+              backgroundColor: hasGroupableObjects ? 'var(--colors-gray800)' : 'var(--colors-gray700)',
+              borderColor: 'var(--colors-gray600)',
+              color: hasGroupableObjects ? 'var(--colors-gray300)' : 'var(--colors-gray500)',
+              opacity: hasGroupableObjects ? 1 : 0.5,
+              cursor: hasGroupableObjects ? 'pointer' : 'not-allowed'
+            }}
           >
             <Group size={16} />
-          </ActionButton>
-          <ActionButton
+          </Button>
+          <Button
+            variant="outline"
             disabled={!hasGroups}
             onClick={handleUngroupObjects}
             title="Ungroup Selected Objects"
+            style={{
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px',
+              backgroundColor: hasGroups ? 'var(--colors-gray800)' : 'var(--colors-gray700)',
+              borderColor: 'var(--colors-gray600)',
+              color: hasGroups ? 'var(--colors-gray300)' : 'var(--colors-gray500)',
+              opacity: hasGroups ? 1 : 0.5,
+              cursor: hasGroups ? 'pointer' : 'not-allowed'
+            }}
           >
             <Ungroup size={16} />
-          </ActionButton>
-          <ActionButton
+          </Button>
+          <Button
+            variant="outline"
             disabled={!hasSelection}
             onClick={handleCopyObjects}
             title="Copy Selected Objects"
+            style={{
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px',
+              backgroundColor: hasSelection ? 'var(--colors-gray800)' : 'var(--colors-gray700)',
+              borderColor: 'var(--colors-gray600)',
+              color: hasSelection ? 'var(--colors-gray300)' : 'var(--colors-gray500)',
+              opacity: hasSelection ? 1 : 0.5,
+              cursor: hasSelection ? 'pointer' : 'not-allowed'
+            }}
           >
             <Copy size={16} />
-          </ActionButton>
-          <ActionButton
+          </Button>
+          <Button
+            variant="outline"
             disabled={!hasCopiedObjects}
             onClick={handlePasteObjects}
             title="Paste Objects"
+            style={{
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px',
+              backgroundColor: hasCopiedObjects ? 'var(--colors-gray800)' : 'var(--colors-gray700)',
+              borderColor: 'var(--colors-gray600)',
+              color: hasCopiedObjects ? 'var(--colors-gray300)' : 'var(--colors-gray500)',
+              opacity: hasCopiedObjects ? 1 : 0.5,
+              cursor: hasCopiedObjects ? 'pointer' : 'not-allowed'
+            }}
           >
             <Clipboard size={16} />
-          </ActionButton>
-          <ActionButton
+          </Button>
+          <Button
+            variant="outline"
             disabled={!hasSelection}
-            onClick={duplicateSelected}
+            onClick={() => duplicateSelected()}
             title="Duplicate Selected Objects"
+            style={{
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px',
+              backgroundColor: hasSelection ? 'var(--colors-gray800)' : 'var(--colors-gray700)',
+              borderColor: 'var(--colors-gray600)',
+              color: hasSelection ? 'var(--colors-gray300)' : 'var(--colors-gray500)',
+              opacity: hasSelection ? 1 : 0.5,
+              cursor: hasSelection ? 'pointer' : 'not-allowed'
+            }}
           >
             <Move3D size={16} />
-          </ActionButton>
-          <ActionButton
+          </Button>
+          <Button
+            variant="outline"
             disabled={!hasSelection}
             onClick={deleteSelected}
             title="Delete Selected Objects"
+            style={{
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px',
+              backgroundColor: hasSelection ? 'var(--colors-gray800)' : 'var(--colors-gray700)',
+              borderColor: 'var(--colors-gray600)',
+              color: hasSelection ? 'var(--colors-gray300)' : 'var(--colors-gray500)',
+              opacity: hasSelection ? 1 : 0.5,
+              cursor: hasSelection ? 'pointer' : 'not-allowed'
+            }}
           >
             <RotateCw size={16} />
-          </ActionButton>
-        </ActionGrid>
-      </SelectionHeader>
+          </Button>
+        </Box>
+      </Box>
 
-      <Box padding="4" flex="1" overflow="auto">
+      {/* Content Area */}
+      <Box
+        style={{
+          padding: '16px',
+          flex: 1,
+          overflow: 'auto'
+        }}
+      >
         {/* Selection Info */}
         {hasSelection && (
-          <SelectionInfo>
-            <Text size="xs" weight="semibold" color="secondary" css={{ marginBottom: '8px' }}>
+          <Box
+            style={{
+              padding: '12px',
+              backgroundColor: 'var(--colors-gray800)',
+              borderRadius: '4px',
+              marginBottom: '12px'
+            }}
+          >
+            <Text
+              variant="label"
+              size="xs"
+              style={{
+                marginBottom: '8px',
+                fontWeight: '600',
+                color: 'var(--colors-secondary)'
+              }}
+            >
               Selection Info
             </Text>
-            <Text size="xs">
+            <Text
+              variant="body"
+              size="xs"
+              style={{
+                color: 'var(--colors-gray100)',
+                marginBottom: '4px'
+              }}
+            >
               {selectedObjects.length} object{selectedObjects.length > 1 ? 's' : ''} selected
             </Text>
-            <Text size="xs" color="gray400">
+            <Text
+              variant="body"
+              size="xs"
+              style={{
+                color: 'var(--colors-gray400)'
+              }}
+            >
               Types: {[...new Set(selectedObjectData.map(obj => obj.type))].join(', ')}
             </Text>
-          </SelectionInfo>
+          </Box>
         )}
 
         {/* Alignment Tools */}
         {hasMultipleSelection && (
-          <AlignmentSection>
-            <Text size="xs" weight="semibold" color="secondary" css={{ marginBottom: '8px' }}>
+          <Box
+            style={{
+              padding: '12px',
+              backgroundColor: 'var(--colors-gray800)',
+              borderRadius: '4px',
+              marginBottom: '12px'
+            }}
+          >
+            <Text
+              variant="label"
+              size="xs"
+              style={{
+                marginBottom: '8px',
+                fontWeight: '600',
+                color: 'var(--colors-secondary)'
+              }}
+            >
               Alignment
             </Text>
 
-            <Text size="xs" color="gray400" css={{ marginBottom: '$2' }}>
+            <Text
+              variant="body"
+              size="xs"
+              style={{
+                marginBottom: '8px',
+                color: 'var(--colors-gray400)'
+              }}
+            >
               Horizontal:
             </Text>
-            <AlignmentGrid css={{ marginBottom: '$3' }}>
-              <ActionButton onClick={() => handleAlignObjects('left')} title="Align Left">
+            <Box
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '8px',
+                marginBottom: '12px'
+              }}
+            >
+              <Button variant="outline" onClick={() => handleAlignObjects('left')} title="Align Left" style={{ height: '32px', padding: '4px', backgroundColor: 'var(--colors-gray700)', borderColor: 'var(--colors-gray600)', color: 'var(--colors-gray300)' }}>
                 <AlignHorizontalJustifyStart size={14} />
-              </ActionButton>
-              <ActionButton onClick={() => handleAlignObjects('center')} title="Align Center">
+              </Button>
+              <Button variant="outline" onClick={() => handleAlignObjects('center')} title="Align Center" style={{ height: '32px', padding: '4px', backgroundColor: 'var(--colors-gray700)', borderColor: 'var(--colors-gray600)', color: 'var(--colors-gray300)' }}>
                 <AlignHorizontalJustifyCenter size={14} />
-              </ActionButton>
-              <ActionButton onClick={() => handleAlignObjects('right')} title="Align Right">
+              </Button>
+              <Button variant="outline" onClick={() => handleAlignObjects('right')} title="Align Right" style={{ height: '32px', padding: '4px', backgroundColor: 'var(--colors-gray700)', borderColor: 'var(--colors-gray600)', color: 'var(--colors-gray300)' }}>
                 <AlignHorizontalJustifyEnd size={14} />
-              </ActionButton>
-            </AlignmentGrid>
+              </Button>
+            </Box>
 
-            <Text size="xs" color="gray400" css={{ marginBottom: '$2' }}>
+            <Text
+              variant="body"
+              size="xs"
+              style={{
+                marginBottom: '8px',
+                color: 'var(--colors-gray400)'
+              }}
+            >
               Vertical:
             </Text>
-            <AlignmentGrid>
-              <ActionButton onClick={() => handleAlignObjects('top')} title="Align Top">
+            <Box
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '8px'
+              }}
+            >
+              <Button variant="outline" onClick={() => handleAlignObjects('top')} title="Align Top" style={{ height: '32px', padding: '4px', backgroundColor: 'var(--colors-gray700)', borderColor: 'var(--colors-gray600)', color: 'var(--colors-gray300)' }}>
                 <AlignVerticalJustifyStart size={14} />
-              </ActionButton>
-              <ActionButton onClick={() => handleAlignObjects('middle')} title="Align Middle">
+              </Button>
+              <Button variant="outline" onClick={() => handleAlignObjects('middle')} title="Align Middle" style={{ height: '32px', padding: '4px', backgroundColor: 'var(--colors-gray700)', borderColor: 'var(--colors-gray600)', color: 'var(--colors-gray300)' }}>
                 <AlignVerticalJustifyCenter size={14} />
-              </ActionButton>
-              <ActionButton onClick={() => handleAlignObjects('bottom')} title="Align Bottom">
+              </Button>
+              <Button variant="outline" onClick={() => handleAlignObjects('bottom')} title="Align Bottom" style={{ height: '32px', padding: '4px', backgroundColor: 'var(--colors-gray700)', borderColor: 'var(--colors-gray600)', color: 'var(--colors-gray300)' }}>
                 <AlignVerticalJustifyEnd size={14} />
-              </ActionButton>
-            </AlignmentGrid>
-          </AlignmentSection>
+              </Button>
+            </Box>
+          </Box>
         )}
 
         {/* Selection Mode Help */}
-        <Box padding="3" backgroundColor="gray800" borderRadius="sm">
-          <Text size="xs" weight="semibold" color="secondary" css={{ marginBottom: '8px' }}>
+        <Box
+          style={{
+            padding: '12px',
+            backgroundColor: 'var(--colors-gray800)',
+            borderRadius: '4px'
+          }}
+        >
+          <Text
+            variant="label"
+            size="xs"
+            style={{
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: 'var(--colors-secondary)'
+            }}
+          >
             {selectionModes.find(m => m.id === selectionMode)?.name} Mode
           </Text>
-          <Text size="xs" color="gray400">
+          <Text
+            variant="body"
+            size="xs"
+            style={{
+              color: 'var(--colors-gray400)',
+              marginBottom: '8px'
+            }}
+          >
             {selectionModes.find(m => m.id === selectionMode)?.tooltip}
           </Text>
 
           {selectionMode === 'pointer' && (
-            <Box marginTop="2">
-              <Text size="xs" color="gray400">
-                • Click: Select object<br/>
-                • Shift+Click: Add to selection<br/>
-                • Ctrl+Click: Toggle selection<br/>
+            <Box
+              style={{
+                marginTop: '8px'
+              }}
+            >
+              <Text
+                variant="body"
+                size="xs"
+                style={{
+                  color: 'var(--colors-gray400)',
+                  whiteSpace: 'pre-line'
+                }}
+              >
+                • Click: Select object{"\n"}
+                • Shift+Click: Add to selection{"\n"}
+                • Ctrl+Click: Toggle selection{"\n"}
                 • Click empty: Clear selection
               </Text>
             </Box>
           )}
         </Box>
       </Box>
-    </SelectionContainer>
+    </Box>
   )
 }
 

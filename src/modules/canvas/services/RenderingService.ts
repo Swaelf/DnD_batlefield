@@ -3,9 +3,20 @@
  * Orchestrates the rendering of different object types and layers
  */
 
-import type Konva from 'konva'
+import Konva from 'konva'
 import type { Point, Rectangle } from '@/foundation/types'
-import type { RenderContext, CanvasLayer, LayerConfig } from '../types'
+import type { CanvasLayer, LayerConfig } from '../types'
+
+// Define RenderContext locally to avoid missing export error
+export interface RenderContext {
+  stage: Konva.Stage
+  layer: Konva.Layer
+  viewport: {
+    bounds: Rectangle
+    zoom: number
+    position: Point
+  }
+}
 
 export type RenderableObject = {
   id: string
@@ -31,12 +42,12 @@ export class RenderingService {
       const layer = new Konva.Layer({
         name: config.name,
         visible: config.visible,
-        listening: config.listening
+        listening: config.interactive || true
       })
 
       layer.zIndex(config.zIndex)
       stage.add(layer)
-      this.layers.set(config.name, layer)
+      this.layers.set(config.name as unknown as CanvasLayer, layer)
     }
   }
 
@@ -111,33 +122,15 @@ export class RenderingService {
       layer,
       viewport: {
         position: { x: 0, y: 0 },
-        scale: 1,
+        zoom: 1,
         bounds: { x: 0, y: 0, width: 1920, height: 1080 }
-      },
-      settings: {
-        width: 1920,
-        height: 1080,
-        background: '#1A1A1A',
-        grid: {
-          size: 50,
-          visible: true,
-          snapEnabled: true,
-          color: '#333',
-          opacity: 0.5,
-          type: 'square'
-        },
-        viewport: {
-          position: { x: 0, y: 0 },
-          scale: 1,
-          bounds: { x: 0, y: 0, width: 1920, height: 1080 }
-        }
       }
     }
 
     const node = object.render(context)
     if (node) {
       node.id(object.id)
-      layer.add(node)
+      layer.add(node as Konva.Group | Konva.Shape)
     }
   }
 
@@ -189,7 +182,7 @@ export class RenderingService {
     const sortedLayers = Array.from(this.layers.entries())
       .sort((a, b) => b[1].zIndex() - a[1].zIndex())
 
-    for (const [layerName, layer] of sortedLayers) {
+    for (const [, layer] of sortedLayers) {
       const intersection = layer.getIntersection(point)
       if (intersection) {
         const objectId = intersection.id()

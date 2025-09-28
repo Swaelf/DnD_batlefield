@@ -2,7 +2,7 @@
  * Token Store Selectors - Memoized selectors for performance optimization
  */
 
-import type { TokenStore, TokenState } from './tokenStore'
+import type { TokenState } from './tokenStore'
 import type { Token, TokenId, TokenFilters, TokenSelection } from '../types'
 import { TokenService } from '../services/TokenService'
 
@@ -218,7 +218,7 @@ export const tokenSelectors = {
   },
 
   // Validation helpers
-  getInvalidTokens: () => (state: TokenState): Token[] => {
+  getInvalidTokens: () => (): Token[] => {
     // This would need validation service integration
     // For now, return empty array
     return []

@@ -7,7 +7,9 @@ import { PropertyValidationService } from './PropertyValidationService'
 import type {
   PropertyField,
   PropertyValues,
-  DNDToken,
+  DNDToken
+} from '../types'
+import {
   createPropertyFieldId,
   createValidationRuleId
 } from '../types'

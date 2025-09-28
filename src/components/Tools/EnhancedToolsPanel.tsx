@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
-import { Box, Text, Button } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import {
   Square,
   Circle,
   Minus,
   Type,
-  Polygon,
+  Hexagon, // Using Hexagon instead of Polygon
   Settings,
   Palette,
   Move3D,
@@ -14,92 +15,6 @@ import {
 } from 'lucide-react'
 import useToolStore from '@store/toolStore'
 
-const ToolsPanelContainer = styled(Box, {
-  width: 320,
-  height: '100%',
-  backgroundColor: '$dndBlack',
-  borderLeft: '1px solid $gray800',
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden'
-})
-
-const PanelHeader = styled(Box, {
-  padding: '$4',
-  borderBottom: '1px solid $gray800',
-  backgroundColor: '$gray900'
-})
-
-const PanelContent = styled(Box, {
-  flex: 1,
-  padding: '$4',
-  overflow: 'auto'
-})
-
-const ToolGrid = styled(Box, {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(2, 1fr)',
-  gap: '$2',
-  marginBottom: '$4'
-})
-
-const ToolButton = styled(Button, {
-  height: 60,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '$1',
-  padding: '$2',
-
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$secondary',
-        color: '$dndBlack',
-        '&:hover': {
-          backgroundColor: '$secondary'
-        }
-      }
-    }
-  }
-})
-
-const Section = styled(Box, {
-  marginBottom: '$6'
-})
-
-const SectionTitle = styled(Text, {
-  fontSize: '$sm',
-  fontWeight: '$semibold',
-  color: '$secondary',
-  marginBottom: '$3',
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px'
-})
-
-const FeatureList = styled(Box, {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '$2'
-})
-
-const FeatureItem = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2',
-  padding: '$2',
-  borderRadius: '$sm',
-  backgroundColor: '$gray800',
-  fontSize: '$xs'
-})
-
-const KeyboardShortcut = styled(Text, {
-  fontSize: '$xs',
-  color: '$gray400',
-  fontFamily: '$mono',
-  backgroundColor: '$gray700',
-  padding: '2px 4px',
-  borderRadius: '$xs'
-})
 
 export const EnhancedToolsPanel: React.FC = () => {
   const currentTool = useToolStore(state => state.currentTool)
@@ -134,251 +49,597 @@ export const EnhancedToolsPanel: React.FC = () => {
     {
       id: 'polygon' as const,
       name: 'Enhanced Polygon',
-      icon: <Polygon size={20} />,
+      icon: <Hexagon size={20} />,
       description: 'Draw polygons with vertex manipulation and precise control'
     }
   ]
 
   return (
-    <ToolsPanelContainer>
-      <PanelHeader>
-        <Text size="lg" weight="semibold" color="secondary">
+    <Box
+      style={{
+        width: '320px',
+        height: '100%',
+        backgroundColor: 'var(--colors-dndBlack)',
+        borderLeft: '1px solid var(--colors-gray700)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Panel Header */}
+      <Box
+        style={{
+          padding: '16px',
+          borderBottom: '1px solid var(--colors-gray700)',
+          backgroundColor: 'var(--colors-gray900)'
+        }}
+      >
+        <Text
+          variant="heading"
+          size="lg"
+          style={{
+            fontWeight: '600',
+            color: 'var(--colors-secondary)',
+            marginBottom: '4px'
+          }}
+        >
           Enhanced Drawing Tools
         </Text>
-        <Text size="xs" color="gray400">
+        <Text
+          variant="body"
+          size="xs"
+          style={{
+            color: 'var(--colors-gray400)'
+          }}
+        >
           Phase 17: Advanced drawing capabilities
         </Text>
-      </PanelHeader>
+      </Box>
 
-      <PanelContent>
+      {/* Panel Content */}
+      <Box
+        style={{
+          flex: 1,
+          padding: '16px',
+          overflow: 'auto'
+        }}
+      >
         {/* Tool Selection */}
-        <Section>
-          <SectionTitle>Select Tool</SectionTitle>
-          <ToolGrid>
+        <Box
+          style={{
+            marginBottom: '24px'
+          }}
+        >
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              fontWeight: '600',
+              color: 'var(--colors-secondary)',
+              marginBottom: '12px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}
+          >
+            Select Tool
+          </Text>
+          <Box
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '8px',
+              marginBottom: '16px'
+            }}
+          >
             {tools.map(tool => (
-              <ToolButton
+              <Button
                 key={tool.id}
-                active={currentTool === tool.id}
+                variant={currentTool === tool.id ? 'primary' : 'outline'}
                 onClick={() => setTool(tool.id)}
                 title={tool.description}
+                style={{
+                  height: '60px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  padding: '8px',
+                  backgroundColor: currentTool === tool.id ? 'var(--colors-secondary)' : 'var(--colors-gray800)',
+                  borderColor: currentTool === tool.id ? 'var(--colors-secondary)' : 'var(--colors-gray600)',
+                  color: currentTool === tool.id ? 'var(--colors-dndBlack)' : 'var(--colors-gray300)'
+                }}
               >
                 {tool.icon}
-                <Text size="xs">{tool.name.replace('Enhanced ', '')}</Text>
-              </ToolButton>
+                <Text
+                  variant="label"
+                  size="xs"
+                  style={{
+                    color: 'inherit'
+                  }}
+                >
+                  {tool.name.replace('Enhanced ', '')}
+                </Text>
+              </Button>
             ))}
-          </ToolGrid>
-        </Section>
+          </Box>
+        </Box>
 
         {/* Current Tool Info */}
         {tools.find(t => t.id === currentTool) && (
-          <Section>
-            <SectionTitle>Current Tool: {tools.find(t => t.id === currentTool)?.name}</SectionTitle>
+          <Box style={{ marginBottom: '16px' }}>
+            <Text size="sm" weight="semibold" style={{ marginBottom: '8px' }}>Current Tool: {tools.find(t => t.id === currentTool)?.name}</Text>
             <Box
-              padding="$3"
-              backgroundColor="$gray800"
-              borderRadius="$sm"
-              borderLeft="3px solid $secondary"
+              style={{
+                padding: '12px',
+                backgroundColor: 'var(--colors-gray800)',
+                borderRadius: '4px',
+                borderLeft: '3px solid var(--colors-secondary)'
+              }}
             >
               <Text size="xs" color="gray300">
                 {tools.find(t => t.id === currentTool)?.description}
               </Text>
             </Box>
-          </Section>
+          </Box>
         )}
 
         {/* Enhanced Features */}
-        <Section>
-          <SectionTitle>Enhanced Features</SectionTitle>
-          <FeatureList>
-            <FeatureItem>
+        <Box
+          style={{
+            marginBottom: '24px'
+          }}
+        >
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              fontWeight: '600',
+              color: 'var(--colors-secondary)',
+              marginBottom: '12px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}
+          >
+            Enhanced Features
+          </Text>
+          <Box
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}
+          >
+            <Box
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px',
+                borderRadius: '4px',
+                backgroundColor: 'var(--colors-gray800)'
+              }}
+            >
               <Grid3X3 size={16} color="#C9AD6A" />
-              <Text size="xs">Grid snapping with visual indicators</Text>
-            </FeatureItem>
-            <FeatureItem>
+              <Text
+                variant="body"
+                size="xs"
+                style={{
+                  color: 'var(--colors-gray300)'
+                }}
+              >
+                Grid snapping with visual indicators
+              </Text>
+            </Box>
+            <Box
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px',
+                borderRadius: '4px',
+                backgroundColor: 'var(--colors-gray800)'
+              }}
+            >
               <Move3D size={16} color="#C9AD6A" />
-              <Text size="xs">Live preview during drawing</Text>
-            </FeatureItem>
-            <FeatureItem>
+              <Text
+                variant="body"
+                size="xs"
+                style={{
+                  color: 'var(--colors-gray300)'
+                }}
+              >
+                Live preview during drawing
+              </Text>
+            </Box>
+            <Box
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px',
+                borderRadius: '4px',
+                backgroundColor: 'var(--colors-gray800)'
+              }}
+            >
               <Palette size={16} color="#C9AD6A" />
-              <Text size="xs">Real-time style customization</Text>
-            </FeatureItem>
-            <FeatureItem>
+              <Text
+                variant="body"
+                size="xs"
+                style={{
+                  color: 'var(--colors-gray300)'
+                }}
+              >
+                Real-time style customization
+              </Text>
+            </Box>
+            <Box
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px',
+                borderRadius: '4px',
+                backgroundColor: 'var(--colors-gray800)'
+              }}
+            >
               <Settings size={16} color="#C9AD6A" />
-              <Text size="xs">Advanced drawing modes</Text>
-            </FeatureItem>
-          </FeatureList>
-        </Section>
+              <Text
+                variant="body"
+                size="xs"
+                style={{
+                  color: 'var(--colors-gray300)'
+                }}
+              >
+                Advanced drawing modes
+              </Text>
+            </Box>
+          </Box>
+        </Box>
 
         {/* Rectangle Tool Features */}
         {currentTool === 'rectangle' && (
-          <Section>
-            <SectionTitle>Rectangle Tool</SectionTitle>
-            <FeatureList>
-              <FeatureItem>
-                <KeyboardShortcut>Shift</KeyboardShortcut>
-                <Text size="xs">Proportional scaling (square)</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Alt</KeyboardShortcut>
-                <Text size="xs">Center-point drawing</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Scroll</KeyboardShortcut>
-                <Text size="xs">Adjust corner radius while drawing</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Esc</KeyboardShortcut>
-                <Text size="xs">Cancel current operation</Text>
-              </FeatureItem>
-            </FeatureList>
-          </Section>
+          <Box style={{ marginBottom: '24px' }}>
+            <Text variant="label" size="sm" style={{ fontWeight: '600', color: 'var(--colors-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Rectangle Tool</Text>
+            <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--colors-gray800)' }}>
+                <Text variant="code" size="xs" style={{ color: 'var(--colors-gray400)', fontFamily: 'monospace', backgroundColor: 'var(--colors-gray700)', padding: '2px 4px', borderRadius: '2px' }}>Shift</Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>Proportional scaling (square)</Text>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--colors-gray800)' }}>
+                <Text variant="code" size="xs" style={{ color: 'var(--colors-gray400)', fontFamily: 'monospace', backgroundColor: 'var(--colors-gray700)', padding: '2px 4px', borderRadius: '2px' }}>Alt</Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>Center-point drawing</Text>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--colors-gray800)' }}>
+                <Text variant="code" size="xs" style={{ color: 'var(--colors-gray400)', fontFamily: 'monospace', backgroundColor: 'var(--colors-gray700)', padding: '2px 4px', borderRadius: '2px' }}>Scroll</Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>Adjust corner radius while drawing</Text>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--colors-gray800)' }}>
+                <Text variant="code" size="xs" style={{ color: 'var(--colors-gray400)', fontFamily: 'monospace', backgroundColor: 'var(--colors-gray700)', padding: '2px 4px', borderRadius: '2px' }}>Esc</Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>Cancel current operation</Text>
+              </Box>
+            </Box>
+          </Box>
         )}
 
         {/* Circle Tool Features */}
         {currentTool === 'circle' && (
-          <Section>
-            <SectionTitle>Circle Tool</SectionTitle>
-            <FeatureList>
-              <FeatureItem>
-                <KeyboardShortcut>Shift</KeyboardShortcut>
+          <Box style={{ marginBottom: '16px' }}>
+            <Text size="sm" weight="semibold" style={{ marginBottom: '8px' }}>Circle Tool</Text>
+            <Box style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Text size="xs" style={{ fontFamily: 'monospace', backgroundColor: 'var(--gray800)', padding: '2px 6px', borderRadius: '4px' }}>Shift</Text>
                 <Text size="xs">Perfect circle mode</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Alt</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Text size="xs" style={{ fontFamily: 'monospace', backgroundColor: 'var(--gray800)', padding: '2px 6px', borderRadius: '4px' }}>Alt</Text>
                 <Text size="xs">Center-point drawing</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Default</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Text size="xs" style={{ fontFamily: 'monospace', backgroundColor: 'var(--gray800)', padding: '2px 6px', borderRadius: '4px' }}>Default</Text>
                 <Text size="xs">Ellipse mode (independent radii)</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Esc</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Text size="xs" style={{ fontFamily: 'monospace', backgroundColor: 'var(--gray800)', padding: '2px 6px', borderRadius: '4px' }}>Esc</Text>
                 <Text size="xs">Cancel current operation</Text>
-              </FeatureItem>
-            </FeatureList>
-          </Section>
+              </Box>
+            </Box>
+          </Box>
         )}
 
         {/* Line Tool Features */}
         {currentTool === 'line' && (
-          <Section>
-            <SectionTitle>Line Tool</SectionTitle>
-            <FeatureList>
-              <FeatureItem>
-                <KeyboardShortcut>Click</KeyboardShortcut>
+          <Box style={{ marginBottom: '16px' }}>
+            <Text size="sm" weight="semibold" style={{ marginBottom: '8px' }}>Line Tool</Text>
+            <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Click
+                </Box>
                 <Text size="xs">Add points for multi-segment line</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Shift</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Shift
+                </Box>
                 <Text size="xs">Constrain to 45° angles</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Ctrl+Click</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Ctrl+Click
+                </Box>
                 <Text size="xs">Finish line</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>A</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  A
+                </Box>
                 <Text size="xs">Toggle arrow head</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Enter/Space</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Enter/Space
+                </Box>
                 <Text size="xs">Complete line</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Backspace</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Backspace
+                </Box>
                 <Text size="xs">Remove last point</Text>
-              </FeatureItem>
-            </FeatureList>
-          </Section>
+              </Box>
+            </Box>
+          </Box>
         )}
 
         {/* Text Tool Features */}
         {currentTool === 'text' && (
-          <Section>
-            <SectionTitle>Text Tool</SectionTitle>
-            <FeatureList>
-              <FeatureItem>
-                <KeyboardShortcut>Ctrl+↑/↓</KeyboardShortcut>
+          <Box style={{ marginBottom: '16px' }}>
+            <Text size="sm" weight="semibold" style={{ marginBottom: '8px' }}>Text Tool</Text>
+            <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Ctrl+↑/↓
+                </Box>
                 <Text size="xs">Font size up/down</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Ctrl+←/→</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Ctrl+←/→
+                </Box>
                 <Text size="xs">Cycle font families</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Ctrl+1/2/3</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Ctrl+1/2/3
+                </Box>
                 <Text size="xs">Align left/center/right</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Ctrl+B</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Ctrl+B
+                </Box>
                 <Text size="xs">Toggle bold</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Ctrl+I</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Ctrl+I
+                </Box>
                 <Text size="xs">Toggle italic</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Ctrl+W/K/R</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Ctrl+W/K/R
+                </Box>
                 <Text size="xs">White/Black/Red color</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Enter</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Enter
+                </Box>
                 <Text size="xs">Complete text</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Shift+Enter</KeyboardShortcut>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Box
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--gray200)'
+                  }}
+                >
+                  Shift+Enter
+                </Box>
                 <Text size="xs">New line</Text>
-              </FeatureItem>
-            </FeatureList>
-          </Section>
+              </Box>
+            </Box>
+          </Box>
         )}
 
         {/* Global Shortcuts */}
-        <Section>
-          <SectionTitle>Global Shortcuts</SectionTitle>
+        <Box style={{ marginBottom: '24px' }}>
+          <Text variant="label" size="sm" style={{ fontWeight: '600', color: 'var(--colors-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Global Shortcuts</Text>
           <Button
+            variant="outline"
             onClick={() => setShowKeyboardShortcuts(!showKeyboardShortcuts)}
-            css={{ width: '100%', justifyContent: 'space-between' }}
+            style={{
+              width: '100%',
+              justifyContent: 'space-between',
+              backgroundColor: 'var(--colors-gray800)',
+              borderColor: 'var(--colors-gray600)',
+              color: 'var(--colors-gray300)'
+            }}
           >
-            <Text size="xs">Keyboard Shortcuts</Text>
-            <Text size="xs">{showKeyboardShortcuts ? '▲' : '▼'}</Text>
+            <Text variant="body" size="xs" style={{ color: 'inherit' }}>Keyboard Shortcuts</Text>
+            <Text variant="body" size="xs" style={{ color: 'inherit' }}>{showKeyboardShortcuts ? '▲' : '▼'}</Text>
           </Button>
 
           {showKeyboardShortcuts && (
-            <FeatureList css={{ marginTop: '$2' }}>
-              <FeatureItem>
-                <KeyboardShortcut>R</KeyboardShortcut>
-                <Text size="xs">Rectangle tool</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>C</KeyboardShortcut>
-                <Text size="xs">Circle tool</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>L</KeyboardShortcut>
-                <Text size="xs">Line tool</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>T</KeyboardShortcut>
-                <Text size="xs">Text tool</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>P</KeyboardShortcut>
-                <Text size="xs">Polygon tool</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>V</KeyboardShortcut>
-                <Text size="xs">Select tool</Text>
-              </FeatureItem>
-              <FeatureItem>
-                <KeyboardShortcut>Esc</KeyboardShortcut>
-                <Text size="xs">Return to select tool</Text>
-              </FeatureItem>
-            </FeatureList>
+            <Box style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--colors-gray800)' }}>
+                <Text variant="code" size="xs" style={{ color: 'var(--colors-gray400)', fontFamily: 'monospace', backgroundColor: 'var(--colors-gray700)', padding: '2px 4px', borderRadius: '2px' }}>R</Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>Rectangle tool</Text>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--colors-gray800)' }}>
+                <Text variant="code" size="xs" style={{ color: 'var(--colors-gray400)', fontFamily: 'monospace', backgroundColor: 'var(--colors-gray700)', padding: '2px 4px', borderRadius: '2px' }}>C</Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>Circle tool</Text>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--colors-gray800)' }}>
+                <Text variant="code" size="xs" style={{ color: 'var(--colors-gray400)', fontFamily: 'monospace', backgroundColor: 'var(--colors-gray700)', padding: '2px 4px', borderRadius: '2px' }}>L</Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>Line tool</Text>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--colors-gray800)' }}>
+                <Text variant="code" size="xs" style={{ color: 'var(--colors-gray400)', fontFamily: 'monospace', backgroundColor: 'var(--colors-gray700)', padding: '2px 4px', borderRadius: '2px' }}>T</Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>Text tool</Text>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--colors-gray800)' }}>
+                <Text variant="code" size="xs" style={{ color: 'var(--colors-gray400)', fontFamily: 'monospace', backgroundColor: 'var(--colors-gray700)', padding: '2px 4px', borderRadius: '2px' }}>P</Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>Polygon tool</Text>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--colors-gray800)' }}>
+                <Text variant="code" size="xs" style={{ color: 'var(--colors-gray400)', fontFamily: 'monospace', backgroundColor: 'var(--colors-gray700)', padding: '2px 4px', borderRadius: '2px' }}>V</Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>Select tool</Text>
+              </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--colors-gray800)' }}>
+                <Text variant="code" size="xs" style={{ color: 'var(--colors-gray400)', fontFamily: 'monospace', backgroundColor: 'var(--colors-gray700)', padding: '2px 4px', borderRadius: '2px' }}>Esc</Text>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>Return to select tool</Text>
+              </Box>
+            </Box>
           )}
-        </Section>
-      </PanelContent>
-    </ToolsPanelContainer>
+        </Box>
+      </Box>
+    </Box>
   )
 }
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Group, Circle, Rect, Wedge } from 'react-konva'
 import Konva from 'konva'
-import { SpellEffect } from '@/types/spells'
+import type { SpellEffect } from '@/types/spells'
 import useRoundStore from '@/store/roundStore'
 
 type SpellEffectRendererProps = {

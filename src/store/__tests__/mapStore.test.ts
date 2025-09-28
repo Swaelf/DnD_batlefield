@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import useMapStore from '../mapStore'
-import { BattleMap, MapObject, Token } from '@/types'
+import type { BattleMap, MapObject, Token } from '@/types'
 
 describe('mapStore', () => {
   beforeEach(() => {

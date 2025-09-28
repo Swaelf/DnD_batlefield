@@ -8,14 +8,15 @@
 import React from 'react'
 import { TokenLibrary as AtomicTokenLibrary } from '@/modules/tokens'
 import { useTokenTemplate } from '@/modules/tokens/hooks'
-import { useToolStore } from '@/store/toolStore'
-import type { TokenTemplate } from '@/types/token'
+import useToolStore from '@/store/toolStore'
+import type { TokenTemplate } from '@/modules/tokens/types/template'
+import type { TokenTemplate as LegacyTokenTemplate } from '@/types/token'
 
 // Legacy TokenLibrary props for backward compatibility
 export interface LegacyTokenLibraryProps {
   readonly isOpen?: boolean
   readonly onClose?: () => void
-  readonly onSelectToken?: (template: TokenTemplate) => void
+  readonly onSelectToken?: (template: LegacyTokenTemplate) => void
 }
 
 /**
@@ -35,17 +36,12 @@ export const TokenLibrary: React.FC<LegacyTokenLibraryProps> = React.memo(({
     toggleLibrary,
     closeLibrary,
     activeTemplate,
-    setActiveTemplate,
-    templates,
-    filteredTemplates,
-    searchTerm,
-    setSearchTerm,
-    selectedCategory,
-    setSelectedCategory
+    setActiveTemplate
+    // templates, filteredTemplates, searchTerm, setSearchTerm, selectedCategory, setSelectedCategory - unused
   } = useTokenTemplate()
 
   // Integration with legacy toolStore workflow
-  const setSelectedTemplate = useToolStore(state => state.setSelectedTemplate)
+  const setTokenTemplate = useToolStore(state => state.setTokenTemplate)
   const setTool = useToolStore(state => state.setTool)
 
   // Sync legacy isOpen prop with atomic state
@@ -68,37 +64,41 @@ export const TokenLibrary: React.FC<LegacyTokenLibraryProps> = React.memo(({
     // Set template in atomic system
     setActiveTemplate(template)
 
-    // Maintain legacy toolStore integration
-    setSelectedTemplate(template)
+    // Maintain legacy toolStore integration - convert to simpler TokenTemplate type
+    const simpleTemplate = {
+      name: template.name,
+      size: template.defaults.size,
+      color: template.defaults.color,
+      shape: template.defaults.shape as 'circle' | 'square',
+      category: template.category as 'player' | 'enemy' | 'npc' | 'object' | undefined
+    }
+    setTokenTemplate(simpleTemplate)
     setTool('token')
 
-    // Legacy callback
-    onSelectToken?.(template)
+    // Legacy callback - convert to legacy type
+    if (onSelectToken) {
+      const legacyTemplate: LegacyTokenTemplate = {
+        name: template.name,
+        size: template.defaults.size,
+        color: template.defaults.color,
+        shape: template.defaults.shape as 'circle' | 'square',
+        category: template.category as 'player' | 'enemy' | 'npc' | 'object' | undefined
+        // Note: image property doesn't exist in simple TokenTemplate
+      }
+      onSelectToken(legacyTemplate)
+    }
 
     // Close library after selection (legacy behavior)
     handleClose()
-  }, [setActiveTemplate, setSelectedTemplate, setTool, onSelectToken, handleClose])
+  }, [setActiveTemplate, setTokenTemplate, setTool, onSelectToken, handleClose])
 
-  // Use atomic TokenLibrary with enhanced features
+  // Use atomic TokenLibrary with only the supported props
   return (
     <AtomicTokenLibrary
       isOpen={isLibraryOpen}
       onClose={handleClose}
       onSelectTemplate={handleSelectTemplate}
       activeTemplate={activeTemplate}
-      // Enhanced features from atomic architecture (non-breaking additions)
-      templates={templates}
-      filteredTemplates={filteredTemplates}
-      searchTerm={searchTerm}
-      onSearchChange={setSearchTerm}
-      selectedCategory={selectedCategory}
-      onCategoryChange={setSelectedCategory}
-      // Legacy features maintained
-      showBuiltInTemplates={true}
-      showCustomTemplates={true}
-      allowCustomCreation={true}
-      enableSearch={true}
-      enableCategoryFilter={true}
     />
   )
 })

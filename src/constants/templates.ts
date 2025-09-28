@@ -455,7 +455,7 @@ export const validateTemplate = (template: typeof ACTION_TEMPLATES[keyof typeof 
     errors.push('Template name is required')
   }
 
-  if (!template.actions || template.actions.length === 0) {
+  if (!template.actions || template.actions.length < 1) {
     errors.push('Template must have at least one action')
   }
 

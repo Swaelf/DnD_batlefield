@@ -6,8 +6,7 @@
  */
 
 import React from 'react'
-import { styled } from '@/styles/theme.config'
-import type { SpellSchoolId } from '../../types'
+import { Box } from '@/components/primitives'
 
 interface SpellBadgeProps {
   variant: 'level' | 'school' | 'type' | 'custom'
@@ -18,61 +17,65 @@ interface SpellBadgeProps {
   className?: string
 }
 
-const Badge = styled('span', {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: '$2',
-  fontWeight: 500,
-  textTransform: 'uppercase',
-  letterSpacing: '0.025em',
-  whiteSpace: 'nowrap',
-
-  variants: {
-    variant: {
-      level: {
-        background: '$dndRed',
-        color: 'white',
-        minWidth: '20px',
-        height: '20px',
-        fontSize: '$xs'
-      },
-      school: {
-        background: '$gray300',
-        color: '$gray800',
-        padding: '2px 6px',
-        fontSize: '$xs'
-      },
-      type: {
-        background: '$secondary',
-        color: '$dndBlack',
-        padding: '2px 6px',
-        fontSize: '$xs'
-      },
-      custom: {
-        background: '$violet600',
-        color: 'white',
-        padding: '1px 4px',
-        fontSize: '$xs'
-      }
-    },
-
-    size: {
-      sm: {
-        fontSize: '$xs',
-        padding: '1px 4px'
-      },
-      md: {
-        fontSize: '$sm',
-        padding: '2px 6px'
-      }
-    }
-  },
-
-  defaultVariants: {
-    size: 'md'
+// Helper functions for styling
+const getBadgeStyles = (variant: SpellBadgeProps['variant'], size: SpellBadgeProps['size'] = 'md', customColor?: string) => {
+  const baseStyles = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '4px',
+    fontWeight: '500',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.025em',
+    whiteSpace: 'nowrap' as const
   }
-})
+
+  const variantStyles = {
+    level: {
+      background: 'var(--dnd-red)',
+      color: 'white',
+      minWidth: '20px',
+      height: '20px',
+      fontSize: '12px'
+    },
+    school: {
+      background: 'var(--gray-300)',
+      color: 'var(--gray-800)',
+      padding: '2px 6px',
+      fontSize: '12px'
+    },
+    type: {
+      background: 'var(--secondary)',
+      color: 'var(--dnd-black)',
+      padding: '2px 6px',
+      fontSize: '12px'
+    },
+    custom: {
+      background: 'var(--violet-600)',
+      color: 'white',
+      padding: '1px 4px',
+      fontSize: '12px'
+    }
+  }
+
+  const sizeStyles = {
+    sm: {
+      fontSize: '12px',
+      padding: '1px 4px'
+    },
+    md: {
+      fontSize: '14px',
+      padding: '2px 6px'
+    }
+  }
+
+  return {
+    ...baseStyles,
+    ...variantStyles[variant],
+    ...sizeStyles[size],
+    ...(customColor ? { background: customColor } : {})
+  }
+}
 
 const SCHOOL_COLORS: Record<string, string> = {
   abjuration: '#4a90e2',
@@ -96,14 +99,12 @@ export const SpellBadge: React.FC<SpellBadgeProps> = ({
   const badgeColor = color || SCHOOL_COLORS[String(content).toLowerCase()]
 
   return (
-    <Badge
-      variant={variant}
-      size={size}
-      title={title}
+    <Box
       className={className}
-      style={badgeColor ? { background: badgeColor } : undefined}
+      title={title}
+      style={getBadgeStyles(variant, size, badgeColor)}
     >
       {content}
-    </Badge>
+    </Box>
   )
 }

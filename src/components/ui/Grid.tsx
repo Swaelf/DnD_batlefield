@@ -1,5 +1,5 @@
+import type React from 'react'
 import { styled } from '@/styles/theme.config'
-import type { ComponentProps } from '@/types'
 
 export const Grid = styled('div', {
   display: 'grid',
@@ -124,5 +124,5 @@ export const GridItem = styled('div', {
   },
 })
 
-export type GridProps = ComponentProps<typeof Grid>
-export type GridItemProps = ComponentProps<typeof GridItem>
+export type GridProps = React.ComponentProps<typeof Grid>
+export type GridItemProps = React.ComponentProps<typeof GridItem>

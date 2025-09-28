@@ -1,10 +1,19 @@
 import { memo, useEffect, useState, useRef } from 'react'
 import { Group, Circle, Rect, Line, Wedge } from 'react-konva'
 import type Konva from 'konva'
-import { useMapStore } from '@/store/mapStore'
+import useMapStore from '@/store/mapStore'
 import { useUnifiedActionStore } from '@/store/unifiedActionStore'
 import { detectAffectedTokens, generateActionArea } from '@/utils/targetDetection'
-import { TOKEN_SIZES } from '@/components/Token/utils/tokenConstants'
+// import { TOKEN_SIZES } from '@/components/Token/utils/tokenConstants'
+// Temporary TOKEN_SIZES until the constants file is created
+const TOKEN_SIZES = {
+  tiny: 0.5,
+  small: 1,
+  medium: 1,
+  large: 2,
+  huge: 3,
+  gargantuan: 4
+}
 import type { Token } from '@/types'
 import type { UnifiedAction, AreaShape } from '@/types/unifiedAction'
 
@@ -172,9 +181,9 @@ const TargetHighlighterComponent = ({
   }
 
   const renderTokenHighlight = (token: Token) => {
-    const sizeConfig = TOKEN_SIZES[token.size || 'medium']
+    const gridSquares = TOKEN_SIZES[token.size || 'medium'] // Already represents grid squares
     const gridSize = currentMap?.grid.size || 50
-    const tokenRadius = (sizeConfig.gridSquares * gridSize) / 2
+    const tokenRadius = (gridSquares * gridSize) / 2
 
     // Determine highlight color based on source
     const highlightInfo = highlightedTargets.find(ht => ht.tokenId === token.id)

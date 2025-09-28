@@ -7,6 +7,20 @@ import type { LucideIcon } from 'lucide-react'
 import type { ComponentProps } from 'react'
 import { Button } from '../../atoms/Button'
 import { Icon } from '../../atoms/Icon'
+import { styled } from '@/styles/theme.config'
+
+const SquareIconButton = styled(Button, {
+  padding: 0,
+
+  variants: {
+    size: {
+      xs: { width: '24px' },
+      sm: { width: '32px' },
+      md: { width: '40px' },
+      lg: { width: '48px' }
+    }
+  }
+})
 
 export type IconButtonProps = {
   icon: LucideIcon
@@ -35,26 +49,19 @@ export const IconButton = ({
   }
 
   return (
-    <Button
+    <SquareIconButton
       {...props}
       size={size}
       disabled={disabled}
       loading={loading}
       onClick={onClick}
       aria-label={ariaLabel}
-      css={{
-        // Make button square for icons
-        width: size === 'xs' ? '24px' :
-               size === 'sm' ? '32px' :
-               size === 'md' ? '40px' : '48px',
-        padding: 0
-      }}
     >
       {loading ? (
         <Icon icon={icon} size={iconSizeMap[size]} />
       ) : (
         <Icon icon={icon} size={iconSizeMap[size]} />
       )}
-    </Button>
+    </SquareIconButton>
   )
 }

@@ -1,6 +1,6 @@
-import React from 'react'
-import Konva from 'konva'
-import { Point } from './geometry'
+import type React from 'react'
+import type Konva from 'konva'
+import type { Point } from './geometry'
 
 export type Position = Point
 
@@ -27,7 +27,19 @@ export type MapObject = {
   isAttackEffect?: boolean
   attackData?: any // Will be properly typed later
 
+  shapeType?: string
+  width?: number
+  height?: number
+
   // Persistent area-specific
+}
+
+// Specialized spell object that requires round tracking
+export type SpellMapObject = MapObject & {
+  type: 'spell' | 'persistent-area'
+  isSpellEffect: boolean
+  roundCreated: number // Required for spells
+  spellDuration: number // Required for spells
   persistentAreaData?: {
     position: Position
     radius: number
@@ -51,6 +63,7 @@ export type Shape = MapObject & {
   strokeColor: string
   strokeWidth: number
   opacity: number
+  metadata?: any
 }
 
 export type Text = MapObject & {
@@ -59,9 +72,11 @@ export type Text = MapObject & {
   fontSize: number
   fontFamily: string
   color: string
+  fill?: string
+  align?: string
 }
 
-import { GridSettings } from './grid'
+import type { GridSettings } from './grid'
 
 export type BattleMap = {
   id: string
@@ -92,4 +107,5 @@ export type StaticObjectTemplate = {
   strokeWidth: number
   shape: 'rectangle' | 'circle' | 'polygon'
   points?: number[] // For polygon shapes
+  metadata?: any
 }

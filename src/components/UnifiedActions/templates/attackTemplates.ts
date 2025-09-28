@@ -15,8 +15,11 @@ export type AttackTemplate = Omit<UnifiedAction, 'id' | 'timestamp' | 'source' |
  */
 export const swordSlashTemplate: AttackTemplate = {
   templateId: 'sword-slash',
+  name: 'Sword Slash',
+  description: 'A swift slash with a bladed weapon',
   type: 'attack',
   category: 'sword',
+  tags: ['melee', 'weapon', 'sword'],
   animation: {
     type: 'melee_slash',
     duration: 400,
@@ -55,8 +58,11 @@ export const swordSlashTemplate: AttackTemplate = {
  */
 export const axeSwingTemplate: AttackTemplate = {
   templateId: 'axe-swing',
+  name: 'Axe Swing',
+  description: 'A heavy axe swing with wide arc',
   type: 'attack',
   category: 'axe',
+  tags: ['melee', 'weapon', 'axe'],
   animation: {
     type: 'melee_swing',
     duration: 500,
@@ -102,8 +108,11 @@ export const axeSwingTemplate: AttackTemplate = {
  */
 export const maceSmashTemplate: AttackTemplate = {
   templateId: 'mace-smash',
+  name: 'Mace Smash',
+  description: 'A crushing blow with a mace',
   type: 'attack',
   category: 'mace',
+  tags: ["attack","combat"],
   animation: {
     type: 'melee_swing',
     duration: 450,
@@ -141,8 +150,11 @@ export const maceSmashTemplate: AttackTemplate = {
  */
 export const daggerStabTemplate: AttackTemplate = {
   templateId: 'dagger-stab',
+  name: 'Dagger Stab',
+  description: 'A quick, precise stab with a dagger',
   type: 'attack',
   category: 'dagger',
+  tags: ["attack","combat"],
   animation: {
     type: 'melee_slash',
     duration: 250,
@@ -180,8 +192,11 @@ export const daggerStabTemplate: AttackTemplate = {
  */
 export const arrowShotTemplate: AttackTemplate = {
   templateId: 'arrow-shot',
+  name: 'Arrow Shot',
+  description: 'A basic arrow shot from a bow',
   type: 'attack',
   category: 'arrow',
+  tags: ["attack","combat"],
   animation: {
     type: 'projectile',
     duration: 600,
@@ -220,8 +235,11 @@ export const arrowShotTemplate: AttackTemplate = {
  */
 export const crossbowBoltTemplate: AttackTemplate = {
   templateId: 'crossbow-bolt',
+  name: 'Crossbow Bolt',
+  description: 'A heavy crossbow bolt attack',
   type: 'attack',
   category: 'bolt',
+  tags: ["attack","combat"],
   animation: {
     type: 'projectile',
     duration: 500,
@@ -260,8 +278,11 @@ export const crossbowBoltTemplate: AttackTemplate = {
  */
 export const throwingKnifeTemplate: AttackTemplate = {
   templateId: 'throwing-knife',
+  name: 'Throwing Knife',
+  description: 'A thrown knife attack',
   type: 'attack',
   category: 'thrown',
+  tags: ["attack","combat"],
   animation: {
     type: 'projectile',
     duration: 400,
@@ -300,8 +321,11 @@ export const throwingKnifeTemplate: AttackTemplate = {
  */
 export const spearThrustTemplate: AttackTemplate = {
   templateId: 'spear-thrust',
+  name: 'Spear Thrust',
+  description: 'A thrusting attack with a spear',
   type: 'attack',
   category: 'spear',
+  tags: ["attack","combat"],
   animation: {
     type: 'melee_slash',
     duration: 350,

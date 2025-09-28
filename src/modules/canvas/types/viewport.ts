@@ -5,7 +5,7 @@
  * and camera controls in the atomic Canvas system.
  */
 
-import type { Point, Rectangle, Bounds } from '@/types/geometry'
+import type { Point, Rectangle } from '@/types/geometry'
 
 /**
  * Viewport Configuration

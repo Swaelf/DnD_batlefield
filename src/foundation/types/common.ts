@@ -41,7 +41,7 @@ export type BaseConfig = {
 
 // Utility types
 export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
-export type Required<T, K extends keyof T> = T & Pick<Required<T>, K>
+export type RequiredProperties<T, K extends keyof T> = T & Pick<Required<T>, K>
 export type DeepReadonly<T> = {
   readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P]
 }

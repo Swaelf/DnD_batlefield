@@ -4,12 +4,13 @@ import useRoundStore from '@/store/roundStore'
 import useMapStore from '@/store/mapStore'
 import useEventCreationStore from '@/store/eventCreationStore'
 import { useUnifiedActionStore } from '@/store/unifiedActionStore'
-import { Token } from '@/types/token'
-import { Position } from '@/types/map'
-import { UnifiedAction } from '@/types/unifiedAction'
+import type { Token } from '@/types/token'
+import type { Position } from '@/types/map'
+import type { UnifiedAction } from '@/types/unifiedAction'
+import type { ActionId } from '@/modules/timeline/types/actions'
 import { createUnifiedRoundEvent } from '@/types/timelineUnified'
-import { Modal, ModalBody, Box, Text, Button } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { Box, Text, Button } from '@/components/primitives'
+import { Modal } from '@/components/ui/Modal'
 import { ActionSelectionModal } from './ActionSelectionModal'
 import { ActionCustomizationModal } from './ActionCustomizationModal'
 import {
@@ -17,81 +18,9 @@ import {
   PositionPicker,
   EventsList
 } from './EventEditor/index'
-import { EventType } from '@/types'
+import type { EventType } from '@/types'
 
-// Styled components to fix TypeScript errors
-const MainContainer = styled(Box, {
-  height: '70vh',
-  overflow: 'hidden'
-})
-
-const ContentContainer = styled(Box, {
-  flex: 1,
-  padding: '$4',
-  overflowY: 'auto',
-  maxHeight: '70vh'
-})
-
-const MainContent = styled(Box, {
-  padding: '$4',
-  backgroundColor: '$gray800',
-  borderRadius: '$lg',
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
-})
-
-const HeaderTitle = styled(Text, {
-  fontSize: '$xl',
-  fontWeight: '$semibold',
-  color: '$white'
-})
-
-const HeaderSubtitle = styled(Text, {
-  fontSize: '$sm',
-  color: '$gray400'
-})
-
-const ActionTitle = styled(Text, {
-  fontSize: '$md',
-  fontWeight: '$semibold',
-  color: '$white'
-})
-
-const ActionDescription = styled(Text, {
-  fontSize: '$sm',
-  color: '$gray400',
-  marginBottom: '$1'
-})
-
-const AnimationInfo = styled(Text, {
-  fontSize: '$xs'
-})
-
-const ActionContainer = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '$3',
-  backgroundColor: '$gray700',
-  borderRadius: '$lg',
-  border: '1px solid $gray600'
-})
-
-const ActionIcon = styled(Box, {
-  width: '32px',
-  height: '32px',
-  borderRadius: '$md',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center'
-})
-
-
-const PreviewTitle = styled(Text, {
-  fontSize: '$md',
-  fontWeight: '$semibold',
-  color: '$white',
-  marginBottom: '$2'
-})
+// All styled components removed - using primitive components with style props
 
 type UnifiedEventEditorProps = {
   isOpen: boolean
@@ -100,11 +29,11 @@ type UnifiedEventEditorProps = {
   roundNumber?: number
 }
 
-const UnifiedEventEditorComponent: React.FC<UnifiedEventEditorProps> = ({
+const UnifiedEventEditorComponent = ({
   isOpen,
   onClose,
   tokenId: initialTokenId
-}) => {
+}: UnifiedEventEditorProps) => {
   // Use specific selectors to prevent unnecessary re-renders
   const currentRound = useRoundStore(state => state.currentRound)
   const timeline = useRoundStore(state => state.timeline)
@@ -243,7 +172,7 @@ const UnifiedEventEditorComponent: React.FC<UnifiedEventEditorProps> = ({
     // Create a customized action based on the selected template and current context
     const customizedAction: UnifiedAction = {
       ...selectedAction,
-      id: `action-${Date.now()}`, // Generate new unique ID
+      id: `action-${Date.now()}` as ActionId, // Generate new unique ID
       source: token.position,      // Set source to token position
       target: targetPosition,      // Set target to selected position
       timestamp: Date.now(),
@@ -424,36 +353,81 @@ const UnifiedEventEditorComponent: React.FC<UnifiedEventEditorProps> = ({
       <Modal
         isOpen={isOpen && !isTemporarilyHidden}
         onClose={onClose}
-        title=""
-        size="xl"
       >
-        <ModalBody data-test-id="unified-event-popup" display="flex" flexDirection="column">
-          <MainContainer display="flex">
-            {/* Main Content */}
-            <ContentContainer display="flex" flexDirection="column">
-              <MainContent display="flex" flexDirection="column">
-                <Box display="flex" alignItems="center" justifyContent="space-between" marginBottom="4">
-                  <Box display="flex" flexDirection="column" width="auto">
-                    <HeaderTitle>
-                      Create Unified Action Event
-                    </HeaderTitle>
-                    <HeaderSubtitle>
-                      Schedule unified actions for Round {targetRound}
-                    </HeaderSubtitle>
-                  </Box>
-
-                  <Box display="flex">
-                    <Button
-                      onClick={handleAddEvent}
-                      disabled={!canAddEvent()}
-                    >
-                      <Plus size={16} style={{ marginRight: '8px' }} />
-                      Add Action Event
-                    </Button>
-                  </Box>
+        <Box
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '70vh',
+            overflow: 'hidden'
+          }}
+        >
+          {/* Main Content */}
+          <Box
+            style={{
+              flex: 1,
+              padding: '16px',
+              overflowY: 'auto',
+              maxHeight: '70vh'
+            }}
+          >
+            <Box
+              style={{
+                padding: '16px',
+                backgroundColor: 'var(--colors-gray800)',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              <Box
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '16px'
+                }}
+              >
+                <Box style={{ display: 'flex', flexDirection: 'column', width: 'auto' }}>
+                  <Text
+                    variant="heading"
+                    size="lg"
+                    style={{
+                      fontWeight: '600',
+                      color: 'var(--colors-white)',
+                      marginBottom: '4px'
+                    }}
+                  >
+                    Create Unified Action Event
+                  </Text>
+                  <Text
+                    variant="body"
+                    size="sm"
+                    style={{ color: 'var(--colors-gray400)' }}
+                  >
+                    Schedule unified actions for Round {targetRound}
+                  </Text>
                 </Box>
 
-                <Box display="flex" flexDirection="column" gap="4">
+                <Box style={{ display: 'flex' }}>
+                  <Button
+                    variant="primary"
+                    onClick={handleAddEvent}
+                    disabled={!canAddEvent()}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <Plus size={16} />
+                    Add Action Event
+                  </Button>
+                </Box>
+              </Box>
+
+                <Box style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {/* Token Selection */}
                   <TokenSelector
                     selectedToken={selectedToken}
@@ -472,60 +446,99 @@ const UnifiedEventEditorComponent: React.FC<UnifiedEventEditorProps> = ({
                   />
 
                   {/* Action Selection */}
-                  <Box display="flex" flexDirection="column" width="auto">
-                    <ActionTitle>
+                  <Box style={{ display: 'flex', flexDirection: 'column', width: 'auto' }}>
+                    <Text
+                      variant="body"
+                      size="md"
+                      style={{
+                        fontWeight: '600',
+                        color: 'var(--colors-white)',
+                        marginBottom: '8px'
+                      }}
+                    >
                       Action
-                    </ActionTitle>
+                    </Text>
                     {selectedAction ? (
-                      <ActionContainer>
-                        <Box display="flex" alignItems="center" gap="3">
-                          <ActionIcon
-                            css={{
-                              backgroundColor: selectedAction.type === 'spell' ? '$blue500' :
-                                              selectedAction.type === 'attack' ? '$red500' : '$green500'
+                      <Box
+                        style={{
+                          padding: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: 'var(--colors-gray700)',
+                          borderRadius: '8px',
+                          border: '1px solid var(--colors-gray600)'
+                        }}
+                      >
+                        <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <Box
+                            style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '6px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor:
+                                selectedAction.type === 'spell' ? 'var(--colors-blue500)' :
+                                selectedAction.type === 'attack' ? 'var(--colors-red500)' :
+                                'var(--colors-green500)'
                             }}
                           >
                             {selectedAction.type === 'spell' && <Target size={16} />}
                             {selectedAction.type === 'attack' && <Target size={16} />}
                             {selectedAction.type === 'interaction' && <Target size={16} />}
                             {selectedAction.type === 'move' && <Move size={16} />}
-                          </ActionIcon>
+                          </Box>
                           <Box>
-                            <ActionTitle>
+                            <Text
+                              variant="body"
+                              size="md"
+                              style={{
+                                fontWeight: '600',
+                                color: 'var(--colors-white)',
+                                marginBottom: '2px'
+                              }}
+                            >
                               {selectedAction.metadata.name}
-                            </ActionTitle>
-                            <ActionDescription>
+                            </Text>
+                            <Text
+                              variant="body"
+                              size="sm"
+                              style={{
+                                color: 'var(--colors-gray400)',
+                                marginBottom: '4px'
+                              }}
+                            >
                               {selectedAction.category} • {selectedAction.type}
-                            </ActionDescription>
+                            </Text>
                           </Box>
                         </Box>
                         <Button
                           onClick={() => setIsActionModalOpen(true)}
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
-                          css={{
-                            backgroundColor: '$gray600',
-                            color: '$gray300',
-                            border: '1px solid $gray500'
+                          style={{
+                            backgroundColor: 'var(--colors-gray600)',
+                            color: 'var(--colors-gray300)',
+                            border: '1px solid var(--colors-gray500)'
                           }}
                         >
                           Change
                         </Button>
-                      </ActionContainer>
+                      </Box>
                     ) : (
                       <Button
                         onClick={() => setIsActionModalOpen(true)}
-                        variant="outline"
-                        css={{
-                          padding: '$4',
-                          backgroundColor: '$gray700',
-                          color: '$gray300',
-                          border: '2px dashed $gray500',
-                          borderRadius: '$lg',
-                          '&:hover': {
-                            backgroundColor: '$gray600',
-                            borderColor: '$secondary'
-                          }
+                        variant="secondary"
+                        style={{
+                          padding: '16px',
+                          backgroundColor: 'var(--colors-gray700)',
+                          color: 'var(--colors-gray300)',
+                          border: '2px dashed var(--colors-gray500)',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center'
                         }}
                       >
                         <Plus size={16} style={{ marginRight: '8px' }} />
@@ -537,31 +550,46 @@ const UnifiedEventEditorComponent: React.FC<UnifiedEventEditorProps> = ({
                   {/* Action Preview */}
                   {selectedAction && (
                     <Box>
-                      <PreviewTitle>
-                        Action Preview
-                      </PreviewTitle>
-                      <Box
-                        css={{
-                          padding: '$3',
-                          backgroundColor: '$gray700',
-                          borderRadius: '$md',
-                          border: '1px solid $gray600'
+                      <Text
+                        variant="body"
+                        size="md"
+                        style={{
+                          fontWeight: '600',
+                          color: 'var(--colors-white)',
+                          marginBottom: '8px'
                         }}
                       >
-                        <AnimationInfo css={{ color: '$gray400' }}>
+                        Action Preview
+                      </Text>
+                      <Box
+                        style={{
+                          padding: '12px',
+                          backgroundColor: 'var(--colors-gray700)',
+                          borderRadius: '6px',
+                          border: '1px solid var(--colors-gray600)'
+                        }}
+                      >
+                        <Text
+                          variant="body"
+                          size="xs"
+                          style={{ color: 'var(--colors-gray400)', marginBottom: '4px' }}
+                        >
                           Animation: {selectedAction.animation.type} • Duration: {selectedAction.animation.duration}ms
-                        </AnimationInfo>
+                        </Text>
                         {selectedAction.metadata.description && (
-                          <AnimationInfo css={{ color: '$gray300' }}>
+                          <Text
+                            variant="body"
+                            size="xs"
+                            style={{ color: 'var(--colors-gray300)' }}
+                          >
                             {selectedAction.metadata.description}
-                          </AnimationInfo>
+                          </Text>
                         )}
                       </Box>
                     </Box>
                   )}
                 </Box>
-              </MainContent>
-            </ContentContainer>
+            </Box>
 
             {/* Events List Sidebar */}
             <EventsList
@@ -570,64 +598,62 @@ const UnifiedEventEditorComponent: React.FC<UnifiedEventEditorProps> = ({
               nextRound={currentRound}
               onDeleteEvent={handleDeleteEvent}
             />
-          </MainContainer>
+          </Box>
 
-          {/* Footer */}
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            gap="2"
-            css={{
-              padding: '$4',
-              borderTop: '1px solid $gray700',
-              backgroundColor: '$gray900/50'
-            }}
-          >
-            {/* Action Preview Toggle */}
-            <Box display="flex" alignItems="center">
+        {/* Footer */}
+        <Box
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '16px',
+            borderTop: '1px solid var(--colors-gray700)',
+            backgroundColor: 'rgba(17, 24, 39, 0.5)'
+          }}
+        >
+          {/* Action Preview Toggle */}
+          <Box style={{ display: 'flex', alignItems: 'center' }}>
               <Button
                 onClick={toggleSpellPreview}
-                css={{
+                variant="secondary"
+                style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '$2',
-                  padding: '$2 $3',
-                  borderRadius: '$md',
-                  backgroundColor: spellPreviewEnabled ? '$secondary/20' : '$gray700',
-                  color: spellPreviewEnabled ? '$secondary' : '$gray400',
-                  border: spellPreviewEnabled ? '1px solid $secondary' : '1px solid $gray600',
-                  '&:hover': {
-                    backgroundColor: spellPreviewEnabled ? '$secondary/30' : '$gray600',
-                    color: spellPreviewEnabled ? '$secondary' : '$gray300'
-                  }
+                  gap: '8px',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  backgroundColor: spellPreviewEnabled ? 'rgba(201, 173, 106, 0.2)' : 'var(--colors-gray700)',
+                  color: spellPreviewEnabled ? 'var(--colors-secondary)' : 'var(--colors-gray400)',
+                  border: spellPreviewEnabled ? '1px solid var(--colors-secondary)' : '1px solid var(--colors-gray600)'
                 }}
                 title={spellPreviewEnabled ? 'Disable Action Preview (Spells & Movement)' : 'Enable Action Preview (Spells & Movement)'}
               >
                 <Sparkles size={14} />
-                <Box css={{ fontSize: '$xs', fontWeight: '$medium' }}>
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{ fontWeight: '500' }}
+                >
                   {spellPreviewEnabled ? 'Preview: ON' : 'Preview: OFF'}
-                </Box>
+                </Text>
               </Button>
             </Box>
 
             {/* Close Button */}
             <Button
               onClick={onClose}
-              variant="outline"
-              css={{
-                backgroundColor: '$gray700',
-                color: '$gray300',
-                '&:hover': {
-                  backgroundColor: '$gray600'
-                }
+              variant="secondary"
+              style={{
+                backgroundColor: 'var(--colors-gray700)',
+                color: 'var(--colors-gray300)'
               }}
             >
               <X size={16} style={{ marginRight: '4px' }} />
               Close
             </Button>
           </Box>
-        </ModalBody>
+        </Box>
       </Modal>
 
       {/* Action Selection Modal */}

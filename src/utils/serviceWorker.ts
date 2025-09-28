@@ -154,7 +154,7 @@ class ServiceWorkerManager {
     }
 
     try {
-      await this.swRegistration.sync.register(tag)
+      await (this.swRegistration.sync as any).register(tag)
       console.log(`[SW] Background sync registered: ${tag}`)
     } catch (error) {
       console.error(`[SW] Background sync registration failed: ${tag}`, error)

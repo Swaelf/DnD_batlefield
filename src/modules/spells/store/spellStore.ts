@@ -223,9 +223,11 @@ export const useSpellStore = create<SpellStore>()(
         const results = templateService.searchSpells(searchCriteria)
 
         set((state) => {
-          state.searchResults = results
-          state.isSearching = false
-          state.lastSearchCriteria = searchCriteria
+          Object.assign(state, {
+            searchResults: results,
+            isSearching: false,
+            lastSearchCriteria: searchCriteria
+          })
         })
       },
 
@@ -340,7 +342,7 @@ export const useSpellStore = create<SpellStore>()(
             size: spell.size,
             duration: spell.duration,
             animation: spell.animation,
-            tags: spell.tags
+            tags: [...spell.tags]
           }
         })
       },
@@ -381,13 +383,13 @@ export const useSpellStore = create<SpellStore>()(
       },
 
       // Custom Spells Actions
-      saveCustomSpell: (spell) => {
+      saveCustomSpell: (_spell) => {
         // Custom spell persistence would be implemented here
         // For now, we'll just refresh the search to show changes
         get().search()
       },
 
-      deleteCustomSpell: (spellId) => {
+      deleteCustomSpell: (_spellId) => {
         // Custom spell deletion would be implemented here
         get().search()
         return true
@@ -397,7 +399,7 @@ export const useSpellStore = create<SpellStore>()(
       startPreview: (template) => {
         set((state) => {
           state.previewState.isActive = true
-          state.previewState.template = template
+          Object.assign(state.previewState, { template })
           state.previewState.position = null
           state.previewState.rotation = 0
           state.previewState.isValid = false
@@ -422,7 +424,7 @@ export const useSpellStore = create<SpellStore>()(
 
       stopPreview: () => {
         set((state) => {
-          state.previewState = defaultPreviewState
+          Object.assign(state, { previewState: defaultPreviewState })
         })
       },
 

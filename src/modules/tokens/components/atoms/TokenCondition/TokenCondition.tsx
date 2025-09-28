@@ -25,8 +25,7 @@ export const TokenCondition: React.FC<TokenConditionProps> = React.memo(({
   x,
   y,
   index,
-  size = 12,
-  animated = true
+  size = 12
 }) => {
   const visual = getConditionVisual(condition)
   const radius = size / 2

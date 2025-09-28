@@ -27,12 +27,12 @@ type CombatControlsProps = {
 const CombatControlsComponent: React.FC<CombatControlsProps> = ({
   eventCount,
   activeSpells,
-  animationSpeed,
+  animationSpeed: _animationSpeed,
   isExpanded,
   onShowEventEditor,
   onEndCombat,
   onToggleExpanded,
-  onSetAnimationSpeed
+  onSetAnimationSpeed: _onSetAnimationSpeed
 }) => {
   return (
     <>
@@ -92,7 +92,7 @@ const SpeedControlsComponent: React.FC<SpeedControlsProps> = ({
 }) => {
   return (
     <SpeedControl>
-      <Box display="flex" alignItems="center" gap="2">
+      <Box display="flex" alignItems="center" gap={2}>
         <SpeedLabel>Animation Speed:</SpeedLabel>
         <SpeedInput
           type="range"
@@ -100,7 +100,7 @@ const SpeedControlsComponent: React.FC<SpeedControlsProps> = ({
           max="3"
           step="0.5"
           value={animationSpeed}
-          onChange={(e) => onSetAnimationSpeed(parseFloat(e.target.value))}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSetAnimationSpeed(parseFloat(e.target.value))}
         />
         <SpeedValue>{animationSpeed}x</SpeedValue>
       </Box>

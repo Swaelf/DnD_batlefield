@@ -1,5 +1,5 @@
 import { memo, useRef, useEffect } from 'react'
-import { Group, Circle, Star, RegularPolygon } from 'react-konva'
+import { Group, Circle, Star } from 'react-konva'
 import Konva from 'konva'
 import type { UnifiedAction } from '@/types/unifiedAction'
 import type { Point } from '@/types/geometry'
@@ -45,7 +45,7 @@ const BurstAnimationComponent = ({ action, onComplete }: BurstAnimationProps) =>
     const particles: Konva.Circle[] = []
     const particleCount = 8
     for (let i = 0; i < particleCount; i++) {
-      const angle = (i / particleCount) * Math.PI * 2
+      // const angle = (i / particleCount) * Math.PI * 2 // unused
       const particle = new Konva.Circle({
         x: 0,
         y: 0,

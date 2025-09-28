@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import useMapStore from '@/store/mapStore'
 import useRoundStore from '@/store/roundStore'
-import type { MapObject } from '@/types/map'
+import type { SpellMapObject } from '@/types/map'
 
 /**
  * Tests specifically for Fireball spell persistence behavior
@@ -51,7 +51,7 @@ describe('Fireball Spell Persistence', () => {
 
       // Simulate what happens when Fireball creates a persistent area
       // The bug was that persistDuration (2000ms) was used directly as spellDuration
-      const burnArea: MapObject = {
+      const burnArea: SpellMapObject = {
         id: 'fireball-burn-test',
         type: 'persistent-area',
         position: { x: 500, y: 300 },
@@ -92,7 +92,7 @@ describe('Fireball Spell Persistence', () => {
       ]
 
       testCases.forEach(({ persistMs, expectedRounds, spell }) => {
-        const area: MapObject = {
+        const area: SpellMapObject = {
           id: `test-${spell}-area`,
           type: 'persistent-area',
           position: { x: 100, y: 100 },
@@ -132,7 +132,7 @@ describe('Fireball Spell Persistence', () => {
       const roundStore = useRoundStore.getState()
 
       // Create Fireball burn area at round 1
-      const burnArea: MapObject = {
+      const burnArea: SpellMapObject = {
         id: 'fireball-cleanup-test',
         type: 'persistent-area',
         position: { x: 400, y: 400 },
@@ -316,20 +316,11 @@ describe('Fireball Spell Persistence', () => {
       // Add a non-spell persistent area
       mapStore.addObject({
         id: 'non-spell-area',
-        type: 'persistent-area',
+        type: 'shape',
         position: { x: 100, y: 100 },
         rotation: 0,
-        layer: 0,
-        // Note: isSpellEffect is false/undefined
-        persistentAreaData: {
-          position: { x: 100, y: 100 },
-          radius: 50,
-          color: '#0000ff',
-          opacity: 0.5,
-          spellName: 'Not a spell',
-          roundCreated: 1
-        }
-      })
+        layer: 0
+      } as any)
 
       // Call cleanup
       mapStore.cleanupExpiredSpells(5)

@@ -1,6 +1,9 @@
-import { memo, useState, useMemo, useRef, useEffect } from 'react'
-import { styled } from '@/styles/theme.config'
+import React, { memo, useState, useMemo, useRef, useEffect } from 'react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import { useUnifiedActionStore } from '@/store/unifiedActionStore'
+import type { ActionHistoryEntry } from '@/types/unifiedAction'
 import { ActionLogEntry } from './ActionLogEntry'
 import {
   Search,
@@ -8,10 +11,12 @@ import {
   X,
   Trash2,
   Download,
-  ChevronDown,
-  Activity
+  // ChevronDown, // unused
+  Activity,
+  // Calendar, // unused
+  Clock
 } from 'lucide-react'
-import type { ActionFilter, ActionHistoryEntry } from '@/types/unifiedAction'
+import type { ActionFilter } from '@/types/unifiedAction'
 
 type ActionLogSidebarProps = {
   isOpen?: boolean
@@ -19,421 +24,413 @@ type ActionLogSidebarProps = {
   maxHeight?: string
 }
 
-const SidebarContainer = styled('div', {
-  position: 'fixed',
-  right: 0,
-  top: 0,
-  width: 320,
-  height: '100vh',
-  backgroundColor: '$gray900',
-  borderLeft: '1px solid $gray700',
-  display: 'flex',
-  flexDirection: 'column',
-  transform: 'translateX(100%)',
-  transition: 'transform 0.3s ease',
-  zIndex: 40,
-
-  variants: {
-    isOpen: {
-      true: {
-        transform: 'translateX(0)'
-      }
-    }
-  }
-})
-
-const Header = styled('div', {
-  padding: '$3',
-  borderBottom: '1px solid $gray700',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  backgroundColor: '$gray850'
-})
-
-const Title = styled('h3', {
-  fontSize: '$medium',
-  fontWeight: 600,
-  color: '$text',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2'
-})
-
-const CloseButton = styled('button', {
-  background: 'none',
-  border: 'none',
-  color: '$gray400',
-  cursor: 'pointer',
-  padding: '$1',
-  borderRadius: '$small',
-  transition: 'background-color 0.2s',
-
-  '&:hover': {
-    backgroundColor: '$gray700',
-    color: '$text'
-  }
-})
-
-const SearchContainer = styled('div', {
-  padding: '$2 $3',
-  borderBottom: '1px solid $gray700',
-  backgroundColor: '$gray850'
-})
-
-const SearchInput = styled('input', {
-  width: '100%',
-  padding: '$2',
-  paddingLeft: 32,
-  backgroundColor: '$gray800',
-  border: '1px solid $gray700',
-  borderRadius: '$small',
-  color: '$text',
-  fontSize: '$small',
-
-  '&::placeholder': {
-    color: '$gray500'
-  },
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$primary'
-  }
-})
-
-const SearchIcon = styled(Search, {
-  position: 'absolute',
-  left: '$3',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  color: '$gray500',
-  pointerEvents: 'none'
-})
-
-const FilterBar = styled('div', {
-  padding: '$2 $3',
-  borderBottom: '1px solid $gray700',
-  display: 'flex',
-  gap: '$2',
-  flexWrap: 'wrap',
-  backgroundColor: '$gray850'
-})
-
-const FilterChip = styled('button', {
-  padding: '$1 $2',
-  backgroundColor: '$gray700',
-  border: '1px solid $gray600',
-  borderRadius: '$small',
-  color: '$gray400',
-  fontSize: '$tiny',
-  cursor: 'pointer',
-  transition: 'all 0.2s',
-
-  '&:hover': {
-    borderColor: '$gray500',
-    color: '$text'
-  },
-
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$primary',
-        borderColor: '$primary',
-        color: 'white'
-      }
-    }
-  }
-})
-
-const LogList = styled('div', {
-  flex: 1,
-  overflowY: 'auto',
-  overflowX: 'hidden'
-})
-
-const EmptyState = styled('div', {
-  padding: '$8',
-  textAlign: 'center',
-  color: '$gray500'
-})
-
-const Footer = styled('div', {
-  padding: '$2 $3',
-  borderTop: '1px solid $gray700',
-  display: 'flex',
-  gap: '$2',
-  backgroundColor: '$gray850'
-})
-
-const FooterButton = styled('button', {
-  flex: 1,
-  padding: '$2',
-  backgroundColor: '$gray700',
-  border: 'none',
-  borderRadius: '$small',
-  color: '$text',
-  fontSize: '$small',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '$1',
-  transition: 'background-color 0.2s',
-
-  '&:hover': {
-    backgroundColor: '$gray600'
-  },
-
-  '&:disabled': {
-    opacity: 0.5,
-    cursor: 'not-allowed'
-  }
-})
-
-const Stats = styled('div', {
-  padding: '$2 $3',
-  backgroundColor: '$gray850',
-  borderBottom: '1px solid $gray700',
-  display: 'flex',
-  justifyContent: 'space-around',
-  fontSize: '$tiny'
-})
-
-const StatItem = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '$1',
-
-  '& span:first-child': {
-    color: '$gray500'
-  },
-
-  '& span:last-child': {
-    color: '$text',
-    fontWeight: 500
-  }
-})
-
-const ActionLogSidebarComponent = ({
+const ActionLogSidebarComponent: React.FC<ActionLogSidebarProps> = ({
   isOpen = false,
   onClose,
-  maxHeight
-}: ActionLogSidebarProps) => {
-  const actionHistory = useUnifiedActionStore(state => state.actionHistory)
-  const activeActions = useUnifiedActionStore(state => state.activeActions)
-  const clearHistory = useUnifiedActionStore(state => state.clearHistory)
-  const filterHistory = useUnifiedActionStore(state => state.filterHistory)
+  maxHeight = '100vh'
+}) => {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterType, setFilterType] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<'timestamp' | 'type' | 'name'>('timestamp')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [showFilters, setShowFilters] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [expandedEntries, setExpandedEntries] = useState<Set<string>>(new Set())
-  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set())
-  const listRef = useRef<HTMLDivElement>(null)
+  const {
+    actionHistory,
+    clearHistory
+    // exportHistory, // TODO: Add to store
+    // getFilteredHistory, // TODO: Add to store
+    // getHistoryStats // TODO: Add to store
+  } = useUnifiedActionStore()
 
-  // Auto-scroll to bottom when new entries are added
-  useEffect(() => {
-    if (listRef.current && actionHistory.length > 0) {
-      listRef.current.scrollTop = 0
+  // Temporary implementations until store methods are added
+  const exportHistory = (_history?: ActionHistoryEntry[]) => {
+    console.log('Export history not implemented')
+  }
+
+  const getFilteredHistory = (_filter: ActionFilter, _searchTerm: string) => {
+    return actionHistory // Return unfiltered for now
+  }
+
+  const getHistoryStats = () => ({
+    total: actionHistory.length,
+    totalActions: actionHistory.length,
+    successCount: 0,
+    failureCount: 0,
+    byType: {
+      spell: actionHistory.filter(a => a.type === 'spell').length,
+      attack: actionHistory.filter(a => a.type === 'attack').length,
+      move: actionHistory.filter(a => a.type === 'move').length,
+      interaction: actionHistory.filter(a => a.type === 'interaction').length
     }
-  }, [actionHistory.length])
+  })
 
-  // Filter logic
-  const filteredHistory = useMemo(() => {
-    let filtered = [...actionHistory]
+  // Filtered and sorted action history
+  const filteredActions = useMemo(() => {
+    // Create filter object based on filterType string
+    const filter: ActionFilter = filterType === 'all' ? {} : { types: [filterType as any] }
+    const filtered = getFilteredHistory(filter, searchTerm)
 
-    // Apply type filters
-    if (activeFilters.size > 0) {
-      const filter: ActionFilter = {
-        types: Array.from(activeFilters) as any[]
+    // Sort actions
+    filtered.sort((a: any, b: any) => {
+      let comparison = 0
+
+      switch (sortBy) {
+        case 'timestamp':
+          comparison = a.timestamp - b.timestamp
+          break
+        case 'type':
+          comparison = a.action.type.localeCompare(b.action.type)
+          break
+        case 'name':
+          comparison = a.action.name.localeCompare(b.action.name)
+          break
+        default:
+          comparison = 0
       }
-      filtered = filterHistory(filter)
-    }
 
-    // Apply search query
-    if (searchQuery) {
-      filtered = filtered.filter(entry => {
-        const searchLower = searchQuery.toLowerCase()
-        return (
-          entry.metadata.name?.toLowerCase().includes(searchLower) ||
-          entry.category.toLowerCase().includes(searchLower) ||
-          entry.type.toLowerCase().includes(searchLower)
-        )
-      })
-    }
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
 
     return filtered
-  }, [actionHistory, activeFilters, searchQuery, filterHistory])
+  }, [actionHistory, filterType, searchTerm, sortBy, sortOrder, getFilteredHistory])
 
-  // Statistics
-  const stats = useMemo(() => {
-    const total = actionHistory.length
-    const completed = actionHistory.filter(e => e.status === 'completed').length
-    const failed = actionHistory.filter(e => e.status === 'failed').length
-    const executing = activeActions.length
+  // History statistics
+  const stats = useMemo(() => getHistoryStats(), [actionHistory, getHistoryStats])
 
-    return { total, completed, failed, executing }
-  }, [actionHistory, activeActions])
+  // Auto-scroll to bottom when new actions are added
+  useEffect(() => {
+    if (scrollContainerRef.current && sortOrder === 'desc') {
+      scrollContainerRef.current.scrollTop = 0
+    }
+  }, [actionHistory.length, sortOrder])
 
-  const toggleFilter = (type: string) => {
-    setActiveFilters(prev => {
-      const newFilters = new Set(prev)
-      if (newFilters.has(type)) {
-        newFilters.delete(type)
-      } else {
-        newFilters.add(type)
-      }
-      return newFilters
-    })
+  // Handle search input
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
   }
 
-  const toggleExpanded = (entryId: string) => {
-    setExpandedEntries(prev => {
-      const newExpanded = new Set(prev)
-      if (newExpanded.has(entryId)) {
-        newExpanded.delete(entryId)
-      } else {
-        newExpanded.add(entryId)
-      }
-      return newExpanded
-    })
+  // Handle filter change
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilterType(e.target.value)
   }
 
-  const exportHistory = () => {
-    const data = JSON.stringify(actionHistory, null, 2)
-    const blob = new Blob([data], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `action-history-${Date.now()}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
-
-  const handleClearHistory = () => {
-    if (window.confirm('Clear all action history? This cannot be undone.')) {
-      clearHistory()
-      setExpandedEntries(new Set())
+  // Handle sort change
+  const handleSortChange = (field: typeof sortBy) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortOrder('desc')
     }
   }
 
+  // Export history to file
+  const handleExport = () => {
+    try {
+      exportHistory(filteredActions)
+    } catch (error) {
+      console.error('Failed to export action history:', error)
+    }
+  }
+
+  // Clear all history with confirmation
+  const handleClearHistory = () => {
+    if (window.confirm('Are you sure you want to clear all action history? This cannot be undone.')) {
+      clearHistory()
+    }
+  }
+
+  if (!isOpen) return null
+
   return (
-    <SidebarContainer isOpen={isOpen} style={{ maxHeight }}>
-      <Header>
-        <Title>
-          <Activity size={18} />
-          Action Log
-        </Title>
-        <CloseButton onClick={onClose}>
-          <X size={18} />
-        </CloseButton>
-      </Header>
+    <>
+      {/* Backdrop */}
+      <Box
+        style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 39
+        }}
+        onClick={onClose}
+      />
 
-      <SearchContainer style={{ position: 'relative' }}>
-        <SearchIcon size={16} />
-        <SearchInput
-          type="text"
-          placeholder="Search actions..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </SearchContainer>
+      {/* Sidebar */}
+      <Box
+        style={{
+          position: 'fixed',
+          right: 0,
+          top: 0,
+          width: '380px',
+          height: maxHeight,
+          backgroundColor: 'var(--colors-gray900)',
+          borderLeft: '1px solid var(--colors-gray700)',
+          display: 'flex',
+          flexDirection: 'column',
+          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.3s ease',
+          zIndex: 40
+        }}
+      >
+        {/* Header */}
+        <Box
+          style={{
+            padding: '16px',
+            borderBottom: '1px solid var(--colors-gray700)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Activity size={20} color="var(--colors-secondary)" />
+            <Text variant="heading" size="lg" style={{ fontWeight: '600' }}>
+              Action Log
+            </Text>
+          </Box>
 
-      <FilterBar>
-        <FilterChip
-          active={activeFilters.has('spell')}
-          onClick={() => toggleFilter('spell')}
-        >
-          Spells
-        </FilterChip>
-        <FilterChip
-          active={activeFilters.has('attack')}
-          onClick={() => toggleFilter('attack')}
-        >
-          Attacks
-        </FilterChip>
-        <FilterChip
-          active={activeFilters.has('interaction')}
-          onClick={() => toggleFilter('interaction')}
-        >
-          Interactions
-        </FilterChip>
-        <FilterChip
-          active={activeFilters.has('move')}
-          onClick={() => toggleFilter('move')}
-        >
-          Movement
-        </FilterChip>
-      </FilterBar>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+          >
+            <X size={16} />
+          </Button>
+        </Box>
 
-      <Stats>
-        <StatItem>
-          <span>Total</span>
-          <span>{stats.total}</span>
-        </StatItem>
-        <StatItem>
-          <span>Success</span>
-          <span style={{ color: '$success' }}>{stats.completed}</span>
-        </StatItem>
-        <StatItem>
-          <span>Failed</span>
-          <span style={{ color: '$error' }}>{stats.failed}</span>
-        </StatItem>
-        <StatItem>
-          <span>Active</span>
-          <span style={{ color: '$warning' }}>{stats.executing}</span>
-        </StatItem>
-      </Stats>
+        {/* Stats Summary */}
+        <Box
+          style={{
+            padding: '12px 16px',
+            backgroundColor: 'var(--colors-gray800)',
+            borderBottom: '1px solid var(--colors-gray700)'
+          }}
+        >
+          <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text variant="body" size="sm" style={{ color: 'var(--colors-gray300)' }}>
+              Total Actions: {stats.total}
+            </Text>
+            <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
+              {filteredActions.length} shown
+            </Text>
+          </Box>
 
-      <LogList ref={listRef}>
-        {filteredHistory.length === 0 ? (
-          <EmptyState>
-            {searchQuery || activeFilters.size > 0
-              ? 'No actions match your filters'
-              : 'No actions recorded yet'}
-          </EmptyState>
-        ) : (
-          <>
-            {/* Show active actions first */}
-            {activeActions.map(action => (
+          <Box style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+            <Text variant="body" size="xs" style={{ color: 'var(--colors-blue400)' }}>
+              Spells: {stats.byType.spell || 0}
+            </Text>
+            <Text variant="body" size="xs" style={{ color: 'var(--colors-red400)' }}>
+              Attacks: {stats.byType.attack || 0}
+            </Text>
+            <Text variant="body" size="xs" style={{ color: 'var(--colors-green400)' }}>
+              Moves: {stats.byType.move || 0}
+            </Text>
+            <Text variant="body" size="xs" style={{ color: 'var(--colors-purple400)' }}>
+              Other: {stats.byType.interaction || 0}
+            </Text>
+          </Box>
+        </Box>
+
+        {/* Search and Filters */}
+        <Box
+          style={{
+            padding: '12px 16px',
+            borderBottom: '1px solid var(--colors-gray700)'
+          }}
+        >
+          {/* Search Bar */}
+          <Box style={{ position: 'relative', marginBottom: '12px' }}>
+            <Search
+              size={16}
+              style={{
+                position: 'absolute',
+                left: '8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--colors-gray400)'
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Search actions..."
+              value={searchTerm}
+              onChange={handleSearch}
+              style={{
+                width: '100%',
+                padding: '8px 8px 8px 32px',
+                backgroundColor: 'var(--colors-gray800)',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
+                color: 'var(--colors-gray200)',
+                fontSize: '14px'
+              }}
+            />
+          </Box>
+
+          {/* Filter Controls */}
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <select
+              value={filterType}
+              onChange={handleFilterChange}
+              style={{
+                flex: 1,
+                padding: '6px 8px',
+                backgroundColor: 'var(--colors-gray800)',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '4px',
+                color: 'var(--colors-gray200)',
+                fontSize: '12px'
+              }}
+            >
+              <option value="all">All Types</option>
+              <option value="spell">Spells</option>
+              <option value="attack">Attacks</option>
+              <option value="move">Movement</option>
+              <option value="interaction">Interactions</option>
+            </select>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter size={14} />
+            </Button>
+          </Box>
+
+          {/* Advanced Filters */}
+          {showFilters && (
+            <Box
+              style={{
+                padding: '8px',
+                backgroundColor: 'var(--colors-gray800)',
+                borderRadius: '4px',
+                border: '1px solid var(--colors-gray600)'
+              }}
+            >
+              <Text variant="body" size="xs" style={{ marginBottom: '8px', color: 'var(--colors-gray400)' }}>
+                Sort Options
+              </Text>
+
+              <Box style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                <Button
+                  variant={sortBy === 'timestamp' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => handleSortChange('timestamp')}
+                  style={{ fontSize: '11px', padding: '4px 8px' }}
+                >
+                  <Clock size={12} style={{ marginRight: '4px' }} />
+                  Time {sortBy === 'timestamp' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </Button>
+
+                <Button
+                  variant={sortBy === 'type' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => handleSortChange('type')}
+                  style={{ fontSize: '11px', padding: '4px 8px' }}
+                >
+                  Type {sortBy === 'type' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </Button>
+
+                <Button
+                  variant={sortBy === 'name' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => handleSortChange('name')}
+                  style={{ fontSize: '11px', padding: '4px 8px' }}
+                >
+                  Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </Box>
+
+        {/* Actions List */}
+        <Box
+          ref={scrollContainerRef}
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '8px'
+          }}
+        >
+          {filteredActions.length === 0 ? (
+            <Box
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '200px',
+                textAlign: 'center'
+              }}
+            >
+              <Activity size={48} color="var(--colors-gray600)" style={{ marginBottom: '16px' }} />
+              <Text variant="body" size="md" style={{ color: 'var(--colors-gray400)', marginBottom: '8px' }}>
+                {searchTerm || filterType !== 'all' ? 'No matching actions found' : 'No actions recorded yet'}
+              </Text>
+              <Text variant="body" size="sm" style={{ color: 'var(--colors-gray500)' }}>
+                {searchTerm || filterType !== 'all'
+                  ? 'Try adjusting your search or filter criteria'
+                  : 'Actions will appear here as they are executed'}
+              </Text>
+            </Box>
+          ) : (
+            filteredActions.map((entry: any, index: number) => (
               <ActionLogEntry
-                key={action.id}
-                entry={{
-                  ...action,
-                  executedAt: action.timestamp,
-                  status: 'executing'
-                } as ActionHistoryEntry}
-                isExpanded={expandedEntries.has(action.id)}
-                onToggleExpand={() => toggleExpanded(action.id)}
-              />
-            ))}
-
-            {/* Then show history */}
-            {filteredHistory.map(entry => (
-              <ActionLogEntry
-                key={entry.id}
+                key={`${entry.id}-${index}`}
                 entry={entry}
-                isExpanded={expandedEntries.has(entry.id)}
-                onToggleExpand={() => toggleExpanded(entry.id)}
               />
-            ))}
-          </>
-        )}
-      </LogList>
+            ))
+          )}
+        </Box>
 
-      <Footer>
-        <FooterButton onClick={exportHistory} disabled={actionHistory.length === 0}>
-          <Download size={14} />
-          Export
-        </FooterButton>
-        <FooterButton onClick={handleClearHistory} disabled={actionHistory.length === 0}>
-          <Trash2 size={14} />
-          Clear
-        </FooterButton>
-      </Footer>
-    </SidebarContainer>
+        {/* Footer Actions */}
+        <Box
+          style={{
+            padding: '12px 16px',
+            borderTop: '1px solid var(--colors-gray700)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px'
+          }}
+        >
+          <Box style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              disabled={filteredActions.length === 0}
+            >
+              <Download size={14} style={{ marginRight: '4px' }} />
+              Export
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearHistory}
+              disabled={actionHistory.length === 0}
+            >
+              <Trash2 size={14} style={{ marginRight: '4px' }} />
+              Clear
+            </Button>
+          </Box>
+
+          <Text variant="body" size="xs" style={{ color: 'var(--colors-gray500)' }}>
+            Last updated: {actionHistory.length > 0
+              ? new Date(actionHistory[actionHistory.length - 1].timestamp).toLocaleTimeString()
+              : 'Never'
+            }
+          </Text>
+        </Box>
+      </Box>
+    </>
   )
 }
 
 export const ActionLogSidebar = memo(ActionLogSidebarComponent)
+export default ActionLogSidebar

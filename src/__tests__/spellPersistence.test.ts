@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import useMapStore from '@/store/mapStore'
 import useRoundStore from '@/store/roundStore'
-import type { MapObject } from '@/types/map'
+import type { SpellMapObject } from '@/types/map'
 
 describe('Spell Persistence - Fireball Burn Area', () => {
   beforeEach(() => {
@@ -49,7 +49,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       expect(roundStore.currentRound).toBe(1)
 
       // Create a Fireball burn area (simulating what happens after projectile burst)
-      const burnArea: MapObject = {
+      const burnArea: SpellMapObject = {
         id: 'test-fireball-burn',
         type: 'persistent-area',
         position: { x: 500, y: 300 },
@@ -102,7 +102,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       const mapStore = useMapStore.getState()
       const roundStore = useRoundStore.getState()
 
-      const burnArea: MapObject = {
+      const burnArea: SpellMapObject = {
         id: 'test-burn-expiration',
         type: 'persistent-area',
         position: { x: 400, y: 400 },
@@ -172,7 +172,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       ]
 
       testAreas.forEach(test => {
-        const area: MapObject = {
+        const area: SpellMapObject = {
           id: test.id,
           type: 'persistent-area',
           position: { x: 100, y: 100 },
@@ -226,7 +226,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       ]
 
       spells.forEach(spell => {
-        const area: MapObject = {
+        const area: SpellMapObject = {
           id: spell.id,
           type: 'persistent-area',
           position: { x: 200, y: 200 },
@@ -284,7 +284,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
     it('should preserve all critical properties through addSpellEffect', () => {
       const mapStore = useMapStore.getState()
 
-      const testArea: MapObject = {
+      const testArea: SpellMapObject = {
         id: 'test-property-preservation',
         type: 'persistent-area',
         position: { x: 300, y: 300 },
@@ -306,7 +306,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       mapStore.addSpellEffect(testArea)
 
       const stateAfterAdd = useMapStore.getState()
-      const stored = stateAfterAdd.currentMap?.objects.find(obj => obj.id === 'test-property-preservation')
+      const stored = stateAfterAdd.currentMap?.objects.find(obj => obj.id === 'test-property-preservation') as SpellMapObject
 
       // All critical properties should be preserved
       expect(stored).toBeDefined()
@@ -323,7 +323,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
     it('should not remove spell effects with duration 0 (instant spells)', () => {
       const mapStore = useMapStore.getState()
 
-      const instantSpell: MapObject = {
+      const instantSpell: SpellMapObject = {
         id: 'test-instant-spell',
         type: 'spell',
         position: { x: 100, y: 100 },
@@ -348,7 +348,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       const mapStore = useMapStore.getState()
       const roundStore = useRoundStore.getState()
 
-      const burnArea: MapObject = {
+      const burnArea: SpellMapObject = {
         id: 'test-round-jump',
         type: 'persistent-area',
         position: { x: 200, y: 200 },

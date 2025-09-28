@@ -8,11 +8,10 @@ import {
   Clock,
   Plus,
   FileImage,
-  FileDown,
   Import,
   Share
 } from 'lucide-react'
-import Konva from 'konva'
+import type Konva from 'konva'
 import useMapStore from '@/store/mapStore'
 import { useAutoSave } from '@/hooks/useAutoSave'
 import {
@@ -23,6 +22,11 @@ import {
 } from '@/utils/export'
 import { UniversalMapImporter } from '@/components/Import/UniversalMapImporter'
 import { EnhancedExportSystem } from '@/components/Export/EnhancedExportSystem'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Modal } from '@/components/ui/Modal'
+import { Input } from '@/components/ui/Input'
 import {
   Menu,
   MenuButton,
@@ -30,17 +34,13 @@ import {
   MenuStatus,
   MenuGroup,
   MenuItem,
-  MenuSeparator,
-  Modal,
-  Input,
-  Button,
-  Box,
-  Text
+  MenuSeparator
 } from '@/components/ui'
 
 type FileMenuProps = {
   stageRef?: React.RefObject<Konva.Stage>
 }
+
 
 export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
   // Use specific selectors to prevent unnecessary re-renders
@@ -166,7 +166,15 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
         <MenuHeader size="sm">
           <MenuStatus>
             <Text size="xs" color="gray400">Auto-save</Text>
-            <Box className="status-indicator" css={{ color: isSaving ? '$warning' : '$success' }}>
+            <Box
+              className="status-indicator"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                color: isSaving ? 'var(--colors-warning)' : 'var(--colors-success)'
+              }}
+            >
               <Clock size={12} />
               <Text size="xs">
                 {isSaving ? 'Saving...' : formatLastSaved()}
@@ -185,7 +193,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
           <MenuItem onClick={manualSave}>
             <Save size={16} />
             Save Now
-            <Box css={{ marginLeft: 'auto' }}>
+            <Box style={{ marginLeft: 'auto' }}>
               <Text size="xs" color="gray500">Ctrl+S</Text>
             </Box>
           </MenuItem>
@@ -198,7 +206,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
           <MenuItem onClick={() => { setShowImporter(true); setIsMenuOpen(false) }}>
             <Import size={16} />
             Universal Import...
-            <Box css={{ marginLeft: 'auto' }}>
+            <Box style={{ marginLeft: 'auto' }}>
               <Text size="xs" color="gray500">Roll20, Foundry, etc.</Text>
             </Box>
           </MenuItem>
@@ -206,7 +214,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
           <MenuItem onClick={() => { setShowExporter(true); setIsMenuOpen(false) }}>
             <Share size={16} />
             Enhanced Export...
-            <Box css={{ marginLeft: 'auto' }}>
+            <Box style={{ marginLeft: 'auto' }}>
               <Text size="xs" color="gray500">PDF, SVG, Print</Text>
             </Box>
           </MenuItem>
@@ -269,8 +277,15 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
         title="Create New Map"
         size="sm"
       >
-        <Box display="block" css={{ marginBottom: '$4' }}>
-          <Text size="sm" color="gray400" css={{ marginBottom: '$2' }}>
+        <Box style={{ display: 'block', marginBottom: '16px' }}>
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              marginBottom: '8px',
+              color: 'var(--colors-gray400)'
+            }}
+          >
             Map Name
           </Text>
           <Input
@@ -282,7 +297,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
           />
         </Box>
 
-        <Box display="flex" justifyContent="end" gap="2">
+        <Box display="flex" justifyContent="flex-end" gap={2}>
           <Button
             onClick={() => setShowNewMapDialog(false)}
             variant="outline"

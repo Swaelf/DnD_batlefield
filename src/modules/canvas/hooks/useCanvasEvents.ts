@@ -3,13 +3,14 @@
  * Provides a clean API for canvas event handling with proper coordinate transformation
  */
 
-import { useCallback, useRef, useEffect } from 'react'
+import { useCallback, useRef } from 'react'
 import type Konva from 'konva'
-import type { Point } from '@/foundation/types'
-import type { CanvasPointerEvent, CanvasWheelEvent, ViewportState } from '../types'
+import type { Point } from '@/types/geometry'
+import type { CanvasPointerEvent, CanvasWheelEvent } from '../types/canvas'
+import type { ViewportState } from '../types/viewport'
 import { coordinateService } from '../services'
 import { useEventEmitter } from '@/core/events'
-import { EVENT_TYPES, createCanvasEvent } from '@/core/events'
+import { createCanvasEvent } from '@/core/events'
 
 export type CanvasEventHandlers = {
   onPointerDown?: (event: CanvasPointerEvent) => void
@@ -39,17 +40,24 @@ export const useCanvasEvents = ({ viewport, handlers }: UseCanvasEventsOptions) 
     const pointerPos = stage.getPointerPosition() || { x: 0, y: 0 }
     const canvasPos = coordinateService.screenToCanvas(pointerPos, viewport)
 
-    const button = e.evt.button === 0 ? 'left' : e.evt.button === 1 ? 'middle' : 'right'
+    const button = e.evt.button
 
     return {
       position: pointerPos,
-      canvasPosition: canvasPos,
+      stagePosition: canvasPos,
+      worldPosition: canvasPos, // Canvas coordinates are world coordinates in this context
       button,
+      buttons: e.evt.buttons || 0,
+      target: null,
       modifiers: {
         shift: e.evt.shiftKey,
         ctrl: e.evt.ctrlKey || e.evt.metaKey,
-        alt: e.evt.altKey
-      }
+        alt: e.evt.altKey,
+        meta: e.evt.metaKey
+      },
+      timestamp: Date.now(),
+      preventDefault: () => e.evt.preventDefault(),
+      stopPropagation: () => e.evt.stopPropagation()
     }
   }, [viewport])
 
@@ -61,15 +69,25 @@ export const useCanvasEvents = ({ viewport, handlers }: UseCanvasEventsOptions) 
     }
 
     const pointerPos = stage.getPointerPosition() || { x: 0, y: 0 }
+    const stagePos = coordinateService.screenToCanvas(pointerPos, viewport)
 
     return {
       position: pointerPos,
-      delta: e.evt.deltaY,
+      stagePosition: stagePos,
+      worldPosition: stagePos, // Canvas coordinates are world coordinates
+      deltaX: e.evt.deltaX || 0,
+      deltaY: e.evt.deltaY || 0,
+      deltaZ: e.evt.deltaZ || 0,
+      deltaMode: e.evt.deltaMode || 0,
       modifiers: {
         shift: e.evt.shiftKey,
         ctrl: e.evt.ctrlKey || e.evt.metaKey,
-        alt: e.evt.altKey
-      }
+        alt: e.evt.altKey,
+        meta: e.evt.metaKey
+      },
+      timestamp: Date.now(),
+      preventDefault: () => e.evt.preventDefault(),
+      stopPropagation: () => e.evt.stopPropagation()
     }
   }, [])
 
@@ -113,8 +131,8 @@ export const useCanvasEvents = ({ viewport, handlers }: UseCanvasEventsOptions) 
         // Emit domain event
         emitEvent(createCanvasEvent('CANVAS_CLICKED', {
           position: canvasEvent.position,
-          canvasPosition: canvasEvent.canvasPosition,
-          button: canvasEvent.button === 'left' ? 0 : canvasEvent.button === 'right' ? 2 : 1
+          canvasPosition: canvasEvent.stagePosition, // Using stagePosition as canvasPosition for compatibility
+          button: canvasEvent.button
         }))
       } catch (error) {
         console.warn('Error handling click:', error)
@@ -142,7 +160,7 @@ export const useCanvasEvents = ({ viewport, handlers }: UseCanvasEventsOptions) 
         if (!handlers?.onWheel) {
           const scaleBy = 1.05
           const oldScale = stage.scaleX()
-          const newScale = wheelEvent.delta > 0 ? oldScale * scaleBy : oldScale / scaleBy
+          const newScale = wheelEvent.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy
           const clampedScale = Math.max(0.1, Math.min(5, newScale))
 
           stage.scale({ x: clampedScale, y: clampedScale })

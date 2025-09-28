@@ -10,12 +10,30 @@ import type {
   CanvasId,
   CanvasConfig,
   CanvasState,
-  CanvasEventData,
   CanvasPerformance,
-  CreateCanvasData,
-  UpdateCanvasData
 } from '../types'
 import type { Point, Rectangle } from '@/types/geometry'
+
+// Local types for missing exports
+type CreateCanvasData = {
+  width: number
+  height: number
+  backgroundColor?: string
+  pixelRatio?: number
+  enableHighDPI?: boolean
+  container?: HTMLElement
+}
+
+type UpdateCanvasData = {
+  width?: number
+  height?: number
+  backgroundColor?: string
+  pixelRatio?: number
+  config?: any
+  viewport?: any
+  cursor?: any
+  performance?: any
+}
 
 export class CanvasService {
   private static instance: CanvasService | null = null
@@ -50,7 +68,7 @@ export class CanvasService {
     }
 
     const stage = new Konva.Stage({
-      container: data.container || document.body,
+      container: data.container as HTMLDivElement || document.body,
       width: config.width,
       height: config.height,
       pixelRatio: config.pixelRatio
@@ -59,10 +77,10 @@ export class CanvasService {
     const state: CanvasState = {
       viewport: {
         bounds: {
-          minX: 0,
-          minY: 0,
-          maxX: config.width,
-          maxY: config.height
+          top: 0,
+          left: 0,
+          bottom: config.height,
+          right: config.width
         },
         visibleArea: {
           x: 0,
@@ -168,7 +186,13 @@ export class CanvasService {
 
     // Clean up Konva stage
     canvas.stage.destroy()
-    canvas.isDestroyed = true
+
+    // Create a new canvas instance with isDestroyed set to true for any final operations
+    // Mark canvas as destroyed
+    // const destroyedCanvas: CanvasInstance = {
+    //   ...canvas,
+    //   isDestroyed: true
+    // }
 
     // Remove from maps
     this.canvases.delete(id)
@@ -180,7 +204,7 @@ export class CanvasService {
   /**
    * Render canvas
    */
-  render(id: CanvasId, force = false): boolean {
+  render(id: CanvasId, _force = false): boolean {
     const canvas = this.getCanvas(id)
     if (!canvas || canvas.isDestroyed) return false
 
@@ -194,7 +218,17 @@ export class CanvasService {
 
       if (tracker) {
         tracker.endFrame()
-        canvas.state.performance = tracker.getMetrics()
+        // Update performance metrics by creating new state
+        const updatedPerformance = tracker.getMetrics()
+        // Store updated metrics in the canvas instance
+        const updatedCanvas: CanvasInstance = {
+          ...canvas,
+          state: {
+            ...canvas.state,
+            performance: updatedPerformance
+          }
+        }
+        this.canvases.set(id, updatedCanvas)
       }
 
       return true
@@ -272,11 +306,21 @@ export class CanvasService {
     stage.scale({ x: scale, y: scale })
     stage.position({ x, y })
 
-    // Update state
-    canvas.state.zoom = scale
-    canvas.state.pan = { x, y }
-    canvas.state.viewport.scale = scale
-    canvas.state.viewport.offset = { x, y }
+    // Update state by creating new canvas instance
+    const updatedCanvas: CanvasInstance = {
+      ...canvas,
+      state: {
+        ...canvas.state,
+        zoom: scale,
+        pan: { x, y },
+        viewport: {
+          ...canvas.state.viewport,
+          scale: scale,
+          offset: { x, y }
+        }
+      }
+    }
+    this.canvases.set(id, updatedCanvas)
 
     this.render(id)
     return true
@@ -369,7 +413,6 @@ interface CanvasInstance {
  * Tracks performance metrics for canvas rendering
  */
 class CanvasPerformanceTracker {
-  private canvasId: CanvasId
   private frameStartTime = 0
   private frameCount = 0
   private lastSecond = 0
@@ -379,8 +422,8 @@ class CanvasPerformanceTracker {
   private visibleObjectCount = 0
   private memoryUsage = 0
 
-  constructor(canvasId: CanvasId) {
-    this.canvasId = canvasId
+  constructor(_canvasId: CanvasId) {
+    // Performance tracker initialized for canvas
   }
 
   startFrame(): void {

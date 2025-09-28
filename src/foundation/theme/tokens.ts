@@ -63,8 +63,8 @@ export const spacing = {
 // Typography scale
 export const typography = {
   fontFamily: {
-    sans: ['Scala Sans', 'Inter', 'system-ui', 'sans-serif'],
-    mono: ['JetBrains Mono', 'Monaco', 'Consolas', 'monospace']
+    sans: '"Scala Sans", Inter, system-ui, sans-serif',
+    mono: '"JetBrains Mono", Monaco, Consolas, monospace'
   },
   fontSize: {
     xs: '0.75rem',   // 12px

@@ -11,13 +11,10 @@ import type {
   CreateTokenData,
   TokenUpdate,
   TokenBounds,
-  TokenMovement,
-  TokenBatchOperation,
   TokenValidationResult,
   TokenFilters,
   TokenSelection,
-  TokenSize,
-  TokenCategory
+  TokenSize
 } from '../types'
 import { createTokenId } from '../types'
 import { getTokenRadius, getTokenDiameter, TOKEN_SIZE_GRID_MAP } from '../constants'
@@ -108,7 +105,7 @@ export class TokenService {
     }
 
     // Validate size
-    if (!TOKEN_SIZE_GRID_MAP[token.size]) {
+    if (!(token.size in TOKEN_SIZE_GRID_MAP)) {
       errors.push(`Invalid token size: ${token.size}`)
     }
 
@@ -205,7 +202,8 @@ export class TokenService {
     const movementRadius = (speed / 5) * gridSize // Convert feet to pixels
 
     return {
-      center: token.position,
+      x: token.position.x,
+      y: token.position.y,
       radius: movementRadius
     }
   }
@@ -288,37 +286,37 @@ export class TokenService {
       case 'left':
         alignValue = Math.min(...bounds.map(b => b.x))
         return tokens.map(token =>
-          this.updateToken(token, { position: { ...token.position, x: alignValue } })
+          this.updateToken(token, { position: { ...token.position, x: alignValue }, lastModified: new Date() })
         )
 
       case 'center':
         alignValue = bounds.reduce((sum, b) => sum + b.x, 0) / bounds.length
         return tokens.map(token =>
-          this.updateToken(token, { position: { ...token.position, x: alignValue } })
+          this.updateToken(token, { position: { ...token.position, x: alignValue }, lastModified: new Date() })
         )
 
       case 'right':
         alignValue = Math.max(...bounds.map(b => b.x))
         return tokens.map(token =>
-          this.updateToken(token, { position: { ...token.position, x: alignValue } })
+          this.updateToken(token, { position: { ...token.position, x: alignValue }, lastModified: new Date() })
         )
 
       case 'top':
         alignValue = Math.min(...bounds.map(b => b.y))
         return tokens.map(token =>
-          this.updateToken(token, { position: { ...token.position, y: alignValue } })
+          this.updateToken(token, { position: { ...token.position, y: alignValue }, lastModified: new Date() })
         )
 
       case 'middle':
         alignValue = bounds.reduce((sum, b) => sum + b.y, 0) / bounds.length
         return tokens.map(token =>
-          this.updateToken(token, { position: { ...token.position, y: alignValue } })
+          this.updateToken(token, { position: { ...token.position, y: alignValue }, lastModified: new Date() })
         )
 
       case 'bottom':
         alignValue = Math.max(...bounds.map(b => b.y))
         return tokens.map(token =>
-          this.updateToken(token, { position: { ...token.position, y: alignValue } })
+          this.updateToken(token, { position: { ...token.position, y: alignValue }, lastModified: new Date() })
         )
 
       default:

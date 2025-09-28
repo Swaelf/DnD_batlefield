@@ -1,4 +1,4 @@
-import { MapObject } from './map';
+import type { MapObject } from './map';
 
 export type TokenSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan';
 
@@ -19,6 +19,12 @@ export type Token = MapObject & {
   conditions?: string[];
   isVoid?: boolean;  // Special flag for void/environment token
   allowedEvents?: ('move' | 'appear' | 'disappear' | 'spell')[];  // Restrict event types
+  // HP Management
+  currentHP?: number;
+  maxHP?: number;
+  tempHP?: number;
+  hpBarColor?: string;
+  showHP?: boolean;
 }
 
 export type TokenTemplate = {
@@ -32,4 +38,10 @@ export type TokenTemplate = {
   opacity?: number;
   borderColor?: string;
   borderWidth?: number;
+  // HP properties for templates
+  currentHP?: number;
+  maxHP?: number;
+  tempHP?: number;
+  hpBarColor?: string;
+  showHP?: boolean;
 }

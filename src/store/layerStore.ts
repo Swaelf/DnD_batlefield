@@ -294,7 +294,7 @@ export const useLayerStore = create<LayerStore>()(
     duplicateLayer: (layerId: string) => {
       const state = get()
       const layer = state.getLayerById(layerId)
-      if (!layer) return layer
+      if (!layer) return layer as unknown as LayerDefinition
 
       const newLayer: LayerDefinition = {
         ...layer,

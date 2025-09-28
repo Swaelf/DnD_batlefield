@@ -3,7 +3,7 @@
  * Provides consistent store creation with Immer integration and TypeScript support
  */
 
-import { create } from 'zustand'
+import { create, useStore as useZustandStore } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { subscribeWithSelector } from 'zustand/middleware'
 import type { StateCreator, StoreApi } from 'zustand'
@@ -35,7 +35,7 @@ export function createStore<T extends object>(
     StoreWithActions<T>
   > = (set, get, api) => {
     const state = storeCreator(
-      (fn) => set((state) => fn(state)),
+      (fn) => set((state) => fn(state as any)),
       () => get(),
       api as StoreApi<T>
     )
@@ -46,7 +46,7 @@ export function createStore<T extends object>(
       ...storeState,
       reset: () => {
         const freshState = storeCreator(
-          (fn) => set((state) => fn(state)),
+          (fn) => set((state) => fn(state as any)),
           () => get(),
           api as StoreApi<T>
         )
@@ -54,7 +54,7 @@ export function createStore<T extends object>(
       },
       getState: () => {
         const currentState = get()
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+         
         const { reset, getState, ...state } = currentState
         return state as T
       }
@@ -62,8 +62,8 @@ export function createStore<T extends object>(
   }
 
   return create<StoreWithActions<T>>()(
-    subscribeWithSelector(immer(stateCreator))
-  )
+    subscribeWithSelector(immer(stateCreator as any)) as any
+  ) as unknown as StoreApi<StoreWithActions<T>>
 }
 
 /**
@@ -82,13 +82,23 @@ export function createSelector<T, R>(
 export function createStoreHook<T extends object>(
   store: StoreApi<StoreWithActions<T>>
 ) {
+  // Create two separate implementations to avoid type issues
+  function useStoreWithSelector<R>(selector: (state: T) => R): R {
+    return useZustandStore(store, (state: StoreWithActions<T>) => selector(state.getState()))
+  }
+
+  function useStoreWithoutSelector(): T {
+    return useZustandStore(store, (state: StoreWithActions<T>) => state.getState())
+  }
+
+  // Return overloaded function
   function useStore(): T
   function useStore<R>(selector: (state: T) => R): R
   function useStore<R>(selector?: (state: T) => R) {
-    if (selector) {
-      return store((state) => selector(state.getState()))
-    }
-    return store((state) => state.getState())
+    // Use the non-conditional approach - always call the same hook
+    return selector
+      ? useStoreWithSelector(selector)
+      : useStoreWithoutSelector()
   }
 
   return useStore
@@ -108,11 +118,14 @@ export function createStoreSubscriptions<T extends object>(
       key: K,
       callback: (value: T[K], previousValue: T[K]) => void
     ) => {
-      return store.subscribe(
-        (state) => state.getState()[key],
-        callback,
-        { equalityFn: (a, b) => a === b }
-      )
+      let previousValue = store.getState().getState()[key]
+      return store.subscribe((state) => {
+        const currentValue = state.getState()[key]
+        if (currentValue !== previousValue) {
+          callback(currentValue, previousValue)
+          previousValue = currentValue
+        }
+      })
     },
 
     /**
@@ -122,20 +135,28 @@ export function createStoreSubscriptions<T extends object>(
       selector: (state: T) => R,
       callback: (value: R, previousValue: R) => void
     ) => {
-      return store.subscribe(
-        (state) => selector(state.getState()),
-        callback
-      )
+      let previousValue = selector(store.getState().getState())
+      return store.subscribe((state) => {
+        const currentValue = selector(state.getState())
+        if (currentValue !== previousValue) {
+          callback(currentValue, previousValue)
+          previousValue = currentValue
+        }
+      })
     },
 
     /**
      * Subscribe to store changes
      */
     subscribeToStore: (callback: (state: T, previousState: T) => void) => {
-      return store.subscribe(
-        (state) => state.getState(),
-        callback
-      )
+      let previousState = store.getState().getState()
+      return store.subscribe((state) => {
+        const currentState = state.getState()
+        if (currentState !== previousState) {
+          callback(currentState, previousState)
+          previousState = currentState
+        }
+      })
     }
   }
 }

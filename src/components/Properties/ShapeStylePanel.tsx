@@ -1,95 +1,10 @@
 import React from 'react'
-import { Palette, Eye, EyeOff, Square, Circle, Triangle } from 'lucide-react'
+import { Palette, Square, Circle, Triangle } from 'lucide-react'
 import useToolStore from '@store/toolStore'
-import { styled } from '@/styles/theme.config'
-import { Box, Text, Button } from '@/components/ui'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 
-const StyleContainer = styled(Box, {
-  backgroundColor: '$dndBlack',
-  borderRadius: '$md',
-  border: '1px solid $gray800',
-  padding: '$3',
-  marginBottom: '$4'
-})
-
-const StyleHeader = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  paddingBottom: '$2',
-  marginBottom: '$2',
-  borderBottom: '1px solid $gray800'
-})
-
-const ColorRow = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2',
-  marginBottom: '$2'
-})
-
-const ColorSwatch = styled('button', {
-  width: '32px',
-  height: '32px',
-  borderRadius: '$md',
-  border: '2px solid $gray700',
-  cursor: 'pointer',
-  transition: 'border-color 0.2s ease',
-
-  '&:hover': {
-    borderColor: '$gray400'
-  },
-
-  '&[data-active="true"]': {
-    borderColor: '$secondary'
-  }
-})
-
-const SliderContainer = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2',
-  marginBottom: '$2'
-})
-
-const SliderInput = styled('input', {
-  flex: 1,
-  appearance: 'none',
-  height: '4px',
-  borderRadius: '$full',
-  background: '$gray800',
-  outline: 'none',
-
-  '&::-webkit-slider-thumb': {
-    appearance: 'none',
-    width: '16px',
-    height: '16px',
-    borderRadius: '$full',
-    background: '$secondary',
-    cursor: 'pointer'
-  },
-
-  '&::-moz-range-thumb': {
-    width: '16px',
-    height: '16px',
-    borderRadius: '$full',
-    background: '$secondary',
-    cursor: 'pointer',
-    border: 'none'
-  }
-})
-
-const PresetButton = styled(Button, {
-  padding: '$2',
-  minWidth: 'auto',
-  width: '48px',
-  height: '48px',
-
-  '& svg': {
-    width: '20px',
-    height: '20px'
-  }
-})
 
 // Predefined color palette for D&D maps
 const COLOR_PALETTE = [
@@ -155,114 +70,264 @@ export const ShapeStylePanel: React.FC = () => {
   }
 
   return (
-    <StyleContainer>
-      <StyleHeader>
-        <Box display="flex" alignItems="center" gap="2">
+    <Box
+      style={{
+        backgroundColor: 'var(--colors-dndBlack)',
+        borderRadius: '8px',
+        border: '1px solid var(--colors-gray800)',
+        padding: '12px',
+        marginBottom: '16px'
+      }}
+    >
+      {/* Header */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingBottom: '8px',
+          marginBottom: '8px',
+          borderBottom: '1px solid var(--colors-gray800)'
+        }}
+      >
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Palette size={16} />
-          <Text size="sm" weight="medium">Shape Style</Text>
+          <Text variant="body" size="sm" style={{ fontWeight: '500' }}>Shape Style</Text>
         </Box>
-        <Text size="xs" color="gray400">{currentTool}</Text>
-      </StyleHeader>
+        <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>{currentTool}</Text>
+      </Box>
 
       {/* Fill Color */}
-      <Box marginBottom="3">
-        <Text size="xs" weight="medium" color="gray300" marginBottom="2">Fill Color</Text>
-        <ColorRow>
+      <Box style={{ marginBottom: '12px' }}>
+        <Text
+          variant="label"
+          size="xs"
+          style={{
+            marginBottom: '8px',
+            fontWeight: '500',
+            color: 'var(--colors-gray300)'
+          }}
+        >
+          Fill Color
+        </Text>
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '8px'
+          }}
+        >
           {COLOR_PALETTE.map((colorItem) => (
-            <ColorSwatch
+            <button
               key={colorItem.name}
-              style={{ backgroundColor: colorItem.color }}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                border: `2px solid ${fillColor === colorItem.color ? 'var(--colors-secondary)' : 'var(--colors-gray700)'}`,
+                backgroundColor: colorItem.color,
+                cursor: 'pointer',
+                transition: 'border-color 0.2s ease'
+              }}
               onClick={() => setFillColor(colorItem.color)}
-              data-active={fillColor === colorItem.color}
               title={colorItem.name}
             />
           ))}
-        </ColorRow>
+        </Box>
       </Box>
 
       {/* Stroke Color */}
-      <Box marginBottom="3">
-        <Text size="xs" weight="medium" color="gray300" marginBottom="2">Stroke Color</Text>
-        <ColorRow>
+      <Box style={{ marginBottom: '12px' }}>
+        <Text
+          variant="label"
+          size="xs"
+          style={{
+            marginBottom: '8px',
+            fontWeight: '500',
+            color: 'var(--colors-gray300)'
+          }}
+        >
+          Stroke Color
+        </Text>
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '8px'
+          }}
+        >
           {STROKE_COLORS.map((colorItem) => (
-            <ColorSwatch
+            <button
               key={colorItem.name}
-              style={{ backgroundColor: colorItem.color }}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                border: `2px solid ${strokeColor === colorItem.color ? 'var(--colors-secondary)' : 'var(--colors-gray700)'}`,
+                backgroundColor: colorItem.color,
+                cursor: 'pointer',
+                transition: 'border-color 0.2s ease'
+              }}
               onClick={() => setStrokeColor(colorItem.color)}
-              data-active={strokeColor === colorItem.color}
               title={colorItem.name}
             />
           ))}
-        </ColorRow>
+        </Box>
       </Box>
 
       {/* Stroke Width */}
-      <SliderContainer>
-        <Text size="xs" weight="medium" color="gray300" css={{ minWidth: '60px' }}>
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginBottom: '8px'
+        }}
+      >
+        <Text
+          variant="label"
+          size="xs"
+          style={{
+            minWidth: '60px',
+            fontWeight: '500',
+            color: 'var(--colors-gray300)'
+          }}
+        >
           Width: {strokeWidth}px
         </Text>
-        <SliderInput
+        <input
           type="range"
           min="1"
           max="10"
           step="1"
           value={strokeWidth}
-          onChange={(e) => setStrokeWidth(Number(e.target.value))}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStrokeWidth(Number(e.target.value))}
+          style={{
+            flex: 1,
+            appearance: 'none',
+            height: '4px',
+            borderRadius: '4px',
+            background: 'var(--colors-gray800)',
+            outline: 'none'
+          }}
         />
-      </SliderContainer>
+      </Box>
 
       {/* Opacity */}
-      <SliderContainer>
-        <Text size="xs" weight="medium" color="gray300" css={{ minWidth: '60px' }}>
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginBottom: '8px'
+        }}
+      >
+        <Text
+          variant="label"
+          size="xs"
+          style={{
+            minWidth: '60px',
+            fontWeight: '500',
+            color: 'var(--colors-gray300)'
+          }}
+        >
           Opacity: {Math.round(opacity * 100)}%
         </Text>
-        <SliderInput
+        <input
           type="range"
           min="0.1"
           max="1"
           step="0.1"
           value={opacity}
-          onChange={(e) => setOpacity(Number(e.target.value))}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOpacity(Number(e.target.value))}
+          style={{
+            flex: 1,
+            appearance: 'none',
+            height: '4px',
+            borderRadius: '4px',
+            background: 'var(--colors-gray800)',
+            outline: 'none'
+          }}
         />
-      </SliderContainer>
+      </Box>
 
       {/* Quick Presets */}
-      <Box marginTop="3">
-        <Text size="xs" weight="medium" color="gray300" marginBottom="2">Quick Presets</Text>
-        <Box display="flex" gap="2">
-          <PresetButton
+      <Box style={{ marginTop: '12px' }}>
+        <Text
+          variant="label"
+          size="xs"
+          style={{
+            marginBottom: '8px',
+            fontWeight: '500',
+            color: 'var(--colors-gray300)'
+          }}
+        >
+          Quick Presets
+        </Text>
+        <Box style={{ display: 'flex', gap: '8px' }}>
+          <Button
             variant="ghost"
+            size="sm"
             onClick={() => handleFillPreset('stone')}
             title="Stone/Wall preset"
+            style={{
+              padding: '8px',
+              minWidth: 'auto',
+              width: '48px',
+              height: '48px'
+            }}
           >
-            <Square />
-          </PresetButton>
-          <PresetButton
+            <Square size={20} />
+          </Button>
+          <Button
             variant="ghost"
+            size="sm"
             onClick={() => handleFillPreset('water')}
             title="Water/Ice preset"
+            style={{
+              padding: '8px',
+              minWidth: 'auto',
+              width: '48px',
+              height: '48px'
+            }}
           >
-            <Circle />
-          </PresetButton>
-          <PresetButton
+            <Circle size={20} />
+          </Button>
+          <Button
             variant="ghost"
+            size="sm"
             onClick={() => handleFillPreset('fire')}
             title="Fire/Lava preset"
+            style={{
+              padding: '8px',
+              minWidth: 'auto',
+              width: '48px',
+              height: '48px'
+            }}
           >
-            <Triangle />
-          </PresetButton>
+            <Triangle size={20} />
+          </Button>
         </Box>
       </Box>
 
       {/* Current Tool Hint */}
-      <Box marginTop="3" padding="2" backgroundColor="$gray900" borderRadius="$sm">
-        <Text size="xs" color="gray400">
+      <Box
+        style={{
+          marginTop: '12px',
+          padding: '8px',
+          backgroundColor: 'var(--colors-gray900)',
+          borderRadius: '4px'
+        }}
+      >
+        <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
           {currentTool === 'polygon' && '🖱️ Click to add points, double-click to finish'}
           {currentTool === 'rectangle' && '🖱️ Click and drag to draw rectangle'}
           {currentTool === 'circle' && '🖱️ Click and drag to draw circle'}
           {currentTool === 'line' && '🖱️ Click and drag to draw line'}
         </Text>
       </Box>
-    </StyleContainer>
+    </Box>
   )
 }

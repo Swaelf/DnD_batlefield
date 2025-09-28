@@ -4,7 +4,7 @@
  */
 
 import { createStitches } from '@stitches/react'
-import { colors, spacing, typography, radii, shadows, zIndex, durations, easings } from './tokens'
+import { colors, spacing, typography, radii, shadows, zIndex, durations } from './tokens'
 
 export const {
   styled,

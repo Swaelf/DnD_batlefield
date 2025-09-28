@@ -1,4 +1,4 @@
-// Primitive component exports - Vanilla Extract versions
+// Primitive component exports - Clean Vanilla Extract versions
 export { Box, type BoxProps } from './BoxVE'
 export {
   Text,
@@ -22,6 +22,3 @@ export {
   type ToolButtonProps,
   type IconButtonProps
 } from './ButtonVE'
-
-// Legacy exports for backward compatibility (can be removed later)
-export { Button as LoadingButton, type ButtonProps as LoadingButtonProps } from './ButtonVE'

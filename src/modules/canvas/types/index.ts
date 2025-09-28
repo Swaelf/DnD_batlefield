@@ -12,10 +12,54 @@
  * - Performance optimization types
  */
 
-// Export all canvas types
-export * from './canvas'
+// Export canvas types with specific re-exports to avoid conflicts
+export type {
+  CanvasId,
+  LayerId,
+  StageId,
+  CanvasConfig,
+  CanvasSettings,
+  CanvasState,
+  CanvasViewport,
+  CanvasCursor,
+  CanvasPerformance,
+  CanvasCursorType,
+  CanvasRenderQuality,
+  CanvasExportFormat,
+  CanvasPointerEvent,
+  CanvasWheelEvent,
+  CanvasLayer,
+  CanvasEventData,
+  CanvasEventTarget,
+  CanvasEventModifiers
+} from './canvas'
+
+// Export viewport types with proper naming
+export type {
+  ViewportConfig,
+  ViewportState,
+  ViewportTransform,
+  ViewportMatrix,
+  CoordinateConversion,
+  ViewportBounds,
+  CameraState,
+  CameraAnimation,
+  CameraKeyframe,
+  ViewportEventData,
+  ViewportDelta,
+  PanGestureData,
+  ZoomGestureData,
+  UpdateViewportData,
+  ViewportFitOptions,
+  CoordinateSpace,
+  ViewportEventType,
+  ViewportEventSource,
+  CameraEasing,
+  ViewportConstraint
+} from './viewport'
+
+// Export other module types
 export * from './layer'
 export * from './interaction'
-export * from './viewport'
 export * from './grid'
 export * from './tool'

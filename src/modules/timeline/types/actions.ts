@@ -3,11 +3,10 @@
  * Actions are templates that can be converted to events
  */
 
-import type { BrandedString } from '@/foundation/types'
 import type { EventData, AttackType, DamageType, SpellComponent } from './events'
 
-export type ActionId = BrandedString<'ActionId'>
-export type ActionTemplateId = BrandedString<'ActionTemplateId'>
+export type ActionId = string & { readonly __brand: 'ActionId' }
+export type ActionTemplateId = string & { readonly __brand: 'ActionTemplateId' }
 
 /**
  * Unified action that can be converted to timeline events

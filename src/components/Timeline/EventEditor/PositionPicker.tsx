@@ -1,10 +1,17 @@
+/**
+ * Position Picker Component
+ * Interactive position selection for timeline events
+ */
+
 import React, { memo } from 'react'
 import { MapPin } from 'lucide-react'
-import { Position } from '@/types/map'
-import { EventType } from '@/types/timeline'
-import { Box, Button, Text, Input, FieldLabel } from '@/components/ui'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import type { Position } from '@/types/map'
+import type { EventType } from '@/types/timeline'
 
-type PositionPickerProps = {
+export type PositionPickerProps = {
   targetPosition: Position
   onPositionPick: () => void
   isPicking: 'from' | 'to' | 'token' | null
@@ -30,90 +37,222 @@ const PositionPickerComponent: React.FC<PositionPickerProps> = ({
     return null
   }
 
+  const getPositionLabel = () => {
+    switch (eventType) {
+      case 'spell':
+        return 'Target Position'
+      case 'attack':
+        return 'Target Position'
+      case 'interaction':
+        return 'Interaction Position'
+      case 'environmental':
+        return 'Effect Center Position'
+      default:
+        return 'Move To Position'
+    }
+  }
+
+  const getPickerTitle = () => {
+    if (isDisabled) {
+      return "Select a spell first"
+    }
+    return "Pick from map"
+  }
+
+  const getInstructionText = () => {
+    if (isDisabled) {
+      return "Please select a spell first before choosing target position"
+    }
+    return "Click \"Pick from map\" then click on the map to set position"
+  }
+
   return (
-    <Box css={{
-      padding: '$3',
-      backgroundColor: '$gray900/50',
-      borderRadius: '$md',
-      border: '1px solid $gray700'
-    }}>
+    <Box
+      style={{
+        padding: '12px',
+        backgroundColor: 'rgba(23, 23, 23, 0.5)',
+        borderRadius: '8px',
+        border: '1px solid var(--colors-gray700)'
+      }}
+    >
       {showPositionPicker && (
         <>
-          <FieldLabel css={{ marginBottom: '$2' }}>
-            {eventType === 'spell' ? 'Target Position' :
-             eventType === 'attack' ? 'Target Position' :
-             eventType === 'interaction' ? 'Interaction Position' :
-             eventType === 'environmental' ? 'Effect Center Position' :
-             'Move To Position'}
-          </FieldLabel>
-          <Box display="flex" gap="2" css={{ marginBottom: '$3' }}>
+          {/* Position Label */}
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--colors-gray300)',
+              fontWeight: '500'
+            }}
+          >
+            {getPositionLabel()}
+          </Text>
+
+          {/* Position Controls */}
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '12px'
+            }}
+          >
+            {/* Pick Position Button */}
             <Button
+              variant={isPicking === 'to' ? 'primary' : 'outline'}
+              size="sm"
               onClick={onPositionPick}
-              variant={isPicking === 'to' ? 'primary' : 'secondary'}
-              size="icon"
-              title={isDisabled ? "Select a spell first" : "Pick from map"}
+              title={getPickerTitle()}
               disabled={isDisabled}
-              css={{
-                backgroundColor: isDisabled ? '$gray800' : (isPicking === 'to' ? '$blue600' : '$gray700'),
-                color: isDisabled ? '$gray600' : (isPicking === 'to' ? '$white' : '$gray300'),
-                animation: isPicking === 'to' && !isDisabled ? 'pulse 2s infinite' : 'none',
-                border: '1px solid $gray600',
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+                padding: 0,
+                backgroundColor: isDisabled
+                  ? 'var(--colors-gray800)'
+                  : (isPicking === 'to' ? 'var(--colors-blue600)' : 'var(--colors-gray700)'),
+                color: isDisabled
+                  ? 'var(--colors-gray600)'
+                  : (isPicking === 'to' ? 'white' : 'var(--colors-gray300)'),
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
                 cursor: isDisabled ? 'not-allowed' : 'pointer',
                 opacity: isDisabled ? 0.5 : 1,
-                '&:hover': isDisabled ? {} : {
-                  backgroundColor: isPicking === 'to' ? '$blue700' : '$gray600',
-                  borderColor: '$secondary'
+                transition: 'all 0.2s ease',
+                animation: isPicking === 'to' && !isDisabled ? 'pulse 2s infinite' : 'none',
+                minWidth: 'auto'
+              }}
+              onMouseEnter={(e) => {
+                if (!isDisabled) {
+                  e.currentTarget.style.backgroundColor = isPicking === 'to' ? 'var(--colors-blue700)' : 'var(--colors-gray600)'
+                  e.currentTarget.style.borderColor = 'var(--colors-dndGold)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isDisabled) {
+                  e.currentTarget.style.backgroundColor = isPicking === 'to' ? 'var(--colors-blue600)' : 'var(--colors-gray700)'
+                  e.currentTarget.style.borderColor = 'var(--colors-gray600)'
                 }
               }}
             >
               <MapPin size={16} />
             </Button>
-            <Box display="flex" gap="2" css={{ flex: 1 }}>
-              <Box css={{ flex: 1 }}>
-                <Input
+
+            {/* Position Inputs */}
+            <Box
+              style={{
+                display: 'flex',
+                gap: '8px',
+                flex: 1
+              }}
+            >
+              {/* X Input */}
+              <Box style={{ flex: 1 }}>
+                <input
                   type="number"
                   value={Math.round(targetPosition.x)}
                   readOnly
-                  size="sm"
                   placeholder="X"
-                  css={{
-                    backgroundColor: '$gray800',
-                    borderColor: '$gray600',
-                    '&:focus': { borderColor: '$secondary' }
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    fontSize: '12px',
+                    backgroundColor: 'var(--colors-gray800)',
+                    borderColor: 'var(--colors-gray600)',
+                    border: '1px solid var(--colors-gray600)',
+                    borderRadius: '4px',
+                    color: 'var(--colors-gray100)',
+                    textAlign: 'center',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'var(--colors-dndGold)'
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'var(--colors-gray600)'
                   }}
                 />
               </Box>
-              <Box css={{ flex: 1 }}>
-                <Input
+
+              {/* Y Input */}
+              <Box style={{ flex: 1 }}>
+                <input
                   type="number"
                   value={Math.round(targetPosition.y)}
                   readOnly
-                  size="sm"
                   placeholder="Y"
-                  css={{
-                    backgroundColor: '$gray800',
-                    borderColor: '$gray600',
-                    '&:focus': { borderColor: '$secondary' }
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    fontSize: '12px',
+                    backgroundColor: 'var(--colors-gray800)',
+                    borderColor: 'var(--colors-gray600)',
+                    border: '1px solid var(--colors-gray600)',
+                    borderRadius: '4px',
+                    color: 'var(--colors-gray100)',
+                    textAlign: 'center',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'var(--colors-dndGold)'
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'var(--colors-gray600)'
                   }}
                 />
               </Box>
             </Box>
           </Box>
-          <Text size="xs" color={isDisabled ? "error" : "gray500"}>
-            {isDisabled ? "Please select a spell first before choosing target position" : "Click \"Pick from map\" then click on the map to set position"}
+
+          {/* Instruction Text */}
+          <Text
+            variant="body"
+            size="xs"
+            style={{
+              color: isDisabled ? 'var(--colors-red400)' : 'var(--colors-gray500)',
+              margin: 0,
+              lineHeight: 1.4
+            }}
+          >
+            {getInstructionText()}
           </Text>
         </>
       )}
 
+      {/* Fade Effect Controls */}
       {showFadeEffect && fadeEffect !== undefined && setFadeEffect && (
-        <Box display="flex" alignItems="center" gap="2">
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginTop: showPositionPicker ? '12px' : '0'
+          }}
+        >
           <input
             type="checkbox"
             checked={fadeEffect}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFadeEffect(e.target.checked)}
-            style={{ accentColor: 'var(--colors-secondary)' }}
+            style={{
+              accentColor: 'var(--colors-dndGold)',
+              width: '16px',
+              height: '16px'
+            }}
           />
-          <Text size="xs" color="gray300">
+          <Text
+            variant="body"
+            size="xs"
+            style={{
+              color: 'var(--colors-gray300)',
+              margin: 0
+            }}
+          >
             {eventType === 'appear' ? 'Fade in effect' : 'Fade out effect'}
           </Text>
         </Box>

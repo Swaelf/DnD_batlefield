@@ -4,7 +4,9 @@
  */
 
 import React from 'react'
-import { styled } from '@/foundation/theme'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import { EventCard } from '../../atoms'
 import type { RoundEvent, EventId } from '../../../types'
 
@@ -20,90 +22,6 @@ export type EventListProps = {
   className?: string
 }
 
-const Container = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '$2',
-  minHeight: 100
-})
-
-const EmptyState = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '$4',
-  color: '$gray400',
-  textAlign: 'center',
-  minHeight: 150
-})
-
-const EmptyIcon = styled('div', {
-  fontSize: '$6',
-  marginBottom: '$2',
-  opacity: 0.5
-})
-
-const EmptyText = styled('p', {
-  margin: 0,
-  fontSize: '$2',
-  color: '$gray500'
-})
-
-const EventsContainer = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '$2'
-})
-
-const ListHeader = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '$2 0',
-  borderBottom: '1px solid $gray700',
-  marginBottom: '$2'
-})
-
-const EventCount = styled('span', {
-  fontSize: '$1',
-  color: '$gray400'
-})
-
-const SortControls = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2'
-})
-
-const SortButton = styled('button', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  padding: '$1 $2',
-  borderRadius: '$sm',
-  border: '1px solid $gray600',
-  background: '$gray800',
-  color: '$gray300',
-  fontSize: '$1',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    background: '$gray700',
-    borderColor: '$gray500'
-  },
-
-  variants: {
-    active: {
-      true: {
-        background: '$dndRed',
-        borderColor: '$dndRed',
-        color: 'white'
-      }
-    }
-  }
-})
 
 type SortBy = 'order' | 'name' | 'type' | 'duration'
 type SortDirection = 'asc' | 'desc'
@@ -179,55 +97,176 @@ export const EventList: React.FC<EventListProps> = ({
 
   if (events.length === 0) {
     return (
-      <Container className={className}>
-        <EmptyState>
-          <EmptyIcon>📝</EmptyIcon>
-          <EmptyText>{emptyMessage}</EmptyText>
-        </EmptyState>
-      </Container>
+      <Box
+        className={className}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          minHeight: '100px'
+        }}
+      >
+        <Box
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+            color: 'var(--colors-gray400)',
+            textAlign: 'center',
+            minHeight: '150px'
+          }}
+        >
+          <Box
+            style={{
+              fontSize: '48px',
+              marginBottom: '8px',
+              opacity: 0.5
+            }}
+          >
+            📝
+          </Box>
+          <Text
+            variant="body"
+            size="sm"
+            style={{
+              margin: 0,
+              color: 'var(--colors-gray500)'
+            }}
+          >
+            {emptyMessage}
+          </Text>
+        </Box>
+      </Box>
     )
   }
 
   return (
-    <Container className={className}>
-      <ListHeader>
-        <EventCount>
+    <Box
+      className={className}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        minHeight: '100px'
+      }}
+    >
+      {/* List Header */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 0',
+          borderBottom: '1px solid var(--colors-gray700)',
+          marginBottom: '8px'
+        }}
+      >
+        <Text
+          variant="body"
+          size="xs"
+          style={{
+            color: 'var(--colors-gray400)'
+          }}
+        >
           {executedCount} / {totalCount} events completed
-        </EventCount>
+        </Text>
 
-        <SortControls>
-          <SortButton
-            active={sortBy === 'order'}
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <Button
+            variant={sortBy === 'order' ? 'primary' : 'outline'}
+            size="sm"
             onClick={() => handleSort('order')}
             title="Sort by execution order"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              backgroundColor: sortBy === 'order' ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+              borderColor: sortBy === 'order' ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+              color: sortBy === 'order' ? 'white' : 'var(--colors-gray300)'
+            }}
           >
             Order {getSortIcon('order')}
-          </SortButton>
-          <SortButton
-            active={sortBy === 'name'}
+          </Button>
+          <Button
+            variant={sortBy === 'name' ? 'primary' : 'outline'}
+            size="sm"
             onClick={() => handleSort('name')}
             title="Sort by name"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              backgroundColor: sortBy === 'name' ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+              borderColor: sortBy === 'name' ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+              color: sortBy === 'name' ? 'white' : 'var(--colors-gray300)'
+            }}
           >
             Name {getSortIcon('name')}
-          </SortButton>
-          <SortButton
-            active={sortBy === 'type'}
+          </Button>
+          <Button
+            variant={sortBy === 'type' ? 'primary' : 'outline'}
+            size="sm"
             onClick={() => handleSort('type')}
             title="Sort by type"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              backgroundColor: sortBy === 'type' ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+              borderColor: sortBy === 'type' ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+              color: sortBy === 'type' ? 'white' : 'var(--colors-gray300)'
+            }}
           >
             Type {getSortIcon('type')}
-          </SortButton>
-          <SortButton
-            active={sortBy === 'duration'}
+          </Button>
+          <Button
+            variant={sortBy === 'duration' ? 'primary' : 'outline'}
+            size="sm"
             onClick={() => handleSort('duration')}
             title="Sort by duration"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              backgroundColor: sortBy === 'duration' ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+              borderColor: sortBy === 'duration' ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+              color: sortBy === 'duration' ? 'white' : 'var(--colors-gray300)'
+            }}
           >
             Time {getSortIcon('duration')}
-          </SortButton>
-        </SortControls>
-      </ListHeader>
+          </Button>
+        </Box>
+      </Box>
 
-      <EventsContainer>
+      {/* Events Container */}
+      <Box
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
+        }}
+      >
         {sortedEvents.map(event => (
           <EventCard
             key={event.id}
@@ -240,7 +279,7 @@ export const EventList: React.FC<EventListProps> = ({
             onExecute={onEventExecute}
           />
         ))}
-      </EventsContainer>
-    </Container>
+      </Box>
+    </Box>
   )
 }

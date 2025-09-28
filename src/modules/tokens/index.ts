@@ -14,8 +14,31 @@
  * - Complete validation system with D&D 5e rule compliance
  */
 
-// Export all types
-export * from './types'
+// Export types - be selective to avoid conflicts
+export type {
+  Token,
+  TokenId,
+  TokenSize,
+  TokenShape,
+  TokenCategory,
+  TokenTemplate,
+  TokenAnimation,
+  TokenMovement,
+  TokenSelection,
+  TokenUpdate,
+  TokenBounds,
+  TokenSizeMap,
+  ConditionType,
+  ConditionVisual,
+  ConditionEffect,
+  TokenConditionState
+} from './types'
+
+// Export type utilities
+export {
+  createTokenId,
+  createTemplateId
+} from './types'
 
 // Export constants
 export * from './constants'
@@ -23,8 +46,9 @@ export * from './constants'
 // Export services
 export * from './services'
 
-// Export store and selectors
-export * from './store'
+// Export store - avoid conflicting exports
+export { useTokenStore } from './store'
+export * from './store/selectors'
 
 // Export hooks
 export * from './hooks'
@@ -32,8 +56,8 @@ export * from './hooks'
 // Export components
 export * from './components'
 
-// Main components for easy import
-export { Token } from './components/organisms/Token'
+// Main components for easy import - renamed to avoid conflict with Token type
+export { Token as TokenComponent } from './components/organisms/Token'
 export { TokenLibrary } from './components/organisms/TokenLibrary'
 export { TokenProperties } from './components/organisms/TokenProperties'
 export { TokenAnimator } from './components/organisms/TokenAnimator'

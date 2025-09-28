@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { Group, Line, Circle, Rect, RegularPolygon, Arrow, Text as KonvaText } from 'react-konva'
-import Konva from 'konva'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
-import { Point, MapObject } from '@/types'
-import { Box, Text, Button, Grid } from '@/components/ui'
+import type { Point, Shape } from '@/types'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import { Shapes, ArrowRight, MessageSquare, Star, Hexagon, Triangle, Square, Circle as CircleIcon, Minus } from 'lucide-react'
 
 interface ShapeTemplate {
@@ -278,18 +278,28 @@ export const ProfessionalShapeLibrary: React.FC<ProfessionalShapeLibraryProps> =
     const centerPos = { x: 400, y: 300 } // Default center position
     const shapeData = template.generator(centerPos, previewSize)
 
-    const shapeObject: MapObject = {
+    // Map custom shape types to Shape types
+    let mappedShapeType: Shape['shapeType'] = 'polygon'
+    if (shapeData.shapeType === 'circle') mappedShapeType = 'circle'
+    else if (shapeData.shapeType === 'rect') mappedShapeType = 'rect'
+    else if (shapeData.shapeType === 'path' || shapeData.shapeType === 'arrow' || shapeData.shapeType === 'star') {
+      mappedShapeType = 'polygon' // Use polygon for complex shapes
+    }
+
+    const shapeObject: Shape = {
       id: crypto.randomUUID(),
       type: 'shape',
-      shapeType: shapeData.shapeType,
+      shapeType: mappedShapeType,
       position: centerPos,
       width: shapeData.width,
       height: shapeData.height,
       points: shapeData.points,
-      pathData: shapeData.pathData,
       fill: fillColor,
+      fillColor,
       stroke: strokeColor,
+      strokeColor,
       strokeWidth,
+      opacity: 1,
       layer: 30,
       rotation: 0,
       visible: true,
@@ -304,16 +314,16 @@ export const ProfessionalShapeLibrary: React.FC<ProfessionalShapeLibraryProps> =
 
   return (
     <Box
-      css={{
+      style={{
         position: 'fixed',
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 600,
-        height: 500,
-        backgroundColor: '$dndBlack',
-        border: '1px solid $gray800',
-        borderRadius: '$md',
+        width: '600px',
+        height: '500px',
+        backgroundColor: 'var(--colors-dndBlack)',
+        border: '1px solid var(--colors-gray800)',
+        borderRadius: '8px',
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column'
@@ -321,40 +331,40 @@ export const ProfessionalShapeLibrary: React.FC<ProfessionalShapeLibraryProps> =
     >
       {/* Header */}
       <Box
-        css={{
-          padding: '$4',
-          borderBottom: '1px solid $gray800',
+        style={{
+          padding: '16px',
+          borderBottom: '1px solid var(--colors-gray800)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}
       >
-        <Text size="lg" weight="semibold">Professional Shape Library</Text>
+        <Text variant="heading" size="lg" style={{ fontWeight: '600' }}>Professional Shape Library</Text>
         <Button variant="ghost" size="icon" onClick={onClose}>×</Button>
       </Box>
 
-      <Box css={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <Box style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* Category Navigation */}
         <Box
-          css={{
-            width: 120,
-            backgroundColor: '$gray900',
-            borderRight: '1px solid $gray800',
-            padding: '$2',
+          style={{
+            width: '120px',
+            backgroundColor: 'var(--colors-gray900)',
+            borderRight: '1px solid var(--colors-gray800)',
+            padding: '8px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '$1'
+            gap: '4px'
           }}
         >
           {categories.map(category => (
             <Button
               key={category.id}
-              variant={selectedCategory === category.id ? 'default' : 'ghost'}
+              variant={selectedCategory === category.id ? 'primary' : 'ghost'}
               size="sm"
-              css={{
+              style={{
                 justifyContent: 'flex-start',
-                gap: '$2',
-                fontSize: '$xs'
+                gap: '8px',
+                fontSize: '12px'
               }}
               onClick={() => setSelectedCategory(category.id)}
             >
@@ -365,93 +375,89 @@ export const ProfessionalShapeLibrary: React.FC<ProfessionalShapeLibraryProps> =
         </Box>
 
         {/* Shape Grid */}
-        <Box css={{ flex: 1, padding: '$4', overflow: 'auto' }}>
-          <Grid
-            css={{
+        <Box style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
+          <Box
+            style={{
+              display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-              gap: '$3'
+              gap: '12px'
             }}
           >
             {filteredTemplates.map(template => (
               <Box
                 key={template.id}
-                css={{
-                  border: '1px solid $gray700',
-                  borderRadius: '$sm',
-                  padding: '$3',
+                style={{
+                  border: '1px solid var(--colors-gray700)',
+                  borderRadius: '4px',
+                  padding: '12px',
                   cursor: 'pointer',
                   textAlign: 'center',
-                  transition: 'all 0.2s',
-                  '&:hover': {
-                    backgroundColor: '$gray800',
-                    borderColor: '$primary',
-                    transform: 'translateY(-2px)'
-                  }
+                  transition: 'all 0.2s'
                 }}
                 onClick={() => handleAddShape(template)}
               >
                 <Box
-                  css={{
-                    width: 60,
-                    height: 60,
-                    margin: '0 auto $2',
-                    backgroundColor: '$gray800',
-                    borderRadius: '$sm',
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    margin: '0 auto 8px',
+                    backgroundColor: 'var(--colors-gray800)',
+                    borderRadius: '4px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '$xl',
-                    color: '$secondary'
+                    fontSize: '20px',
+                    color: 'var(--colors-secondary)'
                   }}
                 >
                   {template.icon}
                 </Box>
-                <Text size="xs" css={{ color: '$gray300' }}>
+                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray300)' }}>
                   {template.name}
                 </Text>
               </Box>
             ))}
-          </Grid>
+          </Box>
         </Box>
       </Box>
 
       {/* Footer Controls */}
       <Box
-        css={{
-          padding: '$4',
-          borderTop: '1px solid $gray800',
+        style={{
+          padding: '16px',
+          borderTop: '1px solid var(--colors-gray800)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}
       >
-        <Box css={{ display: 'flex', alignItems: 'center', gap: '$3' }}>
-          <Text size="sm">Size:</Text>
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Text variant="body" size="sm">Size:</Text>
           <input
             type="range"
             min="50"
             max="300"
             value={previewSize}
-            onChange={(e) => setPreviewSize(Number(e.target.value))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPreviewSize(Number(e.target.value))}
             style={{
-              width: 120,
+              width: '120px',
               accentColor: 'var(--colors-secondary)'
             }}
           />
-          <Text size="sm" css={{ color: '$gray400' }}>
+          <Text variant="body" size="sm" style={{ color: 'var(--colors-gray400)' }}>
             {previewSize}px
           </Text>
         </Box>
 
-        <Box css={{ display: 'flex', gap: '$2' }}>
+        <Box style={{ display: 'flex', gap: '8px' }}>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button variant="default">Add Shape</Button>
+          <Button variant="primary">Add Shape</Button>
         </Box>
       </Box>
 
       {/* Backdrop */}
       <Box
-        css={{
+        style={{
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.5)',

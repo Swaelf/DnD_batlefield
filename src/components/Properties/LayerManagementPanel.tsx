@@ -2,79 +2,10 @@ import React, { useState } from 'react'
 import { Eye, EyeOff, Lock, Unlock, Plus, Trash2, ChevronUp, ChevronDown, Layers } from 'lucide-react'
 import { useLayerStore } from '@/store/layerStore'
 import useMapStore from '@/store/mapStore'
-import { styled } from '@/styles/theme.config'
-import { Box, Text, Button } from '@/components/ui'
-
-const LayerContainer = styled(Box, {
-  backgroundColor: '$dndBlack',
-  borderRadius: '$md',
-  border: '1px solid $gray800',
-  padding: '$3',
-  marginBottom: '$4'
-})
-
-const LayerHeader = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  paddingBottom: '$2',
-  marginBottom: '$2',
-  borderBottom: '1px solid $gray800'
-})
-
-const LayerList = styled(Box, {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '$1',
-  maxHeight: '200px',
-  overflowY: 'auto'
-})
-
-const LayerItem = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2',
-  padding: '$2',
-  borderRadius: '$sm',
-  backgroundColor: '$gray900',
-  border: '1px solid transparent',
-
-  '&[data-active="true"]': {
-    backgroundColor: '$gray800',
-    borderColor: '$secondary'
-  }
-})
-
-const LayerColorIndicator = styled(Box, {
-  width: '12px',
-  height: '12px',
-  borderRadius: '$round',
-  flexShrink: 0
-})
-
-const LayerName = styled(Text, {
-  flex: 1,
-  fontSize: '$xs',
-  fontWeight: '$medium'
-})
-
-const LayerActions = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1'
-})
-
-const IconButton = styled(Button, {
-  padding: '$1',
-  minWidth: 'auto',
-  width: '24px',
-  height: '24px',
-
-  '& svg': {
-    width: '12px',
-    height: '12px'
-  }
-})
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Input } from '@/components/ui/Input'
 
 export const LayerManagementPanel: React.FC = () => {
   const {
@@ -106,7 +37,7 @@ export const LayerManagementPanel: React.FC = () => {
 
   const handleCreateLayer = () => {
     if (newLayerName.trim()) {
-      createLayer(newLayerName.trim(), 'objects')
+      createLayer({ name: newLayerName.trim(), type: 'objects' })
       setNewLayerName('')
       setShowCreateLayer(false)
     }
@@ -121,138 +52,353 @@ export const LayerManagementPanel: React.FC = () => {
   }
 
   return (
-    <LayerContainer>
-      <LayerHeader>
-        <Box display="flex" alignItems="center" gap="2">
+    <Box
+      style={{
+        backgroundColor: 'var(--colors-dndBlack)',
+        borderRadius: '8px',
+        border: '1px solid var(--colors-gray800)',
+        padding: '12px',
+        marginBottom: '16px'
+      }}
+    >
+      {/* Header */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingBottom: '8px',
+          marginBottom: '8px',
+          borderBottom: '1px solid var(--colors-gray800)'
+        }}
+      >
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Layers size={16} />
-          <Text size="sm" weight="medium">Layers</Text>
+          <Text
+            variant="body"
+            size="sm"
+            style={{
+              margin: 0,
+              fontWeight: '500',
+              color: 'var(--colors-gray200)'
+            }}
+          >
+            Layers
+          </Text>
         </Box>
 
-        <IconButton
+        <Button
           variant="ghost"
           onClick={() => setShowCreateLayer(!showCreateLayer)}
           title="Add Layer"
+          style={{
+            padding: '4px',
+            minWidth: 'auto',
+            width: '24px',
+            height: '24px',
+            backgroundColor: 'transparent',
+            border: 'none'
+          }}
+          onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+          }}
+          onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            e.currentTarget.style.backgroundColor = 'transparent'
+          }}
         >
           <Plus size={12} />
-        </IconButton>
-      </LayerHeader>
+        </Button>
+      </Box>
 
       {/* Create Layer Form */}
       {showCreateLayer && (
-        <Box marginBottom="3" padding="2" backgroundColor="$gray800" borderRadius="$sm">
-          <input
+        <Box
+          style={{
+            marginBottom: '12px',
+            padding: '8px',
+            backgroundColor: 'var(--colors-gray800)',
+            borderRadius: '4px'
+          }}
+        >
+          <Input
             type="text"
             placeholder="Layer name..."
             value={newLayerName}
-            onChange={(e) => setNewLayerName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewLayerName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleCreateLayer()
               if (e.key === 'Escape') setShowCreateLayer(false)
             }}
             style={{
               width: '100%',
-              padding: '4px 8px',
-              fontSize: '12px',
-              backgroundColor: '#1F2937',
-              border: '1px solid #374151',
-              borderRadius: '4px',
-              color: 'white',
-              marginBottom: '8px'
+              marginBottom: '8px',
+              fontSize: '12px'
             }}
             autoFocus
           />
-          <Box display="flex" gap="2">
-            <Button size="xs" onClick={handleCreateLayer}>Create</Button>
-            <Button size="xs" variant="ghost" onClick={() => setShowCreateLayer(false)}>Cancel</Button>
+          <Box style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              variant="primary"
+              onClick={handleCreateLayer}
+              style={{
+                fontSize: '12px',
+                padding: '4px 8px',
+                height: 'auto'
+              }}
+            >
+              Create
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setShowCreateLayer(false)}
+              style={{
+                fontSize: '12px',
+                padding: '4px 8px',
+                height: 'auto'
+              }}
+            >
+              Cancel
+            </Button>
           </Box>
         </Box>
       )}
 
       {/* Layer List */}
-      <LayerList>
+      <Box
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+          maxHeight: '200px',
+          overflowY: 'auto'
+        }}
+      >
         {sortedLayers.map((layer) => (
-          <LayerItem
+          <Box
             key={layer.id}
             data-active={layer.id === activeLayerId}
             onClick={() => setActiveLayer(layer.id)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px',
+              borderRadius: '4px',
+              backgroundColor: layer.id === activeLayerId ? 'var(--colors-gray800)' : 'var(--colors-gray900)',
+              border: `1px solid ${layer.id === activeLayerId ? 'var(--colors-secondary)' : 'transparent'}`,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+              if (layer.id !== activeLayerId) {
+                e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+              }
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+              if (layer.id !== activeLayerId) {
+                e.currentTarget.style.backgroundColor = 'var(--colors-gray900)'
+              }
+            }}
           >
-            <LayerColorIndicator
-              style={{ backgroundColor: layer.color || '#6B7280' }}
+            {/* Layer Color Indicator */}
+            <Box
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                flexShrink: 0,
+                backgroundColor: layer.color || '#6B7280'
+              }}
             />
 
-            <LayerName>
-              {layer.name}
-              {getLayerObjectCount(layer.id) > 0 && (
-                <Text as="span" color="gray400" size="xs">
-                  {' '}({getLayerObjectCount(layer.id)})
-                </Text>
-              )}
-            </LayerName>
+            {/* Layer Name */}
+            <Box style={{ flex: 1 }}>
+              <Text
+                variant="body"
+                size="xs"
+                style={{
+                  margin: 0,
+                  fontWeight: '500',
+                  color: 'var(--colors-gray200)'
+                }}
+              >
+                {layer.name}
+                {getLayerObjectCount(layer.id) > 0 && (
+                  <Text
+                    as="span"
+                    variant="body"
+                    size="xs"
+                    style={{
+                      margin: 0,
+                      color: 'var(--colors-gray400)'
+                    }}
+                  >
+                    {' '}({getLayerObjectCount(layer.id)})
+                  </Text>
+                )}
+              </Text>
+            </Box>
 
-            <LayerActions onClick={(e) => e.stopPropagation()}>
+            {/* Layer Actions */}
+            <Box
+              style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Layer Visibility */}
-              <IconButton
+              <Button
                 variant="ghost"
                 onClick={() => toggleLayerVisibility(layer.id)}
                 title={layer.visible ? 'Hide Layer' : 'Show Layer'}
+                style={{
+                  padding: '4px',
+                  minWidth: 'auto',
+                  width: '24px',
+                  height: '24px',
+                  backgroundColor: 'transparent',
+                  border: 'none'
+                }}
+                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
+                }}
+                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }}
               >
                 {layer.visible ? <Eye size={12} /> : <EyeOff size={12} />}
-              </IconButton>
+              </Button>
 
               {/* Layer Lock */}
-              <IconButton
+              <Button
                 variant="ghost"
                 onClick={() => toggleLayerLock(layer.id)}
                 title={layer.locked ? 'Unlock Layer' : 'Lock Layer'}
+                style={{
+                  padding: '4px',
+                  minWidth: 'auto',
+                  width: '24px',
+                  height: '24px',
+                  backgroundColor: 'transparent',
+                  border: 'none'
+                }}
+                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
+                }}
+                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }}
               >
                 {layer.locked ? <Lock size={12} /> : <Unlock size={12} />}
-              </IconButton>
+              </Button>
 
-              {/* Move Layer Up/Down */}
-              <IconButton
+              {/* Move Layer Up */}
+              <Button
                 variant="ghost"
                 onClick={() => moveLayer(layer.id, 'up')}
                 title="Move Layer Up"
+                style={{
+                  padding: '4px',
+                  minWidth: 'auto',
+                  width: '24px',
+                  height: '24px',
+                  backgroundColor: 'transparent',
+                  border: 'none'
+                }}
+                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
+                }}
+                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }}
               >
                 <ChevronUp size={12} />
-              </IconButton>
+              </Button>
 
-              <IconButton
+              {/* Move Layer Down */}
+              <Button
                 variant="ghost"
                 onClick={() => moveLayer(layer.id, 'down')}
                 title="Move Layer Down"
+                style={{
+                  padding: '4px',
+                  minWidth: 'auto',
+                  width: '24px',
+                  height: '24px',
+                  backgroundColor: 'transparent',
+                  border: 'none'
+                }}
+                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
+                }}
+                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }}
               >
                 <ChevronDown size={12} />
-              </IconButton>
+              </Button>
 
               {/* Delete Layer */}
               {layer.isDeletable && (
-                <IconButton
-                  variant="destructive"
+                <Button
+                  variant="ghost"
                   onClick={() => deleteLayer(layer.id)}
                   title="Delete Layer"
+                  style={{
+                    padding: '4px',
+                    minWidth: 'auto',
+                    width: '24px',
+                    height: '24px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: 'var(--colors-error)'
+                  }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.backgroundColor = 'var(--colors-error)'
+                    e.currentTarget.style.color = 'white'
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.color = 'var(--colors-error)'
+                  }}
                 >
                   <Trash2 size={12} />
-                </IconButton>
+                </Button>
               )}
-            </LayerActions>
-          </LayerItem>
+            </Box>
+          </Box>
         ))}
-      </LayerList>
+      </Box>
 
       {/* Move Selected Objects to Layer */}
       {selectedObjects.length > 0 && (
-        <Box marginTop="3" paddingTop="2" borderTop="1px solid $gray800">
-          <Text size="xs" color="gray400" marginBottom="2">
+        <Box
+          style={{
+            marginTop: '12px',
+            paddingTop: '8px',
+            borderTop: '1px solid var(--colors-gray800)'
+          }}
+        >
+          <Text
+            variant="body"
+            size="xs"
+            style={{
+              margin: 0,
+              marginBottom: '8px',
+              color: 'var(--colors-gray400)'
+            }}
+          >
             Move {selectedObjects.length} selected object(s) to:
           </Text>
-          <Box display="flex" flexWrap="wrap" gap="1">
+          <Box style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
             {layers.slice(0, 4).map(layer => (
               <Button
                 key={layer.id}
-                size="xs"
                 variant="ghost"
                 onClick={() => handleMoveSelectedToLayer(layer.id)}
+                style={{
+                  fontSize: '12px',
+                  padding: '4px 8px',
+                  height: 'auto'
+                }}
               >
                 {layer.name}
               </Button>
@@ -260,6 +406,6 @@ export const LayerManagementPanel: React.FC = () => {
           </Box>
         </Box>
       )}
-    </LayerContainer>
+    </Box>
   )
 }

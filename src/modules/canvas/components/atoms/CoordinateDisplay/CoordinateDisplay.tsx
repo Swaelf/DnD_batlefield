@@ -6,10 +6,9 @@
  */
 
 import React from 'react'
-import { Box, Text } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { Box, Text } from '@/components/primitives'
 import type { Point } from '@/types/geometry'
-import type { CoordinateSpace } from '../../types'
+import type { CoordinateSpace } from '../../../types/canvas'
 
 export interface CoordinateDisplayProps {
   readonly position: Point
@@ -20,41 +19,37 @@ export interface CoordinateDisplayProps {
   readonly label?: string
 }
 
-const CoordinateContainer = styled(Box, {
+// Helper functions for styling
+const getCoordinateContainerStyles = (): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '$2',
-  padding: '$1 $2',
-  backgroundColor: '$gray900/80',
-  borderRadius: '$sm',
-  border: '1px solid $gray700'
+  gap: '8px',
+  padding: '4px 8px',
+  backgroundColor: 'rgba(17, 24, 39, 0.8)',
+  borderRadius: '4px',
+  border: '1px solid var(--gray-700)'
 })
 
-const CoordinateLabel = styled(Text, {
-  fontSize: '$xs',
-  color: '$gray400',
-  fontWeight: '$medium',
-  textTransform: 'uppercase',
+const getCoordinateLabelStyles = (): React.CSSProperties => ({
+  fontSize: '12px',
+  color: 'var(--gray-400)',
+  fontWeight: '500',
+  textTransform: 'uppercase' as const,
   letterSpacing: '0.5px'
 })
 
-const CoordinateValue = styled(Text, {
-  fontSize: '$xs',
-  fontFamily: '$mono',
-  color: '$gray100',
-  fontWeight: '$medium'
+const getCoordinateValueStyles = (): React.CSSProperties => ({
+  fontSize: '12px',
+  fontFamily: 'monospace',
+  color: 'var(--gray-100)',
+  fontWeight: '500'
 })
 
-const GridIndicator = styled(Box, {
-  width: '$2',
-  height: '$2',
+const getGridIndicatorStyles = (aligned: boolean): React.CSSProperties => ({
+  width: '8px',
+  height: '8px',
   borderRadius: '50%',
-  variants: {
-    aligned: {
-      true: { backgroundColor: '$success' },
-      false: { backgroundColor: '$gray600' }
-    }
-  }
+  backgroundColor: aligned ? 'var(--success)' : 'var(--gray-600)'
 })
 
 export const CoordinateDisplay: React.FC<CoordinateDisplayProps> = React.memo(({
@@ -86,20 +81,20 @@ export const CoordinateDisplay: React.FC<CoordinateDisplayProps> = React.memo(({
   const displayLabel = label || getSpaceLabel(space)
 
   return (
-    <CoordinateContainer>
-      <CoordinateLabel>{displayLabel}</CoordinateLabel>
+    <Box style={getCoordinateContainerStyles()}>
+      <Text style={getCoordinateLabelStyles()}>{displayLabel}</Text>
 
-      <CoordinateValue>
+      <Text style={getCoordinateValueStyles()}>
         {formatCoordinate(position.x)}, {formatCoordinate(position.y)}
-      </CoordinateValue>
+      </Text>
 
       {showGrid && gridSize && (
-        <GridIndicator
-          aligned={isGridAligned}
+        <Box
+          style={getGridIndicatorStyles(isGridAligned)}
           title={isGridAligned ? 'Aligned to grid' : 'Not aligned to grid'}
         />
       )}
-    </CoordinateContainer>
+    </Box>
   )
 })
 

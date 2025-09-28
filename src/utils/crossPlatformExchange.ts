@@ -1,4 +1,4 @@
-import { BattleMap, MapObject, Point } from '@/types'
+import type { BattleMap, MapObject, Shape, Text, Token, Point } from '@/types'
 
 // Universal VTT format interfaces
 export interface UniversalVTTMap {
@@ -264,9 +264,17 @@ export class CrossPlatformExchange {
   // Convert MapMaker to Universal VTT format
   static toUniversalVTT(map: BattleMap): UniversalVTTMap {
     const objects: UniversalVTTObject[] = map.objects.map(obj => {
+      // Map MapMaker types to Universal VTT types
+      let universalType: UniversalVTTObject['type'] = 'image'
+      if (obj.type === 'token') universalType = 'token'
+      else if (obj.type === 'shape') universalType = 'shape'
+      else if (obj.type === 'text') universalType = 'text'
+      else if (obj.type === 'tile') universalType = 'image'
+      else if (obj.type === 'spell' || obj.type === 'persistent-area' || obj.type === 'attack') universalType = 'shape'
+
       const universalObj: UniversalVTTObject = {
         id: obj.id,
-        type: obj.type,
+        type: universalType,
         position: obj.position,
         rotation: obj.rotation,
         visible: obj.visible,
@@ -276,27 +284,32 @@ export class CrossPlatformExchange {
 
       // Convert type-specific properties
       if (obj.type === 'token') {
+        const token = obj as Token
+        const pixelSize = this.tokenSizeToPixels(token.size)
+
         universalObj.token = {
-          name: obj.name || 'Token',
-          image_url: obj.image || '',
-          size: { width: obj.width || 50, height: obj.height || 50 }
+          name: token.name || 'Token',
+          image_url: token.image || '',
+          size: { width: pixelSize, height: pixelSize }
         }
       } else if (obj.type === 'shape') {
+        const shape = obj as Shape
         universalObj.shape = {
-          shape_type: obj.shapeType === 'rect' ? 'rectangle' :
-                     obj.shapeType === 'circle' ? 'circle' :
-                     obj.shapeType === 'polygon' ? 'polygon' : 'line',
-          fill_color: obj.fill,
-          stroke_color: obj.stroke,
-          stroke_width: obj.strokeWidth,
-          points: obj.points ? this.arrayToPoints(obj.points) : undefined
+          shape_type: shape.shapeType === 'rect' ? 'rectangle' :
+                     shape.shapeType === 'circle' ? 'circle' :
+                     shape.shapeType === 'polygon' ? 'polygon' : 'line',
+          fill_color: shape.fill,
+          stroke_color: shape.stroke,
+          stroke_width: shape.strokeWidth,
+          points: shape.points ? this.arrayToPoints(shape.points) : undefined
         }
       } else if (obj.type === 'text') {
+        const textObj = obj as Text
         universalObj.text = {
-          content: obj.text || '',
-          font_family: obj.fontFamily,
-          font_size: obj.fontSize,
-          color: obj.fill || obj.stroke
+          content: textObj.text || '',
+          font_family: textObj.fontFamily,
+          font_size: textObj.fontSize,
+          color: textObj.color
         }
       }
 
@@ -320,44 +333,71 @@ export class CrossPlatformExchange {
   static toRoll20(map: BattleMap): Roll20Export {
     const graphics: Roll20Graphic[] = map.objects
       .filter(obj => obj.type === 'token' || obj.type === 'shape')
-      .map(obj => ({
-        _id: obj.id,
-        _type: 'graphic' as const,
-        name: obj.name,
-        imgsrc: obj.image,
-        left: obj.position.x + (obj.width || 50) / 2,
-        top: obj.position.y + (obj.height || 50) / 2,
-        width: obj.width || 50,
-        height: obj.height || 50,
-        rotation: obj.rotation || 0,
-        layer: obj.type === 'token' ? 'objects' : 'map',
-        stroke: obj.stroke,
-        stroke_width: obj.strokeWidth,
-        fill: obj.fill,
-        isdrawing: obj.type === 'shape'
-      }))
+      .map(obj => {
+        if (obj.type === 'token') {
+          const token = obj as Token
+          const pixelSize = CrossPlatformExchange.tokenSizeToPixels(token.size)
+          return {
+            _id: obj.id,
+            _type: 'graphic' as const,
+            name: token.name,
+            imgsrc: token.image,
+            left: obj.position.x + pixelSize / 2,
+            top: obj.position.y + pixelSize / 2,
+            width: pixelSize,
+            height: pixelSize,
+            rotation: obj.rotation || 0,
+            layer: 'objects',
+            stroke: undefined,
+            stroke_width: undefined,
+            fill: undefined,
+            isdrawing: false
+          }
+        } else {
+          const shape = obj as Shape
+          return {
+            _id: obj.id,
+            _type: 'graphic' as const,
+            name: undefined,
+            imgsrc: undefined,
+            left: obj.position.x + (shape.width || 50) / 2,
+            top: obj.position.y + (shape.height || 50) / 2,
+            width: shape.width || 50,
+            height: shape.height || 50,
+            rotation: obj.rotation || 0,
+            layer: 'map',
+            stroke: shape.stroke,
+            stroke_width: shape.strokeWidth,
+            fill: shape.fill,
+            isdrawing: true
+          }
+        }
+      })
 
     const texts: Roll20Text[] = map.objects
       .filter(obj => obj.type === 'text')
-      .map(obj => ({
-        _id: obj.id,
-        _type: 'text' as const,
-        text: obj.text || '',
-        left: obj.position.x,
-        top: obj.position.y,
-        width: obj.width || 200,
-        height: obj.height || 50,
-        font_family: obj.fontFamily || 'Arial',
-        font_size: obj.fontSize || 16,
-        color: obj.fill || '#000000'
-      }))
+      .map(obj => {
+        const textObj = obj as Text
+        return {
+          _id: obj.id,
+          _type: 'text' as const,
+          text: textObj.text || '',
+          left: obj.position.x,
+          top: obj.position.y,
+          width: textObj.text.length * (textObj.fontSize * 0.6) || 200,
+          height: textObj.fontSize * 1.2 || 50,
+          font_family: textObj.fontFamily || 'Arial',
+          font_size: textObj.fontSize || 16,
+          color: textObj.color || '#000000'
+        }
+      })
 
     const page: Roll20Page = {
       _id: crypto.randomUUID(),
       name: map.name,
       width: map.width,
       height: map.height,
-      background_color: map.background || '#ffffff',
+      background_color: '#ffffff',
       grid_opacity: map.grid?.visible ? 0.5 : 0,
       grid_size: map.grid?.size || 50,
       snapping_increment: map.grid?.size || 50,
@@ -375,37 +415,42 @@ export class CrossPlatformExchange {
   static toFoundry(map: BattleMap): FoundryScene {
     const tokens: FoundryToken[] = map.objects
       .filter(obj => obj.type === 'token')
-      .map(obj => ({
-        _id: obj.id,
-        name: obj.name || 'Token',
-        x: obj.position.x,
-        y: obj.position.y,
-        width: obj.width || 50,
-        height: obj.height || 50,
-        rotation: obj.rotation || 0,
-        hidden: !obj.visible,
-        locked: obj.locked || false,
-        texture: {
-          src: obj.image || '',
-          scaleX: 1,
-          scaleY: 1
+      .map(obj => {
+        const token = obj as Token
+        const pixelSize = CrossPlatformExchange.tokenSizeToPixels(token.size)
+        return {
+          _id: obj.id,
+          name: token.name || 'Token',
+          x: obj.position.x,
+          y: obj.position.y,
+          width: pixelSize,
+          height: pixelSize,
+          rotation: obj.rotation || 0,
+          hidden: !obj.visible,
+          locked: obj.locked || false,
+          texture: {
+            src: token.image || '',
+            scaleX: 1,
+            scaleY: 1
+          }
         }
-      }))
+      })
 
     const drawings: FoundryDrawing[] = map.objects
       .filter(obj => obj.type === 'shape')
       .map(obj => {
+        const shape = obj as Shape
         let type: FoundryDrawing['type'] = 'rectangle'
-        let shape: FoundryDrawing['shape'] = {}
+        let shapeData: FoundryDrawing['shape'] = {}
 
-        if (obj.shapeType === 'circle') {
+        if (shape.shapeType === 'circle') {
           type = 'ellipse'
-          shape = { radius: (obj.width || 50) / 2 }
-        } else if (obj.shapeType === 'polygon' && obj.points) {
+          shapeData = { radius: (shape.width || 50) / 2 }
+        } else if (shape.shapeType === 'polygon' && shape.points) {
           type = 'polygon'
-          shape = { points: obj.points }
+          shapeData = { points: shape.points }
         } else {
-          shape = { width: obj.width || 50, height: obj.height || 50 }
+          shapeData = { width: shape.width || 50, height: shape.height || 50 }
         }
 
         return {
@@ -413,11 +458,11 @@ export class CrossPlatformExchange {
           type,
           x: obj.position.x,
           y: obj.position.y,
-          shape,
-          strokeColor: obj.stroke || '#000000',
-          strokeWidth: obj.strokeWidth || 1,
-          fillColor: obj.fill,
-          fillType: obj.fill ? 1 : 0,
+          shape: shapeData,
+          strokeColor: shape.stroke || '#000000',
+          strokeWidth: shape.strokeWidth || 1,
+          fillColor: shape.fill,
+          fillType: shape.fill ? 1 : 0,
           hidden: !obj.visible,
           locked: obj.locked || false
         }
@@ -428,13 +473,7 @@ export class CrossPlatformExchange {
       name: map.name,
       width: map.width,
       height: map.height,
-      background: map.background ? {
-        src: map.background,
-        offsetX: 0,
-        offsetY: 0,
-        scaleX: 1,
-        scaleY: 1
-      } : undefined,
+      background: undefined,
       grid: {
         type: map.grid?.type === 'hex' ? 2 : 1,
         size: map.grid?.size || 50,
@@ -453,44 +492,73 @@ export class CrossPlatformExchange {
   // Convert from Universal VTT to MapMaker
   static fromUniversalVTT(uvtt: UniversalVTTMap): BattleMap {
     const objects: MapObject[] = uvtt.objects.map(obj => {
-      const mapObj: MapObject = {
+      const baseObj = {
         id: obj.id,
-        type: obj.type === 'token' ? 'token' :
-              obj.type === 'shape' ? 'shape' :
-              obj.type === 'text' ? 'text' : 'shape',
         position: obj.position,
         rotation: obj.rotation || 0,
         visible: obj.visible !== false,
         locked: obj.locked || false,
-        layer: parseInt(obj.layer || '30') || 30,
+        layer: parseInt(obj.layer || '30') || 30
+      }
+
+      // Create type-specific objects
+      if (obj.token) {
+        const token: Token = {
+          ...baseObj,
+          type: 'token',
+          name: obj.token.name,
+          image: obj.token.image_url,
+          size: 'medium', // Convert from pixel size to TokenSize
+          color: '#ffffff',
+          opacity: 1,
+          shape: 'circle'
+        }
+        return token
+      } else if (obj.shape) {
+        const shape: Shape = {
+          ...baseObj,
+          type: 'shape',
+          shapeType: obj.shape.shape_type === 'rectangle' ? 'rect' :
+                    obj.shape.shape_type === 'circle' ? 'circle' :
+                    obj.shape.shape_type === 'polygon' ? 'polygon' : 'line',
+          fill: obj.shape.fill_color || '#ffffff',
+          fillColor: obj.shape.fill_color || '#ffffff',
+          stroke: obj.shape.stroke_color || '#000000',
+          strokeColor: obj.shape.stroke_color || '#000000',
+          strokeWidth: obj.shape.stroke_width || 1,
+          opacity: 1,
+          width: 50,
+          height: 50,
+          points: obj.shape.points ? this.pointsToArray(obj.shape.points) : undefined
+        }
+        return shape
+      } else if (obj.text) {
+        const textObj: Text = {
+          ...baseObj,
+          type: 'text',
+          text: obj.text.content,
+          fontFamily: obj.text.font_family || 'Arial',
+          fontSize: obj.text.font_size || 16,
+          color: obj.text.color || '#000000'
+        }
+        return textObj
+      }
+
+      // Fallback to basic shape
+      const fallbackShape: Shape = {
+        ...baseObj,
+        type: 'shape',
+        shapeType: 'rect',
+        fill: '#ffffff',
+        fillColor: '#ffffff',
+        stroke: '#000000',
+        strokeColor: '#000000',
+        strokeWidth: 1,
+        opacity: 1,
         width: 50,
         height: 50
       }
-
-      // Convert type-specific properties
-      if (obj.token) {
-        mapObj.name = obj.token.name
-        mapObj.image = obj.token.image_url
-        mapObj.width = obj.token.size.width
-        mapObj.height = obj.token.size.height
-      } else if (obj.shape) {
-        mapObj.shapeType = obj.shape.shape_type === 'rectangle' ? 'rect' :
-                          obj.shape.shape_type === 'circle' ? 'circle' :
-                          obj.shape.shape_type === 'polygon' ? 'polygon' : 'line'
-        mapObj.fill = obj.shape.fill_color
-        mapObj.stroke = obj.shape.stroke_color
-        mapObj.strokeWidth = obj.shape.stroke_width
-        if (obj.shape.points) {
-          mapObj.points = this.pointsToArray(obj.shape.points)
-        }
-      } else if (obj.text) {
-        mapObj.text = obj.text.content
-        mapObj.fontFamily = obj.text.font_family
-        mapObj.fontSize = obj.text.font_size
-        mapObj.fill = obj.text.color
-      }
-
-      return mapObj
+      return fallbackShape
     })
 
     return {
@@ -520,42 +588,62 @@ export class CrossPlatformExchange {
 
     // Convert graphics
     page.graphics.forEach(graphic => {
-      const obj: MapObject = {
-        id: graphic._id,
-        type: graphic.layer === 'objects' && graphic.imgsrc ? 'token' : 'shape',
-        position: {
-          x: graphic.left - graphic.width / 2,
-          y: graphic.top - graphic.height / 2
-        },
-        width: graphic.width,
-        height: graphic.height,
-        rotation: graphic.rotation,
-        visible: true,
-        locked: false,
-        layer: graphic.layer === 'gmlayer' ? 20 : graphic.layer === 'objects' ? 40 : 30,
-        name: graphic.name,
-        image: graphic.imgsrc,
-        stroke: graphic.stroke,
-        strokeWidth: graphic.stroke_width,
-        fill: graphic.fill
+      if (graphic.layer === 'objects' && graphic.imgsrc) {
+        // This is a token
+        const tokenObj: Token = {
+          id: graphic._id,
+          type: 'token',
+          position: {
+            x: graphic.left - graphic.width / 2,
+            y: graphic.top - graphic.height / 2
+          },
+          rotation: graphic.rotation,
+          layer: 40,
+          visible: true,
+          locked: false,
+          name: graphic.name || 'Token',
+          image: graphic.imgsrc,
+          size: 'medium',
+          color: '#ffffff',
+          opacity: 1,
+          shape: 'circle'
+        }
+        objects.push(tokenObj)
+      } else {
+        // This is a shape
+        const shapeObj: Shape = {
+          id: graphic._id,
+          type: 'shape',
+          position: {
+            x: graphic.left - graphic.width / 2,
+            y: graphic.top - graphic.height / 2
+          },
+          rotation: graphic.rotation,
+          layer: graphic.layer === 'gmlayer' ? 20 : 30,
+          visible: true,
+          locked: false,
+          name: graphic.name,
+          shapeType: graphic.isdrawing ? 'polygon' : 'rect',
+          width: graphic.width,
+          height: graphic.height,
+          fill: graphic.fill || '#000000',
+          fillColor: graphic.fill || '#000000',
+          stroke: graphic.stroke || '#000000',
+          strokeColor: graphic.stroke || '#000000',
+          strokeWidth: graphic.stroke_width || 1,
+          opacity: 1
+        }
+        objects.push(shapeObj)
       }
-
-      if (obj.type === 'shape') {
-        obj.shapeType = graphic.isdrawing ? 'path' : 'rect'
-      }
-
-      objects.push(obj)
     })
 
     // Convert text objects
     if (page.text) {
       page.text.forEach(text => {
-        objects.push({
+        const textObj: Text = {
           id: text._id,
           type: 'text',
           position: { x: text.left, y: text.top },
-          width: text.width,
-          height: text.height,
           rotation: 0,
           visible: true,
           locked: false,
@@ -563,8 +651,9 @@ export class CrossPlatformExchange {
           text: text.text,
           fontFamily: text.font_family,
           fontSize: text.font_size,
-          fill: text.color
-        })
+          color: text.color
+        }
+        objects.push(textObj)
       })
     }
 
@@ -580,8 +669,7 @@ export class CrossPlatformExchange {
         snap: true,
         color: '#666666'
       },
-      objects,
-      background: page.background_color
+      objects
     }
   }
 
@@ -591,24 +679,27 @@ export class CrossPlatformExchange {
 
     // Convert tokens
     foundry.tokens.forEach(token => {
-      objects.push({
+      const tokenObj: Token = {
         id: token._id,
         type: 'token',
         position: { x: token.x, y: token.y },
-        width: token.width,
-        height: token.height,
         rotation: token.rotation,
         visible: !token.hidden,
         locked: token.locked,
         layer: 40,
         name: token.name,
-        image: token.texture.src
-      })
+        image: token.texture.src,
+        size: 'medium',
+        color: '#ffffff',
+        opacity: 1,
+        shape: 'circle'
+      }
+      objects.push(tokenObj)
     })
 
     // Convert drawings
     foundry.drawings.forEach(drawing => {
-      const obj: MapObject = {
+      const shapeObj: Shape = {
         id: drawing._id,
         type: 'shape',
         position: { x: drawing.x, y: drawing.y },
@@ -616,26 +707,30 @@ export class CrossPlatformExchange {
         visible: !drawing.hidden,
         locked: drawing.locked,
         layer: 30,
-        stroke: drawing.strokeColor,
-        strokeWidth: drawing.strokeWidth,
-        fill: drawing.fillColor,
+        stroke: drawing.strokeColor || '#000000',
+        strokeColor: drawing.strokeColor || '#000000',
+        strokeWidth: drawing.strokeWidth || 1,
+        fill: drawing.fillColor || '#000000',
+        fillColor: drawing.fillColor || '#000000',
         width: 50,
-        height: 50
+        height: 50,
+        shapeType: 'rect',
+        opacity: 1
       }
 
       if (drawing.type === 'ellipse') {
-        obj.shapeType = 'circle'
-        obj.width = obj.height = (drawing.shape.radius || 25) * 2
+        shapeObj.shapeType = 'circle'
+        shapeObj.width = shapeObj.height = (drawing.shape.radius || 25) * 2
       } else if (drawing.type === 'polygon') {
-        obj.shapeType = 'polygon'
-        obj.points = drawing.shape.points
+        shapeObj.shapeType = 'polygon'
+        shapeObj.points = drawing.shape.points
       } else {
-        obj.shapeType = 'rect'
-        obj.width = drawing.shape.width || 50
-        obj.height = drawing.shape.height || 50
+        shapeObj.shapeType = 'rect'
+        shapeObj.width = drawing.shape.width || 50
+        shapeObj.height = drawing.shape.height || 50
       }
 
-      objects.push(obj)
+      objects.push(shapeObj)
     })
 
     return {
@@ -650,12 +745,23 @@ export class CrossPlatformExchange {
         snap: true,
         color: foundry.grid.color
       },
-      objects,
-      background: foundry.background?.src
+      objects
     }
   }
 
   // Helper utilities
+  private static tokenSizeToPixels(tokenSize: import('@/types').TokenSize): number {
+    const sizeMap = {
+      'tiny': 25,
+      'small': 50,
+      'medium': 50,
+      'large': 100,
+      'huge': 150,
+      'gargantuan': 200
+    }
+    return sizeMap[tokenSize] || 50
+  }
+
   private static arrayToPoints(arr: number[]): Point[] {
     const points: Point[] = []
     for (let i = 0; i < arr.length; i += 2) {

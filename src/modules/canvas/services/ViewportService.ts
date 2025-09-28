@@ -5,12 +5,9 @@
  * for optimal canvas navigation and rendering performance.
  */
 
-import Konva from 'konva'
+import type Konva from 'konva'
 import type {
   ViewportConfig,
-  ViewportState,
-  ViewportTransform,
-  ViewportMatrix,
   CameraState,
   CameraAnimation,
   CameraKeyframe,
@@ -20,7 +17,8 @@ import type {
   UpdateViewportData,
   ViewportFitOptions
 } from '../types'
-import type { Point, Rectangle, Bounds } from '@/types/geometry'
+import type { ViewportState } from '../types/viewport'
+import type { Point, Rectangle } from '@/types/geometry'
 
 export class ViewportService {
   private static instance: ViewportService | null = null
@@ -99,7 +97,6 @@ export class ViewportService {
  * Manages viewport state and transformations for a specific canvas
  */
 export class ViewportManager {
-  private canvasId: string
   private stage: Konva.Stage
   private config: ViewportConfig
   private state: ViewportState
@@ -107,8 +104,7 @@ export class ViewportManager {
   private activeAnimation: CameraAnimation | null = null
   private animationFrame: number | null = null
 
-  constructor(canvasId: string, stage: Konva.Stage) {
-    this.canvasId = canvasId
+  constructor(_canvasId: string, stage: Konva.Stage) {
     this.stage = stage
 
     this.config = {
@@ -225,16 +221,23 @@ export class ViewportManager {
     if (animate && this.config.smoothTransitions) {
       this.animateCamera({
         zoom: clampedZoom,
-        position: this.state.position,
-        rotation: this.state.rotation
+        position: this.state.position ?? { x: 0, y: 0 },
+        rotation: this.state.rotation ?? 0,
+        timestamp: performance.now()
       }, duration, easing)
     } else {
       if (center) {
         this.zoomToPoint(center, clampedZoom - this.state.zoom)
       } else {
         this.stage.scale({ x: clampedZoom, y: clampedZoom })
-        this.state.zoom = clampedZoom
-        this.cameraState.zoom = clampedZoom
+        this.state = {
+          ...this.state,
+          zoom: clampedZoom
+        }
+        this.cameraState = {
+          ...this.cameraState,
+          zoom: clampedZoom
+        }
       }
     }
 
@@ -262,10 +265,16 @@ export class ViewportManager {
     this.stage.scale({ x: newScale, y: newScale })
     this.stage.position(newPos)
 
-    this.state.zoom = newScale
-    this.state.position = newPos
-    this.cameraState.zoom = newScale
-    this.cameraState.position = newPos
+    this.state = {
+      ...this.state,
+      zoom: newScale,
+      position: newPos
+    }
+    this.cameraState = {
+      ...this.cameraState,
+      zoom: newScale,
+      position: newPos
+    }
 
     this.updateWorldBounds()
   }
@@ -287,12 +296,19 @@ export class ViewportManager {
       this.animateCamera({
         position: constrainedPosition,
         zoom: this.state.zoom,
-        rotation: this.state.rotation
+        rotation: this.state.rotation ?? 0,
+        timestamp: performance.now()
       }, duration, easing)
     } else {
       this.stage.position(constrainedPosition)
-      this.state.position = constrainedPosition
-      this.cameraState.position = constrainedPosition
+      this.state = {
+        ...this.state,
+        position: constrainedPosition
+      }
+      this.cameraState = {
+        ...this.cameraState,
+        position: constrainedPosition ?? { x: 0, y: 0 }
+      }
     }
 
     this.updateWorldBounds()
@@ -312,13 +328,20 @@ export class ViewportManager {
     if (animate && this.config.smoothTransitions) {
       this.animateCamera({
         rotation: normalizedRotation,
-        position: this.state.position,
-        zoom: this.state.zoom
+        position: this.state.position ?? { x: 0, y: 0 },
+        zoom: this.state.zoom ?? 1,
+        timestamp: performance.now()
       }, duration, easing)
     } else {
       this.stage.rotation(normalizedRotation)
-      this.state.rotation = normalizedRotation
-      this.cameraState.rotation = normalizedRotation
+      this.state = {
+        ...this.state,
+        rotation: normalizedRotation
+      }
+      this.cameraState = {
+        ...this.cameraState,
+        rotation: normalizedRotation
+      }
     }
   }
 
@@ -328,11 +351,12 @@ export class ViewportManager {
   fitToBounds(bounds: Rectangle, options: Partial<ViewportFitOptions> = {}): void {
     const {
       padding = 50,
-      maintainAspectRatio = true,
       animate = true,
       duration = this.config.transitionDuration,
       easing = 'ease-out'
     } = options
+
+    // maintainAspectRatio is implicitly true in the scale calculation below
 
     const stageSize = this.stage.size()
     const availableWidth = stageSize.width - padding * 2
@@ -357,7 +381,8 @@ export class ViewportManager {
       this.animateCamera({
         position: { x, y },
         zoom: scale,
-        rotation: this.state.rotation
+        rotation: this.state.rotation ?? 0,
+        timestamp: performance.now()
       }, duration, easing)
     } else {
       this.stage.scale({ x: scale, y: scale })
@@ -370,11 +395,11 @@ export class ViewportManager {
    * Reset viewport to default state
    */
   reset(animate = true): void {
-    const stageSize = this.stage.size()
     const defaultState = {
       position: { x: 0, y: 0 },
       zoom: 1,
-      rotation: 0
+      rotation: 0,
+      timestamp: performance.now()
     }
 
     if (animate && this.config.smoothTransitions) {
@@ -502,10 +527,15 @@ export class ViewportManager {
       startTime: performance.now()
     }
 
-    this.cameraState.isAnimating = true
-    this.cameraState.animationId = this.activeAnimation.id
-    this.state.isTransitioning = true
-    this.state.transitionId = this.activeAnimation.id
+    // Use object spread to update readonly properties
+    Object.assign(this.cameraState, {
+      isAnimating: true,
+      animationId: this.activeAnimation.id
+    })
+    Object.assign(this.state, {
+      isTransitioning: true,
+      transitionId: this.activeAnimation.id
+    })
 
     this.animateFrame()
   }
@@ -535,12 +565,18 @@ export class ViewportManager {
     this.stage.rotation(current.rotation)
 
     // Update state
-    this.state.zoom = current.zoom
-    this.state.position = current.position
-    this.state.rotation = current.rotation
-    this.cameraState.zoom = current.zoom
-    this.cameraState.position = current.position
-    this.cameraState.rotation = current.rotation
+    this.state = {
+      ...this.state,
+      zoom: current.zoom,
+      position: current.position,
+      rotation: current.rotation
+    }
+    this.cameraState = {
+      ...this.cameraState,
+      zoom: current.zoom,
+      position: current.position,
+      rotation: current.rotation
+    }
 
     if (progress >= 1) {
       this.stopAnimation()
@@ -564,10 +600,16 @@ export class ViewportManager {
     }
 
     this.activeAnimation = null
-    this.cameraState.isAnimating = false
-    this.cameraState.animationId = null
-    this.state.isTransitioning = false
-    this.state.transitionId = null
+    this.cameraState = {
+      ...this.cameraState,
+      isAnimating: false,
+      animationId: null
+    }
+    this.state = {
+      ...this.state,
+      isTransitioning: false,
+      transitionId: null
+    }
   }
 
   /**
@@ -630,12 +672,18 @@ export class ViewportManager {
     const scale = this.stage.scaleX()
     const rotation = this.stage.rotation()
 
-    this.state.position = pos
-    this.state.zoom = scale
-    this.state.rotation = rotation
-    this.cameraState.position = pos
-    this.cameraState.zoom = scale
-    this.cameraState.rotation = rotation
+    this.state = {
+      ...this.state,
+      position: pos,
+      zoom: scale,
+      rotation: rotation
+    }
+    this.cameraState = {
+      ...this.cameraState,
+      position: pos,
+      zoom: scale,
+      rotation: rotation
+    }
 
     this.updateWorldBounds()
   }
@@ -648,11 +696,14 @@ export class ViewportManager {
     const pos = this.stage.position()
     const scale = this.stage.scaleX()
 
-    this.state.worldBounds = {
-      x: -pos.x / scale,
-      y: -pos.y / scale,
-      width: stageSize.width / scale,
-      height: stageSize.height / scale
+    this.state = {
+      ...this.state,
+      worldBounds: {
+        x: -pos.x / scale,
+        y: -pos.y / scale,
+        width: stageSize.width / scale,
+        height: stageSize.height / scale
+      }
     }
   }
 

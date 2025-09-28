@@ -1,6 +1,6 @@
-import Konva from 'konva'
-import { Position } from '@/types/map'
-import { Screenshot } from './CanvasCapture'
+import type Konva from 'konva'
+import type { Position } from '@/types/map'
+import type { Screenshot } from './CanvasCapture'
 
 export interface VisualElement {
   type: 'token' | 'spell' | 'area' | 'shape' | 'text'

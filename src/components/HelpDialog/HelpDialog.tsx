@@ -1,6 +1,8 @@
-import React from 'react'
-import { Modal, ModalBody, ModalFooter, Button, Box, Text, Heading } from '@/components/ui'
-import { Kbd } from '@/components/ui/Kbd'
+import React, { useEffect, useCallback } from 'react'
+import { X, HelpCircle } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 
 type HelpDialogProps = {
   isOpen: boolean
@@ -73,83 +75,259 @@ const shortcutGroups: ShortcutGroup[] = [
   }
 ]
 
-export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size="lg"
-      title="Keyboard Shortcuts"
-      showCloseButton
-    >
-      <ModalBody scrollable>
-        <Box display="flex" flexDirection="column" gap="6">
-          {shortcutGroups.map((group) => (
-            <Box key={group.title}>
-              <Heading
-                level={4}
-                css={{
-                  color: '$secondary',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  marginBottom: '$3',
-                  fontSize: '$sm',
-                  fontWeight: '$bold'
-                }}
-              >
-                {group.title}
-              </Heading>
-              <Box display="flex" flexDirection="column" gap="2">
-                {group.shortcuts.map((shortcut, index) => (
-                  <Box
-                    key={index}
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    css={{
-                      paddingY: '$2',
-                      paddingX: '$3',
-                      borderRadius: '$md',
-                      '&:hover': {
-                        backgroundColor: 'rgba($colors$gray800, 0.5)',
-                      },
-                      transition: '$fast',
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" gap="2">
-                      {shortcut.keys.map((key, keyIndex) => (
-                        <React.Fragment key={keyIndex}>
-                          {keyIndex > 0 && (
-                            <Text size="xs" color="gray500">+</Text>
-                          )}
-                          <Kbd>{key}</Kbd>
-                        </React.Fragment>
-                      ))}
-                    </Box>
-                    <Text size="sm" color="gray400" css={{ marginLeft: '$4' }}>
-                      {shortcut.description}
-                    </Text>
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-          ))}
-        </Box>
-      </ModalBody>
+const KeyboardKey: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <Box
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '4px 8px',
+      backgroundColor: 'var(--colors-gray800)',
+      border: '1px solid var(--colors-gray600)',
+      borderRadius: '4px',
+      fontSize: '12px',
+      fontFamily: 'monospace',
+      color: 'var(--colors-gray200)',
+      minWidth: '24px',
+      height: '24px'
+    }}
+  >
+    <Text variant="body" size="xs" style={{ margin: 0, fontFamily: 'monospace' }}>
+      {children}
+    </Text>
+  </Box>
+)
 
-      <ModalFooter>
-        <Box display="flex" alignItems="center" justifyContent="space-between" width="full">
-          <Box display="flex" alignItems="center" gap="2">
-            <Text size="xs" color="gray500">
-              Press <Kbd size="sm">?</Kbd> anytime to show this help
+export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      onClose()
+    }
+  }, [onClose])
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown)
+      }
+    }
+    return undefined
+  }, [isOpen, handleKeyDown])
+
+  if (!isOpen) return null
+
+  return (
+    <>
+      {/* Backdrop */}
+      <Box
+        style={{
+          position: 'fixed',
+          inset: '0',
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+        onClick={onClose}
+      />
+
+      {/* Dialog */}
+      <Box
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 1001,
+          width: '90vw',
+          maxWidth: '800px',
+          maxHeight: '85vh',
+          backgroundColor: 'var(--colors-dndBlack)',
+          border: '1px solid var(--colors-gray700)',
+          borderRadius: '12px',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
+          overflow: 'hidden'
+        }}
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px 24px',
+            borderBottom: '1px solid var(--colors-gray700)',
+            backgroundColor: 'var(--colors-gray900)'
+          }}
+        >
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <HelpCircle size={24} style={{ color: 'var(--colors-secondary)' }} />
+            <Text
+              variant="heading"
+              size="lg"
+              style={{
+                margin: 0,
+                color: 'var(--colors-gray100)',
+                fontWeight: '600'
+              }}
+            >
+              Keyboard Shortcuts
             </Text>
           </Box>
-          <Button onClick={onClose} variant="primary">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            style={{
+              padding: '8px',
+              color: 'var(--colors-gray400)',
+              backgroundColor: 'transparent',
+              border: 'none'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+              e.currentTarget.style.color = 'var(--colors-gray100)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+              e.currentTarget.style.color = 'var(--colors-gray400)'
+            }}
+          >
+            <X size={20} />
+          </Button>
+        </Box>
+
+        {/* Body */}
+        <Box
+          style={{
+            padding: '24px',
+            maxHeight: 'calc(85vh - 140px)',
+            overflowY: 'auto'
+          }}
+        >
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            {shortcutGroups.map((group) => (
+              <Box key={group.title}>
+                <Text
+                  variant="heading"
+                  size="sm"
+                  style={{
+                    color: 'var(--colors-secondary)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    marginBottom: '16px',
+                    margin: 0,
+                    fontWeight: '600'
+                  }}
+                >
+                  {group.title}
+                </Text>
+                <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {group.shortcuts.map((shortcut, index) => (
+                    <Box
+                      key={index}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        transition: 'background-color 0.15s ease'
+                      }}
+                      onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(75, 85, 99, 0.5)'
+                      }}
+                      onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                      }}
+                    >
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {shortcut.keys.map((key, keyIndex) => (
+                          <React.Fragment key={keyIndex}>
+                            {keyIndex > 0 && (
+                              <Text
+                                variant="body"
+                                size="xs"
+                                style={{
+                                  margin: 0,
+                                  color: 'var(--colors-gray500)'
+                                }}
+                              >
+                                +
+                              </Text>
+                            )}
+                            <KeyboardKey>{key}</KeyboardKey>
+                          </React.Fragment>
+                        ))}
+                      </Box>
+                      <Text
+                        variant="body"
+                        size="sm"
+                        style={{
+                          margin: 0,
+                          color: 'var(--colors-gray400)',
+                          marginLeft: '16px'
+                        }}
+                      >
+                        {shortcut.description}
+                      </Text>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Footer */}
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '16px 24px',
+            borderTop: '1px solid var(--colors-gray700)',
+            backgroundColor: 'var(--colors-gray900)'
+          }}
+        >
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Text
+              variant="body"
+              size="xs"
+              style={{
+                margin: 0,
+                color: 'var(--colors-gray500)'
+              }}
+            >
+              Press <KeyboardKey>?</KeyboardKey> anytime to show this help
+            </Text>
+          </Box>
+          <Button
+            variant="primary"
+            onClick={onClose}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: 'var(--colors-secondary)',
+              color: 'var(--colors-dndBlack)',
+              border: 'none',
+              borderRadius: '6px',
+              fontWeight: '500'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-gray300)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-secondary)'
+            }}
+          >
             Close
           </Button>
         </Box>
-      </ModalFooter>
-    </Modal>
+      </Box>
+    </>
   )
 }
 

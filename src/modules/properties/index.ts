@@ -5,8 +5,18 @@
  * established in Timeline (Phase 3), Actions (Phase 4), and Spells (Phase 5) modules.
  */
 
-// Export all types
-export * from './types'
+// Export types with specific naming to avoid conflicts
+export type {
+  PropertyId,
+  PropertyGroupId,
+  PropertyFieldId,
+  PropertyFieldType,
+  PropertyField,
+  PropertyGroup,
+  PropertyChange,
+  PropertyValidationResult,
+  Position
+} from './types'
 
 // Export services
 export * from './services'

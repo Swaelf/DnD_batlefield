@@ -9,10 +9,10 @@ import React from 'react'
 import {
   Zap, Shield, PlusCircle, Eye, Heart, EyeOff,
   Skull, RotateCw, Sword, Cloud, MessageCircle,
-  Tool, Settings
+  Settings
 } from 'lucide-react'
 import { styled } from '@/styles/theme.config'
-import type { SpellSchoolId, SpellCategoryId } from '../../types'
+import type { SpellSchoolId, SpellCategoryId } from '../../../types/spells'
 
 interface SpellIconProps {
   school: SpellSchoolId
@@ -25,7 +25,7 @@ const IconWrapper = styled('div', {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: '$2',
+  borderRadius: '4px',
 
   variants: {
     size: {
@@ -55,7 +55,7 @@ const CATEGORY_ICONS = {
   combat: Sword,
   environmental: Cloud,
   social: MessageCircle,
-  utility: Tool,
+  utility: Settings,
   custom: Settings
 } as const
 
@@ -66,9 +66,9 @@ export const SpellIcon: React.FC<SpellIconProps> = ({
   className
 }) => {
   // Prefer category icon if available, fallback to school
-  const IconComponent = (category && CATEGORY_ICONS[category])
-    ? CATEGORY_ICONS[category]
-    : SCHOOL_ICONS[school]
+  const IconComponent = (category && CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS])
+    ? CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS]
+    : SCHOOL_ICONS[school as keyof typeof SCHOOL_ICONS]
 
   const iconSize = size === 'sm' ? 14 : size === 'lg' ? 20 : 16
 

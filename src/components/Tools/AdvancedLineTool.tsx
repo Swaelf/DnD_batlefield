@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { Group, Line, Circle, Arrow } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
 import { snapToGrid } from '@/utils/grid'
 
@@ -105,7 +105,7 @@ export const AdvancedLineTool: React.FC<AdvancedLineToolProps> = ({
 
   const constrainPoint = useCallback((point: Point, previousPoint: Point | null): Point => {
     if (!isShiftPressed || !previousPoint) {
-      return gridSnap ? snapToGrid(point, gridSize) : point
+      return gridSnap ? snapToGrid(point, gridSize, true) : point
     }
 
     // Constrain to 45-degree angles
@@ -120,7 +120,7 @@ export const AdvancedLineTool: React.FC<AdvancedLineToolProps> = ({
       y: previousPoint.y + Math.sin(constrainedAngle) * distance
     }
 
-    return gridSnap ? snapToGrid(constrainedPoint, gridSize) : constrainedPoint
+    return gridSnap ? snapToGrid(constrainedPoint, gridSize, true) : constrainedPoint
   }, [isShiftPressed, gridSnap, gridSize])
 
   const handleClick = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {

@@ -5,8 +5,8 @@
  * Extends existing map object types with comprehensive D&D property management.
  */
 
-// Re-export core object types from the centralized type system
-export type {
+// Import and re-export core object types from the centralized type system
+import type {
   MapObject,
   Shape,
   Text,
@@ -14,8 +14,16 @@ export type {
   TokenSize
 } from '@/types'
 
+export type {
+  MapObject,
+  Shape,
+  Text,
+  Token,
+  TokenSize
+}
+
 // Re-export base types for property editing
-export type { Position } from '@/types/geometry'
+export type { Point as Position } from '@/types/geometry'
 
 // Module-specific branded types for type safety
 export type PropertyId = string & { readonly __brand: 'PropertyId' }

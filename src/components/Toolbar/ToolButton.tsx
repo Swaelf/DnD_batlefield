@@ -1,6 +1,6 @@
 import React from 'react'
 import * as Icons from 'lucide-react'
-import { Tool } from '@/types/tools'
+import type { Tool } from '@/types/tools'
 import { ToolButton as StyledToolButton } from '@/components/primitives'
 import { styled } from '@/styles/theme.config'
 
@@ -21,6 +21,10 @@ const ShortcutLabel = styled('span', {
   userSelect: 'none',
 })
 
+const RelativeToolButton = styled(StyledToolButton, {
+  position: 'relative'
+})
+
 const ToolButton: React.FC<ToolButtonProps> = ({ tool, isActive, onClick }) => {
   // Dynamically get the icon component
   const IconComponent = Icons[tool.icon as keyof typeof Icons] as React.FC<{ size?: number; className?: string }>
@@ -31,13 +35,10 @@ const ToolButton: React.FC<ToolButtonProps> = ({ tool, isActive, onClick }) => {
   }
 
   return (
-    <StyledToolButton
+    <RelativeToolButton
       onClick={onClick}
       title={tool.tooltip}
       active={isActive}
-      css={{
-        position: 'relative',
-      }}
     >
       <IconComponent size={20} />
       {tool.shortcut && (
@@ -45,7 +46,7 @@ const ToolButton: React.FC<ToolButtonProps> = ({ tool, isActive, onClick }) => {
           {tool.shortcut}
         </ShortcutLabel>
       )}
-    </StyledToolButton>
+    </RelativeToolButton>
   )
 }
 

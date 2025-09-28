@@ -64,7 +64,7 @@ export const Canvas = ({
 
   // Handle settings changes
   useEffect(() => {
-    if (canvas.isInitialized) {
+    if (canvas.isInitialized && settings.viewport) {
       canvas.setViewport(settings.viewport)
     }
   }, [canvas, settings.viewport])

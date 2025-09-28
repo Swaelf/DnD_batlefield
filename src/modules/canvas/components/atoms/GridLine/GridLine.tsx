@@ -15,7 +15,7 @@ export interface GridLineProps {
   readonly stroke: string
   readonly strokeWidth: number
   readonly opacity: number
-  readonly isMajor: boolean
+  readonly _isMajor: boolean
   readonly isDashed?: boolean
   readonly dashArray?: readonly number[]
 }
@@ -26,17 +26,19 @@ export const GridLine: React.FC<GridLineProps> = React.memo(({
   stroke,
   strokeWidth,
   opacity,
-  isMajor,
+  _isMajor,
   isDashed = false,
   dashArray = [5, 5]
 }) => {
+  // _isMajor distinguishes between major and minor grid lines but not used in current rendering
+  void _isMajor
   return (
     <Line
       points={[start.x, start.y, end.x, end.y]}
       stroke={stroke}
       strokeWidth={strokeWidth}
       opacity={opacity}
-      dash={isDashed ? dashArray : undefined}
+      dash={isDashed && dashArray ? [...dashArray] : undefined}
       perfectDrawEnabled={false}
       shadowForStrokeEnabled={false}
       hitStrokeWidth={0}

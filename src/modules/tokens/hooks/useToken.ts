@@ -8,7 +8,7 @@
 import { useCallback } from 'react'
 import { useTokenStore } from '../store'
 import { tokenSelectors } from '../store/selectors'
-import type { TokenId, TokenUpdate } from '../types'
+import type { TokenId, TokenUpdate, Token } from '../types'
 import type { Point } from '@/types/geometry'
 
 export interface UseTokenOptions {
@@ -17,7 +17,7 @@ export interface UseTokenOptions {
 
 export interface UseTokenResult {
   // Token data
-  readonly token: ReturnType<typeof tokenSelectors.getToken> | undefined
+  readonly token: Token | undefined
   readonly exists: boolean
 
   // Token operations
@@ -108,7 +108,7 @@ export function useToken(options: UseTokenOptions = {}): UseTokenResult {
 
   // State operations
   const setHovered = useCallback((hovered: boolean) => {
-    setHoveredTokenAction(hovered ? tokenId : null)
+    setHoveredTokenAction(hovered && tokenId ? tokenId : null)
   }, [tokenId, setHoveredTokenAction])
 
   // Validation
@@ -148,21 +148,30 @@ export function useToken(options: UseTokenOptions = {}): UseTokenResult {
 
 // Hook for working with multiple tokens
 export interface UseTokensResult {
-  readonly tokens: ReturnType<typeof tokenSelectors.getAllTokens>
-  readonly selectedTokens: ReturnType<typeof tokenSelectors.getSelectedTokens>
-  readonly filteredTokens: ReturnType<typeof tokenSelectors.getFilteredTokens>
-  readonly tokenStats: ReturnType<typeof tokenSelectors.getTokenStats>
+  readonly tokens: Token[]
+  readonly selectedTokens: Token[]
+  readonly filteredTokens: Token[]
+  readonly tokenStats: {
+    total: number
+    players: number
+    npcs: number
+    bySize: Record<string, number>
+    byCategory: Record<string, number>
+    animated: number
+    selected: number
+    visible: number
+  }
 
   // Batch operations
   readonly selectAll: () => void
   readonly clearSelection: () => void
   readonly deleteSelected: () => void
   readonly duplicateSelected: (offset?: Point) => void
-  readonly alignSelected: (alignment: string) => void
+  readonly alignSelected: (alignment: 'top' | 'bottom' | 'center' | 'left' | 'right' | 'middle') => void
 
   // Search and filtering
   readonly setFilters: (filters: any) => void
-  readonly setSortBy: (sortBy: string) => void
+  readonly setSortBy: (sortBy: 'name' | 'category' | 'size' | 'created') => void
   readonly setSortOrder: (order: 'asc' | 'desc') => void
 }
 

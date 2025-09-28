@@ -11,14 +11,15 @@
  * 4. Provide all legacy functionality with enhanced performance
  */
 
-import React, { useCallback, useMemo, useState, useRef } from 'react'
+import React, { useCallback, useState, useRef } from 'react'
 import { Stage, Layer, Line } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 // import { MapCanvas as AtomicMapCanvas } from '@/modules/canvas'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
 import useEventCreationStore from '@store/eventCreationStore'
 import { ObjectsLayer } from './ObjectsLayer'
+import TokenHPTooltip from '../Token/TokenHPTooltip'
 import { useContextMenu } from '@hooks/useContextMenu'
 import DrawingLayer from '../Tools/DrawingLayer'
 import { AdvancedDrawingLayer } from '../Tools/AdvancedDrawingLayer'
@@ -26,6 +27,7 @@ import { EnhancedDrawingToolsManager } from '../Tools/EnhancedDrawingToolsManage
 import AdvancedSelectionManager from '../Selection/SelectionManager'
 import { snapToGrid } from '@/utils/grid'
 import type { Point } from '@/types/geometry'
+import type { Token as TokenType } from '@/types/token'
 // import type { ToolType, GridConfig } from '@/modules/canvas/types'
 
 // Helper function to check if an object intersects with a rectangle
@@ -34,7 +36,7 @@ const objectIntersectsRect = (obj: any, rect: { x: number; y: number; width: num
   let objBounds: { x: number; y: number; width: number; height: number }
 
   switch (obj.type) {
-    case 'token':
+    case 'token': {
       const tokenSize = getTokenPixelSize(obj.size || 'medium', 50) // Assume 50px grid
       objBounds = {
         x: obj.position.x - tokenSize / 2,
@@ -43,6 +45,7 @@ const objectIntersectsRect = (obj: any, rect: { x: number; y: number; width: num
         height: tokenSize
       }
       break
+    }
     case 'shape':
       switch (obj.shapeType) {
         case 'rectangle':
@@ -53,7 +56,7 @@ const objectIntersectsRect = (obj: any, rect: { x: number; y: number; width: num
             height: obj.height || 0
           }
           break
-        case 'circle':
+        case 'circle': {
           const radius = obj.radius || 0
           objBounds = {
             x: obj.position.x - radius,
@@ -62,6 +65,7 @@ const objectIntersectsRect = (obj: any, rect: { x: number; y: number; width: num
             height: radius * 2
           }
           break
+        }
         case 'line':
         case 'polygon':
           // For lines and polygons, use bounding box
@@ -132,13 +136,18 @@ export const MapCanvas: React.FC<LegacyMapCanvasProps> = React.memo(({
   height,
   stageRef,
   onMouseMove,
-  onZoomChange
 }) => {
   // Legacy store integration
   const currentMap = useMapStore(state => state.currentMap)
-  const objects = useMapStore(state => state.currentMap?.objects) || []
   const currentTool = useToolStore(state => state.currentTool)
   const gridSettings = useMapStore(state => state.currentMap?.grid)
+  const updateObject = useMapStore(state => state.updateObject)
+
+  // HP Tooltip state
+  const [hpTooltip, setHpTooltip] = useState<{
+    tokenId: string | null
+    position: { x: number; y: number }
+  }>({ tokenId: null, position: { x: 0, y: 0 } })
 
   // Event creation store integration for token picking
   const isPicking = useEventCreationStore(state => state.isPicking)
@@ -374,13 +383,6 @@ export const MapCanvas: React.FC<LegacyMapCanvasProps> = React.memo(({
     }
   }, [onMouseMove])
 
-  // Handle legacy zoom change callback
-  const handleAtomicZoomChange = useCallback((zoom: number) => {
-    if (onZoomChange) {
-      onZoomChange(zoom)
-    }
-  }, [onZoomChange])
-
   // Handle object click for legacy object selection
   const handleObjectClick = useCallback((objectId: string, e?: Konva.KonvaEventObject<MouseEvent>) => {
     const mapState = useMapStore.getState()
@@ -593,7 +595,7 @@ export const MapCanvas: React.FC<LegacyMapCanvasProps> = React.memo(({
                 height: height
               }
               break
-            case 'circle':
+            case 'circle': {
               const radius = distance / 2
               shapeObject = {
                 ...shapeObject,
@@ -605,6 +607,7 @@ export const MapCanvas: React.FC<LegacyMapCanvasProps> = React.memo(({
                 radius: radius
               }
               break
+            }
             case 'line':
               shapeObject = {
                 ...shapeObject,
@@ -626,9 +629,15 @@ export const MapCanvas: React.FC<LegacyMapCanvasProps> = React.memo(({
     }
   }, [selectionRect, currentTool, currentMap])
 
+  // Find the selected token for HP tooltip
+  const selectedToken = hpTooltip.tokenId
+    ? currentMap?.objects.find(o => o.id === hpTooltip.tokenId && o.type === 'token') as TokenType | undefined
+    : undefined
+
   // Simple Stage implementation
   return (
-    <Stage
+    <>
+      <Stage
       width={width}
       height={height}
       ref={stageRef}
@@ -668,6 +677,12 @@ export const MapCanvas: React.FC<LegacyMapCanvasProps> = React.memo(({
       <Layer>
         <ObjectsLayer
           onObjectClick={handleObjectClick}
+          onTokenSelect={(tokenId, position) => {
+            setHpTooltip({ tokenId, position })
+          }}
+          onTokenDeselect={() => {
+            setHpTooltip({ tokenId: null, position: { x: 0, y: 0 } })
+          }}
         />
       </Layer>
 
@@ -682,7 +697,6 @@ export const MapCanvas: React.FC<LegacyMapCanvasProps> = React.memo(({
       {/* Enhanced Drawing Tools Manager - Phase 17 */}
       <Layer>
         <EnhancedDrawingToolsManager
-          stageRef={stageRef}
           gridSize={gridSettings?.size || 50}
         />
       </Layer>
@@ -699,6 +713,21 @@ export const MapCanvas: React.FC<LegacyMapCanvasProps> = React.memo(({
         gridSize={gridSettings?.size || 50}
       />
     </Stage>
+
+      {/* HP Tooltip - rendered outside Stage as a React Portal */}
+      {selectedToken && hpTooltip.tokenId && (
+        <TokenHPTooltip
+          token={selectedToken}
+          position={hpTooltip.position}
+          onUpdate={(updates) => {
+            updateObject(hpTooltip.tokenId!, updates)
+          }}
+          onClose={() => {
+            setHpTooltip({ tokenId: null, position: { x: 0, y: 0 } })
+          }}
+        />
+      )}
+    </>
   )
 })
 

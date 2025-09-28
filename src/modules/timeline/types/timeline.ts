@@ -3,12 +3,12 @@
  * Base types for timeline, rounds, and events
  */
 
-import type { BrandedString, Point } from '@/foundation/types'
+import type { EventData } from './events'
 
 // Branded IDs for type safety
-export type TimelineId = BrandedString<'TimelineId'>
-export type RoundId = BrandedString<'RoundId'>
-export type EventId = BrandedString<'EventId'>
+export type TimelineId = string & { readonly __brand: 'TimelineId' }
+export type RoundId = string & { readonly __brand: 'RoundId' }
+export type EventId = string & { readonly __brand: 'EventId' }
 
 /**
  * Core Timeline represents a combat encounter

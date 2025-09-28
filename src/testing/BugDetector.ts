@@ -1,6 +1,6 @@
-import { Screenshot } from './CanvasCapture'
-import { VisualAssertions, VisualElement } from './VisualAssertions'
-import { TestResult } from './TestRunner'
+import type { Screenshot } from './CanvasCapture'
+import type { VisualAssertions, VisualElement } from './VisualAssertions'
+import type { TestResult } from './TestRunner'
 
 export interface BugReport {
   id: string

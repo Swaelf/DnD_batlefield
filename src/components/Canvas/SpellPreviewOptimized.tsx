@@ -1,9 +1,9 @@
-import React, { memo, useMemo, useCallback } from 'react'
+import React, { memo, useMemo } from 'react'
 import { Circle, Group, Text, Line, Wedge } from 'react-konva'
 import useEventCreationStore from '@/store/eventCreationStore'
 import useMapStore from '@/store/mapStore'
-import { SpellEventData } from '@/types/timeline'
-import { Position } from '@/types/map'
+import type { SpellEventData } from '@/types/timeline'
+import type { Position } from '@/types/map'
 
 type SpellPreviewProps = {
   gridSize: number
@@ -174,7 +174,6 @@ AreaEffect.displayName = 'AreaEffect'
 const DirectionalSpell = memo(({
   selectedSpell,
   fromPosition,
-  toPosition,
   spellRangeInPixels,
   angle
 }: {
@@ -203,7 +202,7 @@ const DirectionalSpell = memo(({
     )
   }
 
-  if (selectedSpell.category === 'line') {
+  if (selectedSpell.category === 'ray') {
     return (
       <Line
         points={[
@@ -213,7 +212,7 @@ const DirectionalSpell = memo(({
           fromPosition.y + Math.sin(angle * Math.PI / 180) * spellRangeInPixels
         ]}
         stroke="#00CED1"
-        strokeWidth={selectedSpell.lineWidth || 10}
+        strokeWidth={selectedSpell.size || 10}
         opacity={0.4}
         lineCap="round"
         perfectDrawEnabled={false}

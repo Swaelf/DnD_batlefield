@@ -15,8 +15,11 @@ export type InteractionTemplate = Omit<UnifiedAction, 'id' | 'timestamp' | 'sour
  */
 export const openDoorTemplate: InteractionTemplate = {
   templateId: 'open-door',
+  name: 'Open Door',
+  description: 'Opens a standard door',
   type: 'interaction',
   category: 'door',
+  tags: ["interaction","exploration"],
   animation: {
     type: 'interaction',
     duration: 1000,
@@ -48,8 +51,11 @@ export const openDoorTemplate: InteractionTemplate = {
  */
 export const lockedDoorTemplate: InteractionTemplate = {
   templateId: 'locked-door',
+  name: 'Locked Door',
+  description: 'A locked door requiring lockpicking or a key',
   type: 'interaction',
   category: 'door',
+  tags: ["interaction","exploration"],
   animation: {
     type: 'interaction',
     duration: 2000,
@@ -87,8 +93,11 @@ export const lockedDoorTemplate: InteractionTemplate = {
  */
 export const pullLeverTemplate: InteractionTemplate = {
   templateId: 'pull-lever',
+  name: 'Pull Lever',
+  description: 'Activates a mechanical lever or switch',
   type: 'interaction',
   category: 'lever',
+  tags: ["interaction","exploration"],
   animation: {
     type: 'interaction',
     duration: 800,
@@ -121,8 +130,11 @@ export const pullLeverTemplate: InteractionTemplate = {
  */
 export const disarmTrapTemplate: InteractionTemplate = {
   templateId: 'disarm-trap',
+  name: 'Disarm Trap',
+  description: 'Attempts to safely disarm a detected trap',
   type: 'interaction',
   category: 'trap',
+  tags: ["interaction","exploration"],
   animation: {
     type: 'interaction',
     duration: 3000,
@@ -161,8 +173,11 @@ export const disarmTrapTemplate: InteractionTemplate = {
  */
 export const triggerTrapTemplate: InteractionTemplate = {
   templateId: 'trigger-trap',
+  name: 'Trigger Trap',
+  description: 'Accidentally triggers a trap mechanism',
   type: 'interaction',
   category: 'trap',
+  tags: ["interaction","exploration"],
   animation: {
     type: 'interaction',
     duration: 500,
@@ -204,8 +219,11 @@ export const triggerTrapTemplate: InteractionTemplate = {
  */
 export const openChestTemplate: InteractionTemplate = {
   templateId: 'open-chest',
+  name: 'Open Chest',
+  description: 'Opens a treasure chest or container',
   type: 'interaction',
   category: 'chest',
+  tags: ["interaction","exploration"],
   animation: {
     type: 'interaction',
     duration: 1200,
@@ -238,8 +256,11 @@ export const openChestTemplate: InteractionTemplate = {
  */
 export const pressButtonTemplate: InteractionTemplate = {
   templateId: 'press-button',
+  name: 'Press Button',
+  description: 'Presses a button or activates a mechanism',
   type: 'interaction',
   category: 'button',
+  tags: ["interaction","exploration"],
   animation: {
     type: 'interaction',
     duration: 400,
@@ -271,8 +292,11 @@ export const pressButtonTemplate: InteractionTemplate = {
  */
 export const pressurePlateTemplate: InteractionTemplate = {
   templateId: 'pressure-plate',
+  name: 'Pressure Plate',
+  description: 'Steps on or triggers a pressure plate mechanism',
   type: 'interaction',
   category: 'pressure_plate',
+  tags: ["interaction","exploration"],
   animation: {
     type: 'interaction',
     duration: 300,
@@ -309,8 +333,11 @@ export const pressurePlateTemplate: InteractionTemplate = {
  */
 export const pickLockTemplate: InteractionTemplate = {
   templateId: 'pick-lock',
+  name: 'Pick Lock',
+  description: 'Attempts to pick a lock with thieves tools',
   type: 'interaction',
   category: 'lock',
+  tags: ["interaction","exploration"],
   animation: {
     type: 'interaction',
     duration: 2500,
@@ -349,8 +376,11 @@ export const pickLockTemplate: InteractionTemplate = {
  */
 export const searchAreaTemplate: InteractionTemplate = {
   templateId: 'search-area',
+  name: 'Search Area',
+  description: 'Thoroughly searches an area for hidden items or clues',
   type: 'interaction',
   category: 'search',
+  tags: ["interaction","exploration"],
   animation: {
     type: 'interaction',
     duration: 2000,

@@ -1,5 +1,4 @@
-import { Position } from './map'
-import { UnifiedAction } from './unifiedAction'
+import type { UnifiedAction } from './unifiedAction'
 
 // Enhanced timeline types that support unified actions
 export type UnifiedTimeline = {

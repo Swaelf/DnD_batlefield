@@ -1,16 +1,14 @@
 /**
  * TokenProperties Organism Component
- *
- * Complete token property editing interface with D&D 5e integration.
- * Replaces legacy TokenProperties.tsx with modern form architecture.
- * Organism design: 100-150 lines, comprehensive property editing.
+ * Complete token property editing interface with D&D 5e integration
  */
 
 import React from 'react'
-import { styled } from '@/styles/theme.config'
 import { Settings, X, RotateCcw, Save } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import type { Token, TokenUpdate } from '../../../types'
-import { ValidationService } from '../../../services'
 
 export interface TokenPropertiesProps {
   readonly token: Token
@@ -19,182 +17,6 @@ export interface TokenPropertiesProps {
   readonly isOpen?: boolean
 }
 
-const PropertiesContainer = styled('div', {
-  backgroundColor: '$gray900',
-  border: '1px solid $gray700',
-  borderRadius: '$lg',
-  width: '320px',
-  maxHeight: '600px',
-  display: 'flex',
-  flexDirection: 'column',
-  color: '$gray100'
-})
-
-const PropertiesHeader = styled('div', {
-  padding: '$3',
-  borderBottom: '1px solid $gray700',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between'
-})
-
-const PropertiesTitle = styled('h3', {
-  color: '$dndGold',
-  fontSize: '$md',
-  fontWeight: '600',
-  margin: 0
-})
-
-const HeaderActions = styled('div', {
-  display: 'flex',
-  gap: '$1'
-})
-
-const HeaderButton = styled('button', {
-  backgroundColor: 'transparent',
-  border: 'none',
-  color: '$gray400',
-  cursor: 'pointer',
-  padding: '$1',
-  borderRadius: '$sm',
-
-  '&:hover': {
-    color: '$gray100',
-    backgroundColor: '$gray800'
-  }
-})
-
-const PropertiesContent = styled('div', {
-  flex: 1,
-  padding: '$3',
-  overflowY: 'auto'
-})
-
-const PropertyGroup = styled('div', {
-  marginBottom: '$4',
-
-  '&:last-child': {
-    marginBottom: 0
-  }
-})
-
-const GroupTitle = styled('h4', {
-  color: '$dndGold',
-  fontSize: '$sm',
-  fontWeight: '600',
-  margin: '0 0 $2 0',
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px'
-})
-
-const PropertyField = styled('div', {
-  marginBottom: '$3'
-})
-
-const FieldLabel = styled('label', {
-  display: 'block',
-  color: '$gray200',
-  fontSize: '$sm',
-  fontWeight: '500',
-  marginBottom: '$1'
-})
-
-const FieldInput = styled('input', {
-  width: '100%',
-  padding: '$2',
-  backgroundColor: '$gray800',
-  border: '1px solid $gray600',
-  borderRadius: '$md',
-  color: '$gray100',
-  fontSize: '$sm',
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$dndGold'
-  }
-})
-
-const FieldSelect = styled('select', {
-  width: '100%',
-  padding: '$2',
-  backgroundColor: '$gray800',
-  border: '1px solid $gray600',
-  borderRadius: '$md',
-  color: '$gray100',
-  fontSize: '$sm',
-  cursor: 'pointer',
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$dndGold'
-  }
-})
-
-const ColorInput = styled('input', {
-  width: '100%',
-  height: '36px',
-  padding: '$1',
-  backgroundColor: '$gray800',
-  border: '1px solid $gray600',
-  borderRadius: '$md',
-  cursor: 'pointer',
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$dndGold'
-  }
-})
-
-const CheckboxField = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2'
-})
-
-const Checkbox = styled('input', {
-  accentColor: '$dndGold'
-})
-
-const PropertiesFooter = styled('div', {
-  padding: '$3',
-  borderTop: '1px solid $gray700',
-  display: 'flex',
-  gap: '$2',
-  justifyContent: 'flex-end'
-})
-
-const FooterButton = styled('button', {
-  padding: '$2 $3',
-  borderRadius: '$md',
-  fontSize: '$sm',
-  fontWeight: '500',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-
-  variants: {
-    variant: {
-      primary: {
-        backgroundColor: '$dndRed',
-        color: '$gray100',
-        border: '1px solid $dndRed',
-
-        '&:hover': {
-          backgroundColor: '$red700'
-        }
-      },
-      secondary: {
-        backgroundColor: 'transparent',
-        color: '$gray300',
-        border: '1px solid $gray600',
-
-        '&:hover': {
-          backgroundColor: '$gray800',
-          color: '$gray100'
-        }
-      }
-    }
-  }
-})
 
 export const TokenProperties: React.FC<TokenPropertiesProps> = React.memo(({
   token,
@@ -203,15 +25,10 @@ export const TokenProperties: React.FC<TokenPropertiesProps> = React.memo(({
   isOpen = true
 }) => {
   const [localToken, setLocalToken] = React.useState(token)
-  const [isDirty, setIsDirty] = React.useState(false)
-
-  // Validation service
-  const validationService = React.useMemo(() => ValidationService.getInstance(), [])
 
   // Update local token when prop changes
   React.useEffect(() => {
     setLocalToken(token)
-    setIsDirty(false)
   }, [token])
 
   const handleFieldChange = React.useCallback(<K extends keyof Token>(
@@ -219,7 +36,6 @@ export const TokenProperties: React.FC<TokenPropertiesProps> = React.memo(({
     value: Token[K]
   ) => {
     setLocalToken(prev => ({ ...prev, [field]: value }))
-    setIsDirty(true)
   }, [])
 
   const handleLabelChange = React.useCallback(<K extends keyof Token['label']>(
@@ -230,7 +46,6 @@ export const TokenProperties: React.FC<TokenPropertiesProps> = React.memo(({
       ...prev,
       label: { ...prev.label, [field]: value }
     }))
-    setIsDirty(true)
   }, [])
 
   const handleSave = React.useCallback(() => {
@@ -249,50 +64,158 @@ export const TokenProperties: React.FC<TokenPropertiesProps> = React.memo(({
     }
 
     onUpdate(updates)
-    setIsDirty(false)
   }, [localToken, onUpdate])
 
   const handleReset = React.useCallback(() => {
     setLocalToken(token)
-    setIsDirty(false)
   }, [token])
 
   if (!isOpen) return null
 
   return (
-    <PropertiesContainer>
-      <PropertiesHeader>
-        <PropertiesTitle>Token Properties</PropertiesTitle>
-        <HeaderActions>
-          <HeaderButton onClick={() => console.log('Settings')}>
+    <Box
+      style={{
+        backgroundColor: 'var(--colors-gray900)',
+        border: '1px solid var(--colors-gray700)',
+        borderRadius: '8px',
+        width: '320px',
+        maxHeight: '600px',
+        display: 'flex',
+        flexDirection: 'column',
+        color: 'var(--colors-gray100)'
+      }}
+    >
+      {/* Header */}
+      <Box
+        style={{
+          padding: '12px',
+          borderBottom: '1px solid var(--colors-gray700)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}
+      >
+        <Text
+          variant="heading"
+          size="md"
+          style={{
+            color: 'var(--colors-dndGold)',
+            fontWeight: '600',
+            margin: 0
+          }}
+        >
+          Token Properties
+        </Text>
+        <Box style={{ display: 'flex', gap: '4px' }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => console.log('Settings')}
+            style={{
+              backgroundColor: 'transparent',
+              color: 'var(--colors-gray400)',
+              padding: '4px'
+            }}
+          >
             <Settings size={16} />
-          </HeaderButton>
+          </Button>
           {onClose && (
-            <HeaderButton onClick={onClose}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              style={{
+                backgroundColor: 'transparent',
+                color: 'var(--colors-gray400)',
+                padding: '4px'
+              }}
+            >
               <X size={16} />
-            </HeaderButton>
+            </Button>
           )}
-        </HeaderActions>
-      </PropertiesHeader>
+        </Box>
+      </Box>
 
-      <PropertiesContent>
+      {/* Content */}
+      <Box
+        style={{
+          flex: 1,
+          padding: '12px',
+          overflowY: 'auto'
+        }}
+      >
         {/* Basic Properties */}
-        <PropertyGroup>
-          <GroupTitle>Basic</GroupTitle>
+        <Box style={{ marginBottom: '16px' }}>
+          <Text
+            variant="heading"
+            size="sm"
+            style={{
+              color: 'var(--colors-dndGold)',
+              fontWeight: '600',
+              margin: '0 0 8px 0',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}
+          >
+            Basic
+          </Text>
 
-          <PropertyField>
-            <FieldLabel>Name</FieldLabel>
-            <FieldInput
+          <Box style={{ marginBottom: '12px' }}>
+            <Text
+              as="label"
+              variant="body"
+              size="sm"
+              style={{
+                display: 'block',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500',
+                marginBottom: '4px'
+              }}
+            >
+              Name
+            </Text>
+            <input
+              style={{
+                width: '100%',
+                padding: '8px',
+                backgroundColor: 'var(--colors-gray800)',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
+                color: 'var(--colors-gray100)',
+                fontSize: '14px'
+              }}
               value={localToken.name}
-              onChange={(e) => handleFieldChange('name', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('name', e.target.value)}
             />
-          </PropertyField>
+          </Box>
 
-          <PropertyField>
-            <FieldLabel>Size</FieldLabel>
-            <FieldSelect
+          <Box style={{ marginBottom: '12px' }}>
+            <Text
+              as="label"
+              variant="body"
+              size="sm"
+              style={{
+                display: 'block',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500',
+                marginBottom: '4px'
+              }}
+            >
+              Size
+            </Text>
+            <select
+              style={{
+                width: '100%',
+                padding: '8px',
+                backgroundColor: 'var(--colors-gray800)',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
+                color: 'var(--colors-gray100)',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
               value={localToken.size}
-              onChange={(e) => handleFieldChange('size', e.target.value as any)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFieldChange('size', e.target.value as any)}
             >
               <option value="tiny">Tiny</option>
               <option value="small">Small</option>
@@ -300,108 +223,310 @@ export const TokenProperties: React.FC<TokenPropertiesProps> = React.memo(({
               <option value="large">Large</option>
               <option value="huge">Huge</option>
               <option value="gargantuan">Gargantuan</option>
-            </FieldSelect>
-          </PropertyField>
+            </select>
+          </Box>
 
-          <PropertyField>
-            <FieldLabel>Category</FieldLabel>
-            <FieldSelect
+          <Box style={{ marginBottom: '12px' }}>
+            <Text
+              as="label"
+              variant="body"
+              size="sm"
+              style={{
+                display: 'block',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500',
+                marginBottom: '4px'
+              }}
+            >
+              Category
+            </Text>
+            <select
+              style={{
+                width: '100%',
+                padding: '8px',
+                backgroundColor: 'var(--colors-gray800)',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
+                color: 'var(--colors-gray100)',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
               value={localToken.category}
-              onChange={(e) => handleFieldChange('category', e.target.value as any)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFieldChange('category', e.target.value as any)}
             >
               <option value="player">Player</option>
               <option value="enemy">Enemy</option>
               <option value="npc">NPC</option>
               <option value="object">Object</option>
               <option value="environment">Environment</option>
-            </FieldSelect>
-          </PropertyField>
+            </select>
+          </Box>
 
-          <PropertyField>
-            <CheckboxField>
-              <Checkbox
-                type="checkbox"
-                checked={localToken.isPlayer}
-                onChange={(e) => handleFieldChange('isPlayer', e.target.checked)}
-              />
-              <FieldLabel>Player Character</FieldLabel>
-            </CheckboxField>
-          </PropertyField>
-        </PropertyGroup>
+          <Box
+            style={{
+              marginBottom: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={localToken.isPlayer}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('isPlayer', e.target.checked)}
+              style={{ accentColor: 'var(--colors-dndGold)' }}
+            />
+            <Text
+              as="label"
+              variant="body"
+              size="sm"
+              style={{
+                color: 'var(--colors-gray200)',
+                fontWeight: '500'
+              }}
+            >
+              Player Character
+            </Text>
+          </Box>
+        </Box>
 
         {/* Appearance */}
-        <PropertyGroup>
-          <GroupTitle>Appearance</GroupTitle>
+        <Box style={{ marginBottom: '16px' }}>
+          <Text
+            variant="heading"
+            size="sm"
+            style={{
+              color: 'var(--colors-dndGold)',
+              fontWeight: '600',
+              margin: '0 0 8px 0',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}
+          >
+            Appearance
+          </Text>
 
-          <PropertyField>
-            <FieldLabel>Shape</FieldLabel>
-            <FieldSelect
+          <Box style={{ marginBottom: '12px' }}>
+            <Text
+              as="label"
+              variant="body"
+              size="sm"
+              style={{
+                display: 'block',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500',
+                marginBottom: '4px'
+              }}
+            >
+              Shape
+            </Text>
+            <select
+              style={{
+                width: '100%',
+                padding: '8px',
+                backgroundColor: 'var(--colors-gray800)',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
+                color: 'var(--colors-gray100)',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
               value={localToken.shape}
-              onChange={(e) => handleFieldChange('shape', e.target.value as any)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFieldChange('shape', e.target.value as any)}
             >
               <option value="circle">Circle</option>
               <option value="square">Square</option>
-            </FieldSelect>
-          </PropertyField>
+            </select>
+          </Box>
 
-          <PropertyField>
-            <FieldLabel>Color</FieldLabel>
-            <ColorInput
+          <Box style={{ marginBottom: '12px' }}>
+            <Text
+              as="label"
+              variant="body"
+              size="sm"
+              style={{
+                display: 'block',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500',
+                marginBottom: '4px'
+              }}
+            >
+              Color
+            </Text>
+            <input
               type="color"
               value={localToken.color}
-              onChange={(e) => handleFieldChange('color', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('color', e.target.value)}
+              style={{
+                width: '100%',
+                height: '36px',
+                padding: '4px',
+                backgroundColor: 'var(--colors-gray800)',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
             />
-          </PropertyField>
+          </Box>
 
-          <PropertyField>
-            <FieldLabel>Opacity</FieldLabel>
-            <FieldInput
+          <Box style={{ marginBottom: '12px' }}>
+            <Text
+              as="label"
+              variant="body"
+              size="sm"
+              style={{
+                display: 'block',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500',
+                marginBottom: '4px'
+              }}
+            >
+              Opacity
+            </Text>
+            <input
               type="number"
               min="0"
               max="1"
               step="0.1"
               value={localToken.opacity}
-              onChange={(e) => handleFieldChange('opacity', parseFloat(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('opacity', parseFloat(e.target.value))}
+              style={{
+                width: '100%',
+                padding: '8px',
+                backgroundColor: 'var(--colors-gray800)',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
+                color: 'var(--colors-gray100)',
+                fontSize: '14px'
+              }}
             />
-          </PropertyField>
-        </PropertyGroup>
+          </Box>
+        </Box>
 
         {/* Label */}
-        <PropertyGroup>
-          <GroupTitle>Label</GroupTitle>
+        <Box style={{ marginBottom: 0 }}>
+          <Text
+            variant="heading"
+            size="sm"
+            style={{
+              color: 'var(--colors-dndGold)',
+              fontWeight: '600',
+              margin: '0 0 8px 0',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}
+          >
+            Label
+          </Text>
 
-          <PropertyField>
-            <FieldLabel>Text</FieldLabel>
-            <FieldInput
+          <Box style={{ marginBottom: '12px' }}>
+            <Text
+              as="label"
+              variant="body"
+              size="sm"
+              style={{
+                display: 'block',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500',
+                marginBottom: '4px'
+              }}
+            >
+              Text
+            </Text>
+            <input
               value={localToken.label.text}
-              onChange={(e) => handleLabelChange('text', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleLabelChange('text', e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px',
+                backgroundColor: 'var(--colors-gray800)',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
+                color: 'var(--colors-gray100)',
+                fontSize: '14px'
+              }}
             />
-          </PropertyField>
+          </Box>
 
-          <PropertyField>
-            <FieldLabel>Position</FieldLabel>
-            <FieldSelect
+          <Box style={{ marginBottom: '12px' }}>
+            <Text
+              as="label"
+              variant="body"
+              size="sm"
+              style={{
+                display: 'block',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500',
+                marginBottom: '4px'
+              }}
+            >
+              Position
+            </Text>
+            <select
               value={localToken.label.position}
-              onChange={(e) => handleLabelChange('position', e.target.value as any)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleLabelChange('position', e.target.value as any)}
+              style={{
+                width: '100%',
+                padding: '8px',
+                backgroundColor: 'var(--colors-gray800)',
+                border: '1px solid var(--colors-gray600)',
+                borderRadius: '6px',
+                color: 'var(--colors-gray100)',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
             >
               <option value="top">Top</option>
               <option value="bottom">Bottom</option>
               <option value="hidden">Hidden</option>
-            </FieldSelect>
-          </PropertyField>
-        </PropertyGroup>
-      </PropertiesContent>
+            </select>
+          </Box>
+        </Box>
+      </Box>
 
-      <PropertiesFooter>
-        <FooterButton variant="secondary" onClick={handleReset}>
+      {/* Footer */}
+      <Box
+        style={{
+          padding: '12px',
+          borderTop: '1px solid var(--colors-gray700)',
+          display: 'flex',
+          gap: '8px',
+          justifyContent: 'flex-end'
+        }}
+      >
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleReset}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            backgroundColor: 'transparent',
+            color: 'var(--colors-gray300)',
+            border: '1px solid var(--colors-gray600)'
+          }}
+        >
           <RotateCcw size={16} />
           Reset
-        </FooterButton>
-        <FooterButton variant="primary" onClick={handleSave}>
+        </Button>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={handleSave}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            backgroundColor: 'var(--colors-dndRed)',
+            color: 'var(--colors-gray100)',
+            border: '1px solid var(--colors-dndRed)'
+          }}
+        >
           <Save size={16} />
           Save
-        </FooterButton>
-      </PropertiesFooter>
-    </PropertiesContainer>
+        </Button>
+      </Box>
+    </Box>
   )
 })

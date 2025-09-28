@@ -192,7 +192,8 @@ const getNextUserColor = (): string => {
   return color
 }
 
-export const useCollaborationStore = create<CollaborationStore>()((set, get) => ({
+export const useCollaborationStore = create<CollaborationStore>()(
+  immer((set, get) => ({
   // Initial state
   connectionStatus: 'disconnected',
   reconnectAttempts: 0,
@@ -558,6 +559,6 @@ export const useCollaborationStore = create<CollaborationStore>()((set, get) => 
   getUsersInSession: () => {
     return Array.from(get().connectedUsers.values())
   }
-}))
+})))
 
 export default useCollaborationStore

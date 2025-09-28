@@ -7,8 +7,7 @@
 
 import React from 'react'
 import { Plus, ChevronUp, ChevronDown, Trash2 } from 'lucide-react'
-import { Box, Text, Button } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { Box, Text, Button } from '@/components/primitives'
 import { LayerIndicator } from '../../atoms'
 import type { LayerInstance } from '../../../types'
 
@@ -25,84 +24,70 @@ export interface LayerPanelProps {
   readonly canDeleteLayer?: (layerId: string) => boolean
 }
 
-const PanelContainer = styled(Box, {
+// Helper functions for styling
+const getPanelContainerStyles = (): React.CSSProperties => ({
   display: 'flex',
-  flexDirection: 'column',
-  gap: '$2',
-  padding: '$3',
-  backgroundColor: '$dndBlack',
-  borderRadius: '$md',
-  border: '1px solid $gray800',
+  flexDirection: 'column' as const,
+  gap: '8px',
+  padding: '12px',
+  backgroundColor: 'var(--dnd-black)',
+  borderRadius: '6px',
+  border: '1px solid var(--gray-800)',
   minWidth: '200px',
   maxHeight: '400px',
-  overflowY: 'auto'
+  overflowY: 'auto' as const
 })
 
-const PanelHeader = styled(Box, {
+const getPanelHeaderStyles = (): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  paddingBottom: '$2',
-  borderBottom: '1px solid $gray800'
+  paddingBottom: '8px',
+  borderBottom: '1px solid var(--gray-800)'
 })
 
-const LayerList = styled(Box, {
+const getLayerListStyles = (): React.CSSProperties => ({
   display: 'flex',
-  flexDirection: 'column',
-  gap: '$1'
+  flexDirection: 'column' as const,
+  gap: '4px'
 })
 
-const LayerItem = styled(Box, {
+const getLayerItemStyles = (isActive = false, isLocked = false): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '$2',
-  padding: '$2',
-  borderRadius: '$sm',
+  gap: '8px',
+  padding: '8px',
+  borderRadius: '4px',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-
-  '&:hover': {
-    backgroundColor: '$gray800/50'
-  },
-
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$dndRed/20',
-        borderLeft: '3px solid $dndRed'
-      }
-    },
-    locked: {
-      true: {
-        opacity: 0.7
-      }
-    }
-  }
+  backgroundColor: isActive ? 'rgba(146, 38, 16, 0.2)' : 'transparent',
+  borderLeft: isActive ? '3px solid var(--dnd-red)' : 'none',
+  opacity: isLocked ? 0.7 : 1
 })
 
-const LayerName = styled(Text, {
+const getLayerNameStyles = (): React.CSSProperties => ({
   flex: 1,
-  fontSize: '$sm',
-  fontWeight: '$medium',
-  color: '$gray100',
-  textTransform: 'capitalize'
+  fontSize: '14px',
+  fontWeight: '500',
+  color: 'var(--gray-100)',
+  textTransform: 'capitalize' as const
 })
 
-const LayerControls = styled(Box, {
+const getLayerControlsStyles = (): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '$1'
+  gap: '4px'
 })
 
-const ControlButton = styled(Button, {
-  variants: {
-    size: {
-      xs: {
-        padding: '$1',
-        minHeight: 'auto'
-      }
-    }
-  }
+const getControlButtonStyles = (): React.CSSProperties => ({
+  padding: '4px',
+  minHeight: 'auto',
+  backgroundColor: 'transparent',
+  border: 'none',
+  borderRadius: '2px',
+  color: 'var(--gray-400)',
+  cursor: 'pointer',
+  transition: 'color 0.2s ease'
 })
 
 export const LayerPanel: React.FC<LayerPanelProps> = React.memo(({
@@ -133,24 +118,38 @@ export const LayerPanel: React.FC<LayerPanelProps> = React.memo(({
   }
 
   return (
-    <PanelContainer>
-      <PanelHeader>
-        <Text size="sm" weight="semibold" color="gray100">
+    <Box style={getPanelContainerStyles()}>
+      <Box style={getPanelHeaderStyles()}>
+        <Text style={{ fontSize: '14px', fontWeight: '600', color: 'var(--gray-100)' }}>
           Layers ({layers.length})
         </Text>
         {canCreateLayer && (
           <Button
-            variant="ghost"
-            size="sm"
             onClick={onCreateLayer}
             title="Create new layer"
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: 'var(--gray-400)',
+              cursor: 'pointer',
+              padding: '4px',
+              borderRadius: '4px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--gray-800)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
           >
             <Plus size={16} />
           </Button>
         )}
-      </PanelHeader>
+      </Box>
 
-      <LayerList>
+      <Box style={getLayerListStyles()}>
         {sortedLayers.map((layer, index) => {
           const isActive = layer.config.id === activeLayerId
           const isLocked = false // Would come from store
@@ -159,11 +158,22 @@ export const LayerPanel: React.FC<LayerPanelProps> = React.memo(({
           const canMoveDown = index > 0
 
           return (
-            <LayerItem
+            <Box
               key={layer.config.id}
-              active={isActive}
-              locked={isLocked}
               onClick={() => onLayerSelect(layer.config.id)}
+              style={{
+                ...getLayerItemStyles(isActive, isLocked)
+              }}
+              onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+                if (!isActive) {
+                  e.currentTarget.style.backgroundColor = 'rgba(55, 65, 81, 0.5)'
+                }
+              }}
+              onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+                if (!isActive) {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }
+              }}
             >
               <LayerIndicator
                 isVisible={layer.config.visible}
@@ -173,67 +183,103 @@ export const LayerPanel: React.FC<LayerPanelProps> = React.memo(({
                 onToggleLock={() => onToggleLock(layer.config.id)}
               />
 
-              <LayerName>{layer.config.name}</LayerName>
+              <Text style={getLayerNameStyles()}>{layer.config.name}</Text>
 
-              <LayerControls>
-                <ControlButton
-                  variant="ghost"
-                  size="xs"
+              <Box style={getLayerControlsStyles()}>
+                <Button
                   disabled={!canMoveUp}
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.stopPropagation()
                     handleMoveUp(layer.config.id, index)
                   }}
                   title="Move layer up"
+                  style={{
+                    ...getControlButtonStyles(),
+                    opacity: !canMoveUp ? 0.5 : 1,
+                    cursor: !canMoveUp ? 'not-allowed' : 'pointer'
+                  }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    if (canMoveUp) {
+                      e.currentTarget.style.color = 'var(--gray-200)'
+                    }
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    if (canMoveUp) {
+                      e.currentTarget.style.color = 'var(--gray-400)'
+                    }
+                  }}
                 >
                   <ChevronUp size={12} />
-                </ControlButton>
+                </Button>
 
-                <ControlButton
-                  variant="ghost"
-                  size="xs"
+                <Button
                   disabled={!canMoveDown}
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.stopPropagation()
                     handleMoveDown(layer.config.id, index)
                   }}
                   title="Move layer down"
+                  style={{
+                    ...getControlButtonStyles(),
+                    opacity: !canMoveDown ? 0.5 : 1,
+                    cursor: !canMoveDown ? 'not-allowed' : 'pointer'
+                  }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    if (canMoveDown) {
+                      e.currentTarget.style.color = 'var(--gray-200)'
+                    }
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    if (canMoveDown) {
+                      e.currentTarget.style.color = 'var(--gray-400)'
+                    }
+                  }}
                 >
                   <ChevronDown size={12} />
-                </ControlButton>
+                </Button>
 
                 {canDelete && (
-                  <ControlButton
-                    variant="ghost"
-                    size="xs"
-                    onClick={(e) => {
+                  <Button
+                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                       e.stopPropagation()
                       onDeleteLayer(layer.config.id)
                     }}
                     title="Delete layer"
+                    style={{
+                      ...getControlButtonStyles(),
+                      color: 'var(--error)'
+                    }}
+                    onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                      e.currentTarget.style.color = 'var(--red-400)'
+                    }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                      e.currentTarget.style.color = 'var(--error)'
+                    }}
                   >
                     <Trash2 size={12} />
-                  </ControlButton>
+                  </Button>
                 )}
-              </LayerControls>
-            </LayerItem>
+              </Box>
+            </Box>
           )
         })}
-      </LayerList>
+      </Box>
 
       {layers.length === 0 && (
         <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          padding="$4"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
         >
-          <Text size="sm" color="gray500">
+          <Text style={{ fontSize: '14px', color: 'var(--gray-500)' }}>
             No layers created yet
           </Text>
         </Box>
       )}
-    </PanelContainer>
+    </Box>
   )
 })
 

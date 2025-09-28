@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { Group, Text, Rect } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
 import { snapToGrid } from '@/utils/grid'
 

@@ -7,8 +7,7 @@
 
 import React from 'react'
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react'
-import { Box, Text, Button } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { Box, Text, Button } from '@/components/primitives'
 
 export interface ZoomControlProps {
   readonly zoom: number
@@ -21,36 +20,40 @@ export interface ZoomControlProps {
   readonly showButtons?: boolean
 }
 
-const ZoomContainer = styled(Box, {
+// Helper functions for styling
+const getZoomContainerStyles = (): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '$2',
-  padding: '$2',
-  backgroundColor: '$dndBlack/80',
-  borderRadius: '$md',
+  gap: '8px',
+  padding: '8px',
+  backgroundColor: 'rgba(26, 26, 26, 0.8)',
+  borderRadius: '6px',
   backdropFilter: 'blur(4px)',
-  border: '1px solid $gray800'
+  border: '1px solid var(--gray-800)'
 })
 
-const ZoomDisplay = styled(Text, {
-  fontSize: '$sm',
-  fontWeight: '$medium',
-  color: '$gray100',
+const getZoomDisplayStyles = (): React.CSSProperties => ({
+  fontSize: '14px',
+  fontWeight: '500',
+  color: 'var(--gray-100)',
   minWidth: '60px',
-  textAlign: 'center',
-  fontFamily: '$mono'
+  textAlign: 'center' as const,
+  fontFamily: 'monospace'
 })
 
-const ZoomButton = styled(Button, {
-  size: '$6',
-  variants: {
-    disabled: {
-      true: {
-        opacity: 0.5,
-        cursor: 'not-allowed'
-      }
-    }
-  }
+const getZoomButtonStyles = (disabled = false): React.CSSProperties => ({
+  width: '24px',
+  height: '24px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'transparent',
+  border: '1px solid var(--gray-600)',
+  borderRadius: '4px',
+  color: 'var(--gray-300)',
+  cursor: disabled ? 'not-allowed' : 'pointer',
+  opacity: disabled ? 0.5 : 1,
+  transition: 'all 0.2s ease'
 })
 
 export const ZoomControl: React.FC<ZoomControlProps> = React.memo(({
@@ -63,7 +66,6 @@ export const ZoomControl: React.FC<ZoomControlProps> = React.memo(({
   showPercentage = true,
   showButtons = true
 }) => {
-  const zoomPercentage = Math.round(zoom * 100)
   const canZoomIn = zoom < maxZoom
   const canZoomOut = zoom > minZoom
 
@@ -75,46 +77,48 @@ export const ZoomControl: React.FC<ZoomControlProps> = React.memo(({
   }
 
   return (
-    <ZoomContainer>
+    <Box style={getZoomContainerStyles()}>
       {showButtons && (
-        <ZoomButton
-          variant="ghost"
-          size="sm"
+        <Button
           disabled={!canZoomOut}
           onClick={onZoomOut}
           title="Zoom out"
+          style={getZoomButtonStyles(!canZoomOut)}
         >
           <ZoomOut size={14} />
-        </ZoomButton>
+        </Button>
       )}
 
-      <ZoomDisplay title={`Zoom: ${formatZoom(zoom)}`}>
+      <Text
+        variant="body"
+        size="xs"
+        title={`Zoom: ${formatZoom(zoom)}`}
+        style={getZoomDisplayStyles()}
+      >
         {formatZoom(zoom)}
-      </ZoomDisplay>
+      </Text>
 
       {showButtons && (
         <>
-          <ZoomButton
-            variant="ghost"
-            size="sm"
+          <Button
             disabled={!canZoomIn}
             onClick={onZoomIn}
             title="Zoom in"
+            style={getZoomButtonStyles(!canZoomIn)}
           >
             <ZoomIn size={14} />
-          </ZoomButton>
+          </Button>
 
-          <ZoomButton
-            variant="ghost"
-            size="sm"
+          <Button
             onClick={onReset}
             title="Reset zoom to 100%"
+            style={getZoomButtonStyles(false)}
           >
             <RotateCcw size={14} />
-          </ZoomButton>
+          </Button>
         </>
       )}
-    </ZoomContainer>
+    </Box>
   )
 })
 

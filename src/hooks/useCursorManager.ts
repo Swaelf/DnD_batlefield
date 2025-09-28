@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import Konva from 'konva'
+import type Konva from 'konva'
 
 type CursorManagerProps = {
   stageRef: React.RefObject<Konva.Stage>

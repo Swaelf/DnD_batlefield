@@ -12,7 +12,9 @@ import type {
   PropertyGroup,
   ValidationRule,
   DNDValidationRule,
-  MapObject,
+  MapObject
+} from '../types'
+import {
   createPropertyFieldId,
   createPropertyGroupId,
   createValidationRuleId

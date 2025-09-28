@@ -16,7 +16,7 @@ export { MapCanvas as default } from './LegacyMapCanvasAdapter'
 export type { LegacyMapCanvasProps } from './LegacyMapCanvasAdapter'
 
 // Also export the original for direct access if needed
-export { MapCanvas as LegacyMapCanvas } from './MapCanvas'
+export { default as LegacyMapCanvas } from './MapCanvas'
 
 // Export atomic Canvas for new usage
 export { MapCanvas as AtomicMapCanvas } from '@/modules/canvas'

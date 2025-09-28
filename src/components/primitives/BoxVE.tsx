@@ -2,54 +2,83 @@ import React, { forwardRef } from 'react'
 import { clsx } from 'clsx'
 import { sprinkles, type Sprinkles } from '@/styles/sprinkles.css'
 
-// Define Box-specific props that extend Sprinkles
-export interface BoxProps extends Sprinkles {
+// Base props for Box component
+type BoxOwnProps = {
+  as?: React.ElementType
   children?: React.ReactNode
   className?: string
-  as?: keyof JSX.IntrinsicElements
-  css?: React.CSSProperties | Record<string, any>
-  // Additional common props
   style?: React.CSSProperties
-  id?: string
-  'data-testid'?: string
-  'data-test-id'?: string
-  role?: string
-  'aria-label'?: string
-  onClick?: (event: React.MouseEvent) => void
-  onMouseEnter?: (event: React.MouseEvent) => void
-  onMouseLeave?: (event: React.MouseEvent) => void
 }
 
-// Create the Box component using forwardRef for better ref handling
+// Combined Box props with Sprinkles and HTML attributes
+export type BoxProps = Partial<Sprinkles> &
+  BoxOwnProps &
+  Omit<React.HTMLAttributes<HTMLElement>, keyof Sprinkles | keyof BoxOwnProps>
+
+// List of valid sprinkles properties for efficient filtering
+const SPRINKLES_PROPS = new Set([
+  // Display & Layout
+  'display', 'flexDirection', 'flexWrap', 'justifyContent', 'alignItems',
+  'alignSelf', 'flexGrow', 'flexShrink', 'gridTemplateColumns', 'gap',
+  // Spacing (full names and shorthands)
+  'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+  'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+  'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my',
+  'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py',
+  // Typography
+  'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign',
+  'color', 'textDecoration', 'textTransform',
+  // Position & Layout
+  'position', 'top', 'right', 'bottom', 'left', 'zIndex',
+  'overflow', 'overflowX', 'overflowY',
+  // Sizing (full names and shorthands)
+  'width', 'height', 'minWidth', 'maxWidth', 'minHeight', 'maxHeight',
+  'w', 'h', 'size',
+  // Visual (including shorthands)
+  'opacity', 'backgroundColor', 'bg', 'bgColor',
+  'borderRadius', 'borderTopLeftRadius', 'borderTopRightRadius',
+  'borderBottomLeftRadius', 'borderBottomRightRadius', 'rounded',
+  'borderWidth', 'borderStyle', 'borderColor',
+  'boxShadow', 'outline',
+  // Effects
+  'transition', 'transform', 'cursor', 'userSelect', 'pointerEvents',
+])
+
+// Simplified Box implementation using forwardRef
 export const Box = forwardRef<HTMLElement, BoxProps>(
-  ({ children, className, as: Component = 'div', css, style, ...props }, ref) => {
-    // Extract sprinkles props from other props
-    const sprinkleProps: Sprinkles = {}
-    const elementProps: Record<string, any> = {}
+  (props, ref) => {
+    const {
+      as: Component = 'div',
+      children,
+      className,
+      style,
+      ...rest
+    } = props
 
-    // Separate sprinkles props from DOM props
-    for (const [key, value] of Object.entries(props)) {
-      // Check if this is a valid sprinkles prop
-      if (isValidSprinklesProp(key)) {
-        sprinkleProps[key as keyof Sprinkles] = value
+    // Separate sprinkles from HTML props
+    const sprinkleProps: Record<string, unknown> = {}
+    const htmlProps: Record<string, unknown> = {}
+
+    Object.entries(rest).forEach(([key, value]) => {
+      if (SPRINKLES_PROPS.has(key)) {
+        sprinkleProps[key] = value
       } else {
-        elementProps[key] = value
+        htmlProps[key] = value
       }
-    }
+    })
 
-    // Handle CSS prop by converting it to inline styles (basic support)
-    let combinedStyle = style
-    if (css && typeof css === 'object') {
-      combinedStyle = { ...style, ...css }
-    }
+    // Generate the class name from sprinkles
+    const sprinklesClassName = Object.keys(sprinkleProps).length > 0
+      ? sprinkles(sprinkleProps as Sprinkles)
+      : undefined
 
     return React.createElement(
-      Component,
+      Component as React.ElementType,
       {
         ref,
-        className: clsx(sprinkles(sprinkleProps), className),
-        style: combinedStyle,
-        ...elementProps,
+        className: clsx(sprinklesClassName, className),
+        style,
+        ...htmlProps,
       },
       children
     )
@@ -58,49 +87,9 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
 
 Box.displayName = 'Box'
 
-// Helper to check if a prop is a valid sprinkles prop
-function isValidSprinklesProp(prop: string): boolean {
-  const sprinklesProps = new Set([
-    // Display & Layout
-    'display', 'flexDirection', 'flexWrap', 'justifyContent', 'alignItems', 'alignSelf',
-    'flexGrow', 'flexShrink', 'gridTemplateColumns', 'gap',
-
-    // Spacing
-    'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
-    'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-    'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my',
-    'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py',
-
-    // Typography
-    'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign',
-
-    // Position & Layout
-    'position', 'top', 'right', 'bottom', 'left', 'zIndex',
-
-    // Sizing
-    'width', 'height', 'minWidth', 'maxWidth', 'minHeight', 'maxHeight',
-    'w', 'h', 'size',
-
-    // Visual
-    'overflow', 'overflowX', 'overflowY', 'opacity',
-
-    // Borders
-    'borderRadius', 'borderTopLeftRadius', 'borderTopRightRadius',
-    'borderBottomLeftRadius', 'borderBottomRightRadius', 'rounded',
-    'borderWidth', 'borderStyle', 'borderColor',
-
-    // Colors
-    'color', 'backgroundColor', 'bg', 'bgColor',
-
-    // Effects
-    'boxShadow', 'outline', 'transition', 'transform',
-
-    // Interaction
-    'cursor', 'userSelect', 'pointerEvents',
-  ])
-
-  return sprinklesProps.has(prop)
-}
-
-// Export type for use in other components
-export type BoxVEProps = BoxProps
+// Export specific element type variants
+export type DivBoxProps = BoxProps & React.HTMLAttributes<HTMLDivElement>
+export type SpanBoxProps = BoxProps & React.HTMLAttributes<HTMLSpanElement>
+export type ButtonBoxProps = BoxProps & React.ButtonHTMLAttributes<HTMLButtonElement>
+export type SectionBoxProps = BoxProps & React.HTMLAttributes<HTMLElement>
+export type ArticleBoxProps = BoxProps & React.HTMLAttributes<HTMLElement>

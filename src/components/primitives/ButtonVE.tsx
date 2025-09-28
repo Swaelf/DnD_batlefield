@@ -1,66 +1,137 @@
 import React, { forwardRef } from 'react'
 import { clsx } from 'clsx'
-import { button, type ButtonVariants } from '@/styles/recipes/button.css'
+import { button } from '@/styles/recipes/button.css'
 
-export interface ButtonProps extends ButtonVariants {
-  children?: React.ReactNode
-  className?: string
-  disabled?: boolean
-  loading?: boolean
-  type?: 'button' | 'submit' | 'reset'
+// Exact button event handlers
+type ButtonEventHandlers = {
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onDoubleClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
   onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void
   onMouseUp?: (event: React.MouseEvent<HTMLButtonElement>) => void
   onMouseEnter?: (event: React.MouseEvent<HTMLButtonElement>) => void
   onMouseLeave?: (event: React.MouseEvent<HTMLButtonElement>) => void
   onFocus?: (event: React.FocusEvent<HTMLButtonElement>) => void
   onBlur?: (event: React.FocusEvent<HTMLButtonElement>) => void
-  'data-active'?: boolean
-  'data-loading'?: boolean
+  onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void
+  onKeyUp?: (event: React.KeyboardEvent<HTMLButtonElement>) => void
+  onKeyPress?: (event: React.KeyboardEvent<HTMLButtonElement>) => void
+}
+
+// ARIA attributes for button
+type ButtonAriaAttributes = {
   'aria-label'?: string
   'aria-pressed'?: boolean
   'aria-expanded'?: boolean
-  title?: string
-  id?: string
-  role?: string
-  tabIndex?: number
-  // Additional props for compatibility
-  css?: React.CSSProperties | Record<string, any>
-  style?: React.CSSProperties
+  'aria-describedby'?: string
+  'aria-labelledby'?: string
+  'aria-controls'?: string
+  'aria-haspopup'?: boolean | 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog'
+  'aria-current'?: boolean | 'page' | 'step' | 'location' | 'date' | 'time'
+  'aria-disabled'?: boolean
+  'aria-hidden'?: boolean
+  'aria-invalid'?: boolean | 'grammar' | 'spelling'
+  'aria-live'?: 'off' | 'polite' | 'assertive'
+  'aria-busy'?: boolean
+}
+
+// Data attributes for testing and state
+type ButtonDataAttributes = {
+  'data-active'?: boolean
+  'data-loading'?: boolean
+  'data-disabled'?: boolean
   'data-testid'?: string
   'data-test-id'?: string
+  'data-id'?: string
+  'data-state'?: string
 }
+
+// Pure Button component using only Vanilla Extract recipes
+export type ButtonProps = {
+  // Recipe variants
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'success'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon'
+  fullWidth?: boolean
+  children?: React.ReactNode
+  className?: string
+  disabled?: boolean
+  loading?: boolean
+
+  // HTML button attributes
+  type?: 'button' | 'submit' | 'reset'
+  form?: string
+  formAction?: string
+  formMethod?: 'get' | 'post'
+  formTarget?: '_blank' | '_self' | '_parent' | '_top'
+  formNoValidate?: boolean
+  name?: string
+  value?: string | number | readonly string[]
+  autoFocus?: boolean
+
+  // General HTML attributes
+  id?: string
+  role?: string
+  title?: string
+  tabIndex?: number
+  style?: React.CSSProperties
+} & ButtonEventHandlers & ButtonAriaAttributes & ButtonDataAttributes
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       children,
       className,
-      variant,
-      size,
-      fullWidth,
-      loading,
-      disabled,
+      variant = 'primary',
+      size = 'md',
+      fullWidth = false,
+      loading = false,
+      disabled = false,
       type = 'button',
-      css,
       style,
-      ...props
+      // Event handlers
+      onClick,
+      onDoubleClick,
+      onMouseDown,
+      onMouseUp,
+      onMouseEnter,
+      onMouseLeave,
+      onFocus,
+      onBlur,
+      onKeyDown,
+      onKeyUp,
+      onKeyPress,
+      // ARIA attributes
+      'aria-label': ariaLabel,
+      'aria-pressed': ariaPressed,
+      'aria-expanded': ariaExpanded,
+      'aria-describedby': ariaDescribedby,
+      'aria-labelledby': ariaLabelledby,
+      'aria-controls': ariaControls,
+      'aria-haspopup': ariaHaspopup,
+      'aria-current': ariaCurrent,
+      'aria-disabled': ariaDisabled,
+      'aria-hidden': ariaHidden,
+      'aria-invalid': ariaInvalid,
+      'aria-live': ariaLive,
+      'aria-busy': ariaBusy,
+      // Data attributes
+      'data-active': dataActive,
+      'data-loading': dataLoading,
+      'data-disabled': dataDisabled,
+      'data-testid': dataTestId,
+      'data-test-id': dataTestId2,
+      'data-id': dataId,
+      'data-state': dataState,
+      ...htmlProps
     },
     ref
   ) => {
-    // Handle CSS prop by converting it to inline styles (basic support)
-    let combinedStyle = style
-    if (css && typeof css === 'object') {
-      combinedStyle = { ...style, ...css }
-    }
+    const isDisabled = disabled || loading
 
     return (
       <button
         ref={ref}
         type={type}
-        disabled={disabled || loading}
-        data-loading={loading}
-        style={combinedStyle}
+        disabled={isDisabled}
         className={clsx(
           button({
             variant,
@@ -70,7 +141,39 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           }),
           className
         )}
-        {...props}
+        style={style}
+        onClick={isDisabled ? undefined : onClick}
+        onDoubleClick={isDisabled ? undefined : onDoubleClick}
+        onMouseDown={isDisabled ? undefined : onMouseDown}
+        onMouseUp={isDisabled ? undefined : onMouseUp}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onKeyDown={isDisabled ? undefined : onKeyDown}
+        onKeyUp={isDisabled ? undefined : onKeyUp}
+        onKeyPress={isDisabled ? undefined : onKeyPress}
+        aria-label={ariaLabel}
+        aria-pressed={ariaPressed}
+        aria-expanded={ariaExpanded}
+        aria-describedby={ariaDescribedby}
+        aria-labelledby={ariaLabelledby}
+        aria-controls={ariaControls}
+        aria-haspopup={ariaHaspopup}
+        aria-current={ariaCurrent}
+        aria-disabled={ariaDisabled || isDisabled}
+        aria-hidden={ariaHidden}
+        aria-invalid={ariaInvalid}
+        aria-live={ariaLive}
+        aria-busy={ariaBusy || loading}
+        data-active={dataActive}
+        data-loading={dataLoading || loading}
+        data-disabled={dataDisabled || isDisabled}
+        data-testid={dataTestId}
+        data-test-id={dataTestId2}
+        data-id={dataId}
+        data-state={dataState}
+        {...htmlProps}
       >
         {loading ? (
           <span className="inline-flex items-center gap-2">
@@ -87,13 +190,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = 'Button'
 
-// Loading spinner component
-const LoadingSpinner: React.FC = () => (
+// Loading spinner component with proper typing
+const LoadingSpinner = (): React.ReactElement => (
   <svg
     className="animate-spin h-4 w-4"
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    role="img"
+    aria-label="Loading"
   >
     <circle
       className="opacity-25"
@@ -112,17 +218,19 @@ const LoadingSpinner: React.FC = () => (
 )
 
 // Tool Button variant for toolbar usage
-export interface ToolButtonProps extends Omit<ButtonProps, 'variant' | 'size'> {
+export type ToolButtonProps = Omit<ButtonProps, 'variant' | 'size'> & {
   active?: boolean
+  tooltip?: string
 }
 
 export const ToolButton = forwardRef<HTMLButtonElement, ToolButtonProps>(
-  ({ active, className, ...props }, ref) => (
+  ({ active = false, tooltip, className, ...props }, ref) => (
     <Button
       ref={ref}
       variant={active ? 'primary' : 'outline'}
       size="icon"
       data-active={active}
+      title={tooltip}
       className={clsx(
         'transition-colors duration-150',
         active && 'shadow-md',
@@ -136,7 +244,7 @@ export const ToolButton = forwardRef<HTMLButtonElement, ToolButtonProps>(
 ToolButton.displayName = 'ToolButton'
 
 // Icon Button variant for icon-only buttons
-export interface IconButtonProps extends Omit<ButtonProps, 'children'> {
+export type IconButtonProps = Omit<ButtonProps, 'children'> & {
   icon: React.ReactNode
   'aria-label': string // Required for accessibility
 }
@@ -156,7 +264,46 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
 
 IconButton.displayName = 'IconButton'
 
-// Export types for use elsewhere
-export type ButtonVEProps = ButtonProps
-export type ToolButtonVEProps = ToolButtonProps
-export type IconButtonVEProps = IconButtonProps
+// Link Button variant that looks like a link
+export type LinkButtonProps = Omit<ButtonProps, 'variant'> & {
+  underline?: boolean
+}
+
+export const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
+  ({ underline = false, className, ...props }, ref) => (
+    <Button
+      ref={ref}
+      variant="ghost"
+      className={clsx(
+        'p-0 h-auto font-normal',
+        underline && 'underline',
+        'hover:underline',
+        className
+      )}
+      {...props}
+    />
+  )
+)
+
+LinkButton.displayName = 'LinkButton'
+
+// Submit Button variant with form handling
+export type SubmitButtonProps = Omit<ButtonProps, 'type'> & {
+  form?: string
+  formAction?: string
+}
+
+export const SubmitButton = forwardRef<HTMLButtonElement, SubmitButtonProps>(
+  ({ loading = false, children = 'Submit', ...props }, ref) => (
+    <Button
+      ref={ref}
+      type="submit"
+      loading={loading}
+      {...props}
+    >
+      {children}
+    </Button>
+  )
+)
+
+SubmitButton.displayName = 'SubmitButton'

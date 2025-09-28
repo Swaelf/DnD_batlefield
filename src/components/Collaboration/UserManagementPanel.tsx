@@ -1,32 +1,37 @@
 import React, { useCallback, useState } from 'react'
-import useCollaborationStore, { UserRole, CollaborativeUser } from '@/store/collaborationStore'
-import { Box, Text, Button, Select, Input, Modal, Avatar, Badge } from '@/components/ui'
 import {
   Users,
   UserPlus,
-  UserMinus,
   Crown,
   Shield,
   Eye,
-  Settings,
   Mail,
   Copy,
   Check,
   X,
-  Clock,
   Edit3,
   Trash2
 } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Input } from '@/components/ui/Input'
+import { FieldLabel } from '@/components/ui/FieldLabel'
+import { Modal } from '@/components/ui/Modal'
+import { Avatar } from '@/components/ui/Avatar'
+import { Badge } from '@/components/ui/Badge'
+import { useCollaborationStore } from '@/store/collaborationStore'
+import type { UserRole, CollaborativeUser } from '@/store/collaborationStore'
 
-interface UserManagementPanelProps {
+type UserManagementPanelProps = {
   isOpen: boolean
   onClose: () => void
 }
 
-export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
+export const UserManagementPanel = ({
   isOpen,
   onClose
-}) => {
+}: UserManagementPanelProps) => {
   const [showInviteDialog, setShowInviteDialog] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<UserRole>('player')
@@ -146,33 +151,45 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
     return '#F39C12'
   }, [])
 
+  const handleInviteEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setInviteEmail(e.target.value)
+  }, [])
+
+  const handleInviteRoleChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setInviteRole(e.target.value as UserRole)
+  }, [])
+
+  const handleNewUserNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewUserName(e.target.value)
+  }, [])
+
   if (!isOpen || !currentSession) return null
 
   return (
     <>
       {/* Backdrop */}
       <Box
-        css={{
+        onClick={onClose}
+        style={{
           position: 'fixed',
-          inset: 0,
+          inset: '0',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
           zIndex: 1000
         }}
-        onClick={onClose}
       />
 
       {/* Main Panel */}
       <Box
-        css={{
+        style={{
           position: 'fixed',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 700,
+          width: '700px',
           maxHeight: '80vh',
-          backgroundColor: '$dndBlack',
-          border: '1px solid $gray800',
-          borderRadius: '$md',
+          backgroundColor: 'var(--gray900)',
+          border: '1px solid var(--gray700)',
+          borderRadius: 'var(--radii-md)',
           zIndex: 1001,
           display: 'flex',
           flexDirection: 'column',
@@ -181,126 +198,135 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
       >
         {/* Header */}
         <Box
-          css={{
-            padding: '$4',
-            borderBottom: '1px solid $gray800',
+          style={{
+            padding: '16px',
+            borderBottom: '1px solid var(--gray700)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}
         >
-          <Box css={{ display: 'flex', alignItems: 'center', gap: '$3' }}>
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Users size={20} />
             <Text size="lg" weight="semibold">User Management</Text>
             <Badge variant="secondary">{users.length} users</Badge>
           </Box>
 
-          <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {canManageUsers && (
               <Button
                 size="sm"
                 onClick={() => setShowInviteDialog(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
               >
                 <UserPlus size={16} />
                 Invite User
               </Button>
             )}
 
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose}>
               <X size={16} />
             </Button>
           </Box>
         </Box>
 
         {/* Session Info */}
-        <Box css={{ padding: '$4', borderBottom: '1px solid $gray800' }}>
-          <Box css={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box style={{ padding: '16px', borderBottom: '1px solid var(--gray700)' }}>
+          <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
               <Text size="sm" weight="medium">Session: {currentSession.name}</Text>
-              <Text size="xs" color="gray400">
+              <Text size="xs" color="textSecondary">
                 Created {currentSession.createdAt.toLocaleDateString()} by {
                   connectedUsers.get(currentSession.createdBy)?.name || 'Unknown'
                 }
               </Text>
             </Box>
 
-            <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+            <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Button
                 size="xs"
                 variant="outline"
                 onClick={() => navigator.clipboard.writeText(currentSession.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
               >
                 <Copy size={14} />
                 Copy ID
               </Button>
 
-              <Text
-                size="xs"
-                css={{
-                  padding: '$1 $2',
-                  backgroundColor: currentSession.isActive ? '$success' : '$gray700',
+              <Box
+                style={{
+                  padding: '4px 8px',
+                  backgroundColor: currentSession.isActive ? 'var(--success)' : 'var(--gray700)',
                   color: 'white',
-                  borderRadius: '$xs'
+                  borderRadius: 'var(--radii-xs)',
+                  fontSize: '12px'
                 }}
               >
                 {currentSession.isActive ? 'Active' : 'Inactive'}
-              </Text>
+              </Box>
             </Box>
           </Box>
         </Box>
 
         {/* Users List */}
-        <Box css={{ flex: 1, overflow: 'auto' }}>
-          <Box css={{ padding: '$4' }}>
+        <Box style={{ flex: 1, overflow: 'auto' }}>
+          <Box style={{ padding: '16px' }}>
             {/* Current User */}
             {currentUser && (
-              <Box css={{ marginBottom: '$4' }}>
-                <Text size="sm" weight="medium" css={{ marginBottom: '$2' }}>
+              <Box marginBottom={4}>
+                <Text size="sm" weight="medium">
                   You ({roleConfig[currentUser.role].name})
                 </Text>
 
                 <Box
-                  css={{
+                  style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '$3',
-                    padding: '$3',
-                    backgroundColor: '$gray800',
-                    borderRadius: '$md',
-                    border: '2px solid $primary'
+                    gap: '12px',
+                    padding: '12px',
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: 'var(--radii-md)',
+                    border: '2px solid var(--primary)'
                   }}
                 >
                   <Avatar
                     size="md"
-                    css={{
+                    fallback={currentUser.name.charAt(0)}
+                    style={{
                       backgroundColor: currentUser.color,
                       color: 'white'
                     }}
-                  >
-                    {currentUser.name.charAt(0)}
-                  </Avatar>
+                  />
 
-                  <Box css={{ flex: 1 }}>
-                    <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+                  <Box style={{ flex: 1 }}>
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Text size="sm" weight="medium">{currentUser.name}</Text>
                       {roleConfig[currentUser.role].icon}
                       <Badge
-                        variant="default"
-                        css={{ backgroundColor: roleConfig[currentUser.role].color }}
+                        variant="primary"
+                        style={{ backgroundColor: roleConfig[currentUser.role].color }}
                       >
                         {roleConfig[currentUser.role].name}
                       </Badge>
                     </Box>
 
-                    <Text size="xs" color="gray400">
+                    <Text size="xs" color="textSecondary">
                       {getUserStatus(currentUser)} • Joined {currentUser.lastSeen.toLocaleTimeString()}
                     </Text>
                   </Box>
 
                   <Box
-                    css={{
-                      width: 12,
-                      height: 12,
+                    style={{
+                      width: '12px',
+                      height: '12px',
                       borderRadius: '50%',
                       backgroundColor: getActivityColor(currentUser)
                     }}
@@ -312,45 +338,43 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
             {/* Other Users */}
             {users.filter(user => user.id !== currentUser?.id).length > 0 && (
               <Box>
-                <Text size="sm" weight="medium" css={{ marginBottom: '$2' }}>
+                <Text size="sm" weight="medium">
                   Other Users ({users.filter(user => user.id !== currentUser?.id).length})
                 </Text>
 
-                <Box css={{ display: 'flex', flexDirection: 'column', gap: '$2' }}>
+                <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {users
                     .filter(user => user.id !== currentUser?.id)
                     .map(user => (
                       <Box
                         key={user.id}
-                        css={{
+                        style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '$3',
-                          padding: '$3',
-                          backgroundColor: '$gray900',
-                          borderRadius: '$md',
-                          border: '1px solid $gray700'
+                          gap: '12px',
+                          padding: '12px',
+                          backgroundColor: 'var(--gray800)',
+                          borderRadius: 'var(--radii-md)',
+                          border: '1px solid var(--gray700)'
                         }}
                       >
                         <Avatar
                           size="sm"
-                          css={{
+                          fallback={user.name.charAt(0)}
+                          style={{
                             backgroundColor: user.color,
                             color: 'white'
                           }}
-                        >
-                          {user.name.charAt(0)}
-                        </Avatar>
+                        />
 
-                        <Box css={{ flex: 1 }}>
-                          <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+                        <Box style={{ flex: 1 }}>
+                          <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             {editingUser === user.id ? (
-                              <Box css={{ display: 'flex', alignItems: 'center', gap: '$1' }}>
+                              <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <Input
                                   value={newUserName}
-                                  onChange={(e) => setNewUserName(e.target.value)}
-                                  size="xs"
-                                  css={{ width: 120 }}
+                                  onChange={handleNewUserNameChange}
+                                  style={{ width: '120px' }}
                                 />
                                 <Button
                                   size="xs"
@@ -384,39 +408,46 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                             {roleConfig[user.role].icon}
                           </Box>
 
-                          <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                            <Text size="xs" color="gray400">
+                          <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Text size="xs" color="textSecondary">
                               {getUserStatus(user)} • {user.lastSeen.toLocaleTimeString()}
                             </Text>
 
                             {user.selection?.objectIds && user.selection.objectIds.length > 0 && (
-                              <Badge variant="outline" size="xs">
+                              <Badge variant="outline" size="sm">
                                 {user.selection.objectIds.length} selected
                               </Badge>
                             )}
                           </Box>
                         </Box>
 
-                        <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+                        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <Box
-                            css={{
-                              width: 8,
-                              height: 8,
+                            style={{
+                              width: '8px',
+                              height: '8px',
                               borderRadius: '50%',
                               backgroundColor: getActivityColor(user)
                             }}
                           />
 
                           {canManageUsers && (
-                            <Select
+                            <select
                               value={user.role}
-                              onValueChange={(newRole: UserRole) => handleRoleChange(user.id, newRole)}
-                              size="xs"
+                              onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
+                              style={{
+                                padding: '4px 8px',
+                                backgroundColor: 'var(--gray700)',
+                                border: '1px solid var(--gray600)',
+                                borderRadius: 'var(--radii-sm)',
+                                color: 'var(--white)',
+                                fontSize: '12px'
+                              }}
                             >
                               <option value="gm">GM</option>
                               <option value="player">Player</option>
                               <option value="observer">Observer</option>
-                            </Select>
+                            </select>
                           )}
 
                           {canManageUsers && user.id !== currentSession.createdBy && (
@@ -424,7 +455,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                               size="xs"
                               variant="ghost"
                               onClick={() => handleRemoveUser(user.id, user.name)}
-                              css={{ color: '$error' }}
+                              style={{ color: 'var(--error)' }}
                             >
                               <Trash2 size={14} />
                             </Button>
@@ -440,39 +471,39 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
 
         {/* Session Statistics */}
         <Box
-          css={{
-            padding: '$4',
-            borderTop: '1px solid $gray800',
-            backgroundColor: '$gray900'
+          style={{
+            padding: '16px',
+            borderTop: '1px solid var(--gray700)',
+            backgroundColor: 'var(--gray800)'
           }}
         >
-          <Box css={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '$4' }}>
-            <Box css={{ textAlign: 'center' }}>
+          <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+            <Box style={{ textAlign: 'center' }}>
               <Text size="lg" weight="bold" color="primary">
                 {users.filter(u => u.isOnline).length}
               </Text>
-              <Text size="xs" color="gray400">Online</Text>
+              <Text size="xs" color="textSecondary">Online</Text>
             </Box>
 
-            <Box css={{ textAlign: 'center' }}>
+            <Box style={{ textAlign: 'center' }}>
               <Text size="lg" weight="bold" color="success">
                 {users.filter(u => u.cursor?.visible).length}
               </Text>
-              <Text size="xs" color="gray400">Active</Text>
+              <Text size="xs" color="textSecondary">Active</Text>
             </Box>
 
-            <Box css={{ textAlign: 'center' }}>
+            <Box style={{ textAlign: 'center' }}>
               <Text size="lg" weight="bold" color="warning">
                 {users.filter(u => u.role === 'gm').length}
               </Text>
-              <Text size="xs" color="gray400">GMs</Text>
+              <Text size="xs" color="textSecondary">GMs</Text>
             </Box>
 
-            <Box css={{ textAlign: 'center' }}>
+            <Box style={{ textAlign: 'center' }}>
               <Text size="lg" weight="bold" color="secondary">
                 {currentSession.maxUsers - users.length}
               </Text>
-              <Text size="xs" color="gray400">Slots Left</Text>
+              <Text size="xs" color="textSecondary">Slots Left</Text>
             </Box>
           </Box>
         </Box>
@@ -482,70 +513,131 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
       <Modal
         isOpen={showInviteDialog}
         onClose={() => setShowInviteDialog(false)}
-        title="Invite User"
       >
-        <Box css={{ display: 'flex', flexDirection: 'column', gap: '$4' }}>
-          <Box>
-            <Text size="sm" css={{ marginBottom: '$2' }}>Email Address:</Text>
-            <Input
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="user@example.com"
-              fullWidth
-              autoFocus
-            />
+        <Box
+          style={{
+            width: '400px',
+            maxHeight: '80vh',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          {/* Header */}
+          <Box
+            padding={4}
+            style={{
+              borderBottom: '1px solid var(--gray700)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <Mail size={20} />
+            <Text size="lg" weight="semibold">
+              Invite User
+            </Text>
           </Box>
 
-          <Box>
-            <Text size="sm" css={{ marginBottom: '$2' }}>Role:</Text>
-            <Select
-              value={inviteRole}
-              onValueChange={(role: UserRole) => setInviteRole(role)}
-            >
-              <option value="observer">Observer</option>
-              <option value="player">Player</option>
-              <option value="gm">Game Master</option>
-            </Select>
-
-            {/* Role Description */}
-            <Box
-              css={{
-                marginTop: '$2',
-                padding: '$3',
-                backgroundColor: '$gray800',
-                borderRadius: '$sm'
-              }}
-            >
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', marginBottom: '$2' }}>
-                {roleConfig[inviteRole].icon}
-                <Text size="sm" weight="medium">{roleConfig[inviteRole].name}</Text>
+          {/* Content */}
+          <Box
+            padding={4}
+            style={{
+              flex: 1,
+              overflow: 'auto'
+            }}
+          >
+            <Box style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <Box>
+                <FieldLabel htmlFor="inviteEmail">Email Address</FieldLabel>
+                <Input
+                  id="inviteEmail"
+                  value={inviteEmail}
+                  onChange={handleInviteEmailChange}
+                  placeholder="user@example.com"
+                  autoFocus
+                />
               </Box>
 
-              <Text size="xs" color="gray400" css={{ marginBottom: '$2' }}>
-                {roleConfig[inviteRole].description}
-              </Text>
+              <Box>
+                <FieldLabel htmlFor="inviteRole">Role</FieldLabel>
+                <select
+                  id="inviteRole"
+                  value={inviteRole}
+                  onChange={handleInviteRoleChange}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    backgroundColor: 'var(--gray700)',
+                    border: '1px solid var(--gray600)',
+                    borderRadius: 'var(--radii-md)',
+                    color: 'var(--white)',
+                    fontSize: '14px'
+                  }}
+                >
+                  <option value="observer">Observer</option>
+                  <option value="player">Player</option>
+                  <option value="gm">Game Master</option>
+                </select>
 
-              <Text size="xs" css={{ fontWeight: 'medium', marginBottom: '$1' }}>Permissions:</Text>
-              {roleConfig[inviteRole].permissions.map((permission, index) => (
-                <Text key={index} size="xs" color="gray300" css={{ display: 'block' }}>
-                  • {permission}
-                </Text>
-              ))}
+                {/* Role Description */}
+                <Box
+                  marginTop={2}
+                  padding={3}
+                  style={{
+                    backgroundColor: 'var(--gray800)',
+                    borderRadius: 'var(--radii-sm)'
+                  }}
+                >
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }} marginBottom={2}>
+                    {roleConfig[inviteRole].icon}
+                    <Text size="sm" weight="medium">{roleConfig[inviteRole].name}</Text>
+                  </Box>
+
+                  <Text size="xs" color="textSecondary">
+                    {roleConfig[inviteRole].description}
+                  </Text>
+
+                  <Text size="xs" weight="medium">Permissions:</Text>
+                  {roleConfig[inviteRole].permissions.map((permission, index) => (
+                    <Text key={index} size="xs" color="textTertiary" style={{ display: 'block' }}>
+                      • {permission}
+                    </Text>
+                  ))}
+                </Box>
+              </Box>
             </Box>
           </Box>
 
-          <Box css={{ display: 'flex', justifyContent: 'flex-end', gap: '$2' }}>
+          {/* Footer */}
+          <Box
+            padding={4}
+            style={{
+              borderTop: '1px solid var(--gray700)',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '8px'
+            }}
+          >
             <Button
               variant="outline"
               onClick={() => setShowInviteDialog(false)}
+              size="sm"
             >
               Cancel
             </Button>
             <Button
               onClick={handleInviteUser}
               disabled={!inviteEmail.trim()}
+              variant="primary"
+              size="sm"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
             >
-              <Mail size={16} />
+              <Mail size={14} />
               Send Invitation
             </Button>
           </Box>

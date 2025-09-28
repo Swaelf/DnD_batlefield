@@ -1,6 +1,9 @@
-import React, { useState, useCallback, useRef } from 'react'
-import { Box, Text, Button } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+/**
+ * Advanced Layer Panel Component
+ * Professional layer management system with drag-and-drop reordering
+ */
+
+import React, { useState, useCallback, useMemo } from 'react'
 import {
   Eye,
   EyeOff,
@@ -11,185 +14,28 @@ import {
   Plus,
   Trash2,
   Copy,
-  Move,
   Layers,
-  Palette,
-  Settings,
-  MoreVertical,
   GripVertical
 } from 'lucide-react'
-import { useLayerStore, LayerDefinition } from '@store/layerStore'
-import useMapStore from '@store/mapStore'
-import { useDragAndDrop } from '@hooks/useDragAndDrop'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Input } from '@/components/ui/Input'
+import type { LayerDefinition } from '@/store/layerStore'
+import { useLayerStore } from '@/store/layerStore'
+import useMapStore from '@/store/mapStore'
 
-const PanelContainer = styled(Box, {
-  width: 280,
-  height: '100%',
-  backgroundColor: '$dndBlack',
-  borderLeft: '1px solid $gray800',
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden'
-})
-
-const PanelHeader = styled(Box, {
-  padding: '$4',
-  borderBottom: '1px solid $gray800',
-  backgroundColor: '$gray900',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between'
-})
-
-const LayersContainer = styled(Box, {
-  flex: 1,
-  overflow: 'auto',
-  padding: '$2'
-})
-
-const LayerItem = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  padding: '$2',
-  marginBottom: '$1',
-  borderRadius: '$sm',
-  backgroundColor: '$gray800',
-  border: '1px solid transparent',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    backgroundColor: '$gray700',
-    borderColor: '$gray600'
-  },
-
-  variants: {
-    selected: {
-      true: {
-        backgroundColor: '$secondary',
-        color: '$dndBlack',
-        borderColor: '$secondary',
-
-        '&:hover': {
-          backgroundColor: '$secondary'
-        }
-      }
-    },
-    isDragging: {
-      true: {
-        opacity: 0.5,
-        transform: 'rotate(5deg)',
-        zIndex: 1000
-      }
-    },
-    isDropTarget: {
-      true: {
-        borderColor: '$primary',
-        borderStyle: 'dashed',
-        backgroundColor: 'rgba(201, 173, 106, 0.1)'
-      }
-    }
-  }
-})
-
-const LayerPreview = styled(Box, {
-  width: 24,
-  height: 24,
-  borderRadius: '$xs',
-  border: '1px solid $gray600',
-  marginRight: '$2',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '$xs',
-  flexShrink: 0
-})
-
-const LayerName = styled(Text, {
-  flex: 1,
-  fontSize: '$sm',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap'
-})
-
-const LayerControls = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  opacity: 0,
-  transition: 'opacity 0.2s ease',
-
-  '$LayerItem:hover &': {
-    opacity: 1
-  }
-})
-
-const IconButton = styled(Button, {
-  width: 24,
-  height: 24,
-  padding: 0,
-  minWidth: 'unset',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$primary',
-        color: '$white'
-      }
-    }
-  }
-})
-
-const OpacitySlider = styled('input', {
-  width: '100%',
-  height: 4,
-  borderRadius: 2,
-  background: '$gray700',
-  outline: 'none',
-  appearance: 'none',
-
-  '&::-webkit-slider-thumb': {
-    appearance: 'none',
-    width: 12,
-    height: 12,
-    borderRadius: '50%',
-    background: '$secondary',
-    cursor: 'pointer'
-  },
-
-  '&::-moz-range-thumb': {
-    width: 12,
-    height: 12,
-    borderRadius: '50%',
-    background: '$secondary',
-    cursor: 'pointer',
-    border: 'none'
-  }
-})
-
-const LayerStats = styled(Box, {
-  padding: '$3',
-  backgroundColor: '$gray800',
-  borderRadius: '$sm',
-  marginBottom: '$3'
-})
-
-interface AdvancedLayerPanelProps {
+export type AdvancedLayerPanelProps = {
   onLayerChange?: (layerId: string) => void
 }
 
-export const AdvancedLayerPanel: React.FC<AdvancedLayerPanelProps> = ({
-  onLayerChange
-}) => {
+export const AdvancedLayerPanel: React.FC<AdvancedLayerPanelProps> = ({ onLayerChange }) => {
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null)
   const [expandedLayers, setExpandedLayers] = useState<Set<string>>(new Set())
   const [draggedLayer, setDraggedLayer] = useState<string | null>(null)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
-  const [showLayerSettings, setShowLayerSettings] = useState<string | null>(null)
+  const [editingLayerId, setEditingLayerId] = useState<string | null>(null)
+  const [editingName, setEditingName] = useState('')
 
   const {
     layers,
@@ -198,329 +44,464 @@ export const AdvancedLayerPanel: React.FC<AdvancedLayerPanelProps> = ({
     updateLayer,
     reorderLayers,
     duplicateLayer,
-    mergeLayer
   } = useLayerStore()
 
   const currentMap = useMapStore(state => state.currentMap)
-  const selectedObjects = useMapStore(state => state.selectedObjects)
 
   // Calculate layer statistics
   const getLayerStats = useCallback((layer: LayerDefinition) => {
     if (!currentMap) return { objectCount: 0, types: {} }
 
-    const layerObjects = currentMap.objects.filter(obj =>
-      obj.layerId === layer.id || obj.layer === layer.zIndex
-    )
-
-    const typeCount = layerObjects.reduce((acc, obj) => {
+    const layerObjects = currentMap.objects.filter(obj => obj.layer === layer.zIndex)
+    const objectCount = layerObjects.length
+    const types = layerObjects.reduce((acc: Record<string, number>, obj) => {
       acc[obj.type] = (acc[obj.type] || 0) + 1
       return acc
-    }, {} as Record<string, number>)
+    }, {})
 
-    return {
-      objectCount: layerObjects.length,
-      types: typeCount
-    }
+    return { objectCount, types }
   }, [currentMap])
 
-  // Handle layer drag and drop
-  const handleDragStart = useCallback((layerId: string, e: React.DragEvent) => {
-    setDraggedLayer(layerId)
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/plain', layerId)
-  }, [])
+  // Event handlers
+  const handleLayerClick = useCallback((layerId: string) => {
+    setSelectedLayerId(layerId)
+    onLayerChange?.(layerId)
+  }, [onLayerChange])
 
-  const handleDragOver = useCallback((layerId: string, e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    setDropTarget(layerId)
-  }, [])
-
-  const handleDragLeave = useCallback(() => {
-    setDropTarget(null)
-  }, [])
-
-  const handleDrop = useCallback((targetLayerId: string, e: React.DragEvent) => {
-    e.preventDefault()
-    const draggedLayerId = e.dataTransfer.getData('text/plain')
-
-    if (draggedLayerId && draggedLayerId !== targetLayerId) {
-      // Reorder layers
-      const draggedIndex = layers.findIndex(l => l.id === draggedLayerId)
-      const targetIndex = layers.findIndex(l => l.id === targetLayerId)
-
-      if (draggedIndex !== -1 && targetIndex !== -1) {
-        reorderLayers(draggedLayerId, targetIndex)
+  const handleToggleExpanded = useCallback((layerId: string) => {
+    setExpandedLayers(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(layerId)) {
+        newSet.delete(layerId)
+      } else {
+        newSet.add(layerId)
       }
-    }
+      return newSet
+    })
+  }, [])
 
-    setDraggedLayer(null)
-    setDropTarget(null)
-  }, [layers, reorderLayers])
-
-  // Layer visibility toggle
-  const toggleLayerVisibility = useCallback((layerId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleToggleVisibility = useCallback((layerId: string) => {
     const layer = layers.find(l => l.id === layerId)
     if (layer) {
       updateLayer(layerId, { visible: !layer.visible })
     }
   }, [layers, updateLayer])
 
-  // Layer lock toggle
-  const toggleLayerLock = useCallback((layerId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleToggleLock = useCallback((layerId: string) => {
     const layer = layers.find(l => l.id === layerId)
     if (layer) {
       updateLayer(layerId, { locked: !layer.locked })
     }
   }, [layers, updateLayer])
 
-  // Layer opacity change
-  const handleOpacityChange = useCallback((layerId: string, opacity: number) => {
-    updateLayer(layerId, { opacity })
-  }, [updateLayer])
-
-  // Create new layer
   const handleCreateLayer = useCallback(() => {
-    const newLayer = createLayer({
-      name: `Layer ${layers.length + 1}`,
+    const newLayerName = `Layer ${layers.length + 1}`
+    createLayer({
+      name: newLayerName,
       visible: true,
       locked: false,
       opacity: 1,
-      color: '#C9AD6A',
-      zIndex: Math.max(...layers.map(l => l.zIndex), 0) + 1
+      blendMode: 'normal',
     })
-    setSelectedLayerId(newLayer.id)
-    onLayerChange?.(newLayer.id)
-  }, [layers, createLayer, onLayerChange])
+  }, [layers.length, createLayer])
 
-  // Delete layer
-  const handleDeleteLayer = useCallback((layerId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    deleteLayer(layerId)
-    if (selectedLayerId === layerId) {
-      setSelectedLayerId(null)
+  const handleDeleteLayer = useCallback((layerId: string) => {
+    if (layers.length > 1) { // Prevent deleting the last layer
+      deleteLayer(layerId)
+      if (selectedLayerId === layerId) {
+        setSelectedLayerId(null)
+      }
     }
-  }, [deleteLayer, selectedLayerId])
+  }, [layers.length, deleteLayer, selectedLayerId])
 
-  // Duplicate layer
-  const handleDuplicateLayer = useCallback((layerId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleDuplicateLayer = useCallback((layerId: string) => {
     duplicateLayer(layerId)
   }, [duplicateLayer])
 
-  // Select layer
-  const handleSelectLayer = useCallback((layerId: string) => {
-    setSelectedLayerId(layerId)
-    onLayerChange?.(layerId)
-  }, [onLayerChange])
+  const handleStartEditName = useCallback((layer: LayerDefinition) => {
+    setEditingLayerId(layer.id)
+    setEditingName(layer.name)
+  }, [])
 
-  // Toggle layer expansion
-  const toggleLayerExpansion = useCallback((layerId: string) => {
-    const newExpanded = new Set(expandedLayers)
-    if (newExpanded.has(layerId)) {
-      newExpanded.delete(layerId)
-    } else {
-      newExpanded.add(layerId)
+  const handleSaveLayerName = useCallback(() => {
+    if (editingLayerId && editingName.trim()) {
+      updateLayer(editingLayerId, { name: editingName.trim() })
     }
-    setExpandedLayers(newExpanded)
-  }, [expandedLayers])
+    setEditingLayerId(null)
+    setEditingName('')
+  }, [editingLayerId, editingName, updateLayer])
+
+  const handleCancelEditName = useCallback(() => {
+    setEditingLayerId(null)
+    setEditingName('')
+  }, [])
+
+  // Drag and drop handlers
+  const handleDragStart = useCallback((layerId: string) => {
+    setDraggedLayer(layerId)
+  }, [])
+
+  const handleDragEnd = useCallback(() => {
+    if (draggedLayer && dropTarget && draggedLayer !== dropTarget) {
+      const draggedIndex = layers.findIndex(l => l.id === draggedLayer)
+      const targetIndex = layers.findIndex(l => l.id === dropTarget)
+
+      if (draggedIndex !== -1 && targetIndex !== -1) {
+        reorderLayers(draggedLayer, targetIndex)
+      }
+    }
+    setDraggedLayer(null)
+    setDropTarget(null)
+  }, [draggedLayer, dropTarget, layers, reorderLayers])
+
+  const handleDragOver = useCallback((e: React.DragEvent, layerId: string) => {
+    e.preventDefault()
+    setDropTarget(layerId)
+  }, [])
+
+  // Sorted layers by order
+  const sortedLayers = useMemo(() => {
+    return [...layers].sort((a, b) => b.zIndex - a.zIndex) // Higher zIndex = on top
+  }, [layers])
 
   return (
-    <PanelContainer>
-      <PanelHeader>
-        <Box display="flex" alignItems="center" gap="$2">
-          <Layers size={16} />
-          <Text size="sm" weight="semibold" color="secondary">
+    <Box
+      style={{
+        width: '280px',
+        height: '100%',
+        backgroundColor: 'var(--colors-dndBlack)',
+        borderLeft: '1px solid var(--colors-gray700)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Panel Header */}
+      <Box
+        style={{
+          padding: '16px',
+          borderBottom: '1px solid var(--colors-gray700)',
+          backgroundColor: 'var(--colors-gray800)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}
+      >
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Layers size={16} color="var(--colors-purple400)" />
+          <Text
+            variant="heading"
+            size="sm"
+            style={{
+              margin: 0,
+              fontWeight: '500',
+              color: 'var(--colors-gray100)'
+            }}
+          >
             Layers
           </Text>
         </Box>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleCreateLayer}
+          title="Add new layer"
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            padding: '8px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            color: 'var(--colors-gray400)'
+          }}
+        >
+          <Plus size={14} />
+        </Button>
+      </Box>
 
-        <Box display="flex" alignItems="center" gap="$1">
-          <IconButton onClick={handleCreateLayer} title="Create New Layer">
-            <Plus size={14} />
-          </IconButton>
-          <IconButton title="Layer Settings">
-            <Settings size={14} />
-          </IconButton>
-        </Box>
-      </PanelHeader>
+      {/* Layers Container */}
+      <Box
+        style={{
+          flex: 1,
+          overflow: 'auto',
+          padding: '8px'
+        }}
+      >
+        {sortedLayers.map((layer) => {
+          const stats = getLayerStats(layer)
+          const isSelected = selectedLayerId === layer.id
+          const isExpanded = expandedLayers.has(layer.id)
+          const isEditing = editingLayerId === layer.id
+          const isDragging = draggedLayer === layer.id
+          const isDropTarget = dropTarget === layer.id
 
-      <LayersContainer>
-        {/* Layer Statistics */}
-        {selectedLayerId && (
-          <LayerStats>
-            {(() => {
-              const layer = layers.find(l => l.id === selectedLayerId)
-              const stats = layer ? getLayerStats(layer) : null
-              return stats ? (
-                <>
-                  <Text size="xs" weight="semibold" color="secondary">
-                    {layer?.name} ({stats.objectCount} objects)
-                  </Text>
-                  <Box marginTop="$1">
-                    {Object.entries(stats.types).map(([type, count]) => (
-                      <Box key={type} display="flex" justifyContent="space-between">
-                        <Text size="xs" css={{ textTransform: 'capitalize' }}>{type}:</Text>
-                        <Text size="xs" color="gray400">{count}</Text>
-                      </Box>
-                    ))}
-                  </Box>
-                </>
-              ) : null
-            })()}
-          </LayerStats>
-        )}
+          return (
+            <Box
+              key={layer.id}
+              draggable
+              onDragStart={() => handleDragStart(layer.id)}
+              onDragEnd={handleDragEnd}
+              onDragOver={(e) => handleDragOver(e, layer.id)}
+              onClick={() => handleLayerClick(layer.id)}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '8px',
+                marginBottom: '4px',
+                borderRadius: '6px',
+                backgroundColor: isSelected ? 'var(--colors-gray700)' : 'var(--colors-gray800)',
+                border: `1px solid ${
+                  isDropTarget ? 'var(--colors-dndGold)' : 'transparent'
+                }`,
+                cursor: 'pointer',
+                opacity: isDragging ? 0.5 : 1,
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+                }
+              }}
+            >
+              {/* Layer Header Row */}
+              <Box style={{ display: 'flex', alignItems: 'center' }}>
+                {/* Drag Handle */}
+                <Box style={{ marginRight: '8px', color: 'var(--colors-gray400)' }}>
+                  <GripVertical size={12} />
+                </Box>
 
-        {/* Layer List */}
-        {layers
-          .sort((a, b) => b.zIndex - a.zIndex) // Sort by z-index descending (top to bottom)
-          .map((layer) => {
-            const isExpanded = expandedLayers.has(layer.id)
-            const stats = getLayerStats(layer)
-
-            return (
-              <Box key={layer.id}>
-                <LayerItem
-                  selected={selectedLayerId === layer.id}
-                  isDragging={draggedLayer === layer.id}
-                  isDropTarget={dropTarget === layer.id}
-                  onClick={() => handleSelectLayer(layer.id)}
-                  onDragStart={(e) => handleDragStart(layer.id, e)}
-                  onDragOver={(e) => handleDragOver(layer.id, e)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(layer.id, e)}
-                  draggable={true}
+                {/* Expand/Collapse */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleToggleExpanded(layer.id)
+                  }}
+                  style={{
+                    minWidth: '20px',
+                    padding: '2px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--colors-gray400)'
+                  }}
                 >
-                  {/* Drag Handle */}
-                  <GripVertical size={12} color="gray" style={{ marginRight: 4, cursor: 'grab' }} />
+                  {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                </Button>
 
-                  {/* Expand/Collapse */}
-                  <IconButton
+                {/* Layer Name */}
+                <Box style={{ flex: 1, marginLeft: '4px' }}>
+                  {isEditing ? (
+                    <Input
+                      value={editingName}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingName(e.target.value)}
+                      onBlur={handleSaveLayerName}
+                      onKeyDown={(e: React.KeyboardEvent) => {
+                        if (e.key === 'Enter') {
+                          handleSaveLayerName()
+                        } else if (e.key === 'Escape') {
+                          handleCancelEditName()
+                        }
+                      }}
+                      style={{ fontSize: '12px' }}
+                      autoFocus
+                    />
+                  ) : (
+                    <Box
+                      onDoubleClick={() => handleStartEditName(layer)}
+                      style={{
+                        cursor: 'text'
+                      }}
+                    >
+                      <Text
+                        variant="body"
+                        size="xs"
+                        style={{
+                          margin: 0,
+                          fontWeight: '500',
+                          color: layer.visible ? 'var(--colors-gray100)' : 'var(--colors-gray500)',
+                          opacity: layer.locked ? 0.7 : 1
+                        }}
+                      >
+                        {layer.name}
+                      </Text>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Controls */}
+                <Box style={{ display: 'flex', gap: '4px', marginLeft: '8px' }}>
+                  {/* Visibility Toggle */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation()
-                      toggleLayerExpansion(layer.id)
+                      handleToggleVisibility(layer.id)
+                    }}
+                    title={layer.visible ? 'Hide layer' : 'Show layer'}
+                    style={{
+                      minWidth: '20px',
+                      padding: '2px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: layer.visible ? 'var(--colors-blue400)' : 'var(--colors-gray500)'
                     }}
                   >
-                    {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                  </IconButton>
+                    {layer.visible ? <Eye size={12} /> : <EyeOff size={12} />}
+                  </Button>
 
-                  {/* Layer Preview */}
-                  <LayerPreview style={{ backgroundColor: layer.color || '#C9AD6A' }}>
-                    <Text size="xs" color="white" weight="bold">
-                      {stats.objectCount}
-                    </Text>
-                  </LayerPreview>
+                  {/* Lock Toggle */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleToggleLock(layer.id)
+                    }}
+                    title={layer.locked ? 'Unlock layer' : 'Lock layer'}
+                    style={{
+                      minWidth: '20px',
+                      padding: '2px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: layer.locked ? 'var(--colors-orange400)' : 'var(--colors-gray500)'
+                    }}
+                  >
+                    {layer.locked ? <Lock size={12} /> : <Unlock size={12} />}
+                  </Button>
 
-                  {/* Layer Name */}
-                  <LayerName>{layer.name}</LayerName>
+                  {/* Duplicate */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDuplicateLayer(layer.id)
+                    }}
+                    title="Duplicate layer"
+                    style={{
+                      minWidth: '20px',
+                      padding: '2px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--colors-gray400)'
+                    }}
+                  >
+                    <Copy size={12} />
+                  </Button>
 
-                  {/* Layer Controls */}
-                  <LayerControls>
-                    <IconButton
-                      active={layer.visible}
-                      onClick={(e) => toggleLayerVisibility(layer.id, e)}
-                      title={layer.visible ? 'Hide Layer' : 'Show Layer'}
-                    >
-                      {layer.visible ? <Eye size={12} /> : <EyeOff size={12} />}
-                    </IconButton>
-
-                    <IconButton
-                      active={layer.locked}
-                      onClick={(e) => toggleLayerLock(layer.id, e)}
-                      title={layer.locked ? 'Unlock Layer' : 'Lock Layer'}
-                    >
-                      {layer.locked ? <Lock size={12} /> : <Unlock size={12} />}
-                    </IconButton>
-
-                    <IconButton
-                      onClick={(e) => handleDuplicateLayer(layer.id, e)}
-                      title="Duplicate Layer"
-                    >
-                      <Copy size={12} />
-                    </IconButton>
-
-                    <IconButton
-                      onClick={(e) => handleDeleteLayer(layer.id, e)}
-                      title="Delete Layer"
+                  {/* Delete */}
+                  {layers.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteLayer(layer.id)
+                      }}
+                      title="Delete layer"
+                      style={{
+                        minWidth: '20px',
+                        padding: '2px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'var(--colors-red400)'
+                      }}
                     >
                       <Trash2 size={12} />
-                    </IconButton>
-                  </LayerControls>
-                </LayerItem>
-
-                {/* Expanded Layer Details */}
-                {isExpanded && (
-                  <Box paddingLeft="$6" paddingRight="$2" marginBottom="$2">
-                    {/* Opacity Slider */}
-                    <Box marginBottom="$2">
-                      <Text size="xs" color="gray400" marginBottom="$1">
-                        Opacity: {Math.round((layer.opacity || 1) * 100)}%
-                      </Text>
-                      <OpacitySlider
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={layer.opacity || 1}
-                        onChange={(e) => handleOpacityChange(layer.id, parseFloat(e.target.value))}
-                      />
-                    </Box>
-
-                    {/* Layer Color */}
-                    <Box display="flex" alignItems="center" gap="$2" marginBottom="$2">
-                      <Text size="xs" color="gray400">Color:</Text>
-                      <input
-                        type="color"
-                        value={layer.color || '#C9AD6A'}
-                        onChange={(e) => updateLayer(layer.id, { color: e.target.value })}
-                        style={{
-                          width: 20,
-                          height: 20,
-                          border: 'none',
-                          borderRadius: 4,
-                          cursor: 'pointer'
-                        }}
-                      />
-                    </Box>
-
-                    {/* Object Types in Layer */}
-                    {Object.entries(stats.types).length > 0 && (
-                      <Box>
-                        <Text size="xs" color="gray400" marginBottom="$1">Objects:</Text>
-                        {Object.entries(stats.types).map(([type, count]) => (
-                          <Box key={type} display="flex" justifyContent="space-between" marginBottom="$1">
-                            <Text size="xs" css={{ textTransform: 'capitalize' }}>{type}</Text>
-                            <Text size="xs" color="secondary">{count}</Text>
-                          </Box>
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
-                )}
+                    </Button>
+                  )}
+                </Box>
               </Box>
-            )
-          })}
+
+              {/* Expanded Details */}
+              {isExpanded && (
+                <Box style={{ marginTop: '8px', paddingLeft: '20px' }}>
+                  <Text
+                    variant="body"
+                    size="xs"
+                    style={{
+                      margin: '0 0 4px 0',
+                      color: 'var(--colors-gray400)'
+                    }}
+                  >
+                    {stats.objectCount} object{stats.objectCount !== 1 ? 's' : ''}
+                  </Text>
+                  {Object.entries(stats.types).map(([type, count]) => (
+                    <Text
+                      key={type}
+                      variant="body"
+                      size="xs"
+                      style={{
+                        margin: '0 0 2px 0',
+                        color: 'var(--colors-gray500)'
+                      }}
+                    >
+                      {count} {type}{count !== 1 ? 's' : ''}
+                    </Text>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          )
+        })}
 
         {layers.length === 0 && (
           <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            height="200px"
-            color="gray500"
+            style={{
+              padding: '16px',
+              textAlign: 'center',
+              color: 'var(--colors-gray500)',
+              border: '2px dashed var(--colors-gray600)',
+              borderRadius: '6px',
+              backgroundColor: 'var(--colors-gray900)'
+            }}
           >
-            <Layers size={32} />
-            <Text size="sm" marginTop="$2">No layers created</Text>
-            <Button onClick={handleCreateLayer} css={{ marginTop: '$2' }}>
-              Create First Layer
-            </Button>
+            <Text
+              variant="body"
+              size="sm"
+              style={{
+                margin: 0,
+                color: 'inherit'
+              }}
+            >
+              No layers yet. Click + to add a layer.
+            </Text>
           </Box>
         )}
-      </LayersContainer>
-    </PanelContainer>
+      </Box>
+
+      {/* Panel Footer */}
+      <Box
+        style={{
+          padding: '12px',
+          borderTop: '1px solid var(--colors-gray700)',
+          backgroundColor: 'var(--colors-gray800)'
+        }}
+      >
+        <Text
+          variant="body"
+          size="xs"
+          style={{
+            margin: 0,
+            color: 'var(--colors-gray400)'
+          }}
+        >
+          {layers.length} layer{layers.length !== 1 ? 's' : ''}
+        </Text>
+      </Box>
+    </Box>
   )
 }
 

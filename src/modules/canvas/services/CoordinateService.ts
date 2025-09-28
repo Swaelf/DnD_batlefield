@@ -4,16 +4,19 @@
  */
 
 import type { Point, Rectangle } from '@/foundation/types'
-import type { GridSettings, ViewportState } from '../types'
+import type { GridSettings } from '@/types/grid'
+import type { ViewportState } from '../types/viewport'
 
 export class CoordinateService {
   /**
    * Convert screen coordinates to canvas coordinates
    */
   screenToCanvas(screenPoint: Point, viewport: ViewportState): Point {
+    const position = viewport.position
+    const scale = viewport.zoom
     return {
-      x: (screenPoint.x - viewport.position.x) / viewport.scale,
-      y: (screenPoint.y - viewport.position.y) / viewport.scale
+      x: (screenPoint.x - position.x) / scale,
+      y: (screenPoint.y - position.y) / scale
     }
   }
 
@@ -21,9 +24,11 @@ export class CoordinateService {
    * Convert canvas coordinates to screen coordinates
    */
   canvasToScreen(canvasPoint: Point, viewport: ViewportState): Point {
+    const position = viewport.position
+    const scale = viewport.zoom
     return {
-      x: canvasPoint.x * viewport.scale + viewport.position.x,
-      y: canvasPoint.y * viewport.scale + viewport.position.y
+      x: canvasPoint.x * scale + position.x,
+      y: canvasPoint.y * scale + position.y
     }
   }
 
@@ -31,7 +36,7 @@ export class CoordinateService {
    * Snap point to grid
    */
   snapToGrid(point: Point, grid: GridSettings): Point {
-    if (!grid.snapEnabled) {
+    if (!grid.snap) {
       return point
     }
 
@@ -170,8 +175,9 @@ export class CoordinateService {
     endRow: number
   } {
     const topLeft = this.screenToCanvas({ x: 0, y: 0 }, viewport)
+    const bounds = viewport.bounds || { width: 1920, height: 1080 }
     const bottomRight = this.screenToCanvas(
-      { x: viewport.bounds.width, y: viewport.bounds.height },
+      { x: bounds.width, y: bounds.height },
       viewport
     )
 

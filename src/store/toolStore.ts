@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
-import { ToolStore } from '../types'
+import type { ToolStore } from '../types'
 
 const useToolStore = create<ToolStore>()(
   immer((set) => ({

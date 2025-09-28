@@ -4,7 +4,9 @@
  */
 
 import React from 'react'
-import { styled } from '@/foundation/theme'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 
 export type RoundCounterProps = {
   currentRound: number
@@ -17,98 +19,6 @@ export type RoundCounterProps = {
   isInCombat?: boolean
   className?: string
 }
-
-const Container = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2',
-  fontSize: '$2',
-  color: '$gray300'
-})
-
-const RoundDisplay = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  fontWeight: 600,
-  color: '$gray100',
-
-  variants: {
-    combat: {
-      true: {
-        color: '$dndRed'
-      }
-    }
-  }
-})
-
-const NavigationButton = styled('button', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 24,
-  height: 24,
-  borderRadius: '$round',
-  border: '1px solid $gray600',
-  background: '$gray800',
-  color: '$gray300',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-
-  '&:hover:not(:disabled)': {
-    background: '$gray700',
-    borderColor: '$gray500',
-    color: '$gray100'
-  },
-
-  '&:disabled': {
-    opacity: 0.5,
-    cursor: 'not-allowed'
-  },
-
-  variants: {
-    direction: {
-      left: {},
-      right: {}
-    }
-  }
-})
-
-const RoundInput = styled('input', {
-  width: 40,
-  padding: '$1',
-  borderRadius: '$sm',
-  border: '1px solid $gray600',
-  background: '$gray800',
-  color: '$gray100',
-  textAlign: 'center',
-  fontSize: '$1',
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$dndRed',
-    background: '$gray700'
-  }
-})
-
-const StatusIndicator = styled('div', {
-  width: 8,
-  height: 8,
-  borderRadius: '$round',
-  background: '$gray600',
-
-  variants: {
-    status: {
-      inactive: {
-        background: '$gray600'
-      },
-      combat: {
-        background: '$dndRed',
-        boxShadow: '0 0 8px $dndRed'
-      }
-    }
-  }
-})
 
 /**
  * Round counter with navigation controls
@@ -158,53 +68,185 @@ export const RoundCounter: React.FC<RoundCounterProps> = ({
   }
 
   return (
-    <Container className={className}>
-      <StatusIndicator status={isInCombat ? 'combat' : 'inactive'} />
+    <Box
+      className={className}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: '14px',
+        color: 'var(--colors-gray300)'
+      }}
+    >
+      {/* Status Indicator */}
+      <Box
+        style={{
+          width: '8px',
+          height: '8px',
+          borderRadius: '50%',
+          backgroundColor: isInCombat ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+          boxShadow: isInCombat ? '0 0 8px var(--colors-dndRed)' : 'none'
+        }}
+      />
 
-      <NavigationButton
-        direction="left"
+      {/* Previous Button */}
+      <Button
+        variant="ghost"
+        size="sm"
         disabled={!canGoBack}
         onClick={onPrevious}
         aria-label="Previous round"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '24px',
+          height: '24px',
+          borderRadius: '50%',
+          border: '1px solid var(--colors-gray600)',
+          backgroundColor: 'var(--colors-gray800)',
+          color: 'var(--colors-gray300)',
+          cursor: canGoBack ? 'pointer' : 'not-allowed',
+          transition: 'all 0.2s ease',
+          opacity: canGoBack ? 1 : 0.5,
+          padding: 0,
+          minWidth: 'auto'
+        }}
+        onMouseEnter={(e) => {
+          if (canGoBack) {
+            e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
+            e.currentTarget.style.borderColor = 'var(--colors-gray500)'
+            e.currentTarget.style.color = 'var(--colors-gray100)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (canGoBack) {
+            e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+            e.currentTarget.style.borderColor = 'var(--colors-gray600)'
+            e.currentTarget.style.color = 'var(--colors-gray300)'
+          }
+        }}
       >
         ←
-      </NavigationButton>
+      </Button>
 
-      <RoundDisplay combat={isInCombat}>
-        Round{' '}
+      {/* Round Display */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          fontWeight: '600',
+          color: isInCombat ? 'var(--colors-dndRed)' : 'var(--colors-gray100)'
+        }}
+      >
+        <Text
+          variant="body"
+          size="sm"
+          style={{
+            margin: 0,
+            color: 'inherit'
+          }}
+        >
+          Round{' '}
+        </Text>
+
         {isEditing && onGoToRound ? (
-          <RoundInput
+          <input
             type="number"
             min={1}
             max={totalRounds}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
             onBlur={handleInputSubmit}
             onKeyDown={handleInputKeyDown}
             autoFocus
+            style={{
+              width: '40px',
+              padding: '2px',
+              borderRadius: '4px',
+              border: '1px solid var(--colors-gray600)',
+              backgroundColor: 'var(--colors-gray800)',
+              color: 'var(--colors-gray100)',
+              textAlign: 'center',
+              fontSize: '12px',
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = 'var(--colors-dndRed)'
+              e.target.style.backgroundColor = 'var(--colors-gray700)'
+            }}
           />
         ) : (
-          <span
+          <Text
+            variant="body"
+            size="sm"
             onClick={handleEdit}
-            style={{ cursor: onGoToRound ? 'pointer' : 'default' }}
+            style={{
+              margin: 0,
+              color: 'inherit',
+              cursor: onGoToRound ? 'pointer' : 'default'
+            }}
             title={onGoToRound ? 'Click to edit' : undefined}
           >
             {currentRound}
-          </span>
+          </Text>
         )}
-        {totalRounds > 0 && (
-          <span style={{ color: '$gray400' }}>/ {totalRounds}</span>
-        )}
-      </RoundDisplay>
 
-      <NavigationButton
-        direction="right"
+        {totalRounds > 0 && (
+          <Text
+            variant="body"
+            size="sm"
+            style={{
+              margin: 0,
+              color: 'var(--colors-gray400)'
+            }}
+          >
+            / {totalRounds}
+          </Text>
+        )}
+      </Box>
+
+      {/* Next Button */}
+      <Button
+        variant="ghost"
+        size="sm"
         disabled={!canGoForward}
         onClick={onNext}
         aria-label="Next round"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '24px',
+          height: '24px',
+          borderRadius: '50%',
+          border: '1px solid var(--colors-gray600)',
+          backgroundColor: 'var(--colors-gray800)',
+          color: 'var(--colors-gray300)',
+          cursor: canGoForward ? 'pointer' : 'not-allowed',
+          transition: 'all 0.2s ease',
+          opacity: canGoForward ? 1 : 0.5,
+          padding: 0,
+          minWidth: 'auto'
+        }}
+        onMouseEnter={(e) => {
+          if (canGoForward) {
+            e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
+            e.currentTarget.style.borderColor = 'var(--colors-gray500)'
+            e.currentTarget.style.color = 'var(--colors-gray100)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (canGoForward) {
+            e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+            e.currentTarget.style.borderColor = 'var(--colors-gray600)'
+            e.currentTarget.style.color = 'var(--colors-gray300)'
+          }
+        }}
       >
         →
-      </NavigationButton>
-    </Container>
+      </Button>
+    </Box>
   )
 }

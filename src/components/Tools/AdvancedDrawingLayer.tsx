@@ -1,21 +1,20 @@
 import React, { useCallback } from 'react'
 import { Layer } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 import useToolStore from '@store/toolStore'
 import useMapStore from '@store/mapStore'
-import { Point } from '@/types/geometry'
-import { Shape } from '@/types/map'
+import type { Point } from '@/types/geometry'
+import type { Shape } from '@/types/map'
 import { nanoid } from 'nanoid'
 import { AdvancedPolygonTool } from './AdvancedPolygonTool'
 import { MeasurementOverlay } from './MeasurementOverlay'
 
 type AdvancedDrawingLayerProps = {
-  stageRef: React.RefObject<Konva.Stage>
+  stageRef?: React.RefObject<Konva.Stage | null>
   gridSize?: number
 }
 
 export const AdvancedDrawingLayer: React.FC<AdvancedDrawingLayerProps> = ({
-  stageRef,
   gridSize = 50
 }) => {
   const currentTool = useToolStore(state => state.currentTool)

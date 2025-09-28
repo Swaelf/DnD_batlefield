@@ -1,8 +1,7 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { useUnifiedActionStore } from '@/store/unifiedActionStore'
 import { createMockAction, resetStore } from './testUtils'
-import type { ActionHistoryEntry, ActionFilter } from '@/types/unifiedAction'
+import type { ActionFilter } from '@/types/unifiedAction'
 
 describe('Phase 4: Action Log System', () => {
   beforeEach(() => {
@@ -87,7 +86,7 @@ describe('Phase 4: Action Log System', () => {
       expect(state.actionHistory[2].id).toBe('action-2')
     })
 
-    test('should track execution and completion times', (done) => {
+    test('should track execution and completion times', async () => {
       const store = useUnifiedActionStore.getState()
 
       const action = createMockAction({
@@ -99,21 +98,20 @@ describe('Phase 4: Action Log System', () => {
       const executeTime = Date.now()
 
       // Simulate delay
-      setTimeout(() => {
-        store.completeAction('timed-1')
-        const completeTime = Date.now()
+      await new Promise(resolve => setTimeout(resolve, 50))
 
-        const state = useUnifiedActionStore.getState()
-        const entry = state.actionHistory[0]
+      store.completeAction('timed-1')
+      const completeTime = Date.now()
 
-        expect(entry.executedAt).toBeDefined()
-        expect(entry.completedAt).toBeDefined()
-        expect(entry.executedAt).toBeGreaterThanOrEqual(executeTime - 10)
-        expect(entry.completedAt).toBeGreaterThanOrEqual(completeTime - 10)
-        // Use >= instead of > since they might be the same in fast execution
-        expect(entry.completedAt).toBeGreaterThanOrEqual(entry.executedAt!)
-        done()
-      }, 50)
+      const state = useUnifiedActionStore.getState()
+      const entry = state.actionHistory[0]
+
+      expect(entry.executedAt).toBeDefined()
+      expect(entry.completedAt).toBeDefined()
+      expect(entry.executedAt).toBeGreaterThanOrEqual(executeTime - 10)
+      expect(entry.completedAt).toBeGreaterThanOrEqual(completeTime - 10)
+      // Use >= instead of > since they might be the same in fast execution
+      expect(entry.completedAt).toBeGreaterThanOrEqual(entry.executedAt!)
     })
   })
 

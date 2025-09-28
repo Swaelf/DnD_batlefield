@@ -1,11 +1,12 @@
 import React, { useCallback, useState, useRef } from 'react'
-import { Group, Text as KonvaText, Rect, Circle } from 'react-konva'
-import Konva from 'konva'
+import { Group, Text as KonvaText, Rect } from 'react-konva'
+import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
-import useToolStore from '@store/toolStore'
-import { Point, MapObject } from '@/types'
-import { Box, Text, Button, Select, Input } from '@/components/ui'
-import { Type, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Palette, RotateCw } from 'lucide-react'
+import type { Point, MapObject } from '@/types'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Bold, Italic, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 
 interface TextStyle {
   fontFamily: string
@@ -71,7 +72,6 @@ export const TextEnhancementSystem: React.FC<TextEnhancementSystemProps> = ({
   ])
 
   const textRef = useRef<Konva.Text>(null)
-  const groupRef = useRef<Konva.Group>(null)
 
   const { addObject } = useMapStore()
 
@@ -272,53 +272,117 @@ export const TextEnhancementSystem: React.FC<TextEnhancementSystemProps> = ({
       {/* Text editing controls */}
       {isEditing && (
         <Box
-          css={{
+          style={{
             position: 'fixed',
-            top: 20,
-            right: 20,
-            width: 300,
-            backgroundColor: '$dndBlack',
-            border: '1px solid $gray800',
-            borderRadius: '$md',
-            padding: '$4',
-            zIndex: 1000
+            top: '20px',
+            right: '20px',
+            width: '300px',
+            backgroundColor: 'var(--colors-gray900)',
+            border: '1px solid var(--colors-gray700)',
+            borderRadius: '8px',
+            padding: '16px',
+            zIndex: 1000,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
           }}
         >
-          <Text size="lg" weight="semibold" css={{ marginBottom: '$3' }}>
-            Text Editor
-          </Text>
+          <Box
+            style={{
+              marginBottom: '12px'
+            }}
+          >
+            <Text
+              variant="heading"
+              size="lg"
+              style={{
+                fontWeight: '600',
+                color: 'var(--colors-gray100)'
+              }}
+            >
+              Text Editor
+            </Text>
+          </Box>
 
           {/* Text input */}
-          <Box css={{ marginBottom: '$3' }}>
-            <Text size="sm" css={{ marginBottom: '$1' }}>Content:</Text>
+          <Box
+            style={{
+              marginBottom: '12px'
+            }}
+          >
+            <Box
+              style={{
+                marginBottom: '4px'
+              }}
+            >
+              <Text
+                variant="label"
+                size="sm"
+                style={{
+                  color: 'var(--colors-gray300)'
+                }}
+              >
+                Content:
+              </Text>
+            </Box>
             <textarea
               value={currentText}
-              onChange={(e) => setCurrentText(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCurrentText(e.target.value)}
               placeholder="Enter your text..."
               style={{
                 width: '100%',
-                height: 80,
+                height: '80px',
                 padding: '8px',
                 backgroundColor: 'var(--colors-gray800)',
-                border: '1px solid var(--colors-gray700)',
+                border: '1px solid var(--colors-gray600)',
                 borderRadius: '4px',
                 color: 'var(--colors-gray100)',
                 fontSize: '14px',
-                resize: 'vertical'
+                resize: 'vertical',
+                outline: 'none'
               }}
             />
           </Box>
 
           {/* Quick presets */}
-          <Box css={{ marginBottom: '$3' }}>
-            <Text size="sm" css={{ marginBottom: '$2' }}>Presets:</Text>
-            <Box css={{ display: 'flex', flexWrap: 'wrap', gap: '$1' }}>
+          <Box
+            style={{
+              marginBottom: '12px'
+            }}
+          >
+            <Box
+              style={{
+                marginBottom: '8px'
+              }}
+            >
+              <Text
+                variant="label"
+                size="sm"
+                style={{
+                  color: 'var(--colors-gray300)'
+                }}
+              >
+                Presets:
+              </Text>
+            </Box>
+            <Box
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '4px'
+              }}
+            >
               {textPresets.map(preset => (
                 <Button
                   key={preset.name}
-                  variant="ghost"
-                  size="xs"
+                  variant="outline"
+                  size="sm"
                   onClick={() => applyPreset(preset)}
+                  style={{
+                    fontSize: '12px',
+                    padding: '4px 8px',
+                    backgroundColor: 'var(--colors-gray800)',
+                    borderColor: 'var(--colors-gray600)',
+                    color: 'var(--colors-gray300)'
+                  }}
                 >
                   {preset.name}
                 </Button>
@@ -327,19 +391,38 @@ export const TextEnhancementSystem: React.FC<TextEnhancementSystemProps> = ({
           </Box>
 
           {/* Font settings */}
-          <Box css={{ marginBottom: '$3' }}>
-            <Text size="sm" css={{ marginBottom: '$1' }}>Font:</Text>
+          <Box
+            style={{
+              marginBottom: '12px'
+            }}
+          >
+            <Box
+              style={{
+                marginBottom: '4px'
+              }}
+            >
+              <Text
+                variant="label"
+                size="sm"
+                style={{
+                  color: 'var(--colors-gray300)'
+                }}
+              >
+                Font:
+              </Text>
+            </Box>
             <select
               value={textStyle.fontFamily}
-              onChange={(e) => updateTextStyle({ fontFamily: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateTextStyle({ fontFamily: e.target.value })}
               style={{
                 width: '100%',
-                padding: '4px 8px',
+                padding: '6px 8px',
                 backgroundColor: 'var(--colors-gray800)',
-                border: '1px solid var(--colors-gray700)',
+                border: '1px solid var(--colors-gray600)',
                 borderRadius: '4px',
                 color: 'var(--colors-gray100)',
-                fontSize: '12px'
+                fontSize: '14px',
+                outline: 'none'
               }}
             >
               {dndFonts.map(font => (
@@ -350,101 +433,230 @@ export const TextEnhancementSystem: React.FC<TextEnhancementSystemProps> = ({
             </select>
           </Box>
 
-          {/* Size and alignment */}
-          <Box css={{ display: 'flex', gap: '$2', marginBottom: '$3' }}>
-            <Box css={{ flex: 1 }}>
-              <Text size="sm" css={{ marginBottom: '$1' }}>Size:</Text>
+          {/* Size and color */}
+          <Box
+            style={{
+              display: 'flex',
+              gap: '8px',
+              marginBottom: '12px'
+            }}
+          >
+            <Box
+              style={{
+                flex: 1
+              }}
+            >
+              <Box
+                style={{
+                  marginBottom: '4px'
+                }}
+              >
+                <Text
+                  variant="label"
+                  size="sm"
+                  style={{
+                    color: 'var(--colors-gray300)'
+                  }}
+                >
+                  Size:
+                </Text>
+              </Box>
               <input
                 type="number"
                 value={textStyle.fontSize}
-                onChange={(e) => updateTextStyle({ fontSize: Number(e.target.value) })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTextStyle({ fontSize: Number(e.target.value) })}
                 min="8"
                 max="72"
                 style={{
                   width: '100%',
-                  padding: '4px 8px',
+                  padding: '6px 8px',
                   backgroundColor: 'var(--colors-gray800)',
-                  border: '1px solid var(--colors-gray700)',
+                  border: '1px solid var(--colors-gray600)',
                   borderRadius: '4px',
                   color: 'var(--colors-gray100)',
-                  fontSize: '12px'
+                  fontSize: '14px',
+                  outline: 'none'
                 }}
               />
             </Box>
-            <Box css={{ flex: 1 }}>
-              <Text size="sm" css={{ marginBottom: '$1' }}>Color:</Text>
+            <Box
+              style={{
+                flex: 1
+              }}
+            >
+              <Box
+                style={{
+                  marginBottom: '4px'
+                }}
+              >
+                <Text
+                  variant="label"
+                  size="sm"
+                  style={{
+                    color: 'var(--colors-gray300)'
+                  }}
+                >
+                  Color:
+                </Text>
+              </Box>
               <input
                 type="color"
                 value={textStyle.fill}
-                onChange={(e) => updateTextStyle({ fill: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTextStyle({ fill: e.target.value })}
                 style={{
                   width: '100%',
-                  height: 28,
+                  height: '32px',
                   backgroundColor: 'var(--colors-gray800)',
-                  border: '1px solid var(--colors-gray700)',
+                  border: '1px solid var(--colors-gray600)',
                   borderRadius: '4px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  outline: 'none'
                 }}
               />
             </Box>
           </Box>
 
           {/* Style toggles */}
-          <Box css={{ marginBottom: '$3' }}>
-            <Text size="sm" css={{ marginBottom: '$2' }}>Style:</Text>
-            <Box css={{ display: 'flex', gap: '$1' }}>
+          <Box
+            style={{
+              marginBottom: '12px'
+            }}
+          >
+            <Box
+              style={{
+                marginBottom: '8px'
+              }}
+            >
+              <Text
+                variant="label"
+                size="sm"
+                style={{
+                  color: 'var(--colors-gray300)'
+                }}
+              >
+                Style:
+              </Text>
+            </Box>
+            <Box
+              style={{
+                display: 'flex',
+                gap: '4px'
+              }}
+            >
               <Button
-                variant={textStyle.fontVariant === 'bold' ? 'default' : 'ghost'}
-                size="xs"
+                variant={textStyle.fontVariant === 'bold' ? 'primary' : 'outline'}
+                size="sm"
                 onClick={() => updateTextStyle({
                   fontVariant: textStyle.fontVariant === 'bold' ? 'normal' : 'bold'
                 })}
+                style={{
+                  padding: '6px',
+                  backgroundColor: textStyle.fontVariant === 'bold' ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+                  borderColor: textStyle.fontVariant === 'bold' ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+                  color: textStyle.fontVariant === 'bold' ? 'white' : 'var(--colors-gray300)'
+                }}
               >
-                <Bold size={12} />
+                <Bold size={14} />
               </Button>
               <Button
-                variant={textStyle.fontStyle === 'italic' ? 'default' : 'ghost'}
-                size="xs"
+                variant={textStyle.fontStyle === 'italic' ? 'primary' : 'outline'}
+                size="sm"
                 onClick={() => updateTextStyle({
                   fontStyle: textStyle.fontStyle === 'italic' ? 'normal' : 'italic'
                 })}
+                style={{
+                  padding: '6px',
+                  backgroundColor: textStyle.fontStyle === 'italic' ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+                  borderColor: textStyle.fontStyle === 'italic' ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+                  color: textStyle.fontStyle === 'italic' ? 'white' : 'var(--colors-gray300)'
+                }}
               >
-                <Italic size={12} />
+                <Italic size={14} />
               </Button>
               <Button
-                variant={textStyle.align === 'left' ? 'default' : 'ghost'}
-                size="xs"
+                variant={textStyle.align === 'left' ? 'primary' : 'outline'}
+                size="sm"
                 onClick={() => updateTextStyle({ align: 'left' })}
+                style={{
+                  padding: '6px',
+                  backgroundColor: textStyle.align === 'left' ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+                  borderColor: textStyle.align === 'left' ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+                  color: textStyle.align === 'left' ? 'white' : 'var(--colors-gray300)'
+                }}
               >
-                <AlignLeft size={12} />
+                <AlignLeft size={14} />
               </Button>
               <Button
-                variant={textStyle.align === 'center' ? 'default' : 'ghost'}
-                size="xs"
+                variant={textStyle.align === 'center' ? 'primary' : 'outline'}
+                size="sm"
                 onClick={() => updateTextStyle({ align: 'center' })}
+                style={{
+                  padding: '6px',
+                  backgroundColor: textStyle.align === 'center' ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+                  borderColor: textStyle.align === 'center' ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+                  color: textStyle.align === 'center' ? 'white' : 'var(--colors-gray300)'
+                }}
               >
-                <AlignCenter size={12} />
+                <AlignCenter size={14} />
               </Button>
               <Button
-                variant={textStyle.align === 'right' ? 'default' : 'ghost'}
-                size="xs"
+                variant={textStyle.align === 'right' ? 'primary' : 'outline'}
+                size="sm"
                 onClick={() => updateTextStyle({ align: 'right' })}
+                style={{
+                  padding: '6px',
+                  backgroundColor: textStyle.align === 'right' ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+                  borderColor: textStyle.align === 'right' ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+                  color: textStyle.align === 'right' ? 'white' : 'var(--colors-gray300)'
+                }}
               >
-                <AlignRight size={12} />
+                <AlignRight size={14} />
               </Button>
             </Box>
           </Box>
 
           {/* Effects */}
-          <Box css={{ marginBottom: '$4' }}>
-            <Text size="sm" css={{ marginBottom: '$2' }}>Effects:</Text>
-            <Box css={{ display: 'flex', flexWrap: 'wrap', gap: '$1' }}>
+          <Box
+            style={{
+              marginBottom: '16px'
+            }}
+          >
+            <Box
+              style={{
+                marginBottom: '8px'
+              }}
+            >
+              <Text
+                variant="label"
+                size="sm"
+                style={{
+                  color: 'var(--colors-gray300)'
+                }}
+              >
+                Effects:
+              </Text>
+            </Box>
+            <Box
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '4px'
+              }}
+            >
               {effects.map(effect => (
                 <Button
                   key={effect.type}
-                  variant={effect.enabled ? 'default' : 'ghost'}
-                  size="xs"
+                  variant={effect.enabled ? 'primary' : 'outline'}
+                  size="sm"
                   onClick={() => toggleEffect(effect.type)}
+                  style={{
+                    fontSize: '12px',
+                    padding: '4px 8px',
+                    backgroundColor: effect.enabled ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+                    borderColor: effect.enabled ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+                    color: effect.enabled ? 'white' : 'var(--colors-gray300)',
+                    textTransform: 'capitalize'
+                  }}
                 >
                   {effect.type}
                 </Button>
@@ -453,13 +665,48 @@ export const TextEnhancementSystem: React.FC<TextEnhancementSystemProps> = ({
           </Box>
 
           {/* Action buttons */}
-          <Box css={{ display: 'flex', gap: '$2' }}>
-            <Button variant="ghost" onClick={cancelEdit} css={{ flex: 1 }}>
-              Cancel
-            </Button>
-            <Button onClick={completeText} css={{ flex: 1 }}>
-              Apply
-            </Button>
+          <Box
+            style={{
+              display: 'flex',
+              gap: '8px'
+            }}
+          >
+            <Box
+              style={{
+                flex: 1
+              }}
+            >
+              <Button
+                variant="outline"
+                onClick={cancelEdit}
+                style={{
+                  width: '100%',
+                  backgroundColor: 'var(--colors-gray800)',
+                  borderColor: 'var(--colors-gray600)',
+                  color: 'var(--colors-gray300)'
+                }}
+              >
+                Cancel
+              </Button>
+            </Box>
+            <Box
+              style={{
+                flex: 1
+              }}
+            >
+              <Button
+                variant="primary"
+                onClick={completeText}
+                style={{
+                  width: '100%',
+                  backgroundColor: 'var(--colors-dndRed)',
+                  borderColor: 'var(--colors-dndRed)',
+                  color: 'white'
+                }}
+              >
+                Apply
+              </Button>
+            </Box>
           </Box>
         </Box>
       )}

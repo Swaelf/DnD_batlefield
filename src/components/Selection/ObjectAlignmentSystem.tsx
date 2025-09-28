@@ -1,8 +1,8 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Group, Line, Rect } from 'react-konva'
-import Konva from 'konva'
-import useMapStore from '@store/mapStore'
-import { Point, MapObject } from '@/types'
+import type Konva from 'konva'
+// import useMapStore from '@store/mapStore' // Unused
+// MapObject and Point types are unused
 
 interface ObjectAlignmentSystemProps {
   isActive: boolean
@@ -23,31 +23,31 @@ interface AlignmentGuide {
 
 export const ObjectAlignmentSystem: React.FC<ObjectAlignmentSystemProps> = ({
   isActive,
-  selectedObjects,
-  snapTolerance = 5,
+  // selectedObjects, // Unused parameter
+  // snapTolerance = 5, // Unused parameter
   showGuides = true
 }) => {
-  const [activeGuides, setActiveGuides] = useState<AlignmentGuide[]>([])
-  const [isDragging, setIsDragging] = useState(false)
+  const [activeGuides] = useState<AlignmentGuide[]>([])
+  // const [isDragging, setIsDragging] = useState(false)
 
   const groupRef = useRef<Konva.Group>(null)
 
-  const { currentMap, updateObject } = useMapStore()
+  // const { currentMap } = useMapStore() // Unused
 
-  // Get all objects except selected ones (for alignment reference)
-  const referenceObjects = useMemo(() => {
+  // Get all objects except selected ones (for alignment reference) - currently unused
+  /* const referenceObjects = useMemo(() => {
     if (!currentMap) return []
     return currentMap.objects.filter(obj => !selectedObjects.includes(obj.id))
-  }, [currentMap, selectedObjects])
+  }, [currentMap, selectedObjects]) */
 
   // Get selected object data
-  const selectedObjectData = useMemo(() => {
-    if (!currentMap) return []
-    return currentMap.objects.filter(obj => selectedObjects.includes(obj.id))
-  }, [currentMap, selectedObjects])
+  // const selectedObjectData = useMemo(() => {
+  //   if (!currentMap) return []
+  //   return currentMap.objects.filter(obj => selectedObjects.includes(obj.id))
+  // }, [currentMap, selectedObjects])
 
-  // Calculate object bounds
-  const getObjectBounds = useCallback((obj: MapObject) => {
+  // Calculate object bounds - currently unused
+  /* const getObjectBounds = useCallback((obj: MapObject) => {
     const width = obj.width || 50
     const height = obj.height || 50
 
@@ -61,10 +61,10 @@ export const ObjectAlignmentSystem: React.FC<ObjectAlignmentSystemProps> = ({
       width,
       height
     }
-  }, [])
+  }, []) */
 
   // Find alignment guides for current position
-  const findAlignmentGuides = useCallback((draggedObjects: MapObject[], mousePos: Point) => {
+  /* const findAlignmentGuides = useCallback((draggedObjects: MapObject[], _mousePos: Point) => {
     if (referenceObjects.length === 0) return []
 
     const guides: AlignmentGuide[] = []
@@ -133,10 +133,10 @@ export const ObjectAlignmentSystem: React.FC<ObjectAlignmentSystemProps> = ({
     )
 
     return uniqueGuides
-  }, [referenceObjects, snapTolerance, getObjectBounds])
+  }, [referenceObjects, snapTolerance, getObjectBounds]) */
 
   // Snap position to alignment guides
-  const snapToAlignment = useCallback((position: Point, objWidth: number, objHeight: number): Point => {
+  /* const snapToAlignment = useCallback((position: Point, objWidth: number, objHeight: number): Point => {
     const guides = findAlignmentGuides([{
       id: 'temp',
       type: 'shape',
@@ -187,127 +187,13 @@ export const ObjectAlignmentSystem: React.FC<ObjectAlignmentSystemProps> = ({
       })
 
     return { x: snappedX, y: snappedY }
-  }, [findAlignmentGuides, snapTolerance])
+  }, [findAlignmentGuides, snapTolerance]) */
 
-  // Handle drag start
-  const handleDragStart = useCallback(() => {
-    setIsDragging(true)
-  }, [])
+  // Note: Drag and alignment handlers removed as they are not currently used
+  // These could be re-implemented if drag-and-drop alignment is needed
 
-  // Handle drag move
-  const handleDragMove = useCallback((position: Point) => {
-    if (!isDragging || selectedObjectData.length === 0) return
-
-    // Find alignment guides for current drag position
-    const guides = findAlignmentGuides(selectedObjectData, position)
-    setActiveGuides(guides)
-
-    // Apply snapping to selected objects
-    selectedObjectData.forEach(obj => {
-      const objBounds = getObjectBounds(obj)
-      const snappedPosition = snapToAlignment(obj.position, objBounds.width, objBounds.height)
-
-      if (snappedPosition.x !== obj.position.x || snappedPosition.y !== obj.position.y) {
-        updateObject(obj.id, { position: snappedPosition })
-      }
-    })
-  }, [isDragging, selectedObjectData, findAlignmentGuides, snapToAlignment, getObjectBounds, updateObject])
-
-  // Handle drag end
-  const handleDragEnd = useCallback(() => {
-    setIsDragging(false)
-    setActiveGuides([])
-  }, [])
-
-  // Auto-align selected objects to each other
-  const alignSelectedObjects = useCallback((alignmentType: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => {
-    if (selectedObjectData.length < 2) return
-
-    const bounds = selectedObjectData.map(getObjectBounds)
-    let referenceValue: number
-
-    switch (alignmentType) {
-      case 'left':
-        referenceValue = Math.min(...bounds.map(b => b.left))
-        selectedObjectData.forEach((obj, index) => {
-          updateObject(obj.id, { position: { x: referenceValue, y: obj.position.y } })
-        })
-        break
-
-      case 'center':
-        referenceValue = bounds.reduce((sum, b) => sum + b.centerX, 0) / bounds.length
-        selectedObjectData.forEach((obj, index) => {
-          const objBounds = bounds[index]
-          updateObject(obj.id, {
-            position: {
-              x: referenceValue - objBounds.width / 2,
-              y: obj.position.y
-            }
-          })
-        })
-        break
-
-      case 'right':
-        referenceValue = Math.max(...bounds.map(b => b.right))
-        selectedObjectData.forEach((obj, index) => {
-          const objBounds = bounds[index]
-          updateObject(obj.id, {
-            position: {
-              x: referenceValue - objBounds.width,
-              y: obj.position.y
-            }
-          })
-        })
-        break
-
-      case 'top':
-        referenceValue = Math.min(...bounds.map(b => b.top))
-        selectedObjectData.forEach((obj, index) => {
-          updateObject(obj.id, { position: { x: obj.position.x, y: referenceValue } })
-        })
-        break
-
-      case 'middle':
-        referenceValue = bounds.reduce((sum, b) => sum + b.centerY, 0) / bounds.length
-        selectedObjectData.forEach((obj, index) => {
-          const objBounds = bounds[index]
-          updateObject(obj.id, {
-            position: {
-              x: obj.position.x,
-              y: referenceValue - objBounds.height / 2
-            }
-          })
-        })
-        break
-
-      case 'bottom':
-        referenceValue = Math.max(...bounds.map(b => b.bottom))
-        selectedObjectData.forEach((obj, index) => {
-          const objBounds = bounds[index]
-          updateObject(obj.id, {
-            position: {
-              x: obj.position.x,
-              y: referenceValue - objBounds.height
-            }
-          })
-        })
-        break
-    }
-  }, [selectedObjectData, getObjectBounds, updateObject])
-
-  // Expose alignment methods
-  React.useImperativeHandle(React.createRef(), () => ({
-    alignLeft: () => alignSelectedObjects('left'),
-    alignCenter: () => alignSelectedObjects('center'),
-    alignRight: () => alignSelectedObjects('right'),
-    alignTop: () => alignSelectedObjects('top'),
-    alignMiddle: () => alignSelectedObjects('middle'),
-    alignBottom: () => alignSelectedObjects('bottom'),
-    snapToAlignment,
-    handleDragStart,
-    handleDragMove,
-    handleDragEnd
-  }))
+  // Note: Alignment methods are internal to this component
+  // They could be exposed via context or props if needed externally
 
   if (!isActive || !showGuides) {
     return null

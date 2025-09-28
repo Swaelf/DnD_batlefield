@@ -1,7 +1,31 @@
 import React, { memo } from 'react'
 import { MousePointer } from 'lucide-react'
-import { Token } from '@/types/token'
-import { Box, Button, FieldLabel } from '@/components/ui'
+import type { Token } from '@/types/token'
+import { Box, Button } from '@/components/ui'
+import { Label } from '@/components/primitives'
+import { styled } from '@/styles/theme.config'
+
+const StyledPickerButton = styled(Button, {
+  backgroundColor: '$gray700',
+  color: '$gray300',
+  border: '1px solid $gray600',
+  '&:hover': {
+    backgroundColor: '$gray600',
+    borderColor: '$secondary'
+  },
+  variants: {
+    picking: {
+      true: {
+        backgroundColor: '$blue600',
+        color: '$white',
+        animation: 'pulse 2s infinite',
+        '&:hover': {
+          backgroundColor: '$blue700'
+        }
+      }
+    }
+  }
+})
 
 type TokenSelectorProps = {
   selectedToken: string
@@ -19,36 +43,30 @@ const TokenSelectorComponent: React.FC<TokenSelectorProps> = ({
   onTokenPick
 }) => {
   return (
-    <Box css={{
-      padding: '12px',
-      backgroundColor: '#171717',
-      borderRadius: '8px',
-      border: '1px solid #3a3a3a'
-    }}>
-      <FieldLabel css={{ marginBottom: '8px' }}>Select Token</FieldLabel>
-      <Box display="flex" gap="2">
-        <Button
+    <Box
+      padding={12}
+      backgroundColor="background"
+      borderRadius="md"
+      borderWidth={1}
+      borderStyle="solid"
+      borderColor="border"
+    >
+      <Box marginBottom={8}>
+        <Label size="sm" weight="medium" color="gray300">Select Token</Label>
+      </Box>
+      <Box display="flex" gap={2}>
+        <StyledPickerButton
           onClick={onTokenPick}
-          variant={isPicking === 'token' ? 'primary' : 'secondary'}
           size="icon"
           title="Pick from map"
-          css={{
-            backgroundColor: isPicking === 'token' ? '#2563eb' : '#3a3a3a',
-            color: isPicking === 'token' ? '#ffffff' : '#d1d5db',
-            animation: isPicking === 'token' ? 'pulse 2s infinite' : 'none',
-            border: '1px solid #4b5563',
-            '&:hover': {
-              backgroundColor: isPicking === 'token' ? '#1d4ed8' : '#4b5563',
-              borderColor: '#C9AD6A'
-            }
-          }}
+          picking={isPicking === 'token'}
         >
           <MousePointer size={16} />
-        </Button>
-        <Box css={{ flex: 1 }}>
+        </StyledPickerButton>
+        <Box flexGrow={1}>
           <select
             value={selectedToken || ''}
-            onChange={(e) => setSelectedToken(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedToken(e.target.value)}
             style={{
               width: '100%',
               padding: '6px 8px',

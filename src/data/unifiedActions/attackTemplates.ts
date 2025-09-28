@@ -1,11 +1,14 @@
-import { UnifiedAction } from '@/types/unifiedAction'
+import type { UnifiedAction } from '@/types/unifiedAction'
 
 export const attackTemplates: UnifiedAction[] = [
   // Sword Attacks
   {
     id: 'longsword-slash-template',
+    name: 'Longsword Slash',
+    description: 'A powerful sweeping attack with a longsword',
     type: 'attack',
     category: 'sword',
+    tags: ['attack', 'melee', 'sword'],
     source: { x: 0, y: 0 }, // Will be set when used
     target: { x: 0, y: 0 }, // Will be set when used
     animation: {
@@ -22,23 +25,26 @@ export const attackTemplates: UnifiedAction[] = [
     metadata: {
       name: 'Longsword Slash',
       description: 'A powerful sweeping attack with a longsword.',
-      rollResult: {
-        damage: '1d8+3',
-        damageType: 'slashing',
-        attackBonus: 5
-      }
+      // Attack data for reference:
+      // damage:'1d8+3',
+      // damageType:'slashing',
+      // attackBonus:5
+      rollResult: undefined
     },
     timestamp: 0,
     duration: 600
   },
   {
     id: 'rapier-thrust-template',
+    name: 'Rapier Thrust',
+    description: 'A combat attack action',
     type: 'attack',
     category: 'sword',
+    tags: ["attack","combat"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'thrust',
+      type: 'melee_slash',
       duration: 400,
       color: '#E6E6FA',
       size: 30,
@@ -51,11 +57,11 @@ export const attackTemplates: UnifiedAction[] = [
     metadata: {
       name: 'Rapier Thrust',
       description: 'A precise thrusting attack with a rapier.',
-      rollResult: {
-        damage: '1d8+3',
-        damageType: 'piercing',
-        attackBonus: 5
-      }
+      // Attack data for reference:
+      // damage:'1d8+3',
+      // damageType:'piercing',
+      // attackBonus:5
+      rollResult: undefined
     },
     timestamp: 0,
     duration: 400
@@ -64,12 +70,15 @@ export const attackTemplates: UnifiedAction[] = [
   // Axe Attacks
   {
     id: 'greataxe-cleave-template',
+    name: 'Greataxe Cleave',
+    description: 'A combat attack action',
     type: 'attack',
     category: 'axe',
+    tags: ["attack","combat"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'heavy_swing',
+      type: 'melee_swing',
       duration: 800,
       color: '#8B4513',
       size: 50,
@@ -82,19 +91,22 @@ export const attackTemplates: UnifiedAction[] = [
     metadata: {
       name: 'Greataxe Cleave',
       description: 'A devastating overhead chop with a greataxe.',
-      rollResult: {
-        damage: '1d12+3',
-        damageType: 'slashing',
-        attackBonus: 5
-      }
+      // Attack data for reference:
+      // damage:'1d12+3',
+      // damageType:'slashing',
+      // attackBonus:5
+      rollResult: undefined
     },
     timestamp: 0,
     duration: 800
   },
   {
     id: 'handaxe-throw-template',
+    name: 'Handaxe Throw',
+    description: 'A combat attack action',
     type: 'attack',
     category: 'axe',
+    tags: ["attack","combat"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -112,11 +124,11 @@ export const attackTemplates: UnifiedAction[] = [
     metadata: {
       name: 'Handaxe Throw',
       description: 'A thrown handaxe spinning through the air.',
-      rollResult: {
-        damage: '1d6+3',
-        damageType: 'slashing',
-        attackBonus: 5
-      }
+      // Attack data for reference:
+      // damage:'1d6+3',
+      // damageType:'slashing',
+      // attackBonus:5
+      rollResult: undefined
     },
     timestamp: 0,
     duration: 700
@@ -125,12 +137,15 @@ export const attackTemplates: UnifiedAction[] = [
   // Mace Attacks
   {
     id: 'warhammer-crush-template',
+    name: 'Warhammer Crush',
+    description: 'A combat attack action',
     type: 'attack',
     category: 'mace',
+    tags: ["attack","combat"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'crush',
+      type: 'melee_swing',
       duration: 700,
       color: '#696969',
       size: 35,
@@ -143,11 +158,11 @@ export const attackTemplates: UnifiedAction[] = [
     metadata: {
       name: 'Warhammer Crush',
       description: 'A bone-crushing blow from a warhammer.',
-      rollResult: {
-        damage: '1d8+3',
-        damageType: 'bludgeoning',
-        attackBonus: 5
-      }
+      // Attack data for reference:
+      // damage:'1d8+3',
+      // damageType:'bludgeoning',
+      // attackBonus:5
+      rollResult: undefined
     },
     timestamp: 0,
     duration: 700
@@ -156,8 +171,11 @@ export const attackTemplates: UnifiedAction[] = [
   // Arrow Attacks
   {
     id: 'longbow-shot-template',
+    name: 'Longbow Shot',
+    description: 'A combat attack action',
     type: 'attack',
     category: 'arrow',
+    tags: ["attack","combat"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -175,19 +193,22 @@ export const attackTemplates: UnifiedAction[] = [
     metadata: {
       name: 'Longbow Shot',
       description: 'An arrow fired from a longbow.',
-      rollResult: {
-        damage: '1d8+3',
-        damageType: 'piercing',
-        attackBonus: 5
-      }
+      // Attack data for reference:
+      // damage:'1d8+3',
+      // damageType:'piercing',
+      // attackBonus:5
+      rollResult: undefined
     },
     timestamp: 0,
     duration: 800
   },
   {
     id: 'shortbow-rapid-template',
+    name: 'Shortbow Rapid',
+    description: 'A combat attack action',
     type: 'attack',
     category: 'arrow',
+    tags: ["attack","combat"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -205,11 +226,11 @@ export const attackTemplates: UnifiedAction[] = [
     metadata: {
       name: 'Shortbow Rapid Shot',
       description: 'Two quick arrows from a shortbow.',
-      rollResult: {
-        damage: '2x(1d6+3)',
-        damageType: 'piercing',
-        attackBonus: 5
-      }
+      // Attack data for reference:
+      // damage:'2x(1d6+3)',
+      // damageType:'piercing',
+      // attackBonus:5
+      rollResult: undefined
     },
     timestamp: 0,
     duration: 600
@@ -218,8 +239,11 @@ export const attackTemplates: UnifiedAction[] = [
   // Bolt Attacks
   {
     id: 'crossbow-bolt-template',
+    name: 'Crossbow Bolt',
+    description: 'A combat attack action',
     type: 'attack',
     category: 'bolt',
+    tags: ["attack","combat"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -236,11 +260,11 @@ export const attackTemplates: UnifiedAction[] = [
     metadata: {
       name: 'Crossbow Bolt',
       description: 'A heavy crossbow bolt.',
-      rollResult: {
-        damage: '1d10+3',
-        damageType: 'piercing',
-        attackBonus: 5
-      }
+      // Attack data for reference:
+      // damage:'1d10+3',
+      // damageType:'piercing',
+      // attackBonus:5
+      rollResult: undefined
     },
     timestamp: 0,
     duration: 500
@@ -249,8 +273,11 @@ export const attackTemplates: UnifiedAction[] = [
   // Breath Attacks
   {
     id: 'fire-breath-template',
+    name: 'Fire Breath',
+    description: 'A combat attack action',
     type: 'attack',
     category: 'breath',
+    tags: ["attack","combat"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -274,20 +301,23 @@ export const attackTemplates: UnifiedAction[] = [
     metadata: {
       name: 'Fire Breath',
       description: 'A cone of scorching flames.',
-      rollResult: {
-        damage: '3d6',
-        damageType: 'fire',
-        attackBonus: 0,
-        saveType: 'Dexterity'
-      }
+      // Attack data for reference:
+      // damage:'3d6',
+      // damageType:'fire',
+      // attackBonus:0,
+      // saveType:'Dexterity',
+      rollResult: undefined
     },
     timestamp: 0,
     duration: 1200
   },
   {
     id: 'cold-breath-template',
+    name: 'Cold Breath',
+    description: 'A combat attack action',
     type: 'attack',
     category: 'breath',
+    tags: ["attack","combat"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -311,12 +341,12 @@ export const attackTemplates: UnifiedAction[] = [
     metadata: {
       name: 'Cold Breath',
       description: 'A blast of freezing cold.',
-      rollResult: {
-        damage: '2d8',
-        damageType: 'cold',
-        attackBonus: 0,
-        saveType: 'Constitution'
-      }
+      // Attack data for reference:
+      // damage:'2d8',
+      // damageType:'cold',
+      // attackBonus:0,
+      // saveType:'Constitution',
+      rollResult: undefined
     },
     timestamp: 0,
     duration: 1000

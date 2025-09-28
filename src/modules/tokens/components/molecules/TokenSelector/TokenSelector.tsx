@@ -1,14 +1,12 @@
 /**
  * TokenSelector Molecule Component
- *
- * Dropdown token selection with search and preview functionality.
- * Used in event systems and property panels for token selection.
- * Molecular design: 60-90 lines, selection interface focus.
+ * Dropdown token selection with search and preview functionality
  */
 
 import React from 'react'
-import { styled } from '@/styles/theme.config'
-import { ChevronDown, Search } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
 import type { Token } from '../../../types'
 
 export interface TokenSelectorProps {
@@ -20,118 +18,6 @@ export interface TokenSelectorProps {
   readonly showPreview?: boolean
 }
 
-const SelectorContainer = styled('div', {
-  position: 'relative',
-  minWidth: '200px'
-})
-
-const SelectorButton = styled('button', {
-  width: '100%',
-  padding: '$2 $3',
-  backgroundColor: '$gray800',
-  border: '1px solid $gray600',
-  borderRadius: '$md',
-  color: '$gray100',
-  fontSize: '$sm',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    borderColor: '$dndGold',
-    backgroundColor: '$gray700'
-  },
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$dndGold',
-    boxShadow: '0 0 0 2px rgba(201, 173, 106, 0.2)'
-  }
-})
-
-const SelectorDropdown = styled('div', {
-  position: 'absolute',
-  top: '100%',
-  left: 0,
-  right: 0,
-  zIndex: 1000,
-  backgroundColor: '$gray800',
-  border: '1px solid $gray600',
-  borderRadius: '$md',
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
-  maxHeight: '300px',
-  overflowY: 'auto'
-})
-
-const SearchInput = styled('input', {
-  width: '100%',
-  padding: '$2',
-  backgroundColor: '$gray700',
-  border: 'none',
-  borderBottom: '1px solid $gray600',
-  color: '$gray100',
-  fontSize: '$sm',
-
-  '&::placeholder': {
-    color: '$gray400'
-  },
-
-  '&:focus': {
-    outline: 'none',
-    backgroundColor: '$gray600'
-  }
-})
-
-const TokenOption = styled('div', {
-  padding: '$2',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2',
-  cursor: 'pointer',
-  transition: 'background-color 0.2s ease',
-
-  '&:hover': {
-    backgroundColor: '$gray700'
-  },
-
-  variants: {
-    selected: {
-      true: {
-        backgroundColor: '$dndRed',
-        color: '$gray100'
-      }
-    }
-  }
-})
-
-const TokenPreview = styled('div', {
-  width: '24px',
-  height: '24px',
-  borderRadius: '50%',
-  border: '2px solid currentColor',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '$xs',
-  fontWeight: 'bold'
-})
-
-const TokenInfo = styled('div', {
-  flex: 1
-})
-
-const TokenName = styled('div', {
-  fontSize: '$sm',
-  fontWeight: '500'
-})
-
-const TokenCategory = styled('div', {
-  fontSize: '$xs',
-  color: '$gray400',
-  textTransform: 'capitalize'
-})
 
 export const TokenSelector: React.FC<TokenSelectorProps> = React.memo(({
   tokens,
@@ -162,54 +48,164 @@ export const TokenSelector: React.FC<TokenSelectorProps> = React.memo(({
   }, [onChange])
 
   return (
-    <SelectorContainer>
-      <SelectorButton onClick={() => setIsOpen(!isOpen)}>
-        <span>
+    <Box
+      style={{
+        position: 'relative',
+        minWidth: '200px'
+      }}
+    >
+      {/* Selector Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: '100%',
+          padding: '8px 12px',
+          backgroundColor: 'var(--colors-gray800)',
+          border: '1px solid var(--colors-gray600)',
+          borderRadius: '8px',
+          color: 'var(--colors-gray100)',
+          fontSize: '14px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          outline: 'none'
+        }}
+      >
+        <Text variant="body" size="sm">
           {selectedToken ? selectedToken.name : placeholder}
-        </span>
+        </Text>
         <ChevronDown size={16} />
-      </SelectorButton>
+      </button>
 
+      {/* Dropdown */}
       {isOpen && (
-        <SelectorDropdown>
+        <Box
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            backgroundColor: 'var(--colors-gray800)',
+            border: '1px solid var(--colors-gray600)',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+            maxHeight: '300px',
+            overflowY: 'auto'
+          }}
+        >
+          {/* Search Input */}
           {searchable && (
-            <SearchInput
+            <input
               type="text"
               placeholder="Search tokens..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
               autoFocus
+              style={{
+                width: '100%',
+                padding: '8px',
+                backgroundColor: 'var(--colors-gray700)',
+                border: 'none',
+                borderBottom: '1px solid var(--colors-gray600)',
+                color: 'var(--colors-gray100)',
+                fontSize: '14px',
+                outline: 'none'
+              }}
             />
           )}
 
+          {/* Token Options */}
           {filteredTokens.map((token) => (
-            <TokenOption
+            <Box
               key={token.id}
-              selected={token.id === selectedTokenId}
               onClick={() => handleTokenSelect(token.id)}
+              style={{
+                padding: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s ease',
+                backgroundColor: token.id === selectedTokenId ? 'var(--colors-dndRed)' : 'transparent',
+                color: token.id === selectedTokenId ? 'var(--colors-gray100)' : 'inherit'
+              }}
             >
+              {/* Token Preview */}
               {showPreview && (
-                <TokenPreview style={{ backgroundColor: token.color }}>
+                <Box
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    border: '2px solid currentColor',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    backgroundColor: token.color || 'var(--colors-gray600)'
+                  }}
+                >
                   {token.name.charAt(0).toUpperCase()}
-                </TokenPreview>
+                </Box>
               )}
 
-              <TokenInfo>
-                <TokenName>{token.name}</TokenName>
-                <TokenCategory>{token.category}</TokenCategory>
-              </TokenInfo>
-            </TokenOption>
+              {/* Token Info */}
+              <Box style={{ flex: 1 }}>
+                <Text
+                  variant="body"
+                  size="sm"
+                  style={{
+                    fontWeight: '500',
+                    margin: 0
+                  }}
+                >
+                  {token.name}
+                </Text>
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{
+                    color: 'var(--colors-gray400)',
+                    textTransform: 'capitalize',
+                    margin: 0
+                  }}
+                >
+                  {token.category}
+                </Text>
+              </Box>
+            </Box>
           ))}
 
+          {/* Empty State */}
           {filteredTokens.length === 0 && (
-            <TokenOption>
-              <TokenInfo>
-                <TokenName>No tokens found</TokenName>
-              </TokenInfo>
-            </TokenOption>
+            <Box
+              style={{
+                padding: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <Box style={{ flex: 1 }}>
+                <Text
+                  variant="body"
+                  size="sm"
+                  style={{
+                    fontWeight: '500',
+                    color: 'var(--colors-gray400)'
+                  }}
+                >
+                  No tokens found
+                </Text>
+              </Box>
+            </Box>
           )}
-        </SelectorDropdown>
+        </Box>
       )}
-    </SelectorContainer>
+    </Box>
   )
 })

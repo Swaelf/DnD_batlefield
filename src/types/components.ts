@@ -1,9 +1,9 @@
-import React from 'react'
-import Konva from 'konva'
-import { Position } from '@/types/map'
-import { SpellEventData } from '@/types/timeline'
-import { Token } from '@/types/token'
-import { SpellEffect } from '@/types/spells'
+import type React from 'react'
+import type Konva from 'konva'
+import type { Position } from '@/types/map'
+import type { SpellEventData } from '@/types/timeline'
+import type { Token } from '@/types/token'
+import type { SpellEffect } from '@/types/spells'
 
 // Common Component Props
 export type BaseComponentProps = {

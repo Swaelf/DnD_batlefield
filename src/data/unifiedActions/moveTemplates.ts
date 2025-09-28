@@ -1,15 +1,18 @@
-import { UnifiedAction } from '@/types/unifiedAction'
+import type { UnifiedAction } from '@/types/unifiedAction'
 
 export const moveTemplates: UnifiedAction[] = [
   // Basic Movement
   {
     id: 'walk-template',
+    name: 'Walk',
+    description: 'A movement action',
     type: 'move',
     category: 'walk',
+    tags: ["movement","positioning"],
     source: { x: 0, y: 0 }, // Will be set when used
     target: { x: 0, y: 0 }, // Will be set when used
     animation: {
-      type: 'movement',
+      type: 'line',
       duration: 1000,
       color: '#4A90E2',
       size: 0,
@@ -33,17 +36,20 @@ export const moveTemplates: UnifiedAction[] = [
   },
   {
     id: 'dash-template',
+    name: 'Dash',
+    description: 'A movement action',
     type: 'move',
     category: 'dash',
+    tags: ["movement","positioning"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'movement',
+      type: 'line',
       duration: 600,
       color: '#FFD700',
       size: 0,
       easing: 'ease-out',
-      speed: 'fast'
+      speed: 300
     },
     effects: {
       affectedTargets: [],
@@ -63,12 +69,15 @@ export const moveTemplates: UnifiedAction[] = [
   },
   {
     id: 'charge-template',
+    name: 'Charge',
+    description: 'A movement action',
     type: 'move',
     category: 'charge',
+    tags: ["movement","positioning"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'movement',
+      type: 'line',
       duration: 800,
       color: '#FF6B47',
       size: 0,
@@ -95,12 +104,15 @@ export const moveTemplates: UnifiedAction[] = [
   // Stealth Movement
   {
     id: 'sneak-template',
+    name: 'Sneak',
+    description: 'A movement action',
     type: 'move',
     category: 'stealth',
+    tags: ["movement","positioning"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'movement',
+      type: 'line',
       duration: 1500,
       color: '#6A4C93',
       size: 0,
@@ -127,12 +139,15 @@ export const moveTemplates: UnifiedAction[] = [
   // Difficult Movement
   {
     id: 'climb-template',
+    name: 'Climb',
+    description: 'A movement action',
     type: 'move',
     category: 'climb',
+    tags: ["movement","positioning"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'movement',
+      type: 'line',
       duration: 2000,
       color: '#8B4513',
       size: 0,
@@ -157,12 +172,15 @@ export const moveTemplates: UnifiedAction[] = [
   },
   {
     id: 'swim-template',
+    name: 'Swim',
+    description: 'A movement action',
     type: 'move',
     category: 'swim',
+    tags: ["movement","positioning"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'movement',
+      type: 'line',
       duration: 1800,
       color: '#4ECDC4',
       size: 0,
@@ -189,12 +207,15 @@ export const moveTemplates: UnifiedAction[] = [
   // Special Movement
   {
     id: 'fly-template',
+    name: 'Fly',
+    description: 'A movement action',
     type: 'move',
     category: 'fly',
+    tags: ["movement","positioning"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'movement',
+      type: 'line',
       duration: 800,
       color: '#B19CD9',
       size: 0,
@@ -219,12 +240,15 @@ export const moveTemplates: UnifiedAction[] = [
   },
   {
     id: 'teleport-template',
+    name: 'Teleport',
+    description: 'A movement action',
     type: 'move',
     category: 'teleport',
+    tags: ["movement","positioning"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'teleport',
+      type: 'burst',
       duration: 400,
       color: '#9370DB',
       size: 40,
@@ -250,12 +274,15 @@ export const moveTemplates: UnifiedAction[] = [
   // Retreat Movement
   {
     id: 'withdraw-template',
+    name: 'Withdraw',
+    description: 'A movement action',
     type: 'move',
     category: 'withdraw',
+    tags: ["movement","positioning"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'movement',
+      type: 'line',
       duration: 1200,
       color: '#FFA500',
       size: 0,
@@ -280,12 +307,15 @@ export const moveTemplates: UnifiedAction[] = [
   },
   {
     id: 'disengage-template',
+    name: 'Disengage',
+    description: 'A movement action',
     type: 'move',
     category: 'disengage',
+    tags: ["movement","positioning"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'movement',
+      type: 'line',
       duration: 1000,
       color: '#20B2AA',
       size: 0,

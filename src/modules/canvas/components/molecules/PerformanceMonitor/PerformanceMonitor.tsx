@@ -6,11 +6,10 @@
  */
 
 import React from 'react'
-import { Activity, Zap, Database, Clock } from 'lucide-react'
-import { Box, Text } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { Activity } from 'lucide-react'
+import { Box, Text } from '@/components/primitives'
 import { PerformanceMetric } from '../../atoms'
-import type { CanvasPerformance } from '../../../types'
+import type { CanvasPerformance } from '../../../types/canvas'
 
 export interface PerformanceMonitorProps {
   readonly performance: CanvasPerformance
@@ -27,36 +26,31 @@ export interface PerformanceThresholds {
   readonly objectCount: { warning: number; error: number }
 }
 
-const MonitorContainer = styled(Box, {
+// Helper functions for styling
+const getMonitorContainerStyles = (): React.CSSProperties => ({
   display: 'flex',
-  flexDirection: 'column',
-  gap: '$2',
-  padding: '$3',
-  backgroundColor: '$dndBlack/90',
-  borderRadius: '$md',
-  border: '1px solid $gray800',
+  flexDirection: 'column' as const,
+  gap: '8px',
+  padding: '12px',
+  backgroundColor: 'rgba(26, 26, 26, 0.9)',
+  borderRadius: '6px',
+  border: '1px solid var(--gray-800)',
   backdropFilter: 'blur(8px)',
   minWidth: '200px'
 })
 
-const MonitorHeader = styled(Box, {
+const getMonitorHeaderStyles = (): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '$2',
-  paddingBottom: '$2',
-  borderBottom: '1px solid $gray800'
+  gap: '8px',
+  paddingBottom: '8px',
+  borderBottom: '1px solid var(--gray-800)'
 })
 
-const MetricsGrid = styled(Box, {
+const getMetricsGridStyles = (compact = false): React.CSSProperties => ({
   display: 'grid',
-  gap: '$2',
-
-  variants: {
-    compact: {
-      true: { gridTemplateColumns: '1fr 1fr' },
-      false: { gridTemplateColumns: '1fr' }
-    }
-  }
+  gap: '8px',
+  gridTemplateColumns: compact ? '1fr 1fr' : '1fr'
 })
 
 const defaultThresholds: PerformanceThresholds = {
@@ -86,15 +80,22 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = React.memo(
   const cachePercentage = performance.cacheHitRatio * 100
 
   return (
-    <MonitorContainer>
-      <MonitorHeader>
+    <Box style={getMonitorContainerStyles()}>
+      <Box style={getMonitorHeaderStyles()}>
         <Activity size={16} color="var(--colors-dndRed)" />
-        <Text size="sm" weight="semibold" color="gray100">
+        <Text
+          variant="body"
+          size="sm"
+          style={{
+            fontWeight: '600',
+            color: 'var(--gray-100)'
+          }}
+        >
           Performance
         </Text>
-      </MonitorHeader>
+      </Box>
 
-      <MetricsGrid compact={compact}>
+      <Box style={getMetricsGridStyles(compact)}>
         {/* FPS - Always shown */}
         <PerformanceMetric
           label="FPS"
@@ -170,27 +171,46 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = React.memo(
             maxValue={100}
           />
         )}
-      </MetricsGrid>
+      </Box>
 
       {/* Performance status summary */}
       {!compact && (
-        <Box display="flex" alignItems="center" justifyContent="center" gap="$2">
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
           {performance.fps < thresholds.fps.error ? (
-            <Text size="xs" color="error">
+            <Text
+              variant="body"
+              size="xs"
+              style={{ color: 'var(--error)' }}
+            >
               Performance Issues
             </Text>
           ) : performance.fps < thresholds.fps.warning ? (
-            <Text size="xs" color="warning">
+            <Text
+              variant="body"
+              size="xs"
+              style={{ color: 'var(--warning)' }}
+            >
               Performance Warning
             </Text>
           ) : (
-            <Text size="xs" color="success">
+            <Text
+              variant="body"
+              size="xs"
+              style={{ color: 'var(--success)' }}
+            >
               Performance Good
             </Text>
           )}
         </Box>
       )}
-    </MonitorContainer>
+    </Box>
   )
 })
 

@@ -5,8 +5,8 @@
  * Re-exports base spell types and adds module-specific branded types.
  */
 
-// Re-export core spell types from the centralized type system
-export type {
+// Import and re-export core spell types from the centralized type system
+import type {
   SpellEffect,
   SpellSize,
   SpellAnimation,
@@ -14,6 +14,15 @@ export type {
   SpellTemplate,
   SpellEffectTemplate
 } from '@/types/spells'
+
+export type {
+  SpellEffect,
+  SpellSize,
+  SpellAnimation,
+  AnimationType,
+  SpellTemplate,
+  SpellEffectTemplate
+}
 
 // Re-export helper functions
 export {
@@ -36,6 +45,7 @@ export type UnifiedSpell = SpellEffect & {
   readonly templateId: SpellTemplateId
   readonly category: SpellCategoryId
   readonly school: SpellSchoolId
+  readonly description: string
   readonly isCustom: boolean
   readonly customizable: boolean
   readonly tags: readonly string[]

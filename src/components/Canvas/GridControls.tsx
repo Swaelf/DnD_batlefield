@@ -1,108 +1,151 @@
-import React, { memo } from 'react'
+import React, { memo, forwardRef } from 'react'
 import { Grid3x3, Magnet, Eye, EyeOff, Sparkles } from 'lucide-react'
 import useMapStore from '@/store/mapStore'
-import { Box, Button, Text } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { Text } from '@/components/primitives/TextVE'
 
-const GridControlsContainer = styled(Box, {
-  position: 'absolute',
-  top: '$4',
-  left: '$4',
-  zIndex: 50,
-  backgroundColor: '$dndBlack/80',
-  borderRadius: '$lg',
-  padding: '$2',
-  backdropFilter: 'blur(4px)',
-})
+export type GridControlsProps = {
+  className?: string
+  style?: React.CSSProperties
+}
 
-const GridButton = styled(Button, {
-  padding: '$2',
-  borderRadius: '$lg',
-  transition: '$fast',
-  '&:hover': {
-    backgroundColor: '$gray700',
-  },
+// Grid Button component
+export type GridButtonProps = {
+  onClick: () => void
+  active: boolean
+  title: string
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}
 
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$gray700',
-        color: '$secondary',
-      },
-      false: {
-        backgroundColor: '$gray800',
-        color: '$gray500',
-      },
-    },
-  },
-})
+export const GridButton = forwardRef<HTMLButtonElement, GridButtonProps>(
+  ({ onClick, active, title, children, className, style }, ref) => {
+    const buttonStyles: React.CSSProperties = {
+      padding: '8px',
+      borderRadius: '12px',
+      border: '1px solid var(--gray700)',
+      backgroundColor: active ? 'var(--gray700)' : 'var(--gray800)',
+      color: active ? 'var(--secondary)' : 'var(--gray500)',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      outline: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...style,
+    }
 
-const SnapIndicator = styled(Box, {
-  marginLeft: '$2',
-  paddingX: '$2',
-  paddingY: '$1',
-  borderRadius: '$md',
-  backgroundColor: '$gray800',
-  fontSize: '$xs',
-})
+    return (
+      <button
+        ref={ref}
+        onClick={onClick}
+        title={title}
+        style={buttonStyles}
+        className={className}
+        onMouseEnter={(e) => {
+          if (!active) {
+            e.currentTarget.style.backgroundColor = 'var(--gray700)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!active) {
+            e.currentTarget.style.backgroundColor = 'var(--gray800)'
+          }
+        }}
+      >
+        {children}
+      </button>
+    )
+  }
+)
 
-const GridLabelContainer = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  marginRight: '$2'
-})
+GridButton.displayName = 'GridButton'
 
-const GridLabelText = styled(Text, {
-  fontSize: '$xs',
-  color: '$gray400'
-})
+// Snap Indicator component
+export type SnapIndicatorProps = {
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}
 
-const SnapText = styled(Text, {
-  fontSize: '$xs'
-})
+export const SnapIndicator = forwardRef<HTMLDivElement, SnapIndicatorProps>(
+  ({ children, className, style }, ref) => {
+    const indicatorStyles: React.CSSProperties = {
+      marginLeft: '8px',
+      paddingLeft: '8px',
+      paddingRight: '8px',
+      paddingTop: '4px',
+      paddingBottom: '4px',
+      borderRadius: '6px',
+      backgroundColor: 'var(--gray800)',
+      border: '1px solid var(--gray700)',
+      ...style,
+    }
 
-const SnapOnText = styled(SnapText, {
-  color: '$secondary'
-})
+    return (
+      <div ref={ref} style={indicatorStyles} className={className}>
+        {children}
+      </div>
+    )
+  }
+)
 
-const SnapOffText = styled(SnapText, {
-  color: '$gray500'
-})
+SnapIndicator.displayName = 'SnapIndicator'
 
-const Divider = styled(Box, {
-  width: 1,
-  height: 24,
-  backgroundColor: '$gray600',
-  marginX: '$2'
-})
-
-const GridControlsRow = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2'
-})
-
-const GridControlsComponent: React.FC = () => {
+const GridControlsComponent = ({ className, style }: GridControlsProps) => {
   // Use specific selectors to prevent unnecessary re-renders
-  const currentMap = useMapStore(state => state.currentMap)
-  const spellPreviewEnabled = useMapStore(state => state.spellPreviewEnabled)
-  const toggleGridSnap = useMapStore(state => state.toggleGridSnap)
-  const toggleGridVisibility = useMapStore(state => state.toggleGridVisibility)
-  const toggleSpellPreview = useMapStore(state => state.toggleSpellPreview)
+  const currentMap = useMapStore((state: any) => state.currentMap)
+  const spellPreviewEnabled = useMapStore((state: any) => state.spellPreviewEnabled)
+  const toggleGridSnap = useMapStore((state: any) => state.toggleGridSnap)
+  const toggleGridVisibility = useMapStore((state: any) => state.toggleGridVisibility)
+  const toggleSpellPreview = useMapStore((state: any) => state.toggleSpellPreview)
 
   if (!currentMap) return null
 
   const { grid } = currentMap
 
+  const containerStyles: React.CSSProperties = {
+    position: 'absolute',
+    top: '16px',
+    left: '16px',
+    zIndex: 50,
+    backgroundColor: 'rgba(26, 26, 26, 0.8)',
+    borderRadius: '12px',
+    padding: '8px',
+    backdropFilter: 'blur(4px)',
+    border: '1px solid var(--gray700)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+    ...style,
+  }
+
+  const rowStyles: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  }
+
+  const labelContainerStyles: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    marginRight: '8px',
+  }
+
+  const dividerStyles: React.CSSProperties = {
+    width: '1px',
+    height: '24px',
+    backgroundColor: 'var(--gray600)',
+    margin: '0 8px',
+  }
+
   return (
-    <GridControlsContainer>
-      <GridControlsRow>
+    <div style={containerStyles} className={className}>
+      <div style={rowStyles}>
         {/* Grid Label */}
-        <GridLabelContainer>
+        <div style={labelContainerStyles}>
           <Grid3x3 size={16} color="#9CA3AF" />
-          <GridLabelText>Grid</GridLabelText>
-        </GridLabelContainer>
+          <Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Grid</Text>
+        </div>
 
         {/* Toggle Grid Visibility */}
         <GridButton
@@ -128,15 +171,18 @@ const GridControlsComponent: React.FC = () => {
 
         {/* Snap Indicator */}
         <SnapIndicator>
-          {grid.snap ? (
-            <SnapOnText>Snap: ON</SnapOnText>
-          ) : (
-            <SnapOffText>Snap: OFF</SnapOffText>
-          )}
+          <Text
+            style={{
+              fontSize: '12px',
+              color: grid.snap ? 'var(--secondary)' : 'var(--gray500)'
+            }}
+          >
+            Snap: {grid.snap ? 'ON' : 'OFF'}
+          </Text>
         </SnapIndicator>
 
         {/* Divider */}
-        <Divider />
+        <div style={dividerStyles} />
 
         {/* Action Preview Toggle */}
         <GridButton
@@ -149,14 +195,17 @@ const GridControlsComponent: React.FC = () => {
 
         {/* Action Preview Indicator */}
         <SnapIndicator>
-          {spellPreviewEnabled ? (
-            <SnapOnText>Preview: ON</SnapOnText>
-          ) : (
-            <SnapOffText>Preview: OFF</SnapOffText>
-          )}
+          <Text
+            style={{
+              fontSize: '12px',
+              color: spellPreviewEnabled ? 'var(--secondary)' : 'var(--gray500)'
+            }}
+          >
+            Preview: {spellPreviewEnabled ? 'ON' : 'OFF'}
+          </Text>
         </SnapIndicator>
-      </GridControlsRow>
-    </GridControlsContainer>
+      </div>
+    </div>
   )
 }
 

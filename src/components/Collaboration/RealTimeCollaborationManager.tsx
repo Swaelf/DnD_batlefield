@@ -1,13 +1,17 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react'
-import { Group, Circle, Text as KonvaText, Rect } from 'react-konva'
-import Konva from 'konva'
-import useCollaborationStore, { CollaborativeUser, ChatMessage } from '@/store/collaborationStore'
+import { Group, Text as KonvaText, Rect } from 'react-konva'
+import type Konva from 'konva'
+import { Users, MessageSquare, Settings, UserPlus, Crown, Eye } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Input } from '@/components/ui/Input'
+import { Avatar } from '@/components/ui/Avatar'
+import { useCollaborationStore } from '@/store/collaborationStore'
 import useMapStore from '@/store/mapStore'
-import { Point } from '@/types'
-import { Box, Text, Button, Input, Avatar } from '@/components/ui'
-import { Users, MessageSquare, Settings, UserPlus, Crown, Eye, EyeOff, Mic, MicOff } from 'lucide-react'
+import type { CollaborativeUser } from '@/store/collaborationStore'
 
-interface RealTimeCollaborationManagerProps {
+export type RealTimeCollaborationManagerProps = {
   stageRef?: React.RefObject<Konva.Stage>
   isActive: boolean
 }
@@ -35,7 +39,6 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
     chatMessages,
     unreadMessages,
     isTyping,
-    connect,
     disconnect,
     createSession,
     joinSession,
@@ -47,14 +50,13 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
     markMessagesAsRead,
     inviteUser,
     removeUser,
-    updateUserRole,
     getUsersInSession
   } = useCollaborationStore()
 
   const { selectedObjects, currentMap } = useMapStore()
 
   // Handle cursor movement
-  const handleMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleMouseMove = useCallback((_e: Konva.KonvaEventObject<MouseEvent>) => {
     if (!isActive || !stageRef?.current || connectionStatus !== 'connected') return
 
     const stage = stageRef.current
@@ -267,46 +269,64 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
 
       {/* Collaboration Controls */}
       <Box
-        css={{
+        style={{
           position: 'fixed',
-          bottom: 20,
-          right: 20,
+          bottom: '20px',
+          right: '20px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '$2',
+          gap: '8px',
           zIndex: 1000
         }}
       >
         {connectionStatus === 'disconnected' ? (
-          <Box css={{ display: 'flex', gap: '$2' }}>
-            <Button onClick={handleStartSession}>
+          <Box style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              onClick={handleStartSession}
+              variant="primary"
+              size="sm"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
               <Crown size={16} />
               Host Session
             </Button>
-            <Button onClick={handleJoinSession} variant="outline">
+            <Button
+              onClick={handleJoinSession}
+              variant="outline"
+              size="sm"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
               <Users size={16} />
               Join Session
             </Button>
           </Box>
         ) : (
-          <Box css={{ display: 'flex', gap: '$2' }}>
+          <Box style={{ display: 'flex', gap: '8px' }}>
             {/* Connection Status */}
             <Box
-              css={{
-                padding: '$2 $3',
-                backgroundColor: connectionStatus === 'connected' ? '$success' : '$warning',
-                borderRadius: '$sm',
+              style={{
+                padding: '6px 12px',
+                backgroundColor: connectionStatus === 'connected' ? 'var(--success)' : 'var(--warning)',
+                borderRadius: 'var(--radii-sm)',
                 color: 'white',
-                fontSize: '$xs',
+                fontSize: '12px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '$1'
+                gap: '4px'
               }}
             >
-              <Circle
-                css={{
-                  width: 8,
-                  height: 8,
+              <Box
+                style={{
+                  width: '8px',
+                  height: '8px',
                   backgroundColor: 'currentColor',
                   borderRadius: '50%'
                 }}
@@ -316,8 +336,14 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
 
             {/* Users List Toggle */}
             <Button
-              variant={showUserList ? 'default' : 'outline'}
+              variant={showUserList ? 'primary' : 'outline'}
               onClick={() => setShowUserList(!showUserList)}
+              size="sm"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
             >
               <Users size={16} />
               {onlineUsers.length}
@@ -325,28 +351,35 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
 
             {/* Chat Toggle */}
             <Button
-              variant={showChat ? 'default' : 'outline'}
+              variant={showChat ? 'primary' : 'outline'}
               onClick={() => {
                 setShowChat(!showChat)
                 if (!showChat) markMessagesAsRead()
+              }}
+              size="sm"
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
               }}
             >
               <MessageSquare size={16} />
               {unreadMessages > 0 && (
                 <Box
-                  css={{
+                  style={{
                     position: 'absolute',
-                    top: -8,
-                    right: -8,
-                    backgroundColor: '$error',
+                    top: '-8px',
+                    right: '-8px',
+                    backgroundColor: 'var(--error)',
                     color: 'white',
                     borderRadius: '50%',
-                    width: 20,
-                    height: 20,
+                    width: '20px',
+                    height: '20px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '$xs'
+                    fontSize: '12px'
                   }}
                 >
                   {unreadMessages > 9 ? '9+' : unreadMessages}
@@ -357,15 +390,20 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
             {/* Settings Toggle */}
             {isHost && (
               <Button
-                variant={showSettings ? 'default' : 'outline'}
+                variant={showSettings ? 'primary' : 'outline'}
                 onClick={() => setShowSettings(!showSettings)}
+                size="sm"
               >
                 <Settings size={16} />
               </Button>
             )}
 
             {/* Leave Session */}
-            <Button onClick={disconnect} variant="outline">
+            <Button
+              onClick={disconnect}
+              variant="outline"
+              size="sm"
+            >
               Leave
             </Button>
           </Box>
@@ -375,60 +413,59 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
       {/* Users List Panel */}
       {showUserList && connectionStatus === 'connected' && (
         <Box
-          css={{
+          style={{
             position: 'fixed',
-            bottom: 80,
-            right: 20,
-            width: 300,
-            maxHeight: 400,
-            backgroundColor: '$dndBlack',
-            border: '1px solid $gray800',
-            borderRadius: '$md',
-            padding: '$4',
+            bottom: '80px',
+            right: '20px',
+            width: '300px',
+            maxHeight: '400px',
+            backgroundColor: 'var(--gray900)',
+            border: '1px solid var(--gray700)',
+            borderRadius: 'var(--radii-md)',
+            padding: '16px',
             zIndex: 1001,
             overflow: 'auto'
           }}
         >
-          <Text size="lg" weight="semibold" css={{ marginBottom: '$3' }}>
+          <Text size="lg" weight="semibold">
             Online Users ({onlineUsers.length})
           </Text>
 
           {onlineUsers.map(user => (
             <Box
               key={user.id}
-              css={{
+              style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '$3',
-                padding: '$2',
-                marginBottom: '$2',
-                backgroundColor: user.id === currentUser?.id ? '$gray800' : 'transparent',
-                borderRadius: '$sm'
+                gap: '12px',
+                padding: '8px',
+                marginBottom: '8px',
+                backgroundColor: user.id === currentUser?.id ? 'var(--gray800)' : 'transparent',
+                borderRadius: 'var(--radii-sm)'
               }}
             >
               <Avatar
                 size="sm"
-                css={{
+                fallback={user.name.charAt(0)}
+                style={{
                   backgroundColor: user.color,
                   color: 'white'
                 }}
-              >
-                {user.name.charAt(0)}
-              </Avatar>
+              />
 
-              <Box css={{ flex: 1 }}>
+              <Box style={{ flex: 1 }}>
                 <Text size="sm" weight="medium">
                   {user.name}
                   {user.id === currentUser?.id && ' (You)'}
                 </Text>
-                <Text size="xs" color="gray400">
+                <Text size="xs" color="textSecondary">
                   {user.role === 'gm' ? 'Game Master' :
                    user.role === 'player' ? 'Player' : 'Observer'}
                 </Text>
               </Box>
 
               {user.cursor?.visible && (
-                <Eye size={14} color="var(--colors-success)" />
+                <Eye size={14} color="var(--success)" />
               )}
 
               {isHost && user.id !== currentUser?.id && (
@@ -446,10 +483,18 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
           {isHost && (
             <Button
               size="sm"
-              css={{ width: '100%', marginTop: '$2' }}
+              variant="outline"
               onClick={() => {
                 const email = prompt('Enter email to invite:')
                 if (email) inviteUser(email, 'player')
+              }}
+              style={{
+                width: '100%',
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                justifyContent: 'center'
               }}
             >
               <UserPlus size={16} />
@@ -462,15 +507,15 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
       {/* Chat Panel */}
       {showChat && connectionStatus === 'connected' && (
         <Box
-          css={{
+          style={{
             position: 'fixed',
-            bottom: 80,
-            right: showUserList ? 340 : 20,
-            width: 350,
-            height: 400,
-            backgroundColor: '$dndBlack',
-            border: '1px solid $gray800',
-            borderRadius: '$md',
+            bottom: '80px',
+            right: showUserList ? '340px' : '20px',
+            width: '350px',
+            height: '400px',
+            backgroundColor: 'var(--gray900)',
+            border: '1px solid var(--gray700)',
+            borderRadius: 'var(--radii-md)',
             display: 'flex',
             flexDirection: 'column',
             zIndex: 1001,
@@ -479,9 +524,9 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
         >
           {/* Chat Header */}
           <Box
-            css={{
-              padding: '$3',
-              borderBottom: '1px solid $gray800',
+            style={{
+              padding: '12px',
+              borderBottom: '1px solid var(--gray700)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between'
@@ -500,13 +545,13 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
           {/* Messages */}
           <Box
             ref={chatContainerRef}
-            css={{
+            style={{
               flex: 1,
-              padding: '$2',
+              padding: '8px',
               overflowY: 'auto',
               display: 'flex',
               flexDirection: 'column',
-              gap: '$2'
+              gap: '8px'
             }}
           >
             {chatMessages.map(message => {
@@ -516,47 +561,46 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
               return (
                 <Box
                   key={message.id}
-                  css={{
+                  style={{
                     display: 'flex',
                     alignItems: 'flex-start',
-                    gap: '$2',
+                    gap: '8px',
                     opacity: message.type === 'system' ? 0.7 : 1
                   }}
                 >
                   {!isOwn && user && (
                     <Avatar
-                      size="xs"
-                      css={{
+                      size="sm"
+                      fallback={user.name.charAt(0)}
+                      style={{
                         backgroundColor: user.color,
                         color: 'white',
-                        fontSize: '$xs'
+                        fontSize: '12px'
                       }}
-                    >
-                      {user.name.charAt(0)}
-                    </Avatar>
+                    />
                   )}
 
-                  <Box css={{ flex: 1, minWidth: 0 }}>
-                    <Box css={{ display: 'flex', alignItems: 'center', gap: '$1', marginBottom: '$1' }}>
+                  <Box style={{ flex: 1, minWidth: 0 }}>
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }} marginBottom={1}>
                       <Text
                         size="xs"
                         weight="medium"
-                        css={{ color: user?.color || '$gray400' }}
+                        style={{ color: user?.color || 'var(--gray400)' }}
                       >
                         {message.userName}
                       </Text>
-                      <Text size="xs" color="gray500">
+                      <Text size="xs" color="textTertiary">
                         {message.timestamp.toLocaleTimeString()}
                       </Text>
                     </Box>
 
                     {message.type === 'dice' ? (
                       <Box
-                        css={{
-                          padding: '$2',
-                          backgroundColor: '$gray800',
-                          borderRadius: '$sm',
-                          border: '1px solid $success'
+                        style={{
+                          padding: '8px',
+                          backgroundColor: 'var(--gray800)',
+                          borderRadius: 'var(--radii-sm)',
+                          border: '1px solid var(--success)'
                         }}
                       >
                         <Text size="sm">
@@ -569,7 +613,7 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
                         )}
                       </Box>
                     ) : (
-                      <Text size="sm" css={{ wordBreak: 'break-word' }}>
+                      <Text size="sm" style={{ wordBreak: 'break-word' }}>
                         {message.message}
                       </Text>
                     )}
@@ -580,8 +624,8 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
 
             {/* Typing Indicators */}
             {typingUsers.length > 0 && (
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$1', opacity: 0.7 }}>
-                <Text size="xs" color="gray400">
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.7 }}>
+                <Text size="xs" color="textSecondary">
                   {typingUsers.map(user => user.name).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
                 </Text>
               </Box>
@@ -589,17 +633,16 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
           </Box>
 
           {/* Chat Input */}
-          <Box css={{ padding: '$3', borderTop: '1px solid $gray800' }}>
+          <Box style={{ padding: '12px', borderTop: '1px solid var(--gray700)' }}>
             <form onSubmit={handleChatSubmit}>
               <Input
                 value={chatInput}
                 onChange={handleChatInputChange}
                 placeholder="Type a message... (/roll 1d20 for dice)"
-                fullWidth
-                size="sm"
+                style={{ width: '100%' }}
               />
             </form>
-            <Text size="xs" color="gray500" css={{ marginTop: '$1' }}>
+            <Text size="xs" color="textTertiary">
               Use /roll [dice] for dice rolls (e.g., /roll 1d20+5)
             </Text>
           </Box>
@@ -609,87 +652,89 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
       {/* Settings Panel */}
       {showSettings && isHost && connectionStatus === 'connected' && currentSession && (
         <Box
-          css={{
+          style={{
             position: 'fixed',
-            bottom: 80,
-            right: 20,
-            width: 300,
-            backgroundColor: '$dndBlack',
-            border: '1px solid $gray800',
-            borderRadius: '$md',
-            padding: '$4',
+            bottom: '80px',
+            right: '20px',
+            width: '300px',
+            backgroundColor: 'var(--gray900)',
+            border: '1px solid var(--gray700)',
+            borderRadius: 'var(--radii-md)',
+            padding: '16px',
             zIndex: 1001
           }}
         >
-          <Text size="lg" weight="semibold" css={{ marginBottom: '$3' }}>
+          <Text size="lg" weight="semibold">
             Session Settings
           </Text>
 
-          <Box css={{ display: 'flex', flexDirection: 'column', gap: '$3' }}>
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <Box>
-              <Text size="sm" css={{ marginBottom: '$2' }}>Session Name:</Text>
+              <Text size="sm">Session Name:</Text>
               <Input
                 value={currentSession.name}
-                onChange={(e) => {
+                onChange={(_e: React.ChangeEvent<HTMLInputElement>) => {
                   // updateSessionSettings({ name: e.target.value })
                 }}
-                size="sm"
-                fullWidth
+                style={{ width: '100%' }}
               />
             </Box>
 
             <Box>
-              <Text size="sm" css={{ marginBottom: '$2' }}>Session ID:</Text>
+              <Text size="sm">Session ID:</Text>
               <Input
                 value={currentSession.id}
                 readOnly
-                size="sm"
-                fullWidth
+                style={{ width: '100%' }}
               />
               <Button
                 size="xs"
-                css={{ marginTop: '$1' }}
+                variant="outline"
                 onClick={() => navigator.clipboard.writeText(currentSession.id)}
+                style={{ marginTop: '4px' }}
               >
                 Copy to Share
               </Button>
             </Box>
 
-            <Box css={{ display: 'flex', flexDirection: 'column', gap: '$2' }}>
+            <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <Text size="sm">Permissions:</Text>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <input
                   type="checkbox"
                   checked={currentSession.settings.lockLayersForPlayers}
-                  onChange={(e) => {
+                  onChange={(_e: React.ChangeEvent<HTMLInputElement>) => {
                     // updateSessionSettings({ lockLayersForPlayers: e.target.checked })
                   }}
+                  style={{ accentColor: 'var(--primary)' }}
                 />
                 <Text size="xs">Lock layers for players</Text>
-              </label>
+              </Box>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <input
                   type="checkbox"
                   checked={currentSession.settings.allowAnonymous}
-                  onChange={(e) => {
+                  onChange={(_e: React.ChangeEvent<HTMLInputElement>) => {
                     // updateSessionSettings({ allowAnonymous: e.target.checked })
                   }}
+                  style={{ accentColor: 'var(--primary)' }}
                 />
                 <Text size="xs">Allow anonymous users</Text>
-              </label>
+              </Box>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <input
                   type="checkbox"
                   checked={currentSession.settings.enableTextChat}
-                  onChange={(e) => {
+                  onChange={(_e: React.ChangeEvent<HTMLInputElement>) => {
                     // updateSessionSettings({ enableTextChat: e.target.checked })
                   }}
+                  style={{ accentColor: 'var(--primary)' }}
                 />
                 <Text size="xs">Enable text chat</Text>
-              </label>
+              </Box>
             </Box>
           </Box>
         </Box>

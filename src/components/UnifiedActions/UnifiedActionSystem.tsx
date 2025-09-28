@@ -2,7 +2,7 @@ import { memo, useEffect, useRef } from 'react'
 import { Group } from 'react-konva'
 import type Konva from 'konva'
 import { useUnifiedActionStore } from '@/store/unifiedActionStore'
-import { useMapStore } from '@/store/mapStore'
+import useMapStore from '@/store/mapStore'
 import { ActionRenderer } from './ActionRenderer'
 import { TargetHighlighter } from './TargetHighlighter'
 import { detectAffectedTokens } from '@/utils/targetDetection'
@@ -21,8 +21,8 @@ const UnifiedActionSystemComponent = ({
   onAllComplete
 }: UnifiedActionSystemProps) => {
   const activeActions = useUnifiedActionStore(state => state.activeActions)
-  const completeAction = useUnifiedActionStore(state => state.completeAction)
-  const highlightTarget = useUnifiedActionStore(state => state.highlightTarget)
+  // const completeAction = useUnifiedActionStore(state => state.completeAction) // unused
+  const highlightTargets = useUnifiedActionStore(state => state.highlightTargets)
   const clearHighlight = useUnifiedActionStore(state => state.clearHighlight)
   const currentMap = useMapStore(state => state.currentMap)
   const groupRef = useRef<Konva.Group>(null)
@@ -46,9 +46,10 @@ const UnifiedActionSystemComponent = ({
 
       // Detect and highlight affected targets
       const affectedTokens = detectAffectedTokens(action, tokens)
-      affectedTokens.forEach(token => {
-        highlightTarget(token.id, action.id, action.animation.color || '#FFD700')
-      })
+      if (affectedTokens.length > 0) {
+        const tokenIds = affectedTokens.map(t => t.id)
+        highlightTargets(tokenIds, action.id, action.animation.color || '#FFD700')
+      }
 
       // Log affected targets
       if (affectedTokens.length > 0) {
@@ -80,7 +81,7 @@ const UnifiedActionSystemComponent = ({
 
     // Update reference
     previousActionsRef.current = [...activeActions]
-  }, [activeActions, tokens, enabled, highlightTarget, clearHighlight, onActionComplete, onAllComplete])
+  }, [activeActions, tokens, enabled, highlightTargets, clearHighlight, onActionComplete, onAllComplete])
 
   // Handle cleanup on unmount
   useEffect(() => {

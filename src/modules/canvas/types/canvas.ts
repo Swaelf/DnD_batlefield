@@ -5,7 +5,8 @@
  * and performance management in the atomic Canvas system.
  */
 
-import type { Point, Rectangle, Bounds } from '@/types/geometry'
+import type { Point, Rectangle as GeometryRectangle, Bounds } from '@/types/geometry'
+import type { ViewportState as ProperViewportState } from './viewport'
 
 // Branded types for compile-time safety
 export type CanvasId = string & { readonly _brand: 'CanvasId' }
@@ -27,6 +28,31 @@ export interface CanvasConfig {
   readonly maxCacheSize: number
   readonly renderOnDemand: boolean
 }
+
+/**
+ * Canvas Settings
+ * Settings for canvas initialization and configuration
+ */
+export interface CanvasSettings {
+  readonly width: number
+  readonly height: number
+  readonly backgroundColor?: string
+  readonly pixelRatio?: number
+  readonly viewport?: ProperViewportState
+  readonly background?: string
+  readonly grid: {
+    readonly visible: boolean
+    readonly size: number
+    readonly color: string
+    readonly opacity: number
+  }
+}
+
+// Import ViewportState from viewport module
+export type { ViewportState } from './viewport'
+
+// Use Rectangle type alias from geometry module
+type Rectangle = GeometryRectangle
 
 /**
  * Canvas State
@@ -108,6 +134,58 @@ export type CanvasExportFormat =
   | 'webp'
   | 'svg'
   | 'pdf'
+
+// Import CoordinateSpace from viewport module to avoid conflicts
+export type { CoordinateSpace } from './viewport'
+
+/**
+ * Canvas Pointer Event
+ * Enhanced pointer event for canvas interactions
+ */
+export interface CanvasPointerEvent {
+  readonly position: Point
+  readonly stagePosition: Point
+  readonly worldPosition: Point
+  readonly button: number
+  readonly buttons: number
+  readonly target: CanvasEventTarget | null
+  readonly modifiers: CanvasEventModifiers
+  readonly timestamp: number
+  readonly preventDefault: () => void
+  readonly stopPropagation: () => void
+}
+
+/**
+ * Canvas Wheel Event
+ * Enhanced wheel event for canvas interactions
+ */
+export interface CanvasWheelEvent {
+  readonly position: Point
+  readonly stagePosition: Point
+  readonly worldPosition: Point
+  readonly deltaX: number
+  readonly deltaY: number
+  readonly deltaZ: number
+  readonly deltaMode: number
+  readonly modifiers: CanvasEventModifiers
+  readonly timestamp: number
+  readonly preventDefault: () => void
+  readonly stopPropagation: () => void
+}
+
+/**
+ * Canvas Layer Configuration
+ * Configuration for canvas layers
+ */
+export interface CanvasLayer {
+  readonly id: string
+  readonly name: string
+  readonly visible: boolean
+  readonly locked: boolean
+  readonly opacity: number
+  readonly blendMode: string
+  readonly zIndex: number
+}
 
 /**
  * Canvas Event Data

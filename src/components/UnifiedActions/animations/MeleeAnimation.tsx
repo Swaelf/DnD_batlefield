@@ -1,5 +1,5 @@
 import { memo, useRef, useEffect } from 'react'
-import { Group, Arc, Line, Path, Circle } from 'react-konva'
+import { Group, Arc, Circle } from 'react-konva'
 import Konva from 'konva'
 import type { UnifiedAction } from '@/types/unifiedAction'
 import type { Point } from '@/types/geometry'
@@ -25,12 +25,14 @@ const MeleeAnimationComponent = ({ action, onComplete }: MeleeAnimationProps) =>
     const impact = impactRef.current
 
     // Parse source position
-    const source = typeof action.source === 'object' ? action.source : { x: 0, y: 0 }
-    const target = typeof action.target === 'object'
-      ? action.target
-      : Array.isArray(action.target) && action.target.length > 0
-        ? { x: source.x + 50, y: source.y } // Default offset for token target
-        : { x: source.x + 50, y: source.y }
+    const source = typeof action.source === 'object' && !Array.isArray(action.source)
+      ? action.source as Point
+      : { x: 0, y: 0 }
+
+    // Parse target position
+    const target = Array.isArray(action.target)
+      ? { x: source.x + 50, y: source.y } // Default offset for token array target
+      : action.target as Point
 
     const targetPoint = target as Point
 

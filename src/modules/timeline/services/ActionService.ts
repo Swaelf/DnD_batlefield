@@ -20,8 +20,7 @@ import type {
   MovementActionData,
   InteractionActionData,
   EnvironmentalActionData,
-  SequenceActionData,
-  UtilityActionData
+  SequenceActionData
 } from '../types'
 
 /**
@@ -380,7 +379,7 @@ export class ActionService {
       type: 'environmental',
       effectType: data.effectType.category as any,
       area: {
-        type: data.areaOfEffect.shape,
+        type: data.areaOfEffect.shape === 'sphere' ? 'circle' : data.areaOfEffect.shape as any,
         center: { x: 0, y: 0 }, // Will be filled when creating event
         radius: typeof data.areaOfEffect.size === 'number' ? data.areaOfEffect.size : undefined,
         width: typeof data.areaOfEffect.size === 'object' ? data.areaOfEffect.size.width : undefined,

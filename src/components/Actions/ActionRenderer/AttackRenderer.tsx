@@ -1,6 +1,6 @@
 import { memo, useRef, useEffect } from 'react'
 import Konva from 'konva'
-import { Group, Circle, Line, Arc, Text } from 'react-konva'
+import { Group } from 'react-konva'
 import type { AttackEventData } from '@/types'
 import { ATTACK_VISUALS, CRITICAL_HIT } from '@/constants'
 
@@ -140,11 +140,11 @@ const AttackRendererComponent = ({
       const progress = Math.min(frame.time / duration, 1)
 
       if (animation === 'melee_slash') {
-        animateSlashEffect(effect, progress, isCritical)
+        animateSlashEffect(effect as Konva.Arc, progress, isCritical)
       } else if (animation === 'melee_thrust') {
-        animateThrustEffect(effect, progress, isCritical)
+        animateThrustEffect(effect as Konva.Line, progress, isCritical)
       } else {
-        animateSwingEffect(effect, progress, isCritical)
+        animateSwingEffect(effect as Konva.Circle, progress, isCritical)
       }
 
       if (progress >= 1) {
@@ -167,7 +167,7 @@ const AttackRendererComponent = ({
     fromPos: { x: number; y: number },
     toPos: { x: number; y: number },
     color: string
-  ) => {
+  ): Konva.Arc | Konva.Line | Konva.Circle => {
     const angle = Math.atan2(toPos.y - fromPos.y, toPos.x - fromPos.x)
     const midX = (fromPos.x + toPos.x) / 2
     const midY = (fromPos.y + toPos.y) / 2
@@ -209,7 +209,7 @@ const AttackRendererComponent = ({
     }
   }
 
-  const animateSlashEffect = (effect: Konva.Shape, progress: number, isCritical?: boolean) => {
+  const animateSlashEffect = (effect: Konva.Arc, progress: number, isCritical?: boolean) => {
     const opacity = Math.sin(progress * Math.PI)
     const scale = progress * (isCritical ? CRITICAL_HIT.EFFECT_SCALE : 1)
 

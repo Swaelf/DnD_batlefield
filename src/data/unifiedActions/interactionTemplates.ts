@@ -1,15 +1,18 @@
-import { UnifiedAction } from '@/types/unifiedAction'
+import type { UnifiedAction } from '@/types/unifiedAction'
 
 export const interactionTemplates: UnifiedAction[] = [
   // Door Interactions
   {
     id: 'open-door-template',
+    name: 'Open Door',
+    description: 'An object interaction',
     type: 'interaction',
     category: 'door',
+    tags: ["interaction","exploration"],
     source: { x: 0, y: 0 }, // Will be set when used
     target: { x: 0, y: 0 }, // Will be set when used
     animation: {
-      type: 'glow',
+      type: 'interaction',
       duration: 800,
       color: '#FFD700',
       size: 30,
@@ -33,12 +36,15 @@ export const interactionTemplates: UnifiedAction[] = [
   },
   {
     id: 'pick-lock-template',
+    name: 'Pick Lock',
+    description: 'An object interaction',
     type: 'interaction',
     category: 'door',
+    tags: ["interaction","exploration"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'sparkle',
+      type: 'interaction',
       duration: 2000,
       color: '#C0C0C0',
       size: 20,
@@ -64,12 +70,15 @@ export const interactionTemplates: UnifiedAction[] = [
   // Chest Interactions
   {
     id: 'open-chest-template',
+    name: 'Open Chest',
+    description: 'An object interaction',
     type: 'interaction',
     category: 'chest',
+    tags: ["interaction","exploration"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'glow',
+      type: 'interaction',
       duration: 1000,
       color: '#DAA520',
       size: 40,
@@ -93,12 +102,15 @@ export const interactionTemplates: UnifiedAction[] = [
   },
   {
     id: 'search-chest-template',
+    name: 'Search Chest',
+    description: 'An object interaction',
     type: 'interaction',
     category: 'chest',
+    tags: ["interaction","exploration"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'inspect',
+      type: 'interaction',
       duration: 1500,
       color: '#87CEEB',
       size: 35,
@@ -124,12 +136,15 @@ export const interactionTemplates: UnifiedAction[] = [
   // Trap Interactions
   {
     id: 'disarm-trap-template',
+    name: 'Disarm Trap',
+    description: 'An object interaction',
     type: 'interaction',
     category: 'trap',
+    tags: ["interaction","exploration"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'careful',
+      type: 'interaction',
       duration: 3000,
       color: '#FF6347',
       size: 25,
@@ -153,12 +168,15 @@ export const interactionTemplates: UnifiedAction[] = [
   },
   {
     id: 'detect-trap-template',
+    name: 'Detect Trap',
+    description: 'An object interaction',
     type: 'interaction',
     category: 'trap',
+    tags: ["interaction","exploration"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'scan',
+      type: 'interaction',
       duration: 2000,
       color: '#FF69B4',
       size: 50,
@@ -184,12 +202,15 @@ export const interactionTemplates: UnifiedAction[] = [
   // Lever Interactions
   {
     id: 'pull-lever-template',
+    name: 'Pull Lever',
+    description: 'An object interaction',
     type: 'interaction',
     category: 'lever',
+    tags: ["interaction","exploration"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'mechanical',
+      type: 'interaction',
       duration: 1200,
       color: '#8B4513',
       size: 30,
@@ -215,12 +236,15 @@ export const interactionTemplates: UnifiedAction[] = [
   // Switch Interactions
   {
     id: 'press-button-template',
+    name: 'Press Button',
+    description: 'An object interaction',
     type: 'interaction',
     category: 'button',
+    tags: ["interaction","exploration"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'pulse',
+      type: 'interaction',
       duration: 600,
       color: '#32CD32',
       size: 20,
@@ -246,12 +270,15 @@ export const interactionTemplates: UnifiedAction[] = [
   // Portal Interactions
   {
     id: 'activate-portal-template',
+    name: 'Activate Portal',
+    description: 'An object interaction',
     type: 'interaction',
     category: 'portal',
+    tags: ["interaction","exploration"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'vortex',
+      type: 'interaction',
       duration: 2500,
       color: '#9370DB',
       size: 80,
@@ -277,12 +304,15 @@ export const interactionTemplates: UnifiedAction[] = [
   // Shrine Interactions
   {
     id: 'pray-shrine-template',
+    name: 'Pray Shrine',
+    description: 'An object interaction',
     type: 'interaction',
     category: 'shrine',
+    tags: ["interaction","exploration"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'divine',
+      type: 'interaction',
       duration: 3000,
       color: '#FFD700',
       size: 60,

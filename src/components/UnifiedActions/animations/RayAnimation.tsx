@@ -1,5 +1,5 @@
 import { memo, useRef, useEffect } from 'react'
-import { Group, Line, Circle, Rect } from 'react-konva'
+import { Group, Line, Circle } from 'react-konva'
 import Konva from 'konva'
 import type { UnifiedAction } from '@/types/unifiedAction'
 import type { Point } from '@/types/geometry'
@@ -29,26 +29,28 @@ const RayAnimationComponent = ({ action, onComplete }: RayAnimationProps) => {
     if (!ray || !glow) return
 
     // Parse positions
-    const source = typeof action.source === 'object' ? action.source : { x: 0, y: 0 }
-    const target = typeof action.target === 'object'
-      ? action.target
-      : Array.isArray(action.target) && action.target.length > 0
-        ? { x: 100, y: 100 } // Default if targeting tokens
-        : { x: 100, y: 100 }
+    const source = typeof action.source === 'object' && !Array.isArray(action.source)
+      ? action.source as Point
+      : { x: 0, y: 0 }
+
+    // Parse target position
+    const target = Array.isArray(action.target)
+      ? { x: 100, y: 100 } // Default if targeting tokens
+      : action.target as Point
 
     const targetPoint = target as Point
 
     // Calculate ray properties
     const dx = targetPoint.x - source.x
     const dy = targetPoint.y - source.y
-    const distance = Math.sqrt(dx * dx + dy * dy)
+    // const distance = Math.sqrt(dx * dx + dy * dy) // Unused
 
     // Set group position to source
     group.position({ x: 0, y: 0 })
     group.visible(true)
 
     const duration = action.animation.duration || 500
-    const color = action.animation.color || '#00FFFF'
+    // const color = action.animation.color || '#00FFFF' // Defined inline below
     const width = action.animation.size || 5
 
     const startTime = Date.now()

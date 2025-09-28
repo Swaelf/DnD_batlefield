@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
+import React from 'react'
 import useToolStore from '../toolStore'
-import { Tool } from '@/types'
 
 describe('toolStore', () => {
   beforeEach(() => {
@@ -230,7 +230,8 @@ describe('toolStore', () => {
       const tokenTemplate = {
         name: 'Goblin',
         size: 'small' as const,
-        image: '/tokens/goblin.png'
+        color: '#ff0000',
+        shape: 'circle' as const
       }
 
       act(() => {
@@ -244,9 +245,16 @@ describe('toolStore', () => {
       const { result } = renderHook(() => useToolStore())
 
       const staticTemplate = {
-        type: 'wall' as const,
+        id: 'wall-1',
+        name: 'Wall',
+        category: 'structures' as const,
+        icon: React.createElement('div'),
         width: 100,
-        height: 20
+        height: 20,
+        fillColor: '#666666',
+        strokeColor: '#333333',
+        strokeWidth: 2,
+        shape: 'rectangle' as const
       }
 
       act(() => {
@@ -260,11 +268,17 @@ describe('toolStore', () => {
       const { result } = renderHook(() => useToolStore())
 
       const spellTemplate = {
-        spellName: 'Fireball',
-        category: 'projectile-burst' as const,
+        id: 'fireball-1',
+        name: 'Fireball',
+        category: 'area' as const,
+        shape: 'sphere' as const,
+        icon: React.createElement('div'),
         color: '#FF4500',
-        size: 20,
-        duration: 1000
+        opacity: 0.7,
+        size: {
+          radius: 20
+        },
+        description: 'A burst of fire'
       }
 
       act(() => {
@@ -279,14 +293,29 @@ describe('toolStore', () => {
 
       // Set templates
       act(() => {
-        result.current.setTokenTemplate({ name: 'Test', size: 'medium', image: 'test.png' })
-        result.current.setStaticObjectTemplate({ type: 'wall', width: 100, height: 20 })
+        result.current.setTokenTemplate({ name: 'Test', size: 'medium', color: '#fff', shape: 'circle' })
+        result.current.setStaticObjectTemplate({
+          id: 'test-wall',
+          name: 'Test Wall',
+          category: 'structures',
+          icon: React.createElement('div'),
+          width: 100,
+          height: 20,
+          fillColor: '#666',
+          strokeColor: '#333',
+          strokeWidth: 2,
+          shape: 'rectangle'
+        })
         result.current.setSpellEffectTemplate({
-          spellName: 'Test',
-          category: 'projectile',
+          id: 'test-spell',
+          name: 'Test',
+          category: 'area',
+          shape: 'sphere',
+          icon: React.createElement('div'),
           color: '#fff',
-          size: 10,
-          duration: 500
+          opacity: 0.5,
+          size: { radius: 10 },
+          description: 'Test spell effect'
         })
       })
 

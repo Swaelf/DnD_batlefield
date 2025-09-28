@@ -1,13 +1,12 @@
 /**
  * PropertyValidation Molecule Component
- *
- * Validation summary and D&D compliance status display.
- * Follows molecular design patterns with 60-90 line constraint.
+ * Validation summary and D&D compliance status display
  */
 
 import React from 'react'
 import { AlertCircle, CheckCircle, Shield, Star } from 'lucide-react'
-import { styled } from '@/styles/theme.config'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
 import { usePropertyValidation } from '../../../hooks'
 
 interface PropertyValidationProps {
@@ -16,91 +15,6 @@ interface PropertyValidationProps {
   className?: string
 }
 
-const ValidationContainer = styled('div', {
-  padding: '$2',
-  borderRadius: '$2',
-  border: '1px solid $gray300',
-  background: '$gray50',
-  marginBottom: '$3'
-})
-
-const ValidationHeader = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  marginBottom: '$2'
-})
-
-const ValidationStatus = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2',
-  fontSize: '$sm',
-  fontWeight: 500
-})
-
-const DNDStatus = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  padding: '$1 $2',
-  borderRadius: '$2',
-  fontSize: '$xs',
-  fontWeight: 500,
-
-  variants: {
-    compliant: {
-      true: {
-        background: '$dndRed',
-        color: 'white'
-      },
-      false: {
-        background: '$yellow200',
-        color: '$yellow800'
-      }
-    }
-  }
-})
-
-const ValidationSummary = styled('div', {
-  display: 'flex',
-  gap: '$3',
-  fontSize: '$xs',
-  color: '$gray600'
-})
-
-const ValidationCount = styled('span', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-
-  variants: {
-    type: {
-      error: { color: '$red600' },
-      warning: { color: '$yellow600' },
-      success: { color: '$green600' }
-    }
-  }
-})
-
-const ValidationDetails = styled('div', {
-  marginTop: '$2',
-  fontSize: '$xs'
-})
-
-const ValidationItem = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  margin: '$1 0',
-
-  variants: {
-    type: {
-      error: { color: '$red600' },
-      warning: { color: '$yellow600' }
-    }
-  }
-})
 
 export const PropertyValidation: React.FC<PropertyValidationProps> = ({
   objectId,
@@ -116,102 +30,290 @@ export const PropertyValidation: React.FC<PropertyValidationProps> = ({
     warningCount,
     isValid,
     isDNDCompliant,
-    results,
-    validate,
-    clear
+    results
   } = usePropertyValidation(objectId)
 
   if (isValidating) {
     return (
-      <ValidationContainer className={className}>
-        <ValidationStatus>
+      <Box
+        className={className}
+        style={{
+          padding: '8px',
+          borderRadius: '8px',
+          border: '1px solid var(--colors-gray300)',
+          backgroundColor: 'var(--colors-gray50)',
+          marginBottom: '12px'
+        }}
+      >
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}
+        >
           <AlertCircle size={16} />
-          Validating properties...
-        </ValidationStatus>
-      </ValidationContainer>
+          <Text variant="body" size="sm">
+            Validating properties...
+          </Text>
+        </Box>
+      </Box>
     )
   }
 
   if (!hasErrors && !hasWarnings && isValid) {
     return (
-      <ValidationContainer className={className}>
-        <ValidationHeader>
-          <ValidationStatus style={{ color: 'green' }}>
+      <Box
+        className={className}
+        style={{
+          padding: '8px',
+          borderRadius: '8px',
+          border: '1px solid var(--colors-gray300)',
+          backgroundColor: 'var(--colors-gray50)',
+          marginBottom: '12px'
+        }}
+      >
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '8px'
+          }}
+        >
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: 'green'
+            }}
+          >
             <CheckCircle size={16} />
-            All properties valid
-          </ValidationStatus>
-          <DNDStatus compliant={isDNDCompliant}>
+            <Text variant="body" size="sm" style={{ color: 'green' }}>
+              All properties valid
+            </Text>
+          </Box>
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 8px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: '500',
+              backgroundColor: isDNDCompliant ? 'var(--colors-dndRed)' : 'var(--colors-yellow200)',
+              color: isDNDCompliant ? 'white' : 'var(--colors-yellow800)'
+            }}
+          >
             {isDNDCompliant ? <Shield size={12} /> : <Star size={12} />}
-            {isDNDCompliant ? 'D&D Official' : 'Custom Values'}
-          </DNDStatus>
-        </ValidationHeader>
-      </ValidationContainer>
+            <Text variant="body" size="xs">
+              {isDNDCompliant ? 'D&D Official' : 'Custom Values'}
+            </Text>
+          </Box>
+        </Box>
+      </Box>
     )
   }
 
+  const getCountColor = (type: 'error' | 'warning' | 'success') => {
+    switch (type) {
+      case 'error':
+        return 'var(--colors-red600)'
+      case 'warning':
+        return 'var(--colors-yellow600)'
+      case 'success':
+        return 'var(--colors-green600)'
+      default:
+        return 'var(--colors-gray600)'
+    }
+  }
+
+  const getItemColor = (type: 'error' | 'warning') => {
+    switch (type) {
+      case 'error':
+        return 'var(--colors-red600)'
+      case 'warning':
+        return 'var(--colors-yellow600)'
+      default:
+        return 'var(--colors-gray600)'
+    }
+  }
+
   return (
-    <ValidationContainer className={className}>
-      <ValidationHeader>
-        <ValidationStatus>
+    <Box
+      className={className}
+      style={{
+        padding: '8px',
+        borderRadius: '8px',
+        border: '1px solid var(--colors-gray300)',
+        backgroundColor: 'var(--colors-gray50)',
+        marginBottom: '12px'
+      }}
+    >
+      {/* Header */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '8px'
+        }}
+      >
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}
+        >
           {hasErrors ? (
             <>
               <AlertCircle size={16} color="red" />
-              Property Issues Found
+              <Text variant="body" size="sm">
+                Property Issues Found
+              </Text>
             </>
           ) : (
             <>
               <AlertCircle size={16} color="orange" />
-              Validation Warnings
+              <Text variant="body" size="sm">
+                Validation Warnings
+              </Text>
             </>
           )}
-        </ValidationStatus>
-        <DNDStatus compliant={isDNDCompliant}>
+        </Box>
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '4px 8px',
+            borderRadius: '8px',
+            fontSize: '12px',
+            fontWeight: '500',
+            backgroundColor: isDNDCompliant ? 'var(--colors-dndRed)' : 'var(--colors-yellow200)',
+            color: isDNDCompliant ? 'white' : 'var(--colors-yellow800)'
+          }}
+        >
           {isDNDCompliant ? <Shield size={12} /> : <Star size={12} />}
-          {isDNDCompliant ? 'D&D Official' : 'Custom Values'}
-        </DNDStatus>
-      </ValidationHeader>
+          <Text variant="body" size="xs">
+            {isDNDCompliant ? 'D&D Official' : 'Custom Values'}
+          </Text>
+        </Box>
+      </Box>
 
-      <ValidationSummary>
+      {/* Summary */}
+      <Box
+        style={{
+          display: 'flex',
+          gap: '12px',
+          fontSize: '12px',
+          color: 'var(--colors-gray600)'
+        }}
+      >
         {hasErrors && (
-          <ValidationCount type="error">
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              color: getCountColor('error')
+            }}
+          >
             <AlertCircle size={12} />
-            {errorCount} error{errorCount !== 1 ? 's' : ''}
-          </ValidationCount>
+            <Text variant="body" size="xs" style={{ color: getCountColor('error') }}>
+              {errorCount} error{errorCount !== 1 ? 's' : ''}
+            </Text>
+          </Box>
         )}
         {hasWarnings && (
-          <ValidationCount type="warning">
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              color: getCountColor('warning')
+            }}
+          >
             <AlertCircle size={12} />
-            {warningCount} warning{warningCount !== 1 ? 's' : ''}
-          </ValidationCount>
+            <Text variant="body" size="xs" style={{ color: getCountColor('warning') }}>
+              {warningCount} warning{warningCount !== 1 ? 's' : ''}
+            </Text>
+          </Box>
         )}
         {hasDNDIssues && (
-          <ValidationCount type="warning">
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              color: getCountColor('warning')
+            }}
+          >
             <Star size={12} />
-            Non-official D&D values
-          </ValidationCount>
+            <Text variant="body" size="xs" style={{ color: getCountColor('warning') }}>
+              Non-official D&D values
+            </Text>
+          </Box>
         )}
-      </ValidationSummary>
+      </Box>
 
+      {/* Detailed Errors */}
       {showDetailedErrors && results.length > 0 && (
-        <ValidationDetails>
+        <Box
+          style={{
+            marginTop: '8px',
+            fontSize: '12px'
+          }}
+        >
           {results.map((result, index) => (
-            <div key={index}>
+            <Box key={index}>
               {result.errors.map((error, errorIndex) => (
-                <ValidationItem key={`error-${index}-${errorIndex}`} type="error">
+                <Box
+                  key={`error-${index}-${errorIndex}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    margin: '4px 0',
+                    color: getItemColor('error')
+                  }}
+                >
                   <AlertCircle size={12} />
-                  <strong>{result.field}:</strong> {error}
-                </ValidationItem>
+                  <Text variant="body" size="xs" style={{ color: getItemColor('error') }}>
+                    <strong>{result.field}:</strong> {error}
+                  </Text>
+                </Box>
               ))}
               {result.warnings.map((warning, warningIndex) => (
-                <ValidationItem key={`warning-${index}-${warningIndex}`} type="warning">
+                <Box
+                  key={`warning-${index}-${warningIndex}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    margin: '4px 0',
+                    color: getItemColor('warning')
+                  }}
+                >
                   <AlertCircle size={12} />
-                  <strong>{result.field}:</strong> {warning}
-                </ValidationItem>
+                  <Text variant="body" size="xs" style={{ color: getItemColor('warning') }}>
+                    <strong>{result.field}:</strong> {warning}
+                  </Text>
+                </Box>
               ))}
-            </div>
+            </Box>
           ))}
-        </ValidationDetails>
+        </Box>
       )}
-    </ValidationContainer>
+    </Box>
   )
 }

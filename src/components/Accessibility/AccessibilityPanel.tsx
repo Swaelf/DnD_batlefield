@@ -11,8 +11,7 @@ import {
   Monitor,
   Palette,
   Zap,
-  Info,
-  Check
+  Info
 } from 'lucide-react'
 
 interface AccessibilityPanelProps {
@@ -51,28 +50,27 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
         break
 
       case 'low-vision':
-        updatePreference('highContrast', true)
-        updatePreference('fontSize', 'extra-large')
-        updatePreference('announcements', true)
         updatePreference('screenReaderMode', false)
-        updatePreference('keyboardNavigation', true)
-        updatePreference('reducedMotion', false)
-        break
-
-      case 'motor':
-        updatePreference('keyboardNavigation', true)
-        updatePreference('reducedMotion', true)
         updatePreference('announcements', false)
-        updatePreference('screenReaderMode', false)
-        updatePreference('highContrast', false)
+        updatePreference('keyboardNavigation', true)
+        updatePreference('highContrast', true)
+        updatePreference('reducedMotion', true)
         updatePreference('fontSize', 'large')
         break
 
-      case 'default':
+      case 'motor':
+        updatePreference('screenReaderMode', false)
+        updatePreference('announcements', false)
+        updatePreference('keyboardNavigation', true)
+        updatePreference('highContrast', false)
+        updatePreference('reducedMotion', true)
+        updatePreference('fontSize', 'medium')
+        break
+
       default:
         updatePreference('screenReaderMode', false)
-        updatePreference('announcements', true)
-        updatePreference('keyboardNavigation', true)
+        updatePreference('announcements', false)
+        updatePreference('keyboardNavigation', false)
         updatePreference('highContrast', false)
         updatePreference('reducedMotion', false)
         updatePreference('fontSize', 'medium')
@@ -86,25 +84,23 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Accessibility Settings">
-      <Box css={{ display: 'flex', flexDirection: 'column', gap: '$4', minWidth: 500, maxHeight: '80vh', overflow: 'auto' }}>
+      <Box display="flex" flexDirection="column" gap={4} style={{ minWidth: 500, maxHeight: '80vh' }} overflow="auto">
 
         {/* Screen Reader Detection */}
         <Box
-          css={{
-            padding: '$3',
-            backgroundColor: isScreenReaderActive ? '$success' : '$gray800',
-            borderRadius: '$md',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '$3'
-          }}
+          padding={3}
+          backgroundColor={isScreenReaderActive ? 'success' : 'backgroundTertiary'}
+          borderRadius="md"
+          display="flex"
+          alignItems="center"
+          gap={3}
         >
           <Eye size={20} />
-          <Box css={{ flex: 1 }}>
-            <Text css={{ fontSize: '$sm', fontWeight: '$medium' }}>
+          <Box flexGrow={1}>
+            <Text size="sm" weight="medium">
               Screen Reader: {isScreenReaderActive ? 'Detected' : 'Not Detected'}
             </Text>
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>
+            <Text size="xs" color="gray400">
               {isScreenReaderActive
                 ? 'Optimizations will be applied automatically'
                 : 'Enable screen reader mode for better compatibility'
@@ -115,11 +111,13 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
 
         {/* Quick Setup Presets */}
         <Box>
-          <Text css={{ fontSize: '$md', fontWeight: '$semibold', marginBottom: '$3' }}>
-            Quick Setup Presets
-          </Text>
+          <Box marginBottom={3}>
+            <Text size="md" weight="semibold" as="div">
+              Quick Setup Presets
+            </Text>
+          </Box>
 
-          <Box css={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '$2' }}>
+          <Box display="grid" gridTemplateColumns={2} gap={2}>
             <Button
               variant="outline"
               size="sm"
@@ -160,24 +158,24 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
 
         {/* Visual Settings */}
         <Box
-          css={{
-            padding: '$3',
-            backgroundColor: '$gray800',
-            borderRadius: '$md'
-          }}
+          padding={3}
+          backgroundColor="backgroundTertiary"
+          borderRadius="md"
         >
-          <Text css={{ fontSize: '$sm', fontWeight: '$medium', marginBottom: '$3' }}>
-            Visual Settings
-          </Text>
+          <Box marginBottom={3}>
+            <Text size="sm" weight="medium" as="div">
+              Visual Settings
+            </Text>
+          </Box>
 
-          <Box css={{ display: 'flex', flexDirection: 'column', gap: '$3' }}>
+          <Box display="flex" flexDirection="column" gap={3}>
             {/* High Contrast */}
-            <Box css={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box display="flex" alignItems="center" gap={2}>
                 <Palette size={16} />
                 <Box>
-                  <Text css={{ fontSize: '$sm' }}>High Contrast Mode</Text>
-                  <Text css={{ fontSize: '$xs', color: '$gray400' }}>
+                  <Text size="sm">High Contrast Mode</Text>
+                  <Text size="xs" color="gray400">
                     Increases contrast for better visibility
                   </Text>
                 </Box>
@@ -185,17 +183,17 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
               <input
                 type="checkbox"
                 checked={preferences.highContrast}
-                onChange={(e) => updatePreference('highContrast', e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePreference('highContrast', e.target.checked)}
               />
             </Box>
 
             {/* Font Size */}
-            <Box css={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box display="flex" alignItems="center" gap={2}>
                 <Type size={16} />
                 <Box>
-                  <Text css={{ fontSize: '$sm' }}>Font Size</Text>
-                  <Text css={{ fontSize: '$xs', color: '$gray400' }}>
+                  <Text size="sm">Font Size</Text>
+                  <Text size="xs" color="gray400">
                     Adjust text size throughout the app
                   </Text>
                 </Box>
@@ -212,12 +210,12 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
             </Box>
 
             {/* Reduced Motion */}
-            <Box css={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box display="flex" alignItems="center" gap={2}>
                 <Zap size={16} />
                 <Box>
-                  <Text css={{ fontSize: '$sm' }}>Reduce Motion</Text>
-                  <Text css={{ fontSize: '$xs', color: '$gray400' }}>
+                  <Text size="sm">Reduce Motion</Text>
+                  <Text size="xs" color="gray400">
                     Minimize animations and transitions
                   </Text>
                 </Box>
@@ -225,7 +223,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
               <input
                 type="checkbox"
                 checked={preferences.reducedMotion}
-                onChange={(e) => updatePreference('reducedMotion', e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePreference('reducedMotion', e.target.checked)}
               />
             </Box>
           </Box>
@@ -233,24 +231,24 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
 
         {/* Navigation Settings */}
         <Box
-          css={{
-            padding: '$3',
-            backgroundColor: '$gray800',
-            borderRadius: '$md'
-          }}
+          padding={3}
+          backgroundColor="backgroundTertiary"
+          borderRadius="md"
         >
-          <Text css={{ fontSize: '$sm', fontWeight: '$medium', marginBottom: '$3' }}>
-            Navigation & Input
-          </Text>
+          <Box marginBottom={3}>
+            <Text size="sm" weight="medium" as="div">
+              Navigation & Input
+            </Text>
+          </Box>
 
-          <Box css={{ display: 'flex', flexDirection: 'column', gap: '$3' }}>
+          <Box display="flex" flexDirection="column" gap={3}>
             {/* Keyboard Navigation */}
-            <Box css={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box display="flex" alignItems="center" gap={2}>
                 <Keyboard size={16} />
                 <Box>
-                  <Text css={{ fontSize: '$sm' }}>Enhanced Keyboard Navigation</Text>
-                  <Text css={{ fontSize: '$xs', color: '$gray400' }}>
+                  <Text size="sm">Enhanced Keyboard Navigation</Text>
+                  <Text size="xs" color="gray400">
                     Improved focus management and shortcuts
                   </Text>
                 </Box>
@@ -258,7 +256,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
               <input
                 type="checkbox"
                 checked={preferences.keyboardNavigation}
-                onChange={(e) => updatePreference('keyboardNavigation', e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePreference('keyboardNavigation', e.target.checked)}
               />
             </Box>
           </Box>
@@ -266,24 +264,24 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
 
         {/* Screen Reader Settings */}
         <Box
-          css={{
-            padding: '$3',
-            backgroundColor: '$gray800',
-            borderRadius: '$md'
-          }}
+          padding={3}
+          backgroundColor="backgroundTertiary"
+          borderRadius="md"
         >
-          <Text css={{ fontSize: '$sm', fontWeight: '$medium', marginBottom: '$3' }}>
-            Screen Reader Support
-          </Text>
+          <Box marginBottom={3}>
+            <Text size="sm" weight="medium" as="div">
+              Screen Reader Support
+            </Text>
+          </Box>
 
-          <Box css={{ display: 'flex', flexDirection: 'column', gap: '$3' }}>
+          <Box display="flex" flexDirection="column" gap={3}>
             {/* Screen Reader Mode */}
-            <Box css={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box display="flex" alignItems="center" gap={2}>
                 <Accessibility size={16} />
                 <Box>
-                  <Text css={{ fontSize: '$sm' }}>Screen Reader Mode</Text>
-                  <Text css={{ fontSize: '$xs', color: '$gray400' }}>
+                  <Text size="sm">Screen Reader Mode</Text>
+                  <Text size="xs" color="gray400">
                     Optimizes interface for screen readers
                   </Text>
                 </Box>
@@ -291,156 +289,85 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
               <input
                 type="checkbox"
                 checked={preferences.screenReaderMode}
-                onChange={(e) => updatePreference('screenReaderMode', e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePreference('screenReaderMode', e.target.checked)}
               />
             </Box>
 
             {/* Announcements */}
-            <Box css={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box display="flex" alignItems="center" gap={2}>
                 <Volume2 size={16} />
                 <Box>
-                  <Text css={{ fontSize: '$sm' }}>Audio Announcements</Text>
-                  <Text css={{ fontSize: '$xs', color: '$gray400' }}>
-                    Announce important changes and actions
+                  <Text size="sm">Audio Announcements</Text>
+                  <Text size="xs" color="gray400">
+                    Enable audio feedback for actions
                   </Text>
                 </Box>
               </Box>
               <input
                 type="checkbox"
                 checked={preferences.announcements}
-                onChange={(e) => updatePreference('announcements', e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePreference('announcements', e.target.checked)}
               />
+            </Box>
+
+            {/* Test Announcement */}
+            <Box>
+              <Box marginBottom={2}>
+                <Text size="sm" as="div">Test Announcement</Text>
+              </Box>
+              <Box display="flex" gap={2}>
+                <input
+                  type="text"
+                  value={testMessage}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTestMessage(e.target.value)}
+                  placeholder="Enter test message..."
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    backgroundColor: '#2A2A2A',
+                    border: '1px solid #404040',
+                    borderRadius: '4px',
+                    color: '#E5E5E5'
+                  }}
+                />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleTestAnnouncement}
+                >
+                  <Volume2 size={16} />
+                  Test
+                </Button>
+              </Box>
             </Box>
           </Box>
         </Box>
 
-        {/* Test Announcements */}
-        {preferences.announcements && (
-          <Box
-            css={{
-              padding: '$3',
-              backgroundColor: '$gray900',
-              borderRadius: '$md',
-              border: '1px solid $gray700'
-            }}
-          >
-            <Text css={{ fontSize: '$sm', fontWeight: '$medium', marginBottom: '$2' }}>
-              Test Announcements
-            </Text>
-
-            <Box css={{ display: 'flex', gap: '$2', marginBottom: '$2' }}>
-              <input
-                type="text"
-                value={testMessage}
-                onChange={(e) => setTestMessage(e.target.value)}
-                placeholder="Enter a test message..."
-                style={{
-                  flex: 1,
-                  padding: '8px',
-                  backgroundColor: '#374151',
-                  border: '1px solid #4B5563',
-                  borderRadius: '4px',
-                  color: 'white'
-                }}
-              />
-              <Button size="sm" onClick={handleTestAnnouncement}>
-                <Volume2 size={14} />
-                Test
-              </Button>
+        {/* Info Section */}
+        <Box
+          padding={3}
+          backgroundColor="info"
+          borderRadius="md"
+          display="flex"
+          alignItems="flex-start"
+          gap={3}
+        >
+          <Info size={20} style={{ marginTop: 2 }} />
+          <Box>
+            <Box marginBottom={1}>
+              <Text size="sm" weight="medium" as="div">
+                Accessibility Information
+              </Text>
             </Box>
-
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>
-              Use this to test how announcements sound with your screen reader
+            <Text size="xs" color="gray300">
+              These settings help make MapMaker more accessible to users with
+              different needs. Changes are applied immediately and saved to your
+              preferences.
             </Text>
           </Box>
-        )}
-
-        {/* Accessibility Information */}
-        <Box
-          css={{
-            padding: '$3',
-            backgroundColor: '$primary',
-            borderRadius: '$md',
-            color: 'white'
-          }}
-        >
-          <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', marginBottom: '$2' }}>
-            <Info size={16} />
-            <Text css={{ fontSize: '$sm', fontWeight: '$medium' }}>
-              Accessibility Features
-            </Text>
-          </Box>
-
-          <Box css={{ display: 'flex', flexDirection: 'column', gap: '$1' }}>
-            <Text css={{ fontSize: '$xs', opacity: 0.9 }}>
-              • Full keyboard navigation with Tab and arrow keys
-            </Text>
-            <Text css={{ fontSize: '$xs', opacity: 0.9 }}>
-              • ARIA labels and descriptions for all interactive elements
-            </Text>
-            <Text css={{ fontSize: '$xs', opacity: 0.9 }}>
-              • Live regions for dynamic content updates
-            </Text>
-            <Text css={{ fontSize: '$xs', opacity: 0.9 }}>
-              • High contrast and custom font size support
-            </Text>
-            <Text css={{ fontSize: '$xs', opacity: 0.9 }}>
-              • Motion reduction for vestibular disorders
-            </Text>
-          </Box>
-        </Box>
-
-        {/* Keyboard Shortcuts */}
-        <Box
-          css={{
-            padding: '$3',
-            backgroundColor: '$gray800',
-            borderRadius: '$md'
-          }}
-        >
-          <Text css={{ fontSize: '$sm', fontWeight: '$medium', marginBottom: '$2' }}>
-            Accessibility Shortcuts
-          </Text>
-
-          <Box css={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '$2', fontSize: '$xs' }}>
-            <Text css={{ fontFamily: 'monospace', color: '$gray300' }}>Alt + A</Text>
-            <Text css={{ color: '$gray400' }}>Open accessibility panel</Text>
-
-            <Text css={{ fontFamily: 'monospace', color: '$gray300' }}>F1</Text>
-            <Text css={{ color: '$gray400' }}>Open help dialog</Text>
-
-            <Text css={{ fontFamily: 'monospace', color: '$gray300' }}>Escape</Text>
-            <Text css={{ color: '$gray400' }}>Close dialogs and cancel actions</Text>
-
-            <Text css={{ fontFamily: 'monospace', color: '$gray300' }}>Tab</Text>
-            <Text css={{ color: '$gray400' }}>Navigate between interactive elements</Text>
-
-            <Text css={{ fontFamily: 'monospace', color: '$gray300' }}>Space/Enter</Text>
-            <Text css={{ color: '$gray400' }}>Activate buttons and controls</Text>
-          </Box>
-        </Box>
-
-        {/* Action Buttons */}
-        <Box css={{ display: 'flex', justifyContent: 'flex-end', gap: '$2', paddingTop: '$3' }}>
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
-
-          <Button
-            variant="primary"
-            onClick={() => {
-              announceMessage('Accessibility settings saved successfully')
-              onClose()
-            }}
-          >
-            <Check size={16} />
-            Save Settings
-          </Button>
         </Box>
       </Box>
     </Modal>
   )
 }
-
-export default AccessibilityPanel

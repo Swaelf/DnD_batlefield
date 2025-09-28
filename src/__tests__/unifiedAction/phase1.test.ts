@@ -4,10 +4,7 @@ import { useUnifiedActionStore } from '@/store/unifiedActionStore'
 import {
   createMockAction,
   createMockToken,
-  resetStore,
-  expectHighlighted,
-  expectInHistory,
-  expectAnimationComplete
+  resetStore
 } from './testUtils'
 
 describe('Phase 1: Core Infrastructure', () => {

@@ -1,20 +1,25 @@
 import React, { useState, useCallback } from 'react'
-import useCollaborationStore from '@/store/collaborationStore'
+import { Users, Crown } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Input } from '@/components/ui/Input'
+import { FieldLabel } from '@/components/ui/FieldLabel'
+import { Modal } from '@/components/ui/Modal'
+import { useCollaborationStore } from '@/store/collaborationStore'
 import useMapStore from '@/store/mapStore'
-import { Box, Text, Button, Input, Modal, Select } from '@/components/ui'
-import { UserPlus, Users, Settings, Crown } from 'lucide-react'
 
-interface CollaborationSessionCreatorProps {
+type CollaborationSessionCreatorProps = {
   isOpen: boolean
   onClose: () => void
   onSessionCreated?: (sessionId: string) => void
 }
 
-export const CollaborationSessionCreator: React.FC<CollaborationSessionCreatorProps> = ({
+export const CollaborationSessionCreator = ({
   isOpen,
   onClose,
   onSessionCreated
-}) => {
+}: CollaborationSessionCreatorProps) => {
   const [sessionName, setSessionName] = useState('')
   const [maxUsers, setMaxUsers] = useState(10)
   const [allowAnonymous, setAllowAnonymous] = useState(true)
@@ -59,135 +64,223 @@ export const CollaborationSessionCreator: React.FC<CollaborationSessionCreatorPr
     onClose()
   }, [resetForm, onClose])
 
-  if (!isOpen) return null
+  const handleSessionNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSessionName(e.target.value)
+  }, [])
+
+  const handleMaxUsersChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setMaxUsers(parseInt(e.target.value, 10))
+  }, [])
+
+  const handleAllowAnonymousChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setAllowAnonymous(e.target.checked)
+  }, [])
+
+  const handleRequireApprovalChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setRequireApproval(e.target.checked)
+  }, [])
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Start Collaboration Session">
-      <Box css={{ display: 'flex', flexDirection: 'column', gap: '$4', minWidth: 400 }}>
-        {/* Session Overview */}
+    <Modal isOpen={isOpen} onClose={handleClose}>
+      <Box
+        style={{
+          width: '500px',
+          maxHeight: '80vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
+        {/* Header */}
         <Box
-          css={{
-            padding: '$3',
-            backgroundColor: '$gray800',
-            borderRadius: '$md'
+          padding={4}
+          style={{
+            borderBottom: '1px solid var(--gray700)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}
         >
-          <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', marginBottom: '$2' }}>
-            <Crown size={16} />
-            <Text css={{ fontSize: '$md', fontWeight: '$semibold' }}>
-              Create New Session
-            </Text>
-          </Box>
-          <Text css={{ fontSize: '$sm', color: '$gray400' }}>
-            You'll be the Game Master (host) with full permissions. Invite players to collaborate in real-time.
+          <Crown size={20} />
+          <Text size="lg" weight="semibold">
+            Start Collaboration Session
           </Text>
         </Box>
 
-        {/* Session Settings */}
-        <Box>
-          <Text css={{ fontSize: '$sm', fontWeight: '$medium', marginBottom: '$2' }}>
-            Session Settings
-          </Text>
-
-          <Box css={{ display: 'flex', flexDirection: 'column', gap: '$3' }}>
-            {/* Session Name */}
-            <Box>
-              <Text css={{ fontSize: '$xs', color: '$gray300', marginBottom: '$1' }}>
-                Session Name (optional):
+        {/* Content */}
+        <Box
+          padding={4}
+          style={{
+            flex: 1,
+            overflow: 'auto'
+          }}
+        >
+          {/* Session Overview */}
+          <Box
+            marginBottom={4}
+            padding={3}
+            style={{
+              backgroundColor: 'var(--gray800)',
+              borderRadius: 'var(--radii-md)',
+              border: '1px solid var(--gray700)'
+            }}
+          >
+            <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }} marginBottom={2}>
+              <Crown size={16} />
+              <Text size="md" weight="medium">
+                Game Master Session
               </Text>
+            </Box>
+            <Text size="sm" color="textSecondary">
+              You'll be the Game Master (host) with full permissions. Invite players to collaborate in real-time.
+            </Text>
+          </Box>
+
+          {/* Session Settings */}
+          <Box marginBottom={4}>
+            <Text size="md" weight="medium">
+              Session Settings
+            </Text>
+
+            {/* Session Name */}
+            <Box marginBottom={3}>
+              <FieldLabel htmlFor="sessionName">
+                Session Name (optional)
+              </FieldLabel>
               <Input
+                id="sessionName"
                 value={sessionName}
-                onChange={(e) => setSessionName(e.target.value)}
+                onChange={handleSessionNameChange}
                 placeholder={`${currentMap?.name || 'Map'} Session`}
-                fullWidth
               />
             </Box>
 
             {/* Max Users */}
-            <Box>
-              <Text css={{ fontSize: '$xs', color: '$gray300', marginBottom: '$1' }}>
-                Maximum Users:
-              </Text>
-              <Select
+            <Box marginBottom={3}>
+              <FieldLabel htmlFor="maxUsers">
+                Maximum Users
+              </FieldLabel>
+              <select
+                id="maxUsers"
                 value={maxUsers.toString()}
-                onValueChange={(value) => setMaxUsers(parseInt(value, 10))}
+                onChange={handleMaxUsersChange}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  backgroundColor: 'var(--gray700)',
+                  border: '1px solid var(--gray600)',
+                  borderRadius: 'var(--radii-md)',
+                  color: 'var(--white)',
+                  fontSize: '14px'
+                }}
               >
                 <option value="5">5 users</option>
                 <option value="10">10 users</option>
                 <option value="15">15 users</option>
                 <option value="25">25 users</option>
-              </Select>
+              </select>
             </Box>
 
             {/* Permission Options */}
-            <Box css={{ display: 'flex', flexDirection: 'column', gap: '$2' }}>
-              <Text css={{ fontSize: '$xs', color: '$gray300' }}>Permissions:</Text>
+            <Box>
+              <Text size="sm" weight="medium">
+                Permissions
+              </Text>
 
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                <input
-                  type="checkbox"
-                  id="allowAnonymous"
-                  checked={allowAnonymous}
-                  onChange={(e) => setAllowAnonymous(e.target.checked)}
-                />
-                <label htmlFor="allowAnonymous">
-                  <Text css={{ fontSize: '$xs' }}>Allow anonymous users</Text>
-                </label>
-              </Box>
+              <Box style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {/* Allow Anonymous */}
+                <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="checkbox"
+                    id="allowAnonymous"
+                    checked={allowAnonymous}
+                    onChange={handleAllowAnonymousChange}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      accentColor: 'var(--primary)'
+                    }}
+                  />
+                  <FieldLabel htmlFor="allowAnonymous" style={{ margin: 0 }}>
+                    Allow anonymous users
+                  </FieldLabel>
+                </Box>
 
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                <input
-                  type="checkbox"
-                  id="requireApproval"
-                  checked={requireApproval}
-                  onChange={(e) => setRequireApproval(e.target.checked)}
-                />
-                <label htmlFor="requireApproval">
-                  <Text css={{ fontSize: '$xs' }}>Require approval to join</Text>
-                </label>
+                {/* Require Approval */}
+                <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="checkbox"
+                    id="requireApproval"
+                    checked={requireApproval}
+                    onChange={handleRequireApprovalChange}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      accentColor: 'var(--primary)'
+                    }}
+                  />
+                  <FieldLabel htmlFor="requireApproval" style={{ margin: 0 }}>
+                    Require approval to join
+                  </FieldLabel>
+                </Box>
               </Box>
+            </Box>
+          </Box>
+
+          {/* Feature Preview */}
+          <Box
+            padding={3}
+            style={{
+              backgroundColor: 'var(--gray900)',
+              borderRadius: 'var(--radii-md)',
+              border: '1px solid var(--gray700)'
+            }}
+          >
+            <Text size="sm" weight="medium">
+              Collaboration Features
+            </Text>
+            <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              <Text size="xs" color="textSecondary">• Real-time cursors</Text>
+              <Text size="xs" color="textSecondary">• Live object editing</Text>
+              <Text size="xs" color="textSecondary">• Text chat system</Text>
+              <Text size="xs" color="textSecondary">• Conflict resolution</Text>
+              <Text size="xs" color="textSecondary">• Role-based permissions</Text>
+              <Text size="xs" color="textSecondary">• User management</Text>
             </Box>
           </Box>
         </Box>
 
-        {/* Feature Preview */}
+        {/* Footer */}
         <Box
-          css={{
-            padding: '$3',
-            backgroundColor: '$gray900',
-            borderRadius: '$md',
-            border: '1px solid $gray700'
+          padding={4}
+          style={{
+            borderTop: '1px solid var(--gray700)',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '8px'
           }}
         >
-          <Text css={{ fontSize: '$xs', fontWeight: '$medium', marginBottom: '$2' }}>
-            Collaboration Features:
-          </Text>
-          <Box css={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '$2' }}>
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>• Real-time cursors</Text>
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>• Live object editing</Text>
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>• Text chat system</Text>
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>• Conflict resolution</Text>
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>• Role-based permissions</Text>
-            <Text css={{ fontSize: '$xs', color: '$gray400' }}>• User management</Text>
-          </Box>
-        </Box>
-
-        {/* Action Buttons */}
-        <Box css={{ display: 'flex', justifyContent: 'flex-end', gap: '$2' }}>
           <Button
-            variant="outline"
             onClick={handleClose}
+            variant="outline"
+            size="sm"
             disabled={isCreating}
           >
             Cancel
           </Button>
           <Button
             onClick={handleCreateSession}
-            loading={isCreating}
-            disabled={!currentMap}
+            variant="primary"
+            size="sm"
+            disabled={!currentMap || isCreating}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
           >
-            <Users size={16} />
-            Create Session
+            <Users size={14} />
+            {isCreating ? 'Creating...' : 'Create Session'}
           </Button>
         </Box>
       </Box>

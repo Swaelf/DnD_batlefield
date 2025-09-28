@@ -7,7 +7,7 @@ import { useEffect, useRef, useCallback } from 'react'
 import type { RefObject } from 'react'
 import type Konva from 'konva'
 import { canvasService, type CanvasConfig, type LayerConfig, type CanvasExportOptions } from './CanvasService'
-import type { Point, Size, Rectangle, CleanupFunction } from '@/foundation/types'
+import type { Point, Size, Rectangle } from '@/foundation/types'
 
 export type UseCanvasOptions = {
   onInitialized?: (stage: Konva.Stage) => void
@@ -15,7 +15,7 @@ export type UseCanvasOptions = {
 }
 
 export type UseCanvasReturn = {
-  containerRef: RefObject<HTMLDivElement>
+  containerRef: RefObject<HTMLDivElement | null>
   initialize: (config: Omit<CanvasConfig, 'container'>) => void
   addLayer: (config: LayerConfig) => Konva.Layer | null
   getLayer: (name: string) => Konva.Layer | null

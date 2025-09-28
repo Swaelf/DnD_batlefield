@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
-import { AnimationStore } from '../types'
-import { Position } from '../types'
+import type { AnimationStore } from '../types'
+import type { Position } from '../types'
 
 const useAnimationStore = create<AnimationStore>()(
   immer((set) => ({

@@ -1,37 +1,32 @@
-import { memo, useState, useCallback } from 'react'
+import React, { memo, useState, useCallback } from 'react'
 import { Sword, Target, Dices, Zap } from 'lucide-react'
-import {
-  Box,
-  Text,
-  Button,
-  Select,
-  SelectOption,
-  Input,
-  Label,
-  FieldLabel,
-  Grid
-} from '@/components/ui'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import {
   WEAPON_PRESETS,
   ATTACK_TYPES,
-  CRITICAL_HIT,
   DAMAGE_TYPE_COLORS,
   DAMAGE_TYPES
 } from '@/constants/attacks'
-import type { AttackEventData } from '@/types'
+import type { AttackEventData } from '@/types/timeline'
 
-type AttackActionConfigProps = {
+export type AttackActionConfigProps = {
   selectedAttack: Partial<AttackEventData> | null
   onAttackChange: (attack: Partial<AttackEventData>) => void
   disabled?: boolean
 }
 
-const AttackActionConfigComponent = ({
+const AttackActionConfigComponent: React.FC<AttackActionConfigProps> = ({
   selectedAttack,
   onAttackChange,
   disabled = false
-}: AttackActionConfigProps) => {
+}) => {
   const [customWeapon, setCustomWeapon] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [criticalRange, setCriticalRange] = useState(20)
 
   const handleWeaponPresetChange = useCallback((weaponKey: string) => {
     if (weaponKey === 'none') {
@@ -137,152 +132,251 @@ const AttackActionConfigComponent = ({
   }))
 
   return (
-    <Box css={{ padding: '$3', marginTop: '$2', backgroundColor: '$gray800', borderRadius: '$md', border: '1px solid $gray700' }}>
-      <Box css={{ display: 'flex', flexDirection: 'column', gap: '$3' }}>
+    <Box
+      style={{
+        padding: '16px',
+        marginTop: '8px',
+        backgroundColor: 'var(--colors-gray800)',
+        borderRadius: '8px',
+        border: '1px solid var(--colors-gray700)'
+      }}
+    >
+      <Box style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {/* Header */}
-        <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Sword size={16} />
-          <Text size="md" weight="medium">Attack Configuration</Text>
+          <Text
+            variant="body"
+            size="md"
+            style={{
+              fontWeight: '500',
+              margin: 0,
+              color: 'var(--colors-gray100)'
+            }}
+          >
+            Attack Configuration
+          </Text>
         </Box>
 
         {/* Weapon Selection */}
         <Box>
-          <FieldLabel>
+          <Box style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
             <Target size={14} style={{ marginRight: '8px' }} />
-            Weapon
-          </FieldLabel>
+            <Text
+              variant="label"
+              size="sm"
+              style={{
+                margin: 0,
+                color: 'var(--colors-gray200)',
+                fontWeight: '500'
+              }}
+            >
+              Weapon
+            </Text>
+          </Box>
           <Select
             value={selectedAttack?.weaponType || 'none'}
             onValueChange={handleWeaponPresetChange}
             disabled={disabled}
-            placeholder="Select Weapon..."
           >
             {weaponOptions.map(option => (
-              <SelectOption key={option.value} value={option.value}>
+              <option key={option.value} value={option.value}>
                 {option.label}
-              </SelectOption>
+              </option>
             ))}
           </Select>
         </Box>
 
         {/* Custom Weapon Fields */}
         {customWeapon && (
-          <Grid columns="2" gap="$2">
+          <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
             <Box>
-              <Label htmlFor="weapon-name">Weapon Name</Label>
+              <Text
+                variant="label"
+                size="sm"
+                style={{
+                  display: 'block',
+                  marginBottom: '4px',
+                  color: 'var(--colors-gray200)',
+                  fontWeight: '500'
+                }}
+              >
+                Weapon Name
+              </Text>
               <Input
-                id="weapon-name"
                 value={selectedAttack?.weaponName || ''}
-                onChange={(e) => handleFieldChange('weaponName', e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('weaponName', e.target.value)}
                 placeholder="Custom weapon name"
                 disabled={disabled}
               />
             </Box>
             <Box>
-              <Label htmlFor="attack-type">Attack Type</Label>
+              <Text
+                variant="label"
+                size="sm"
+                style={{
+                  display: 'block',
+                  marginBottom: '4px',
+                  color: 'var(--colors-gray200)',
+                  fontWeight: '500'
+                }}
+              >
+                Attack Type
+              </Text>
               <Select
                 value={selectedAttack?.attackType || 'melee'}
                 onValueChange={(value) => handleFieldChange('attackType', value)}
                 disabled={disabled}
               >
-                <SelectOption value="melee">Melee</SelectOption>
-                <SelectOption value="ranged">Ranged</SelectOption>
-                <SelectOption value="natural">Natural</SelectOption>
-                <SelectOption value="spell">Spell Attack</SelectOption>
-                <SelectOption value="unarmed">Unarmed</SelectOption>
+                <option value="melee">Melee</option>
+                <option value="ranged">Ranged</option>
+                <option value="natural">Natural</option>
+                <option value="spell">Spell Attack</option>
+                <option value="unarmed">Unarmed</option>
               </Select>
             </Box>
-          </Grid>
+          </Box>
         )}
 
         {/* Attack Properties */}
-        <Grid columns="2" gap="$2">
+        <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
           <Box>
-            <Label htmlFor="damage">
+            <Box style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
               <Dices size={14} style={{ marginRight: '8px' }} />
-              Damage
-            </Label>
+              <Text
+                variant="label"
+                size="sm"
+                style={{
+                  margin: 0,
+                  color: 'var(--colors-gray200)',
+                  fontWeight: '500'
+                }}
+              >
+                Damage
+              </Text>
+            </Box>
             <Input
-              id="damage"
               value={selectedAttack?.damage || ''}
-              onChange={(e) => handleFieldChange('damage', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('damage', e.target.value)}
               placeholder="e.g., 1d8, 2d6+3"
               disabled={disabled || !customWeapon}
             />
           </Box>
           <Box>
-            <Label htmlFor="damage-type">Damage Type</Label>
+            <Text
+              variant="label"
+              size="sm"
+              style={{
+                display: 'block',
+                marginBottom: '4px',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500'
+              }}
+            >
+              Damage Type
+            </Text>
             <Select
               value={selectedAttack?.damageType || DAMAGE_TYPES.SLASHING}
               onValueChange={handleDamageTypeChange}
               disabled={disabled || !customWeapon}
             >
               {damageTypeOptions.map(option => (
-                <SelectOption key={option.value} value={option.value}>
-                  <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                    <Box
-                      css={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: '50%',
-                        backgroundColor: DAMAGE_TYPE_COLORS[option.value as keyof typeof DAMAGE_TYPE_COLORS]
-                      }}
-                    />
-                    {option.label}
-                  </Box>
-                </SelectOption>
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
               ))}
             </Select>
           </Box>
-        </Grid>
+        </Box>
 
         {/* Attack Bonus and Range */}
-        <Grid columns="2" gap="$2">
+        <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
           <Box>
-            <Label htmlFor="attack-bonus">Attack Bonus</Label>
+            <Text
+              variant="label"
+              size="sm"
+              style={{
+                display: 'block',
+                marginBottom: '4px',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500'
+              }}
+            >
+              Attack Bonus
+            </Text>
             <Input
-              id="attack-bonus"
               type="number"
               value={selectedAttack?.attackBonus || 0}
-              onChange={(e) => handleFieldChange('attackBonus', parseInt(e.target.value) || 0)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('attackBonus', parseInt(e.target.value) || 0)}
               placeholder="0"
               disabled={disabled}
             />
           </Box>
           <Box>
-            <Label htmlFor="range">Range (feet)</Label>
+            <Text
+              variant="label"
+              size="sm"
+              style={{
+                display: 'block',
+                marginBottom: '4px',
+                color: 'var(--colors-gray200)',
+                fontWeight: '500'
+              }}
+            >
+              Range (feet)
+            </Text>
             <Input
-              id="range"
               type="number"
               value={selectedAttack?.range || 5}
-              onChange={(e) => handleFieldChange('range', parseInt(e.target.value) || 5)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('range', parseInt(e.target.value) || 5)}
               placeholder="5"
               disabled={disabled}
             />
           </Box>
-        </Grid>
+        </Box>
 
         {/* Critical Hit Range */}
         <Box>
-          <Label htmlFor="crit-range">Critical Hit Range</Label>
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              display: 'block',
+              marginBottom: '4px',
+              color: 'var(--colors-gray200)',
+              fontWeight: '500'
+            }}
+          >
+            Critical Hit Range
+          </Text>
           <Select
-            value={selectedAttack?.criticalRange?.toString() || CRITICAL_HIT.DEFAULT_RANGE.toString()}
-            onValueChange={(value) => handleFieldChange('criticalRange', parseInt(value))}
+            value={criticalRange.toString()}
+            onValueChange={(value) => setCriticalRange(parseInt(value))}
             disabled={disabled}
           >
-            <SelectOption value="20">20 (Natural 20 only)</SelectOption>
-            <SelectOption value="19">19-20 (Improved Critical)</SelectOption>
-            <SelectOption value="18">18-20 (Champion Fighter)</SelectOption>
+            <option value="20">20 (Natural 20 only)</option>
+            <option value="19">19-20 (Improved Critical)</option>
+            <option value="18">18-20 (Champion Fighter)</option>
           </Select>
         </Box>
 
         {/* Advanced Options Toggle */}
-        <Box css={{ paddingTop: '$2', borderTop: '1px solid $colors$gray300' }}>
+        <Box
+          style={{
+            paddingTop: '8px',
+            borderTop: '1px solid var(--colors-gray600)'
+          }}
+        >
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => handleFieldChange('showAdvanced', !selectedAttack?.showAdvanced)}
+            onClick={() => setShowAdvanced(!showAdvanced)}
             disabled={disabled}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
           >
             <Zap size={14} />
             Advanced Options
@@ -290,43 +384,72 @@ const AttackActionConfigComponent = ({
         </Box>
 
         {/* Advanced Options */}
-        {selectedAttack?.showAdvanced && (
-          <Box css={{ display: 'flex', flexDirection: 'column', gap: '$2' }}>
-            <Grid columns="2" gap="$2">
+        {showAdvanced && (
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
               <Box>
-                <Label htmlFor="duration">Animation Duration (ms)</Label>
+                <Text
+                  variant="label"
+                  size="sm"
+                  style={{
+                    display: 'block',
+                    marginBottom: '4px',
+                    color: 'var(--colors-gray200)',
+                    fontWeight: '500'
+                  }}
+                >
+                  Animation Duration (ms)
+                </Text>
                 <Input
-                  id="duration"
                   type="number"
                   value={selectedAttack?.duration || 800}
-                  onChange={(e) => handleFieldChange('duration', parseInt(e.target.value) || 800)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('duration', parseInt(e.target.value) || 800)}
                   placeholder="800"
                   disabled={disabled}
                 />
               </Box>
               <Box>
-                <Label htmlFor="color">Effect Color</Label>
+                <Text
+                  variant="label"
+                  size="sm"
+                  style={{
+                    display: 'block',
+                    marginBottom: '4px',
+                    color: 'var(--colors-gray200)',
+                    fontWeight: '500'
+                  }}
+                >
+                  Effect Color
+                </Text>
                 <Input
-                  id="color"
                   type="color"
                   value={selectedAttack?.color || '#FFFFFF'}
-                  onChange={(e) => handleFieldChange('color', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('color', e.target.value)}
                   disabled={disabled}
                 />
               </Box>
-            </Grid>
+            </Box>
           </Box>
         )}
 
         {/* Preview */}
         {selectedAttack?.weaponName && (
-          <Box css={{
-            padding: '$2',
-            backgroundColor: '$gray100',
-            borderRadius: '$2',
-            marginTop: '$2'
-          }}>
-            <Text size="$2" color="$gray700">
+          <Box
+            style={{
+              padding: '8px',
+              backgroundColor: 'var(--colors-gray100)',
+              borderRadius: '4px',
+              marginTop: '8px'
+            }}
+          >
+            <Text
+              variant="body"
+              size="sm"
+              style={{
+                margin: 0,
+                color: 'var(--colors-gray700)'
+              }}
+            >
               Preview: {selectedAttack.weaponName} - {selectedAttack.damage} {selectedAttack.damageType} damage,
               +{selectedAttack.attackBonus} to hit, {selectedAttack.range}ft range
             </Text>

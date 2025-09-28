@@ -107,7 +107,7 @@ export interface TokenBounds {
 }
 
 // Grid size mappings for D&D 5e
-export interface TokenSizeMap {
+export type TokenSizeMap = {
   readonly [K in TokenSize]: {
     readonly gridSquares: number
     readonly diameter: number

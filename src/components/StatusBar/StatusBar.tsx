@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { shallow } from 'zustand/shallow'
 import useMapStore from '@/store/mapStore'
 import useToolStore from '@/store/toolStore'
 import { useHistoryStore } from '@/store/historyStore'
@@ -12,115 +11,21 @@ import {
   Redo2,
   Package
 } from 'lucide-react'
-import { styled } from '@/styles/theme.config'
-import { Box, Text, Button } from '@/components/primitives'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 
 type StatusBarProps = {
   mousePosition?: { x: number; y: number }
   zoom?: number
 }
 
-const StatusBarContainer = styled(Box, {
-  height: '24px',
-  backgroundColor: '$gray900',
-  borderTop: '1px solid $gray800',
-  display: 'flex',
-  alignItems: 'center',
-  paddingX: '$2',
-  fontSize: '$xs',
-})
-
-const StatusSection = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$4',
-
-  variants: {
-    align: {
-      left: { flex: 1, justifyContent: 'flex-start' },
-      center: { justifyContent: 'center' },
-      right: { flex: 1, justifyContent: 'flex-end' },
-    },
-  },
-})
-
-const StatusItem = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  color: '$gray400',
-})
-
-const StatusText = styled(Text, {
-  fontFamily: '$mono',
-  fontSize: '$xs',
-  color: 'inherit',
-
-  variants: {
-    highlight: {
-      true: {
-        color: '$white',
-        fontWeight: '$medium',
-      },
-    },
-    warning: {
-      true: {
-        color: '$error',
-      },
-    },
-    success: {
-      true: {
-        color: '$success',
-      },
-    },
-    accent: {
-      true: {
-        color: '$secondary',
-      },
-    },
-  },
-})
-
-const StatusButton = styled(Button, {
-  height: '20px',
-  minWidth: 'auto',
-  padding: '$1',
-  fontSize: '$xs',
-  borderRadius: '$sm',
-  gap: '$1',
-
-  variants: {
-    variant: {
-      status: {
-        backgroundColor: 'transparent',
-        color: '$gray400',
-        border: 'none',
-        '&:hover': {
-          backgroundColor: '$gray800',
-          color: '$white',
-        },
-        '&:disabled': {
-          color: '$gray600',
-          '&:hover': {
-            backgroundColor: 'transparent',
-            color: '$gray600',
-          },
-        },
-      },
-    },
-  },
-
-  defaultVariants: {
-    variant: 'status',
-    size: 'xs',
-  },
-})
 
 const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
   // Use specific selectors to prevent unnecessary re-renders
   const currentMap = useMapStore(state => state.currentMap)
   const loadMap = useMapStore(state => state.loadMap)
-  const selectedObjects = useMapStore(state => state.selectedObjects, shallow)
+  const selectedObjects = useMapStore(state => state.selectedObjects)
   const currentTool = useToolStore(state => state.currentTool)
   const canUndo = useHistoryStore(state => state.canUndo)
   const canRedo = useHistoryStore(state => state.canRedo)
@@ -205,91 +110,303 @@ const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
   }, [currentMap?.grid.snap, currentMap?.grid.size, mousePosition])
 
   return (
-    <StatusBarContainer>
+    <Box
+      style={{
+        height: '24px',
+        backgroundColor: 'var(--colors-gray900)',
+        borderTop: '1px solid var(--colors-gray700)',
+        display: 'flex',
+        alignItems: 'center',
+        paddingLeft: '8px',
+        paddingRight: '8px',
+        fontSize: '12px'
+      }}
+    >
       {/* Left side - Cursor and tool info */}
-      <StatusSection align="left">
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          flex: 1,
+          justifyContent: 'flex-start'
+        }}
+      >
         {/* Cursor position */}
-        <StatusItem>
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            color: 'var(--colors-gray400)'
+          }}
+        >
           <MousePointer2 size={12} />
-          <StatusText css={{ minWidth: '120px' }}>{formatCoords(mousePosition)}</StatusText>
-        </StatusItem>
+          <Text
+            variant="code"
+            size="xs"
+            style={{
+              color: 'inherit',
+              minWidth: '120px'
+            }}
+          >
+            {formatCoords(mousePosition)}
+          </Text>
+        </Box>
 
         {/* Grid cell (if snapping) */}
         {gridCell && (
-          <StatusItem>
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              color: 'var(--colors-gray400)'
+            }}
+          >
             <Grid3x3 size={12} />
-            <StatusText>
+            <Text
+              variant="code"
+              size="xs"
+              style={{
+                color: 'inherit'
+              }}
+            >
               Cell [{gridCell.x}, {gridCell.y}]
-            </StatusText>
-          </StatusItem>
+            </Text>
+          </Box>
         )}
 
         {/* Current tool */}
-        <StatusItem>
-          <StatusText>Tool:</StatusText>
-          <StatusText highlight>{getToolName(currentTool)}</StatusText>
-        </StatusItem>
-      </StatusSection>
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            color: 'var(--colors-gray400)'
+          }}
+        >
+          <Text
+            variant="code"
+            size="xs"
+            style={{
+              color: 'inherit'
+            }}
+          >
+            Tool:
+          </Text>
+          <Text
+            variant="code"
+            size="xs"
+            style={{
+              color: 'var(--colors-gray100)',
+              fontWeight: '500'
+            }}
+          >
+            {getToolName(currentTool)}
+          </Text>
+        </Box>
+      </Box>
 
       {/* Center - Object info */}
-      <StatusSection align="center">
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          justifyContent: 'center'
+        }}
+      >
         {/* Selected objects count */}
         {selectedObjects.length > 0 && (
-          <StatusItem css={{ color: '$secondary' }}>
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              color: 'var(--colors-secondary)'
+            }}
+          >
             <Package size={12} />
-            <StatusText accent>{selectedObjects.length} selected</StatusText>
-          </StatusItem>
+            <Text
+              variant="code"
+              size="xs"
+              style={{
+                color: 'inherit'
+              }}
+            >
+              {selectedObjects.length} selected
+            </Text>
+          </Box>
         )}
 
         {/* Total objects */}
-        <StatusItem>
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            color: 'var(--colors-gray400)'
+          }}
+        >
           <Layers size={12} />
-          <StatusText>{currentMap?.objects.length || 0} objects</StatusText>
-        </StatusItem>
-      </StatusSection>
+          <Text
+            variant="code"
+            size="xs"
+            style={{
+              color: 'inherit'
+            }}
+          >
+            {currentMap?.objects.length || 0} objects
+          </Text>
+        </Box>
+      </Box>
 
       {/* Right side - System info */}
-      <StatusSection align="right">
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          flex: 1,
+          justifyContent: 'flex-end'
+        }}
+      >
         {/* History status */}
-        <StatusItem css={{ gap: '$2' }}>
-          <StatusButton
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: 'var(--colors-gray400)'
+          }}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
             disabled={!canUndo}
             onClick={handleUndo}
             title={`Undo (${historyInfo.undoCount} available)`}
+            style={{
+              height: '20px',
+              minWidth: 'auto',
+              padding: '4px',
+              fontSize: '12px',
+              borderRadius: '4px',
+              gap: '4px',
+              backgroundColor: 'transparent',
+              color: canUndo ? 'var(--colors-gray400)' : 'var(--colors-gray600)',
+              border: 'none'
+            }}
           >
             <Undo2 size={12} />
-            <StatusText>{historyInfo.undoCount}</StatusText>
-          </StatusButton>
-          <StatusButton
+            <Text
+              variant="code"
+              size="xs"
+              style={{
+                color: 'inherit'
+              }}
+            >
+              {historyInfo.undoCount}
+            </Text>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             disabled={!canRedo}
             onClick={handleRedo}
             title={`Redo (${historyInfo.redoCount} available)`}
+            style={{
+              height: '20px',
+              minWidth: 'auto',
+              padding: '4px',
+              fontSize: '12px',
+              borderRadius: '4px',
+              gap: '4px',
+              backgroundColor: 'transparent',
+              color: canRedo ? 'var(--colors-gray400)' : 'var(--colors-gray600)',
+              border: 'none'
+            }}
           >
             <Redo2 size={12} />
-            <StatusText>{historyInfo.redoCount}</StatusText>
-          </StatusButton>
-        </StatusItem>
+            <Text
+              variant="code"
+              size="xs"
+              style={{
+                color: 'inherit'
+              }}
+            >
+              {historyInfo.redoCount}
+            </Text>
+          </Button>
+        </Box>
 
         {/* Zoom level */}
-        <StatusItem>
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            color: 'var(--colors-gray400)'
+          }}
+        >
           <ZoomIn size={12} />
-          <StatusText css={{ minWidth: '50px' }}>{formatZoom(zoom)}</StatusText>
-        </StatusItem>
+          <Text
+            variant="code"
+            size="xs"
+            style={{
+              color: 'inherit',
+              minWidth: '50px'
+            }}
+          >
+            {formatZoom(zoom)}
+          </Text>
+        </Box>
 
         {/* Grid size */}
         {currentMap && (
-          <StatusItem>
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              color: 'var(--colors-gray400)'
+            }}
+          >
             <Grid3x3 size={12} />
-            <StatusText>{currentMap.grid.size}px</StatusText>
-          </StatusItem>
+            <Text
+              variant="code"
+              size="xs"
+              style={{
+                color: 'inherit'
+              }}
+            >
+              {currentMap.grid.size}px
+            </Text>
+          </Box>
         )}
 
         {/* FPS counter */}
-        <StatusItem>
-          <StatusText warning={fps < 30}>{fps} FPS</StatusText>
-        </StatusItem>
-      </StatusSection>
-    </StatusBarContainer>
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            color: 'var(--colors-gray400)'
+          }}
+        >
+          <Text
+            variant="code"
+            size="xs"
+            style={{
+              color: fps < 30 ? 'var(--colors-red500)' : 'inherit'
+            }}
+          >
+            {fps} FPS
+          </Text>
+        </Box>
+      </Box>
+    </Box>
   )
 }
 

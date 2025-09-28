@@ -1,4 +1,4 @@
-import { TestScenario } from './TestScenarios'
+import type { TestScenario } from './TestScenarios'
 
 /**
  * Test scenario to verify Fireball leaves a 1-round persistent burn area

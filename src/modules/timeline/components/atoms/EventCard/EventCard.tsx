@@ -4,8 +4,33 @@
  */
 
 import React from 'react'
-import { styled } from '@/foundation/theme'
-import type { RoundEvent, EventType } from '../../../types'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import {
+  Move,
+  Eye,
+  EyeOff,
+  Zap,
+  Sword,
+  Settings,
+  Cloud,
+  Play,
+  Edit,
+  Trash2,
+  Clock,
+  CheckCircle,
+  AlertCircle
+} from 'lucide-react'
+import type { RoundEvent } from '../../../types'
+import type {
+  MoveEventData,
+  AttackEventData,
+  SpellEventData,
+  InteractionEventData,
+  EnvironmentalEventData,
+  SequenceEventData
+} from '../../../types/events'
 
 export type EventCardProps = {
   event: RoundEvent
@@ -18,230 +43,50 @@ export type EventCardProps = {
   className?: string
 }
 
-const Card = styled('div', {
-  position: 'relative',
-  padding: '$2',
-  borderRadius: '$md',
-  border: '1px solid $gray600',
-  background: '$gray800',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    borderColor: '$gray500',
-    background: '$gray750'
+// Event type configuration
+const eventTypeConfig = {
+  move: {
+    icon: <Move size={16} />,
+    color: '#3b82f6',
+    label: 'Move'
   },
-
-  variants: {
-    selected: {
-      true: {
-        borderColor: '$dndRed',
-        background: '$gray750',
-        boxShadow: '0 0 0 1px $dndRed'
-      }
-    },
-
-    executed: {
-      true: {
-        opacity: 0.7,
-        background: '$gray850'
-      }
-    },
-
-    executing: {
-      true: {
-        borderColor: '$orange500',
-        background: '$orange900',
-        animation: 'pulse 1s infinite'
-      }
-    }
-  }
-})
-
-const Header = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '$2',
-  marginBottom: '$1'
-})
-
-const EventName = styled('div', {
-  fontSize: '$2',
-  fontWeight: 600,
-  color: '$gray100',
-  flex: 1,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap'
-})
-
-const EventType = styled('span', {
-  fontSize: '$1',
-  fontWeight: 500,
-  padding: '$1 $2',
-  borderRadius: '$sm',
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px',
-
-  variants: {
-    type: {
-      move: {
-        background: '$blue900',
-        color: '$blue200'
-      },
-      attack: {
-        background: '$red900',
-        color: '$red200'
-      },
-      spell: {
-        background: '$purple900',
-        color: '$purple200'
-      },
-      interaction: {
-        background: '$green900',
-        color: '$green200'
-      },
-      environmental: {
-        background: '$yellow900',
-        color: '$yellow200'
-      },
-      sequence: {
-        background: '$gray700',
-        color: '$gray200'
-      }
-    }
-  }
-})
-
-const Details = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$3',
-  fontSize: '$1',
-  color: '$gray400'
-})
-
-const OrderBadge = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  fontSize: '$1',
-  color: '$gray300'
-})
-
-const Duration = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1'
-})
-
-const StatusIndicator = styled('div', {
-  position: 'absolute',
-  top: 4,
-  right: 4,
-  width: 8,
-  height: 8,
-  borderRadius: '$round',
-
-  variants: {
-    status: {
-      pending: {
-        background: '$gray500'
-      },
-      executed: {
-        background: '$green500'
-      },
-      executing: {
-        background: '$orange500',
-        animation: 'pulse 1s infinite'
-      },
-      failed: {
-        background: '$red500'
-      }
-    }
-  }
-})
-
-const Actions = styled('div', {
-  position: 'absolute',
-  top: '50%',
-  right: '$2',
-  transform: 'translateY(-50%)',
-  display: 'flex',
-  gap: '$1',
-  opacity: 0,
-  transition: 'opacity 0.2s ease',
-
-  [`${Card}:hover &`]: {
-    opacity: 1
-  }
-})
-
-const ActionButton = styled('button', {
-  width: 20,
-  height: 20,
-  borderRadius: '$sm',
-  border: 'none',
-  background: '$gray700',
-  color: '$gray300',
-  cursor: 'pointer',
-  fontSize: '$1',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    background: '$gray600',
-    color: '$gray100'
+  appear: {
+    icon: <Eye size={16} />,
+    color: '#10b981',
+    label: 'Appear'
   },
-
-  variants: {
-    action: {
-      execute: {
-        '&:hover': {
-          background: '$green700',
-          color: 'white'
-        }
-      },
-      edit: {
-        '&:hover': {
-          background: '$blue700',
-          color: 'white'
-        }
-      },
-      delete: {
-        '&:hover': {
-          background: '$red700',
-          color: 'white'
-        }
-      }
-    }
+  disappear: {
+    icon: <EyeOff size={16} />,
+    color: '#f59e0b',
+    label: 'Disappear'
+  },
+  spell: {
+    icon: <Zap size={16} />,
+    color: '#8b5cf6',
+    label: 'Spell'
+  },
+  attack: {
+    icon: <Sword size={16} />,
+    color: '#ef4444',
+    label: 'Attack'
+  },
+  interaction: {
+    icon: <Settings size={16} />,
+    color: '#06b6d4',
+    label: 'Interaction'
+  },
+  environmental: {
+    icon: <Cloud size={16} />,
+    color: '#84cc16',
+    label: 'Environmental'
+  },
+  sequence: {
+    icon: <Play size={16} />,
+    color: '#ec4899',
+    label: 'Sequence'
   }
-})
+} as const
 
-/**
- * Format duration in milliseconds to readable string
- */
-const formatDuration = (ms: number): string => {
-  if (ms < 1000) return `${ms}ms`
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
-  return `${Math.floor(ms / 60000)}m ${Math.floor((ms % 60000) / 1000)}s`
-}
-
-/**
- * Get status based on event state
- */
-const getEventStatus = (event: RoundEvent, isExecuting: boolean) => {
-  if (isExecuting) return 'executing'
-  if (event.isExecuted) return 'executed'
-  return 'pending'
-}
-
-/**
- * Event card component with actions and status
- */
 export const EventCard: React.FC<EventCardProps> = ({
   event,
   isSelected = false,
@@ -252,97 +97,331 @@ export const EventCard: React.FC<EventCardProps> = ({
   onSelect,
   className
 }) => {
-  const status = getEventStatus(event, isExecuting)
+  const config = eventTypeConfig[event.type as keyof typeof eventTypeConfig]
+  const isExecuted = event.isExecuted
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (onSelect) {
+  // Handle card click
+  const handleCardClick = () => {
+    if (onSelect && !isExecuting) {
       onSelect(event)
     }
   }
 
-  const handleExecute = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (onExecute && !event.isExecuted && !isExecuting) {
-      onExecute(event)
-    }
-  }
-
+  // Handle edit click
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (onEdit) {
+    if (onEdit && !isExecuting && !isExecuted) {
       onEdit(event)
     }
   }
 
+  // Handle delete click
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (onDelete) {
+    if (onDelete && !isExecuting) {
       onDelete(event)
     }
   }
 
+  // Handle execute click
+  const handleExecute = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (onExecute && !isExecuted && !isExecuting) {
+      onExecute(event)
+    }
+  }
+
+  // Format event description
+  const getEventDescription = () => {
+    const { type, data } = event
+
+    switch (type) {
+      case 'move':
+        if (data.type === 'move') {
+          const moveData = data as MoveEventData
+          return `Move to (${Math.round(moveData.endPosition.x)}, ${Math.round(moveData.endPosition.y)})`
+        }
+        break
+      case 'interaction':
+        if (data.type === 'interaction') {
+          const interactionData = data as InteractionEventData
+          return interactionData.interactionType || 'Interact with object'
+        }
+        break
+      case 'environmental':
+        if (data.type === 'environmental') {
+          const envData = data as EnvironmentalEventData
+          return envData.effectType || 'Environmental effect'
+        }
+        break
+      case 'spell':
+        if (data.type === 'spell') {
+          const spellData = data as SpellEventData
+          return spellData.spellId ? `Cast ${spellData.spellId}` : 'Cast spell'
+        }
+        break
+      case 'attack':
+        if (data.type === 'attack') {
+          const attackData = data as AttackEventData
+          return attackData.weapon.name ? `Attack with ${attackData.weapon.name}` : 'Attack'
+        }
+        break
+      case 'sequence':
+        if (data.type === 'sequence') {
+          const sequenceData = data as SequenceEventData
+          return sequenceData.sequenceType ? `Execute ${sequenceData.sequenceType} sequence` : 'Execute sequence'
+        }
+        break
+      default:
+        break
+    }
+    return 'Unknown event'
+  }
+
   return (
-    <Card
-      selected={isSelected}
-      executed={event.isExecuted}
-      executing={isExecuting}
-      onClick={handleCardClick}
+    <Box
       className={className}
+      style={{
+        position: 'relative',
+        padding: '12px',
+        borderRadius: '8px',
+        border: `1px solid ${isSelected ? config?.color || 'var(--colors-secondary)' : 'var(--colors-gray600)'}`,
+        backgroundColor: isExecuted ? 'var(--colors-gray850)' : 'var(--colors-gray800)',
+        cursor: isExecuting ? 'default' : 'pointer',
+        transition: 'all 0.2s ease',
+        opacity: isExecuted ? 0.7 : 1
+      }}
+      onClick={handleCardClick}
     >
-      <StatusIndicator status={status} />
+      {/* Execution status indicator */}
+      {isExecuting && (
+        <Box
+          style={{
+            position: 'absolute',
+            top: '-2px',
+            left: '-2px',
+            right: '-2px',
+            bottom: '-2px',
+            borderRadius: '8px',
+            background: `linear-gradient(45deg, ${config?.color || 'var(--colors-secondary)'}, transparent, ${config?.color || 'var(--colors-secondary)'})`,
+            backgroundSize: '200% 200%',
+            animation: 'gradient 2s ease infinite',
+            zIndex: -1
+          }}
+        />
+      )}
 
-      <Header>
-        <EventName title={event.name}>
-          {event.name}
-        </EventName>
-        <EventType type={event.type as EventType}>
-          {event.type}
-        </EventType>
-      </Header>
+      {/* Event Header */}
+      <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Event type icon */}
+          <Box
+            style={{
+              color: config?.color || 'var(--colors-gray400)',
+              opacity: isExecuted ? 0.6 : 1
+            }}
+          >
+            {config?.icon || <AlertCircle size={16} />}
+          </Box>
 
-      <Details>
-        <OrderBadge>
-          #{event.order}
-        </OrderBadge>
-        <Duration>
-          ⏱ {formatDuration(event.duration)}
-        </Duration>
-        {event.canSkip && (
-          <span style={{ fontSize: '10px' }}>⏭ Skippable</span>
-        )}
-      </Details>
+          {/* Event type and order */}
+          <Box>
+            <Text
+              variant="body"
+              size="sm"
+              style={{
+                fontWeight: '600',
+                color: isExecuted ? 'var(--colors-gray400)' : 'var(--colors-gray200)'
+              }}
+            >
+              {config?.label || 'Unknown'}
+            </Text>
+            {event.order !== undefined && (
+              <Text
+                variant="body"
+                size="xs"
+                style={{
+                  color: 'var(--colors-gray500)',
+                  marginLeft: '4px'
+                }}
+              >
+                #{event.order}
+              </Text>
+            )}
+          </Box>
+        </Box>
 
-      <Actions>
-        {!event.isExecuted && onExecute && (
-          <ActionButton
-            action="execute"
+        {/* Status icons */}
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {isExecuting && (
+            <Box style={{ color: 'var(--colors-warning)' }}>
+              <Clock size={14} />
+            </Box>
+          )}
+          {isExecuted && (
+            <Box style={{ color: 'var(--colors-success)' }}>
+              <CheckCircle size={14} />
+            </Box>
+          )}
+        </Box>
+      </Box>
+
+      {/* Event description */}
+      <Text
+        variant="body"
+        size="sm"
+        style={{
+          color: isExecuted ? 'var(--colors-gray500)' : 'var(--colors-gray300)',
+          marginBottom: '8px',
+          lineHeight: '1.4'
+        }}
+      >
+        {getEventDescription()}
+      </Text>
+
+      {/* Token ID */}
+      <Text
+        variant="body"
+        size="xs"
+        style={{
+          color: 'var(--colors-gray500)',
+          marginBottom: '8px'
+        }}
+      >
+        Token: {event.data && 'tokenId' in event.data ? (event.data as any).tokenId : 'N/A'}
+      </Text>
+
+      {/* Event-specific details */}
+      {event.type === 'spell' && event.data && (
+        <Box style={{ marginBottom: '8px' }}>
+          <Text
+            variant="body"
+            size="xs"
+            style={{ color: 'var(--colors-purple400)' }}
+          >
+            {(event.data as any).category && `${(event.data as any).category} spell`}
+          </Text>
+        </Box>
+      )}
+
+      {event.type === 'attack' && event.data && (
+        <Box style={{ marginBottom: '8px' }}>
+          <Text
+            variant="body"
+            size="xs"
+            style={{ color: 'var(--colors-red400)' }}
+          >
+            {(event.data as any).damage && `Damage: ${(event.data as any).damage}`}
+          </Text>
+        </Box>
+      )}
+
+      {event.type === 'move' && event.data && (
+        <Box style={{ marginBottom: '8px' }}>
+          <Text
+            variant="body"
+            size="xs"
+            style={{ color: 'var(--colors-blue400)' }}
+          >
+            {(event.data as any).duration && `Duration: ${(event.data as any).duration}ms`}
+          </Text>
+        </Box>
+      )}
+
+      {/* Action buttons */}
+      <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box style={{ display: 'flex', gap: '4px' }}>
+          {/* Edit button */}
+          {onEdit && !isExecuted && !isExecuting && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleEdit}
+              style={{ padding: '4px' }}
+            >
+              <Edit size={12} />
+            </Button>
+          )}
+
+          {/* Delete button */}
+          {onDelete && !isExecuting && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              style={{ padding: '4px', color: 'var(--colors-error)' }}
+            >
+              <Trash2 size={12} />
+            </Button>
+          )}
+        </Box>
+
+        {/* Execute button */}
+        {onExecute && !isExecuted && !isExecuting && (
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleExecute}
-            disabled={isExecuting}
-            title="Execute event"
+            style={{
+              fontSize: '11px',
+              padding: '4px 8px',
+              borderColor: config?.color,
+              color: config?.color
+            }}
           >
-            ▶
-          </ActionButton>
+            Execute
+          </Button>
         )}
-        {onEdit && (
-          <ActionButton
-            action="edit"
-            onClick={handleEdit}
-            title="Edit event"
+
+        {/* Execution status */}
+        {isExecuting && (
+          <Text
+            variant="body"
+            size="xs"
+            style={{
+              color: 'var(--colors-warning)',
+              fontWeight: '500'
+            }}
           >
-            ✏
-          </ActionButton>
+            Executing...
+          </Text>
         )}
-        {onDelete && (
-          <ActionButton
-            action="delete"
-            onClick={handleDelete}
-            title="Delete event"
+
+        {isExecuted && (
+          <Text
+            variant="body"
+            size="xs"
+            style={{
+              color: 'var(--colors-success)',
+              fontWeight: '500'
+            }}
           >
-            🗑
-          </ActionButton>
+            Completed
+          </Text>
         )}
-      </Actions>
-    </Card>
+      </Box>
+
+      {/* Round information */}
+      <Box
+        style={{
+          position: 'absolute',
+          top: '8px',
+          right: '8px',
+          backgroundColor: 'var(--colors-gray700)',
+          padding: '2px 6px',
+          borderRadius: '10px'
+        }}
+      >
+        <Text
+          variant="body"
+          size="xs"
+          style={{ color: 'var(--colors-gray300)' }}
+        >
+          R{event.roundId || 'N/A'}
+        </Text>
+      </Box>
+    </Box>
   )
 }
+
+export default EventCard

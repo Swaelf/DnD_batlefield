@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import Konva from 'konva'
-import { Position, Shape } from '@/types/map'
+import type Konva from 'konva'
+import type { Position, Shape } from '@/types/map'
 import { snapToGrid } from '@/utils/grid'
 
 // Helper function to constrain position within range
@@ -128,6 +128,7 @@ type ToolHandlersProps = {
     isDrawing: boolean
     startPoint: Position | null
     currentPoint: Position | null
+    points: Position[] // For polygon drawing
   }
   setDrawingState: (state: any) => void
   addObject: (object: any) => void
@@ -161,7 +162,7 @@ export const useToolHandlers = ({
   setDrawingState,
   addObject,
   addMeasurementPoint,
-  clearMeasurementPoints,
+  // clearMeasurementPoints, // Unused
   setPosition,
   completePositionPicking,
   selectMultiple,
@@ -372,7 +373,7 @@ export const useToolHandlers = ({
       case 'spellEffect':
         // Place spell effect using template
         if (spellEffectTemplate) {
-          let newObject: Partial<Shape> = {
+          const newObject: Partial<Shape> = {
             id: crypto.randomUUID(),
             type: 'shape' as const,
             position: snappedPos,

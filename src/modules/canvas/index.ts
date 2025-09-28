@@ -6,10 +6,36 @@
  * service layer architecture, and seamless integration capabilities.
  */
 
-// Export all types
-export * from './types'
+// Export canvas types (avoiding service type conflicts)
+export * from './types/canvas'
+export * from './types/layer'
+export * from './types/interaction'
+// Export specific viewport types to avoid conflicts
+export type {
+  ViewportConfig,
+  ViewportState,
+  ViewportTransform,
+  ViewportBounds,
+  CoordinateSpace
+} from './types/viewport'
+// Export specific grid types to avoid conflicts with services
+export type {
+  GridState,
+  GridType,
+  GridLine
+} from './types/grid'
 
-// Export all services
+// Export tool types explicitly to avoid conflicts
+export type {
+  ToolType as CanvasToolType,
+  ToolConfig as CanvasToolConfig,
+  ToolSettings as CanvasToolSettings,
+  ToolCursor,
+  ToolState,
+  ToolHandler
+} from './types/tool'
+
+// Export services (will use service-defined types for GridConfig, etc.)
 export * from './services'
 
 // Export all components

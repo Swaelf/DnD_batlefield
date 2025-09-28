@@ -1,5 +1,6 @@
-import { useState, useCallback, RefObject } from 'react'
-import Konva from 'konva'
+import type { RefObject } from 'react';
+import { useState, useCallback } from 'react'
+import type Konva from 'konva'
 
 type CanvasControls = {
   scale: number

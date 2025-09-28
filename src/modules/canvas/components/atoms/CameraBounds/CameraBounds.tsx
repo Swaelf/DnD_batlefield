@@ -43,7 +43,7 @@ export const CameraBounds: React.FC<CameraBoundsProps> = React.memo(({
         stroke={stroke}
         strokeWidth={strokeWidth}
         opacity={opacity}
-        dash={dashArray}
+        dash={dashArray ? [...dashArray] : undefined}
         fill="transparent"
         perfectDrawEnabled={false}
       />

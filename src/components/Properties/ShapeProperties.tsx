@@ -1,13 +1,9 @@
 import React, { memo } from 'react'
-import { Shape } from '@/types'
+import type { Shape } from '@/types'
 import { ColorPicker } from './ColorPicker'
-import {
-  PanelSection,
-  Field,
-  FieldLabel,
-  NumberInput,
-  Box
-} from '@/components/ui'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Input } from '@/components/ui/Input'
 
 type ShapePropertiesProps = {
   shape: Shape
@@ -19,72 +15,157 @@ const ShapePropertiesComponent: React.FC<ShapePropertiesProps> = ({
   onUpdate
 }) => {
   return (
-    <PanelSection>
-      <Field>
-        <FieldLabel>Fill Color</FieldLabel>
+    <Box
+      style={{
+        padding: '16px',
+        backgroundColor: 'var(--colors-gray900)',
+        borderRadius: '6px',
+        border: '1px solid var(--colors-gray700)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px'
+      }}
+    >
+      {/* Fill Color */}
+      <Box>
+        <Text
+          variant="label"
+          size="sm"
+          style={{
+            display: 'block',
+            marginBottom: '8px',
+            color: 'var(--colors-gray300)',
+            fontWeight: '500'
+          }}
+        >
+          Fill Color
+        </Text>
         <ColorPicker
           color={shape.fill}
           onChange={(color) => onUpdate({ fill: color })}
         />
-      </Field>
+      </Box>
 
-      <Field>
-        <FieldLabel>Stroke Color</FieldLabel>
+      {/* Stroke Color */}
+      <Box>
+        <Text
+          variant="label"
+          size="sm"
+          style={{
+            display: 'block',
+            marginBottom: '8px',
+            color: 'var(--colors-gray300)',
+            fontWeight: '500'
+          }}
+        >
+          Stroke Color
+        </Text>
         <ColorPicker
           color={shape.stroke}
           onChange={(color) => onUpdate({ stroke: color })}
         />
-      </Field>
+      </Box>
 
-      <Field>
-        <FieldLabel>Stroke Width</FieldLabel>
-        <NumberInput
+      {/* Stroke Width */}
+      <Box>
+        <Text
+          variant="label"
+          size="sm"
+          style={{
+            display: 'block',
+            marginBottom: '8px',
+            color: 'var(--colors-gray300)',
+            fontWeight: '500'
+          }}
+        >
+          Stroke Width
+        </Text>
+        <Input
+          type="number"
           value={shape.strokeWidth}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ strokeWidth: Number(e.target.value) })}
           min={0}
           max={20}
-          fullWidth
-          size="sm"
+          style={{ width: '100%' }}
         />
-      </Field>
+      </Box>
 
+      {/* Rectangle Dimensions */}
       {(shape.shapeType === 'rect' || shape.shapeType === 'rectangle') && (
-        <>
-          <Box display="grid" css={{ gridTemplateColumns: '1fr 1fr', gap: '$3' }}>
-            <Field>
-              <FieldLabel>Width</FieldLabel>
-              <NumberInput
-                value={shape.width}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ width: Number(e.target.value) })}
-                fullWidth
-                size="sm"
-              />
-            </Field>
-            <Field>
-              <FieldLabel>Height</FieldLabel>
-              <NumberInput
-                value={shape.height}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ height: Number(e.target.value) })}
-                fullWidth
-                size="sm"
-              />
-            </Field>
+        <Box
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '12px'
+          }}
+        >
+          <Box>
+            <Text
+              variant="label"
+              size="sm"
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--colors-gray300)',
+                fontWeight: '500'
+              }}
+            >
+              Width
+            </Text>
+            <Input
+              type="number"
+              value={shape.width}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ width: Number(e.target.value) })}
+              style={{ width: '100%' }}
+            />
           </Box>
-        </>
+          <Box>
+            <Text
+              variant="label"
+              size="sm"
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--colors-gray300)',
+                fontWeight: '500'
+              }}
+            >
+              Height
+            </Text>
+            <Input
+              type="number"
+              value={shape.height}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ height: Number(e.target.value) })}
+              style={{ width: '100%' }}
+            />
+          </Box>
+        </Box>
       )}
 
+      {/* Circle Radius */}
       {shape.shapeType === 'circle' && (
-        <Field>
-          <FieldLabel>Radius</FieldLabel>
-          <NumberInput
+        <Box>
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--colors-gray300)',
+              fontWeight: '500'
+            }}
+          >
+            Radius
+          </Text>
+          <Input
+            type="number"
             value={shape.radius}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ radius: Number(e.target.value) })}
-            fullWidth
-            size="sm"
+            style={{ width: '100%' }}
           />
-        </Field>
+        </Box>
       )}
-    </PanelSection>
+    </Box>
   )
 }
 

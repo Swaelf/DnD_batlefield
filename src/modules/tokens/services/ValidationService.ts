@@ -15,7 +15,6 @@ import {
   TOKEN_SIZE_GRID_MAP,
   isValidTokenSize,
   CONDITION_VALIDATIONS,
-  CONDITION_INTERACTIONS,
   isValidCondition,
   doConditionsConflict,
   getConditionInteraction
@@ -253,7 +252,7 @@ export class ValidationService {
   /**
    * Validate initiative
    */
-  private validateInitiative(initiative: number, errors: string[], warnings: string[]): void {
+  private validateInitiative(initiative: number, _errors: string[], warnings: string[]): void {
     if (initiative < -10 || initiative > 50) {
       warnings.push('Initiative outside typical range (-10 to +50)')
     }
@@ -307,8 +306,8 @@ export class ValidationService {
   /**
    * Validate size-specific rules
    */
-  private validateSizeSpecificRules(token: Token, errors: string[], warnings: string[]): void {
-    const sizeData = TOKEN_SIZE_GRID_MAP[token.size]
+  private validateSizeSpecificRules(token: Token, _errors: string[], warnings: string[]): void {
+    const sizeData = TOKEN_SIZE_GRID_MAP[token.size as keyof typeof TOKEN_SIZE_GRID_MAP]
     if (!sizeData) return
 
     // Validate hit points for size
@@ -448,7 +447,7 @@ export class ValidationService {
     const remaining: ConditionType[] = []
     const warnings: string[] = []
 
-    const resultConditions = currentConditions.filter(condition => {
+    currentConditions.filter(condition => {
       const shouldRemove = conditionsToRemove.includes(condition.type)
 
       if (shouldRemove) {

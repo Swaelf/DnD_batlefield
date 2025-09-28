@@ -1,10 +1,10 @@
-import { TestScenario, TestStep, TestAction, TestAssertion } from './TestScenarios'
-import { CanvasCapture, Screenshot, StateSnapshot } from './CanvasCapture'
+import type { TestScenario, TestStep, TestAction, TestAssertion } from './TestScenarios'
+import type { CanvasCapture, Screenshot, StateSnapshot } from './CanvasCapture'
 import useMapStore from '@/store/mapStore'
 import useRoundStore from '@/store/roundStore'
 import useToolStore from '@/store/toolStore'
-import { Token } from '@/types/token'
-import { SpellEventData } from '@/types/timeline'
+import type { Token } from '@/types/token'
+import type { SpellEventData } from '@/types/timeline'
 import { nanoid } from 'nanoid'
 
 export interface TestResult {

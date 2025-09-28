@@ -6,7 +6,6 @@
  */
 
 import React from 'react'
-import { styled } from '@/styles/theme.config'
 
 interface FieldInputProps {
   type?: 'text' | 'number' | 'email' | 'password'
@@ -17,47 +16,22 @@ interface FieldInputProps {
   max?: number
   step?: number
   disabled?: boolean
+  hasError?: boolean
   className?: string
 }
 
-const Input = styled('input', {
+// Helper functions for styling
+const getInputStyles = (disabled = false, hasError = false) => ({
   width: '100%',
-  padding: '$2',
-  borderRadius: '$2',
-  border: '1px solid $gray400',
-  fontSize: '$sm',
-  background: '$gray100',
-  color: '$gray900',
+  padding: '8px',
+  borderRadius: '4px',
+  border: `1px solid ${hasError ? 'var(--red-500)' : 'var(--gray-400)'}`,
+  fontSize: '14px',
+  background: disabled ? 'var(--gray-200)' : 'var(--gray-100)',
+  color: disabled ? 'var(--gray-600)' : 'var(--gray-900)',
   transition: 'all 0.2s ease',
-
-  '&:focus': {
-    outline: 'none',
-    borderColor: '$dndRed',
-    background: 'white',
-    boxShadow: '0 0 0 1px $colors$dndRed'
-  },
-
-  '&:disabled': {
-    background: '$gray200',
-    color: '$gray600',
-    cursor: 'not-allowed'
-  },
-
-  '&::placeholder': {
-    color: '$gray500'
-  },
-
-  variants: {
-    hasError: {
-      true: {
-        borderColor: '$red500',
-        '&:focus': {
-          borderColor: '$red500',
-          boxShadow: '0 0 0 1px $colors$red500'
-        }
-      }
-    }
-  }
+  cursor: disabled ? 'not-allowed' : 'text',
+  outline: 'none'
 })
 
 export const FieldInput: React.FC<FieldInputProps> = ({
@@ -69,23 +43,43 @@ export const FieldInput: React.FC<FieldInputProps> = ({
   max,
   step,
   disabled = false,
+  hasError = false,
   className
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value)
   }
 
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (!disabled) {
+      e.target.style.borderColor = hasError ? 'var(--red-500)' : 'var(--dnd-red)'
+      e.target.style.background = 'white'
+      e.target.style.boxShadow = hasError
+        ? '0 0 0 1px var(--red-500)'
+        : '0 0 0 1px var(--dnd-red)'
+    }
+  }
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.style.borderColor = hasError ? 'var(--red-500)' : 'var(--gray-400)'
+    e.target.style.background = disabled ? 'var(--gray-200)' : 'var(--gray-100)'
+    e.target.style.boxShadow = 'none'
+  }
+
   return (
-    <Input
+    <input
       type={type}
       value={value}
       onChange={handleChange}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
       placeholder={placeholder}
       min={min}
       max={max}
       step={step}
       disabled={disabled}
       className={className}
+      style={getInputStyles(disabled, hasError)}
     />
   )
 }

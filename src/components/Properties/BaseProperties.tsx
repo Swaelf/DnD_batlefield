@@ -1,13 +1,8 @@
 import React, { memo } from 'react'
-import { MapObject } from '@/types'
-import {
-  PanelSection,
-  Field,
-  FieldLabel,
-  NumberInput,
-  Box,
-  Text
-} from '@/components/ui'
+import type { MapObject } from '@/types'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Input } from '@/components/ui/Input'
 
 type BasePropertiesProps = {
   selectedObject: MapObject
@@ -29,74 +24,198 @@ const BasePropertiesComponent: React.FC<BasePropertiesProps> = ({
   onOpacityChange
 }) => {
   return (
-    <>
+    <Box style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Object Type */}
-      <PanelSection css={{ marginBottom: '$4' }}>
-        <Box display="flex" alignItems="center" gap="2">
-          <Text size="xs" color="gray400">Type:</Text>
-          <Text size="sm" weight="medium" transform="capitalize">{selectedObject.type}</Text>
+      <Box
+        style={{
+          marginBottom: '16px',
+          padding: '12px',
+          backgroundColor: 'var(--colors-gray900)',
+          borderRadius: '6px',
+          border: '1px solid var(--colors-gray700)'
+        }}
+      >
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Text
+            variant="body"
+            size="xs"
+            style={{
+              margin: 0,
+              color: 'var(--colors-gray400)'
+            }}
+          >
+            Type:
+          </Text>
+          <Text
+            variant="body"
+            size="sm"
+            style={{
+              margin: 0,
+              fontWeight: '500',
+              textTransform: 'capitalize',
+              color: 'var(--colors-gray200)'
+            }}
+          >
+            {selectedObject.type}
+          </Text>
         </Box>
-      </PanelSection>
+      </Box>
 
       {/* Position & Transform */}
-      <PanelSection divider>
-        <Box display="grid" css={{ gridTemplateColumns: '1fr 1fr', gap: '$2' }}>
-          <Field>
-            <FieldLabel>X Position</FieldLabel>
-            <NumberInput
+      <Box
+        style={{
+          padding: '16px',
+          backgroundColor: 'var(--colors-gray900)',
+          borderRadius: '6px',
+          border: '1px solid var(--colors-gray700)',
+          borderTop: '2px solid var(--colors-secondary)'
+        }}
+      >
+        {/* Position Grid */}
+        <Box
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '12px',
+            marginBottom: '16px'
+          }}
+        >
+          <Box>
+            <Text
+              variant="label"
+              size="sm"
+              style={{
+                display: 'block',
+                marginBottom: '4px',
+                color: 'var(--colors-gray300)',
+                fontWeight: '500'
+              }}
+            >
+              X Position
+            </Text>
+            <Input
+              type="number"
               value={Math.round(localPosition.x)}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => onPositionChange('x', Number(e.target.value))}
-              fullWidth
-              size="sm"
+              style={{ width: '100%' }}
             />
-          </Field>
-          <Field>
-            <FieldLabel>Y Position</FieldLabel>
-            <NumberInput
+          </Box>
+          <Box>
+            <Text
+              variant="label"
+              size="sm"
+              style={{
+                display: 'block',
+                marginBottom: '4px',
+                color: 'var(--colors-gray300)',
+                fontWeight: '500'
+              }}
+            >
+              Y Position
+            </Text>
+            <Input
+              type="number"
               value={Math.round(localPosition.y)}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => onPositionChange('y', Number(e.target.value))}
-              fullWidth
-              size="sm"
+              style={{ width: '100%' }}
             />
-          </Field>
+          </Box>
         </Box>
 
-        <Field>
-          <FieldLabel>Rotation</FieldLabel>
-          <Box display="flex" alignItems="center" gap="2">
+        {/* Rotation */}
+        <Box style={{ marginBottom: '16px' }}>
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--colors-gray300)',
+              fontWeight: '500'
+            }}
+          >
+            Rotation
+          </Text>
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <input
               type="range"
               value={localRotation}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => onRotationChange(Number(e.target.value))}
               min="0"
               max="360"
-              style={{ flex: 1 }}
+              style={{
+                flex: 1,
+                height: '6px',
+                backgroundColor: 'var(--colors-gray700)',
+                borderRadius: '3px',
+                outline: 'none',
+                appearance: 'none'
+              }}
             />
-            <Text size="sm" css={{ minWidth: '40px', textAlign: 'right' }}>
+            <Text
+              variant="body"
+              size="sm"
+              style={{
+                margin: 0,
+                minWidth: '40px',
+                textAlign: 'right',
+                color: 'var(--colors-gray200)',
+                fontFamily: 'monospace'
+              }}
+            >
               {localRotation}°
             </Text>
           </Box>
-        </Field>
+        </Box>
 
-        <Field>
-          <FieldLabel>Opacity</FieldLabel>
-          <Box display="flex" alignItems="center" gap="2">
+        {/* Opacity */}
+        <Box>
+          <Text
+            variant="label"
+            size="sm"
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--colors-gray300)',
+              fontWeight: '500'
+            }}
+          >
+            Opacity
+          </Text>
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <input
               type="range"
               value={localOpacity}
-              onChange={(e) => onOpacityChange(Number(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onOpacityChange(Number(e.target.value))}
               min="0"
               max="1"
               step="0.1"
-              style={{ flex: 1 }}
+              style={{
+                flex: 1,
+                height: '6px',
+                backgroundColor: 'var(--colors-gray700)',
+                borderRadius: '3px',
+                outline: 'none',
+                appearance: 'none'
+              }}
             />
-            <Text size="sm" css={{ minWidth: '40px', textAlign: 'right' }}>
+            <Text
+              variant="body"
+              size="sm"
+              style={{
+                margin: 0,
+                minWidth: '40px',
+                textAlign: 'right',
+                color: 'var(--colors-gray200)',
+                fontFamily: 'monospace'
+              }}
+            >
               {Math.round(localOpacity * 100)}%
             </Text>
           </Box>
-        </Field>
-      </PanelSection>
-    </>
+        </Box>
+      </Box>
+    </Box>
   )
 }
 

@@ -8,7 +8,7 @@
 import React from 'react'
 import { Circle, Group, Line } from 'react-konva'
 import type { Point } from '@/types/geometry'
-import type { CanvasCursorType } from '../../types'
+import type { CanvasCursorType } from '../../../types/canvas'
 
 export interface ViewportCursorProps {
   readonly type: CanvasCursorType

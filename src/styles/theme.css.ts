@@ -1,4 +1,4 @@
-import { createGlobalTheme, createTheme, createThemeContract } from '@vanilla-extract/css'
+import { createTheme, createThemeContract } from '@vanilla-extract/css'
 
 // Define the theme contract (shape of our theme)
 const themeContract = createThemeContract({

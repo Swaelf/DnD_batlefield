@@ -4,16 +4,13 @@
  */
 
 import { useMemo } from 'react'
+import { useStore } from 'zustand'
 import { useTimelineStore } from '../store'
 import type {
-  Timeline,
-  Round,
   RoundEvent,
   TimelineId,
   RoundId,
-  EventId,
-  CreateTimelineData,
-  CreateRoundData
+  EventId
 } from '../types'
 import { type CreateEventData } from '../services'
 import {
@@ -30,12 +27,53 @@ import {
  */
 export const useTimeline = () => {
   // Get store state and actions
-  const store = useTimelineStore()
+  const timelines = useStore(useTimelineStore, state => state.timelines)
+  const activeTimelineId = useStore(useTimelineStore, state => state.activeTimelineId)
+  const playback = useStore(useTimelineStore, state => state.playback)
+  const selectedEventIds = useStore(useTimelineStore, state => state.selectedEventIds)
+  const getSelectedEvents = useStore(useTimelineStore, state => state.getSelectedEvents)
+  const getRoundById = useStore(useTimelineStore, state => state.getRoundById)
+  const getEventById = useStore(useTimelineStore, state => state.getEventById)
+  const isCreatingEvent = useStore(useTimelineStore, state => state.isCreatingEvent)
+  const eventCreationData = useStore(useTimelineStore, state => state.eventCreationData)
+  const storeActions = useStore(useTimelineStore, state => ({
+    createTimeline: state.createTimeline,
+    deleteTimeline: state.deleteTimeline,
+    setActiveTimeline: state.setActiveTimeline,
+    addRound: state.addRound,
+    removeRound: state.removeRound,
+    addEvent: state.addEvent,
+    updateEvent: state.updateEvent,
+    removeEvent: state.removeEvent,
+    executeEvent: state.executeEvent,
+    selectEvent: state.selectEvent,
+    nextRound: state.nextRound,
+    goToRound: state.goToRound,
+    startCombat: state.startCombat,
+    endCombat: state.endCombat,
+    togglePlayback: state.togglePlayback,
+    setPlaybackSpeed: state.setPlaybackSpeed,
+    updateTimeline: state.updateTimeline,
+    previousRound: state.previousRound,
+    duplicateRound: state.duplicateRound,
+    duplicateEvent: state.duplicateEvent,
+    moveEvent: state.moveEvent,
+    clearAllEvents: state.clearAllEvents,
+    executeRound: state.executeRound,
+    selectMultipleEvents: state.selectMultipleEvents,
+    clearSelection: state.clearSelection,
+    toggleEventSelection: state.toggleEventSelection,
+    setAutoAdvanceRounds: state.setAutoAdvanceRounds,
+    startEventCreation: state.startEventCreation,
+    updateEventCreation: state.updateEventCreation,
+    finishEventCreation: state.finishEventCreation,
+    cancelEventCreation: state.cancelEventCreation
+  }))
 
   // Memoized selectors for performance
   const activeTimeline = useMemo(
-    () => selectActiveTimeline(store.timelines, store.activeTimelineId),
-    [store.timelines, store.activeTimelineId]
+    () => selectActiveTimeline(timelines, activeTimelineId),
+    [timelines, activeTimelineId]
   )
 
   const currentRound = useMemo(
@@ -59,83 +97,83 @@ export const useTimeline = () => {
   )
 
   const playbackProgress = useMemo(
-    () => selectPlaybackProgress(activeTimeline, store.playback),
-    [activeTimeline, store.playback]
+    () => selectPlaybackProgress(activeTimeline, playback),
+    [activeTimeline, playback]
   )
 
   return {
     // State
-    timelines: store.timelines,
+    timelines,
     activeTimeline,
-    activeTimelineId: store.activeTimelineId,
+    activeTimelineId,
     currentRound,
     isInCombat: activeTimeline?.isActive || false,
     stats,
 
     // Playback state
-    playback: store.playback,
+    playback,
     playbackProgress,
     canAdvanceRound,
     canGoBackRound,
 
     // Selection state
-    selectedEventIds: store.selectedEventIds,
-    selectedEvents: store.getSelectedEvents(),
+    selectedEventIds,
+    selectedEvents: getSelectedEvents(),
 
     // Event creation state
-    isCreatingEvent: store.isCreatingEvent,
-    eventCreationData: store.eventCreationData,
+    isCreatingEvent,
+    eventCreationData,
 
     // Timeline management actions
-    createTimeline: store.createTimeline,
-    setActiveTimeline: store.setActiveTimeline,
-    updateTimeline: store.updateTimeline,
-    deleteTimeline: store.deleteTimeline,
+    createTimeline: storeActions.createTimeline,
+    setActiveTimeline: storeActions.setActiveTimeline,
+    updateTimeline: storeActions.updateTimeline,
+    deleteTimeline: storeActions.deleteTimeline,
 
     // Combat control
-    startCombat: store.startCombat,
-    endCombat: store.endCombat,
+    startCombat: storeActions.startCombat,
+    endCombat: storeActions.endCombat,
 
     // Round management
-    addRound: store.addRound,
-    removeRound: store.removeRound,
-    nextRound: store.nextRound,
-    previousRound: store.previousRound,
-    goToRound: store.goToRound,
-    duplicateRound: store.duplicateRound,
+    addRound: storeActions.addRound,
+    removeRound: storeActions.removeRound,
+    nextRound: storeActions.nextRound,
+    previousRound: storeActions.previousRound,
+    goToRound: storeActions.goToRound,
+    duplicateRound: storeActions.duplicateRound,
 
     // Event management
-    addEvent: store.addEvent,
-    updateEvent: store.updateEvent,
-    removeEvent: store.removeEvent,
-    duplicateEvent: store.duplicateEvent,
-    moveEvent: store.moveEvent,
-    clearAllEvents: store.clearAllEvents,
+    addEvent: storeActions.addEvent,
+    updateEvent: storeActions.updateEvent,
+    removeEvent: storeActions.removeEvent,
+    duplicateEvent: storeActions.duplicateEvent,
+    moveEvent: storeActions.moveEvent,
+    clearAllEvents: storeActions.clearAllEvents,
 
     // Event execution
-    executeEvent: store.executeEvent,
-    executeRound: store.executeRound,
+    executeEvent: storeActions.executeEvent,
+    executeRound: storeActions.executeRound,
 
     // Selection management
-    selectEvent: store.selectEvent,
-    selectMultipleEvents: store.selectMultipleEvents,
-    clearSelection: store.clearSelection,
-    toggleEventSelection: store.toggleEventSelection,
+    selectEvent: storeActions.selectEvent,
+    selectMultipleEvents: storeActions.selectMultipleEvents,
+    clearSelection: storeActions.clearSelection,
+    toggleEventSelection: storeActions.toggleEventSelection,
 
     // Playback control
-    setPlaybackSpeed: store.setPlaybackSpeed,
-    setAutoAdvanceRounds: store.setAutoAdvanceRounds,
-    togglePlayback: store.togglePlayback,
+    setPlaybackSpeed: storeActions.setPlaybackSpeed,
+    setAutoAdvanceRounds: storeActions.setAutoAdvanceRounds,
+    togglePlayback: storeActions.togglePlayback,
 
     // Event creation workflow
-    startEventCreation: store.startEventCreation,
-    updateEventCreation: store.updateEventCreation,
-    finishEventCreation: store.finishEventCreation,
-    cancelEventCreation: store.cancelEventCreation,
+    startEventCreation: storeActions.startEventCreation,
+    updateEventCreation: storeActions.updateEventCreation,
+    finishEventCreation: storeActions.finishEventCreation,
+    cancelEventCreation: storeActions.cancelEventCreation,
 
     // Utility methods
-    getEventById: store.getEventById,
-    getRoundById: store.getRoundById
+    getEventById,
+    getRoundById
   }
 }
 
@@ -163,14 +201,14 @@ export const useRound = (roundId?: RoundId) => {
   return {
     round,
     events: round?.events || [],
-    isCurrentRound: round?.roundNumber === timeline.currentRound,
+    isCurrentRound: round?.roundNumber === timeline.currentRound?.roundNumber,
     canExecute: round && !round.isExecuted,
 
     // Round-specific actions
-    executeRound: () => round && timeline.executeRound(round.id),
-    addEvent: (eventData: CreateEventData) => round && timeline.addEvent(round.id, eventData),
-    clearAllEvents: () => round && timeline.clearAllEvents(round.id),
-    duplicateRound: () => round && timeline.duplicateRound(round.id)
+    executeRound: () => round ? timeline.executeRound(round.id) : undefined,
+    addEvent: (eventData: CreateEventData) => round ? timeline.addEvent(round.id, eventData) : undefined,
+    clearAllEvents: () => round ? timeline.clearAllEvents(round.id) : undefined,
+    duplicateRound: () => round ? timeline.duplicateRound(round.id) : undefined
   }
 }
 

@@ -1,6 +1,7 @@
 import React, { useState, memo } from 'react'
 import { ChevronDown, ChevronRight, Sparkles } from 'lucide-react'
 import useToolStore from '@/store/toolStore'
+import { styled } from '@/styles/theme.config'
 import {
   Panel,
   PanelHeader,
@@ -14,6 +15,47 @@ import {
 } from '@/components/ui'
 import { spellEffectTemplates, spellCategories } from './constants.tsx'
 import type { SpellEffectTemplate } from './types'
+
+const SpellPanel = styled(Panel, {
+  borderLeft: '1px solid $gray800'
+})
+
+const CategoryToggle = styled(Button, {
+  justifyContent: 'space-between',
+  padding: 2,
+  '&:hover': {
+    backgroundColor: '$gray800'
+  }
+})
+
+const EffectButton = styled(Button, {
+  padding: 3,
+  textAlign: 'left',
+  border: '2px solid',
+  backgroundColor: 'transparent',
+
+  variants: {
+    selected: {
+      true: {
+        borderColor: '$secondary',
+        backgroundColor: '$gray800',
+        '&:hover': {
+          borderColor: '$secondary'
+        }
+      },
+      false: {
+        borderColor: '$gray700',
+        '&:hover': {
+          borderColor: '$gray600'
+        }
+      }
+    }
+  }
+})
+
+const ConfigSection = styled(PanelSection, {
+  backgroundColor: '$gray800/50'
+})
 
 export const SpellEffectsPanel = memo(() => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
@@ -46,13 +88,13 @@ export const SpellEffectsPanel = memo(() => {
   }
 
   return (
-    <Panel size="sidebar" css={{ borderLeft: '1px solid $gray800' }}>
+    <SpellPanel size="sidebar">
       <PanelHeader>
-        <Box display="flex" alignItems="center" gap="2">
+        <Box display="flex" alignItems="center" gap={2}>
           <Sparkles size={20} />
           <PanelTitle>Spell Effects</PanelTitle>
         </Box>
-        <Text size="xs" color="gray500" css={{ marginTop: '$1' }}>
+        <Text size="xs" color="gray500">
           D&D 5e spell areas and effects
         </Text>
       </PanelHeader>
@@ -67,20 +109,13 @@ export const SpellEffectsPanel = memo(() => {
           if (categoryEffects.length === 0) return null
 
           return (
-            <PanelSection key={category.id} css={{ marginBottom: '$4' }}>
-              <Button
+            <PanelSection key={category.id} spacing="md">
+              <CategoryToggle
                 onClick={() => toggleCategory(category.id)}
                 variant="ghost"
                 fullWidth
-                css={{
-                  justifyContent: 'space-between',
-                  padding: '$2',
-                  '&:hover': {
-                    backgroundColor: '$gray800',
-                  },
-                }}
               >
-                <Box display="flex" alignItems="center" gap="2">
+                <Box display="flex" alignItems="center" gap={2}>
                   {category.icon}
                   <Text size="sm" weight="semibold" color="gray300">
                     {category.name}
@@ -94,39 +129,23 @@ export const SpellEffectsPanel = memo(() => {
                 ) : (
                   <ChevronRight size={16} color="#6B7280" />
                 )}
-              </Button>
+              </CategoryToggle>
 
               {isExpanded && (
-                <Box display="flex" flexDirection="column" gap="2" css={{ marginTop: '$2' }}>
+                <Box display="flex" flexDirection="column" gap={2} marginTop={2}>
                   {categoryEffects.map(template => (
-                    <Button
+                    <EffectButton
                       key={template.id}
                       onClick={() => handleSelectTemplate(template)}
                       variant="ghost"
                       fullWidth
-                      css={{
-                        padding: '$3',
-                        textAlign: 'left',
-                        border: '2px solid',
-                        borderColor: selectedTemplate?.id === template.id
-                          ? '$secondary'
-                          : '$gray700',
-                        backgroundColor: selectedTemplate?.id === template.id
-                          ? '$gray800'
-                          : 'transparent',
-                        '&:hover': {
-                          borderColor: selectedTemplate?.id === template.id
-                            ? '$secondary'
-                            : '$gray600',
-                          backgroundColor: '$gray800',
-                        },
-                      }}
+                      selected={selectedTemplate?.id === template.id}
                     >
-                      <Box display="flex" alignItems="flex-start" gap="3">
-                        <Box css={{ color: '$gray400', marginTop: '2px' }}>
+                      <Box display="flex" alignItems="flex-start" gap={3}>
+                        <Box color="textTertiary" marginTop={1}>
                           {template.icon}
                         </Box>
-                        <Box css={{ flex: 1 }}>
+                        <Box flexGrow={1}>
                           <Text weight="semibold" color="gray200">
                             {template.name}
                           </Text>
@@ -134,13 +153,13 @@ export const SpellEffectsPanel = memo(() => {
                             {template.description}
                           </Text>
                           {template.dndSpell && (
-                            <Text size="xs" color="secondary" css={{ marginTop: '$1' }}>
+                            <Text size="xs" color="secondary">
                               {template.dndSpell}
                             </Text>
                           )}
                         </Box>
                       </Box>
-                    </Button>
+                    </EffectButton>
                   ))}
                 </Box>
               )}
@@ -151,10 +170,10 @@ export const SpellEffectsPanel = memo(() => {
 
       {/* Selected Effect Controls */}
       {selectedTemplate && (
-        <PanelSection divider css={{ backgroundColor: '$gray800/50' }}>
-          <Box display="flex" flexDirection="column" gap="3">
+        <ConfigSection divider>
+          <Box display="flex" flexDirection="column" gap={3}>
             <Box>
-              <Text weight="semibold" color="secondary" css={{ marginBottom: '$2' }}>
+              <Text weight="semibold" color="secondary">
                 {selectedTemplate.name}
               </Text>
               <Text size="xs" color="gray400">
@@ -163,14 +182,14 @@ export const SpellEffectsPanel = memo(() => {
             </Box>
 
             <Box>
-              <Text size="xs" color="gray400" css={{ marginBottom: '$1' }}>
+              <Text size="xs" color="gray400">
                 Color
               </Text>
-              <Box display="flex" alignItems="center" gap="2">
+              <Box display="flex" alignItems="center" gap={2}>
                 <input
                   type="color"
                   value={effectColor}
-                  onChange={(e) => setEffectColor(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEffectColor(e.target.value)}
                   style={{
                     width: '32px',
                     height: '32px',
@@ -198,7 +217,7 @@ export const SpellEffectsPanel = memo(() => {
                 min="10"
                 max="90"
                 value={effectOpacity * 100}
-                onChange={(e) => setEffectOpacity(Number(e.target.value) / 100)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEffectOpacity(Number(e.target.value) / 100)}
                 style={{
                   width: '100%',
                   marginTop: '4px'
@@ -210,9 +229,9 @@ export const SpellEffectsPanel = memo(() => {
               Click on the map to place effect
             </Text>
           </Box>
-        </PanelSection>
+        </ConfigSection>
       )}
-    </Panel>
+    </SpellPanel>
   )
 })
 

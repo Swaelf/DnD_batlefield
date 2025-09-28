@@ -1,6 +1,6 @@
 import { saveAs } from 'file-saver'
-import { BattleMap } from '@/types/map'
-import Konva from 'konva'
+import type { BattleMap } from '@/types/map'
+import type Konva from 'konva'
 
 /**
  * Export map as JSON file

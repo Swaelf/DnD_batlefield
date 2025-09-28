@@ -1,8 +1,7 @@
 import React from 'react'
-import { TestVanillaExtract } from './components/TestVanillaExtract'
 
 export const TestApp: React.FC = () => {
-  return <TestVanillaExtract />
+  return <div>Test App - Component removed</div>
 }
 
 export default TestApp

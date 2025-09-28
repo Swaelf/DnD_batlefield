@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import useEventCreationStore from '../eventCreationStore'
-import { Position } from '@/types'
+import type { Position } from '@/types'
 
 describe('eventCreationStore', () => {
   beforeEach(() => {

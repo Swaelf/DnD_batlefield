@@ -1,6 +1,5 @@
-import React from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import {
-  Plus,
   Square,
   Circle,
   Type,
@@ -8,11 +7,16 @@ import {
   Eye,
   EyeOff,
   Lock,
-  Unlock
+  Unlock,
+  MousePointer2
 } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import useMapStore from '@/store/mapStore'
 import useToolStore from '@/store/toolStore'
 import { nanoid } from 'nanoid'
+import type { ToolType } from '@/types'
 
 type MapContextMenuProps = {
   position: { x: number; y: number }
@@ -25,6 +29,8 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
   canvasPosition,
   onClose
 }) => {
+  const menuRef = useRef<HTMLDivElement>(null)
+
   // Use specific selectors to prevent unnecessary re-renders
   const currentMap = useMapStore(state => state.currentMap)
   const addObject = useMapStore(state => state.addObject)
@@ -35,7 +41,32 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
   const strokeColor = useToolStore(state => state.strokeColor)
   const strokeWidth = useToolStore(state => state.strokeWidth)
 
-  const handleAddRectangle = () => {
+  // Handle clicks outside menu
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      onClose()
+    }
+  }, [onClose])
+
+  // Handle keyboard navigation
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      onClose()
+    }
+  }, [onClose])
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('mousedown', handleClickOutside)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [handleKeyDown, handleClickOutside])
+
+  const handleAddRectangle = useCallback(() => {
     const rect = {
       id: nanoid(),
       type: 'shape' as const,
@@ -46,17 +77,17 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
       rotation: 0,
       layer: 1,
       fill: fillColor,
-      fillColor,
+      fillColor: fillColor,
       stroke: strokeColor,
-      strokeColor,
-      strokeWidth,
+      strokeColor: strokeColor,
+      strokeWidth: strokeWidth,
       opacity: 1
     }
     addObject(rect)
     onClose()
-  }
+  }, [canvasPosition, fillColor, strokeColor, strokeWidth, addObject, onClose])
 
-  const handleAddCircle = () => {
+  const handleAddCircle = useCallback(() => {
     const circle = {
       id: nanoid(),
       type: 'shape' as const,
@@ -66,17 +97,17 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
       rotation: 0,
       layer: 1,
       fill: fillColor,
-      fillColor,
+      fillColor: fillColor,
       stroke: strokeColor,
-      strokeColor,
-      strokeWidth,
+      strokeColor: strokeColor,
+      strokeWidth: strokeWidth,
       opacity: 1
     }
     addObject(circle)
     onClose()
-  }
+  }, [canvasPosition, fillColor, strokeColor, strokeWidth, addObject, onClose])
 
-  const handleAddToken = () => {
+  const handleAddToken = useCallback(() => {
     const token = {
       id: nanoid(),
       type: 'token' as const,
@@ -95,9 +126,9 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
     }
     addObject(token)
     onClose()
-  }
+  }, [canvasPosition, fillColor, addObject, onClose])
 
-  const handleAddText = () => {
+  const handleAddText = useCallback(() => {
     const text = {
       id: nanoid(),
       type: 'text' as const,
@@ -111,137 +142,350 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
     }
     addObject(text)
     onClose()
-  }
+  }, [canvasPosition, fillColor, addObject, onClose])
 
-  const handleToggleGrid = () => {
+  const handleToggleGrid = useCallback(() => {
     toggleGridVisibility()
     onClose()
-  }
+  }, [toggleGridVisibility, onClose])
 
-  const handleToggleSnap = () => {
+  const handleToggleSnap = useCallback(() => {
     toggleGridSnap()
     onClose()
-  }
+  }, [toggleGridSnap, onClose])
+
+  const handleToolSelect = useCallback((tool: string) => {
+    setTool(tool as ToolType)
+    onClose()
+  }, [setTool, onClose])
 
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-50"
+      <Box
+        style={{
+          position: 'fixed',
+          inset: '0',
+          zIndex: 999
+        }}
         onClick={onClose}
-        onContextMenu={(e) => {
+        onContextMenu={(e: React.MouseEvent) => {
           e.preventDefault()
           onClose()
         }}
       />
 
       {/* Menu */}
-      <div
-        className="fixed z-50 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1"
-        style={{ left: position.x, top: position.y }}
+      <Box
+        ref={menuRef}
+        style={{
+          position: 'fixed',
+          left: position.x,
+          top: position.y,
+          zIndex: 1000,
+          width: '192px',
+          backgroundColor: 'var(--colors-dndBlack)',
+          border: '1px solid var(--colors-gray700)',
+          borderRadius: '8px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          padding: '4px 0',
+          overflow: 'hidden'
+        }}
       >
         {/* Add objects */}
-        <div className="px-2 py-1">
-          <div className="text-xs text-gray-500 uppercase tracking-wider px-2 py-1">Add</div>
+        <Box style={{ padding: '4px 8px' }}>
+          <Text
+            variant="body"
+            size="xs"
+            style={{
+              color: 'var(--colors-gray500)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              padding: '4px 8px',
+              margin: 0,
+              fontWeight: '500'
+            }}
+          >
+            Add
+          </Text>
 
-          <button
+          <Button
+            variant="ghost"
             onClick={handleAddRectangle}
-            className="w-full px-2 py-1.5 text-left text-sm hover:bg-gray-800 rounded flex items-center gap-2 transition-colors"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 8px',
+              justifyContent: 'flex-start',
+              fontSize: '14px',
+              color: 'var(--colors-gray200)',
+              backgroundColor: 'transparent',
+              border: 'none'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
           >
-            <Square className="h-3 w-3 text-gray-400" />
-            Rectangle
-          </button>
+            <Square size={12} style={{ color: 'var(--colors-gray400)' }} />
+            <Text variant="body" size="sm" style={{ margin: 0 }}>Rectangle</Text>
+          </Button>
 
-          <button
+          <Button
+            variant="ghost"
             onClick={handleAddCircle}
-            className="w-full px-2 py-1.5 text-left text-sm hover:bg-gray-800 rounded flex items-center gap-2 transition-colors"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 8px',
+              justifyContent: 'flex-start',
+              fontSize: '14px',
+              color: 'var(--colors-gray200)',
+              backgroundColor: 'transparent',
+              border: 'none'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
           >
-            <Circle className="h-3 w-3 text-gray-400" />
-            Circle
-          </button>
+            <Circle size={12} style={{ color: 'var(--colors-gray400)' }} />
+            <Text variant="body" size="sm" style={{ margin: 0 }}>Circle</Text>
+          </Button>
 
-          <button
+          <Button
+            variant="ghost"
             onClick={handleAddToken}
-            className="w-full px-2 py-1.5 text-left text-sm hover:bg-gray-800 rounded flex items-center gap-2 transition-colors"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 8px',
+              justifyContent: 'flex-start',
+              fontSize: '14px',
+              color: 'var(--colors-gray200)',
+              backgroundColor: 'transparent',
+              border: 'none'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
           >
-            <Users className="h-3 w-3 text-gray-400" />
-            Token
-          </button>
+            <Users size={12} style={{ color: 'var(--colors-gray400)' }} />
+            <Text variant="body" size="sm" style={{ margin: 0 }}>Token</Text>
+          </Button>
 
-          <button
+          <Button
+            variant="ghost"
             onClick={handleAddText}
-            className="w-full px-2 py-1.5 text-left text-sm hover:bg-gray-800 rounded flex items-center gap-2 transition-colors"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 8px',
+              justifyContent: 'flex-start',
+              fontSize: '14px',
+              color: 'var(--colors-gray200)',
+              backgroundColor: 'transparent',
+              border: 'none'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
           >
-            <Type className="h-3 w-3 text-gray-400" />
-            Text
-          </button>
-        </div>
+            <Type size={12} style={{ color: 'var(--colors-gray400)' }} />
+            <Text variant="body" size="sm" style={{ margin: 0 }}>Text</Text>
+          </Button>
+        </Box>
 
-        <div className="h-px bg-gray-800 my-1" />
+        <Box style={{ height: '1px', backgroundColor: 'var(--colors-gray800)', margin: '4px 0' }} />
 
         {/* Tools */}
-        <div className="px-2 py-1">
-          <div className="text-xs text-gray-500 uppercase tracking-wider px-2 py-1">Tools</div>
-
-          <button
-            onClick={() => { setTool('select'); onClose() }}
-            className="w-full px-2 py-1.5 text-left text-sm hover:bg-gray-800 rounded flex items-center gap-2 transition-colors"
+        <Box style={{ padding: '4px 8px' }}>
+          <Text
+            variant="body"
+            size="xs"
+            style={{
+              color: 'var(--colors-gray500)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              padding: '4px 8px',
+              margin: 0,
+              fontWeight: '500'
+            }}
           >
-            <Plus className="h-3 w-3 text-gray-400" />
-            Select Tool
-            <span className="ml-auto text-xs text-gray-500">V</span>
-          </button>
+            Tools
+          </Text>
 
-          <button
-            onClick={() => { setTool('rectangle'); onClose() }}
-            className="w-full px-2 py-1.5 text-left text-sm hover:bg-gray-800 rounded flex items-center gap-2 transition-colors"
+          <Button
+            variant="ghost"
+            onClick={() => handleToolSelect('select')}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 8px',
+              justifyContent: 'flex-start',
+              fontSize: '14px',
+              color: 'var(--colors-gray200)',
+              backgroundColor: 'transparent',
+              border: 'none'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
           >
-            <Square className="h-3 w-3 text-gray-400" />
-            Rectangle Tool
-            <span className="ml-auto text-xs text-gray-500">R</span>
-          </button>
+            <MousePointer2 size={12} style={{ color: 'var(--colors-gray400)' }} />
+            <Text variant="body" size="sm" style={{ margin: 0, flex: 1 }}>Select Tool</Text>
+            <Text variant="body" size="xs" style={{ margin: 0, color: 'var(--colors-gray500)', fontFamily: 'monospace' }}>V</Text>
+          </Button>
 
-          <button
-            onClick={() => { setTool('circle'); onClose() }}
-            className="w-full px-2 py-1.5 text-left text-sm hover:bg-gray-800 rounded flex items-center gap-2 transition-colors"
+          <Button
+            variant="ghost"
+            onClick={() => handleToolSelect('rectangle')}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 8px',
+              justifyContent: 'flex-start',
+              fontSize: '14px',
+              color: 'var(--colors-gray200)',
+              backgroundColor: 'transparent',
+              border: 'none'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
           >
-            <Circle className="h-3 w-3 text-gray-400" />
-            Circle Tool
-            <span className="ml-auto text-xs text-gray-500">C</span>
-          </button>
-        </div>
+            <Square size={12} style={{ color: 'var(--colors-gray400)' }} />
+            <Text variant="body" size="sm" style={{ margin: 0, flex: 1 }}>Rectangle Tool</Text>
+            <Text variant="body" size="xs" style={{ margin: 0, color: 'var(--colors-gray500)', fontFamily: 'monospace' }}>R</Text>
+          </Button>
 
-        <div className="h-px bg-gray-800 my-1" />
+          <Button
+            variant="ghost"
+            onClick={() => handleToolSelect('circle')}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 8px',
+              justifyContent: 'flex-start',
+              fontSize: '14px',
+              color: 'var(--colors-gray200)',
+              backgroundColor: 'transparent',
+              border: 'none'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
+          >
+            <Circle size={12} style={{ color: 'var(--colors-gray400)' }} />
+            <Text variant="body" size="sm" style={{ margin: 0, flex: 1 }}>Circle Tool</Text>
+            <Text variant="body" size="xs" style={{ margin: 0, color: 'var(--colors-gray500)', fontFamily: 'monospace' }}>C</Text>
+          </Button>
+        </Box>
+
+        <Box style={{ height: '1px', backgroundColor: 'var(--colors-gray800)', margin: '4px 0' }} />
 
         {/* Grid options */}
-        <div className="px-2 py-1">
-          <button
+        <Box style={{ padding: '4px 8px' }}>
+          <Button
+            variant="ghost"
             onClick={handleToggleGrid}
-            className="w-full px-2 py-1.5 text-left text-sm hover:bg-gray-800 rounded flex items-center gap-2 transition-colors"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 8px',
+              justifyContent: 'flex-start',
+              fontSize: '14px',
+              color: 'var(--colors-gray200)',
+              backgroundColor: 'transparent',
+              border: 'none'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
           >
             {currentMap?.grid.visible ? (
-              <EyeOff className="h-3 w-3 text-gray-400" />
+              <EyeOff size={12} style={{ color: 'var(--colors-gray400)' }} />
             ) : (
-              <Eye className="h-3 w-3 text-gray-400" />
+              <Eye size={12} style={{ color: 'var(--colors-gray400)' }} />
             )}
-            {currentMap?.grid.visible ? 'Hide Grid' : 'Show Grid'}
-            <span className="ml-auto text-xs text-gray-500">G</span>
-          </button>
+            <Text variant="body" size="sm" style={{ margin: 0, flex: 1 }}>
+              {currentMap?.grid.visible ? 'Hide Grid' : 'Show Grid'}
+            </Text>
+            <Text variant="body" size="xs" style={{ margin: 0, color: 'var(--colors-gray500)', fontFamily: 'monospace' }}>G</Text>
+          </Button>
 
-          <button
+          <Button
+            variant="ghost"
             onClick={handleToggleSnap}
-            className="w-full px-2 py-1.5 text-left text-sm hover:bg-gray-800 rounded flex items-center gap-2 transition-colors"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 8px',
+              justifyContent: 'flex-start',
+              fontSize: '14px',
+              color: 'var(--colors-gray200)',
+              backgroundColor: 'transparent',
+              border: 'none'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
           >
             {currentMap?.grid.snap ? (
-              <Unlock className="h-3 w-3 text-gray-400" />
+              <Unlock size={12} style={{ color: 'var(--colors-gray400)' }} />
             ) : (
-              <Lock className="h-3 w-3 text-gray-400" />
+              <Lock size={12} style={{ color: 'var(--colors-gray400)' }} />
             )}
-            {currentMap?.grid.snap ? 'Disable Snap' : 'Enable Snap'}
-            <span className="ml-auto text-xs text-gray-500">Shift+G</span>
-          </button>
-        </div>
-      </div>
+            <Text variant="body" size="sm" style={{ margin: 0, flex: 1 }}>
+              {currentMap?.grid.snap ? 'Disable Snap' : 'Enable Snap'}
+            </Text>
+            <Text variant="body" size="xs" style={{ margin: 0, color: 'var(--colors-gray500)', fontFamily: 'monospace' }}>Shift+G</Text>
+          </Button>
+        </Box>
+      </Box>
     </>
   )
 }

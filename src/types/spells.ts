@@ -1,5 +1,5 @@
-import React from 'react'
-import { Position } from './map'
+import type React from 'react'
+import type { Position } from './map'
 
 // Spell effect types
 export type SpellEffect = {

@@ -1,7 +1,9 @@
 import React, { memo } from 'react'
 import { Move, Eye, EyeOff, Zap, Sword, Settings, Cloud, Play } from 'lucide-react'
-import { EventType } from '@/types/timeline'
-import { Box, Button, FieldLabel } from '@/components/ui'
+import type { EventType } from '@/types/timeline'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 
 type EventTypeSelectorProps = {
   eventType: EventType
@@ -12,139 +14,179 @@ const EventTypeSelectorComponent: React.FC<EventTypeSelectorProps> = ({
   eventType,
   setEventType
 }) => {
+  const eventTypes = [
+    {
+      type: 'move' as EventType,
+      icon: <Move size={16} />,
+      label: 'Move',
+      color: '#3b82f6', // blue
+      description: 'Token movement and positioning'
+    },
+    {
+      type: 'appear' as EventType,
+      icon: <Eye size={16} />,
+      label: 'Appear',
+      color: '#10b981', // green
+      description: 'Token summoning and reveals'
+    },
+    {
+      type: 'disappear' as EventType,
+      icon: <EyeOff size={16} />,
+      label: 'Disappear',
+      color: '#f59e0b', // amber
+      description: 'Token removal and hiding'
+    },
+    {
+      type: 'spell' as EventType,
+      icon: <Zap size={16} />,
+      label: 'Spell',
+      color: '#8b5cf6', // violet
+      description: 'Magical effects and spells'
+    },
+    {
+      type: 'attack' as EventType,
+      icon: <Sword size={16} />,
+      label: 'Attack',
+      color: '#ef4444', // red
+      description: 'Combat attacks and damage'
+    },
+    {
+      type: 'interaction' as EventType,
+      icon: <Settings size={16} />,
+      label: 'Interaction',
+      color: '#06b6d4', // cyan
+      description: 'Object manipulation and skills'
+    },
+    {
+      type: 'environmental' as EventType,
+      icon: <Cloud size={16} />,
+      label: 'Environmental',
+      color: '#84cc16', // lime
+      description: 'Weather and terrain effects'
+    },
+    {
+      type: 'sequence' as EventType,
+      icon: <Play size={16} />,
+      label: 'Sequence',
+      color: '#ec4899', // pink
+      description: 'Complex action combinations'
+    }
+  ]
+
   return (
-    <Box css={{
-      padding: '$3',
-      backgroundColor: '$gray900/50',
-      borderRadius: '$md',
-      border: '1px solid $gray700'
-    }}>
-      <FieldLabel css={{ marginBottom: '$2' }}>Event Type</FieldLabel>
-      <Box display="grid" css={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '$2' }}>
-        <Button
-          onClick={() => setEventType('move')}
-          variant={eventType === 'move' ? 'primary' : 'outline'}
-          css={{
-            justifyContent: 'flex-start',
-            backgroundColor: eventType === 'move' ? '$blue600' : '$gray700',
-            color: eventType === 'move' ? '$white' : '$gray300',
-            '&:hover': {
-              backgroundColor: eventType === 'move' ? '$blue700' : '$gray600'
-            }
+    <Box
+      style={{
+        padding: '16px',
+        backgroundColor: 'var(--colors-gray900)',
+        borderRadius: '8px',
+        border: '1px solid var(--colors-gray700)'
+      }}
+    >
+      <Text
+        variant="body"
+        size="sm"
+        style={{
+          marginBottom: '12px',
+          fontWeight: '500',
+          color: 'var(--colors-gray200)'
+        }}
+      >
+        Event Type
+      </Text>
+
+      <Box
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '8px'
+        }}
+      >
+        {eventTypes.map(({ type, icon, label, color, description }) => {
+          const isSelected = eventType === type
+
+          return (
+            <Button
+              key={type}
+              onClick={() => setEventType(type)}
+              variant={isSelected ? 'primary' : 'outline'}
+              size="sm"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: '8px',
+                padding: '12px',
+                height: 'auto',
+                backgroundColor: isSelected ? color : 'var(--colors-gray800)',
+                borderColor: isSelected ? color : 'var(--colors-gray600)',
+                color: isSelected ? 'white' : 'var(--colors-gray300)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Box style={{ color: isSelected ? 'white' : color }}>
+                {icon}
+              </Box>
+              <Box style={{ textAlign: 'left' }}>
+                <Text
+                  variant="body"
+                  size="sm"
+                  style={{
+                    fontWeight: '500',
+                    color: isSelected ? 'white' : 'var(--colors-gray200)',
+                    lineHeight: '1.2'
+                  }}
+                >
+                  {label}
+                </Text>
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{
+                    color: isSelected ? 'rgba(255,255,255,0.8)' : 'var(--colors-gray400)',
+                    lineHeight: '1.2',
+                    marginTop: '2px'
+                  }}
+                >
+                  {description}
+                </Text>
+              </Box>
+            </Button>
+          )
+        })}
+      </Box>
+
+      {/* Selected Event Info */}
+      <Box
+        style={{
+          marginTop: '16px',
+          padding: '12px',
+          backgroundColor: 'var(--colors-gray800)',
+          borderRadius: '6px',
+          border: `1px solid ${eventTypes.find(e => e.type === eventType)?.color || 'var(--colors-gray600)'}`
+        }}
+      >
+        <Text
+          variant="body"
+          size="sm"
+          style={{
+            fontWeight: '500',
+            color: 'var(--colors-gray200)',
+            marginBottom: '4px'
           }}
         >
-          <Move size={16} style={{ marginRight: '4px' }} />
-          Move
-        </Button>
-        <Button
-          onClick={() => setEventType('appear')}
-          variant={eventType === 'appear' ? 'primary' : 'outline'}
-          css={{
-            justifyContent: 'flex-start',
-            backgroundColor: eventType === 'appear' ? '$green600' : '$gray700',
-            color: eventType === 'appear' ? '$white' : '$gray300',
-            '&:hover': {
-              backgroundColor: eventType === 'appear' ? '$green700' : '$gray600'
-            }
-          }}
+          Selected: {eventTypes.find(e => e.type === eventType)?.label}
+        </Text>
+        <Text
+          variant="body"
+          size="xs"
+          style={{ color: 'var(--colors-gray400)' }}
         >
-          <Eye size={16} style={{ marginRight: '4px' }} />
-          Appear
-        </Button>
-        <Button
-          onClick={() => setEventType('disappear')}
-          variant={eventType === 'disappear' ? 'primary' : 'outline'}
-          css={{
-            justifyContent: 'flex-start',
-            backgroundColor: eventType === 'disappear' ? '$red600' : '$gray700',
-            color: eventType === 'disappear' ? '$white' : '$gray300',
-            '&:hover': {
-              backgroundColor: eventType === 'disappear' ? '$red700' : '$gray600'
-            }
-          }}
-        >
-          <EyeOff size={16} style={{ marginRight: '4px' }} />
-          Disappear
-        </Button>
-        <Button
-          onClick={() => setEventType('spell')}
-          variant={eventType === 'spell' ? 'primary' : 'outline'}
-          css={{
-            justifyContent: 'flex-start',
-            backgroundColor: eventType === 'spell' ? '$purple600' : '$gray700',
-            color: eventType === 'spell' ? '$white' : '$gray300',
-            '&:hover': {
-              backgroundColor: eventType === 'spell' ? '$purple700' : '$gray600'
-            }
-          }}
-        >
-          <Zap size={16} style={{ marginRight: '4px' }} />
-          Spell
-        </Button>
-        <Button
-          onClick={() => setEventType('attack')}
-          variant={eventType === 'attack' ? 'primary' : 'outline'}
-          css={{
-            justifyContent: 'flex-start',
-            backgroundColor: eventType === 'attack' ? '$orange600' : '$gray700',
-            color: eventType === 'attack' ? '$white' : '$gray300',
-            '&:hover': {
-              backgroundColor: eventType === 'attack' ? '$orange700' : '$gray600'
-            }
-          }}
-        >
-          <Sword size={16} style={{ marginRight: '4px' }} />
-          Attack
-        </Button>
-        <Button
-          onClick={() => setEventType('interaction')}
-          variant={eventType === 'interaction' ? 'primary' : 'outline'}
-          css={{
-            justifyContent: 'flex-start',
-            backgroundColor: eventType === 'interaction' ? '$cyan600' : '$gray700',
-            color: eventType === 'interaction' ? '$white' : '$gray300',
-            '&:hover': {
-              backgroundColor: eventType === 'interaction' ? '$cyan700' : '$gray600'
-            }
-          }}
-        >
-          <Settings size={16} style={{ marginRight: '4px' }} />
-          Object
-        </Button>
-        <Button
-          onClick={() => setEventType('sequence')}
-          variant={eventType === 'sequence' ? 'primary' : 'outline'}
-          css={{
-            justifyContent: 'flex-start',
-            backgroundColor: eventType === 'sequence' ? '$teal600' : '$gray700',
-            color: eventType === 'sequence' ? '$white' : '$gray300',
-            '&:hover': {
-              backgroundColor: eventType === 'sequence' ? '$teal700' : '$gray600'
-            }
-          }}
-        >
-          <Play size={16} style={{ marginRight: '4px' }} />
-          Sequence
-        </Button>
-        <Button
-          onClick={() => setEventType('environmental')}
-          variant={eventType === 'environmental' ? 'primary' : 'outline'}
-          css={{
-            justifyContent: 'flex-start',
-            backgroundColor: eventType === 'environmental' ? '$indigo600' : '$gray700',
-            color: eventType === 'environmental' ? '$white' : '$gray300',
-            '&:hover': {
-              backgroundColor: eventType === 'environmental' ? '$indigo700' : '$gray600'
-            }
-          }}
-        >
-          <Cloud size={16} style={{ marginRight: '4px' }} />
-          Weather
-        </Button>
+          {eventTypes.find(e => e.type === eventType)?.description}
+        </Text>
       </Box>
     </Box>
   )
 }
 
 export const EventTypeSelector = memo(EventTypeSelectorComponent)
-EventTypeSelector.displayName = 'EventTypeSelector'
+export default EventTypeSelector

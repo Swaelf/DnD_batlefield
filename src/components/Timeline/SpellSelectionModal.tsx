@@ -1,7 +1,12 @@
-import React, { useState } from 'react'
-import { Zap, Flame, Snowflake, Shield, Heart, Skull, Eye, Wind } from 'lucide-react'
-import { SpellCategory, SpellEventData } from '@/types/timeline'
-import { Modal, ModalBody, Box, Text, Button, Input, Field, FieldLabel, ColorInput, Grid } from '@/components/ui'
+import React, { useState, useCallback, useMemo } from 'react'
+import { Zap, Flame, Snowflake, Shield, Heart, Skull, Eye, Wind, Search, X } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Input } from '@/components/ui/Input'
+import { FieldLabel } from '@/components/ui/FieldLabel'
+import { Modal } from '@/components/ui/Modal'
+import type { SpellCategory, SpellEventData } from '@/types/timeline'
 
 type SpellSelectionModalProps = {
   isOpen: boolean
@@ -9,7 +14,7 @@ type SpellSelectionModalProps = {
   onSelect: (spell: Partial<SpellEventData>) => void
 }
 
-// Spell presets with icons
+// Spell presets with proper syntax
 const spellPresets = [
   {
     id: 'fireball',
@@ -19,445 +24,544 @@ const spellPresets = [
     size: 20,
     range: 150,
     duration: 2,
-    persistDuration: 1, // Burning ground persists for 1 round
+    persistDuration: 1,
     icon: Flame,
-    description: 'A bright streak flashes from your pointing finger to a point you choose'
+    description: 'A bright streak flashes from your pointing finger to a point you choose',
+    level: 3,
+    school: 'Evocation'
   },
   {
     id: 'magicMissile',
     name: 'Magic Missile',
     category: 'projectile' as SpellCategory,
     color: '#9370db',
-    size: 8,
-    range: 120,
-    duration: 1.5,
-    persistDuration: 0, // No persistent area
-    projectileSpeed: 400,
-    particleEffect: true,
-    icon: Zap,
-    description: 'Three glowing darts of magical force'
-  },
-  {
-    id: 'lightningBolt',
-    name: 'Lightning Bolt',
-    category: 'ray' as SpellCategory,
-    color: '#00bfff',
-    size: 10,
-    range: 100,
-    duration: 1,
-    persistDuration: 0, // No persistent area
-    icon: Zap,
-    description: 'A stroke of lightning forming a line'
-  },
-  {
-    id: 'healingWord',
-    name: 'Healing Word',
-    category: 'burst' as SpellCategory,
-    color: '#00ff00',
-    size: 10,
-    range: 60,
-    duration: 1.5,
-    persistDuration: 0, // No persistent area
-    icon: Heart,
-    description: 'A creature of your choice regains hit points'
-  },
-  {
-    id: 'web',
-    name: 'Web',
-    category: 'area' as SpellCategory,
-    color: '#f0f0f0',
-    size: 20,
-    duration: 0,
-    persistDuration: 10, // 1 minute = 10 rounds (for testing, normally 600 for 1 hour)
-    icon: Shield,
-    description: 'Conjure a mass of thick, sticky webbing'
-  },
-  {
-    id: 'coneOfCold',
-    name: 'Cone of Cold',
-    category: 'cone' as SpellCategory,
-    color: '#87ceeb',
-    size: 60,
-    duration: 2,
-    persistDuration: 0, // No persistent area
-    icon: Snowflake,
-    description: 'A blast of cold air erupts from your hands'
-  },
-  {
-    id: 'cloudOfDaggers',
-    name: 'Cloud of Daggers',
-    category: 'area' as SpellCategory,
-    color: '#708090',
     size: 5,
-    duration: 0,
-    persistDuration: 10, // 1 minute = 10 rounds
-    icon: Wind,
-    description: 'Fill the air with spinning daggers'
+    range: 120,
+    duration: 1,
+    icon: Zap,
+    description: 'Three glowing darts of magical force strike your target',
+    level: 1,
+    school: 'Evocation'
   },
   {
-    id: 'darkness',
-    name: 'Darkness',
+    id: 'iceStorm',
+    name: 'Ice Storm',
     category: 'area' as SpellCategory,
-    color: '#000000',
-    size: 15,
-    duration: 0,
-    persistDuration: 10, // Using 10 rounds for testing (normally 100 for 10 minutes)
-    icon: Eye,
-    description: 'Magical darkness spreads from a point'
+    color: '#87ceeb',
+    size: 40,
+    range: 300,
+    duration: 3,
+    persistDuration: 2,
+    icon: Snowflake,
+    description: 'A hail of rock-hard ice pounds to the ground in a cylinder',
+    level: 4,
+    school: 'Evocation'
   },
   {
-    id: 'blight',
-    name: 'Blight',
-    category: 'burst' as SpellCategory,
-    color: '#8b008b',
-    size: 30,
-    duration: 3,
-    persistDuration: 0, // No persistent area
+    id: 'shield',
+    name: 'Shield',
+    category: 'area' as SpellCategory,
+    color: '#4169e1',
+    size: 10,
+    range: 0,
+    duration: 1,
+    icon: Shield,
+    description: 'An invisible barrier of magical force appears and protects you',
+    level: 1,
+    school: 'Abjuration'
+  },
+  {
+    id: 'heal',
+    name: 'Heal',
+    category: 'area' as SpellCategory,
+    color: '#32cd32',
+    size: 15,
+    range: 60,
+    duration: 1,
+    icon: Heart,
+    description: 'Choose a creature that you can see within range',
+    level: 6,
+    school: 'Evocation'
+  },
+  {
+    id: 'vampiricTouch',
+    name: 'Vampiric Touch',
+    category: 'projectile' as SpellCategory,
+    color: '#8b0000',
+    size: 8,
+    range: 60,
+    duration: 2,
     icon: Skull,
-    description: 'Necromantic energy washes over a creature'
+    description: 'The touch of your shadow-wreathed hand can siphon life force',
+    level: 3,
+    school: 'Necromancy'
+  },
+  {
+    id: 'trueSeeing',
+    name: 'True Seeing',
+    category: 'area' as SpellCategory,
+    color: '#ffd700',
+    size: 12,
+    range: 120,
+    duration: 1,
+    icon: Eye,
+    description: 'This spell gives the willing creature you touch the ability to see things as they are',
+    level: 6,
+    school: 'Divination'
+  },
+  {
+    id: 'gustOfWind',
+    name: 'Gust of Wind',
+    category: 'ray' as SpellCategory,
+    color: '#e0e0e0',
+    size: 25,
+    range: 60,
+    duration: 2,
+    icon: Wind,
+    description: 'A line of strong wind 60 feet long and 10 feet wide blasts from you',
+    level: 2,
+    school: 'Evocation'
   }
 ]
 
-const categoryDescriptions: Record<SpellCategory, string> = {
-  'projectile': 'Single-target projectile',
-  'projectile-burst': 'Projectile that explodes on impact',
-  'ray': 'Line effect from caster',
-  'cone': 'Cone-shaped area',
-  'burst': 'Circular explosion',
-  'area': 'Persistent area effect'
-}
+const spellSchools = [
+  'All Schools',
+  'Abjuration',
+  'Conjuration',
+  'Divination',
+  'Enchantment',
+  'Evocation',
+  'Illusion',
+  'Necromancy',
+  'Transmutation'
+]
 
-export const SpellSelectionModal: React.FC<SpellSelectionModalProps> = ({
+export const SpellSelectionModal = ({
   isOpen,
   onClose,
   onSelect
-}) => {
-  const [selectedCategory, setSelectedCategory] = useState<SpellCategory | 'all'>('all')
-  const [customSpell, setCustomSpell] = useState({
-    name: '',
-    category: 'burst' as SpellCategory,
-    color: '#ff0000',
+}: SpellSelectionModalProps) => {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedSchool, setSelectedSchool] = useState('All Schools')
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null)
+  const [customSpell, setCustomSpell] = useState<Partial<SpellEventData>>({
+    spellName: '',
+    category: 'projectile',
+    color: '#9370db',
     size: 20,
-    range: 120,
-    duration: 3,
-    persistDuration: 0,
-    particleEffect: true,
-    projectileSpeed: 500,
-    trackTarget: true // Default to tracking for projectile and ray spells
+    range: 60,
+    duration: 2
   })
-  const [isCustomMode, setIsCustomMode] = useState(false)
 
-  const filteredPresets = selectedCategory === 'all'
-    ? spellPresets
-    : spellPresets.filter(spell => spell.category === selectedCategory)
+  // Filter spells based on search and filters
+  const filteredSpells = useMemo(() => {
+    let filtered = spellPresets
 
-  const handlePresetSelect = (preset: typeof spellPresets[0]) => {
-    const spellData: Partial<SpellEventData> = {
-      type: 'spell',
-      spellName: preset.name,
-      category: preset.category,
-      color: preset.color,
-      size: preset.size,
-      range: preset.range,
-      duration: preset.duration * 1000, // Convert to milliseconds
-      persistDuration: preset.persistDuration,
-      particleEffect: preset.particleEffect !== false, // Default to true unless explicitly false
-      projectileSpeed: preset.projectileSpeed,
-      // Default to tracking for projectile and ray spells
-      trackTarget: preset.category === 'projectile' || preset.category === 'projectile-burst' || preset.category === 'ray'
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase()
+      filtered = filtered.filter(spell =>
+        spell.name.toLowerCase().includes(search) ||
+        spell.school.toLowerCase().includes(search) ||
+        spell.description.toLowerCase().includes(search)
+      )
     }
 
-    // For projectile-burst spells, set the burstRadius as the area of effect radius in feet
-    if (preset.category === 'projectile-burst') {
-      spellData.burstRadius = 20 // Fireball has a 20 ft radius burst
+    // Filter by school
+    if (selectedSchool !== 'All Schools') {
+      filtered = filtered.filter(spell => spell.school === selectedSchool)
     }
 
-    onSelect(spellData)
+    // Filter by level
+    if (selectedLevel !== null) {
+      filtered = filtered.filter(spell => spell.level === selectedLevel)
+    }
+
+    return filtered
+  }, [searchTerm, selectedSchool, selectedLevel])
+
+  const handleClose = useCallback(() => {
+    setSearchTerm('')
+    setSelectedSchool('All Schools')
+    setSelectedLevel(null)
     onClose()
-  }
+  }, [onClose])
 
-  const handleCustomSpellCreate = () => {
+  const handleSelectPreset = useCallback((spell: typeof spellPresets[0]) => {
     const spellData: Partial<SpellEventData> = {
-      type: 'spell',
-      spellName: customSpell.name || 'Custom Spell',
-      category: customSpell.category,
-      color: customSpell.color,
-      size: customSpell.size,
-      range: customSpell.range,
-      duration: customSpell.duration * 1000, // Convert to milliseconds
-      persistDuration: customSpell.persistDuration,
-      particleEffect: customSpell.particleEffect,
-      projectileSpeed: customSpell.projectileSpeed,
-      trackTarget: customSpell.trackTarget
+      spellName: spell.name,
+      category: spell.category,
+      color: spell.color,
+      size: spell.size,
+      range: spell.range,
+      duration: spell.duration,
+      persistDuration: spell.persistDuration
     }
-
-    // For projectile-burst spells, set the burstRadius as the area size
-    if (customSpell.category === 'projectile-burst') {
-      spellData.burstRadius = customSpell.size // Size is already in feet for area effects
-    }
-
     onSelect(spellData)
-    onClose()
-  }
+    handleClose()
+  }, [onSelect, handleClose])
+
+  const handleSelectCustom = useCallback(() => {
+    if (customSpell.spellName?.trim()) {
+      onSelect(customSpell)
+      handleClose()
+    }
+  }, [customSpell, onSelect, handleClose])
+
+  const handleCustomSpellChange = useCallback((updates: Partial<SpellEventData>) => {
+    setCustomSpell(prev => ({ ...prev, ...updates }))
+  }, [])
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size="xl"
-      title="Select Spell Effect"
-      showCloseButton
-    >
-      <ModalBody display="flex" flexDirection="column" css={{ padding: '$4' }}>
-        {/* Category Filter */}
-        <Box css={{ marginBottom: '$4' }}>
-          <Text size="sm" weight="medium" color="gray400" css={{ marginBottom: '$2' }}>
-            Filter by Category
-          </Text>
-          <Box display="flex" css={{ gap: '$2', flexWrap: 'wrap' }}>
-            <Button
-              onClick={() => setSelectedCategory('all')}
-              variant={selectedCategory === 'all' ? 'primary' : 'outline'}
-              size="sm"
-            >
-              All Spells
-            </Button>
-            {Object.keys(categoryDescriptions).map((cat) => (
-              <Button
-                key={cat}
-                onClick={() => setSelectedCategory(cat as SpellCategory)}
-                variant={selectedCategory === cat ? 'primary' : 'outline'}
-                size="sm"
-              >
-                {cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ')}
-              </Button>
-            ))}
+    <Modal isOpen={isOpen} onClose={handleClose}>
+      <Box
+        style={{
+          width: '800px',
+          maxHeight: '90vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
+        {/* Header */}
+        <Box
+          padding={4}
+          style={{
+            borderBottom: '1px solid var(--gray700)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Zap size={20} />
+            <Text size="lg" weight="semibold">
+              Select Spell
+            </Text>
           </Box>
-        </Box>
-
-        {/* Toggle Custom Mode */}
-        <Box css={{ marginBottom: '$4' }}>
-          <Button
-            onClick={() => setIsCustomMode(!isCustomMode)}
-            variant={isCustomMode ? 'secondary' : 'outline'}
-            size="sm"
-          >
-            {isCustomMode ? 'Show Presets' : 'Create Custom Spell'}
+          <Button onClick={handleClose} variant="ghost" size="sm">
+            <X size={16} />
           </Button>
         </Box>
 
-        {isCustomMode ? (
-          /* Custom Spell Creator */
-          <Box css={{ padding: '$4', backgroundColor: '$gray800', borderRadius: '$lg' }}>
-            <Text size="lg" weight="medium" color="white" css={{ marginBottom: '$3' }}>
-              Create Custom Spell
+        {/* Search and Filters */}
+        <Box padding={4} style={{ borderBottom: '1px solid var(--gray700)' }}>
+          {/* Search */}
+          <Box marginBottom={3} style={{ position: 'relative' }}>
+            <Search
+              size={16}
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--gray400)',
+                pointerEvents: 'none'
+              }}
+            />
+            <Input
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              placeholder="Search spells..."
+              style={{ paddingLeft: '40px' }}
+            />
+          </Box>
+
+          {/* Filters */}
+          <Box display="grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }} gap={3}>
+            <Box>
+              <FieldLabel htmlFor="school">School</FieldLabel>
+              <select
+                id="school"
+                value={selectedSchool}
+                onChange={(e) => setSelectedSchool(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  backgroundColor: 'var(--gray700)',
+                  border: '1px solid var(--gray600)',
+                  borderRadius: 'var(--radii-md)',
+                  color: 'var(--white)',
+                  fontSize: '14px'
+                }}
+              >
+                {spellSchools.map(school => (
+                  <option key={school} value={school}>{school}</option>
+                ))}
+              </select>
+            </Box>
+
+            <Box>
+              <FieldLabel htmlFor="level">Level</FieldLabel>
+              <select
+                id="level"
+                value={selectedLevel ?? ''}
+                onChange={(e) => setSelectedLevel(e.target.value ? parseInt(e.target.value) : null)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  backgroundColor: 'var(--gray700)',
+                  border: '1px solid var(--gray600)',
+                  borderRadius: 'var(--radii-md)',
+                  color: 'var(--white)',
+                  fontSize: '14px'
+                }}
+              >
+                <option value="">All Levels</option>
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(level => (
+                  <option key={level} value={level}>Level {level}</option>
+                ))}
+              </select>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Content */}
+        <Box
+          style={{
+            flex: 1,
+            overflow: 'auto',
+            display: 'grid',
+            gridTemplateColumns: '2fr 1fr',
+            gap: '16px',
+            padding: '16px'
+          }}
+        >
+          {/* Spell Presets */}
+          <Box>
+            <Text size="md" weight="medium">
+              Spell Presets ({filteredSpells.length})
             </Text>
+            <Box style={{ display: 'grid', gap: '8px' }}>
+              {filteredSpells.map((spell) => {
+                const IconComponent = spell.icon
+                return (
+                  <Box
+                    key={spell.id}
+                    onClick={() => handleSelectPreset(spell)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '12px',
+                      backgroundColor: 'var(--gray800)',
+                      borderRadius: 'var(--radii-md)',
+                      border: '1px solid var(--gray700)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--gray700)'
+                      e.currentTarget.style.borderColor = spell.color
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--gray800)'
+                      e.currentTarget.style.borderColor = 'var(--gray700)'
+                    }}
+                  >
+                    {/* Spell Icon */}
+                    <Box
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: 'var(--radii-lg)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: spell.color,
+                        color: 'white',
+                        marginRight: '12px',
+                        flexShrink: 0
+                      }}
+                    >
+                      <IconComponent size={20} />
+                    </Box>
 
-            <Grid columns="2" gap="4">
-              <Field>
-                <FieldLabel>Spell Name</FieldLabel>
+                    {/* Spell Details */}
+                    <Box style={{ flex: 1 }}>
+                      <Text weight="medium">
+                        {spell.name}
+                      </Text>
+                      <Text size="sm" color="textSecondary">
+                        {spell.school} • Level {spell.level} • {spell.category}
+                      </Text>
+                      <Text size="xs" color="textTertiary">
+                        {spell.description}
+                      </Text>
+                    </Box>
+
+                    {/* Spell Properties */}
+                    <Box style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'right' }}>
+                      <Text size="xs" color="textSecondary">
+                        Range: {spell.range}ft
+                      </Text>
+                      <Text size="xs" color="textSecondary">
+                        Size: {spell.size}
+                      </Text>
+                      {spell.persistDuration && (
+                        <Text size="xs" color="warning">
+                          Persists: {spell.persistDuration}r
+                        </Text>
+                      )}
+                    </Box>
+                  </Box>
+                )
+              })}
+            </Box>
+          </Box>
+
+          {/* Custom Spell */}
+          <Box>
+            <Text size="md" weight="medium">
+              Custom Spell
+            </Text>
+            <Box
+              padding={3}
+              style={{
+                backgroundColor: 'var(--gray800)',
+                borderRadius: 'var(--radii-md)',
+                border: '1px solid var(--gray700)'
+              }}
+            >
+              <Box marginBottom={3}>
+                <FieldLabel htmlFor="customName">Name</FieldLabel>
                 <Input
-                  value={customSpell.name}
-                  onChange={(e) => setCustomSpell({ ...customSpell, name: e.target.value })}
-                  placeholder="Enter spell name"
+                  id="customName"
+                  value={customSpell.spellName || ''}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleCustomSpellChange({ spellName: e.target.value })
+                  }
+                  placeholder="Custom spell name"
+                  size="sm"
                 />
-              </Field>
+              </Box>
 
-              <Field>
-                <FieldLabel>Category</FieldLabel>
+              <Box marginBottom={3}>
+                <FieldLabel htmlFor="customCategory">Category</FieldLabel>
                 <select
-                  value={customSpell.category}
-                  onChange={(e) => setCustomSpell({ ...customSpell, category: e.target.value as SpellCategory })}
+                  id="customCategory"
+                  value={customSpell.category || 'projectile'}
+                  onChange={(e) =>
+                    handleCustomSpellChange({ category: e.target.value as SpellCategory })
+                  }
                   style={{
                     width: '100%',
-                    padding: '8px',
-                    backgroundColor: '#1a1a1a',
-                    color: '#e5e5e5',
-                    border: '1px solid #3a3a3a',
-                    borderRadius: '6px'
+                    padding: '8px 12px',
+                    backgroundColor: 'var(--gray700)',
+                    border: '1px solid var(--gray600)',
+                    borderRadius: 'var(--radii-md)',
+                    color: 'var(--white)',
+                    fontSize: '14px'
                   }}
                 >
-                  {Object.entries(categoryDescriptions).map(([key, desc]) => (
-                    <option key={key} value={key}>{desc}</option>
-                  ))}
+                  <option value="projectile">Projectile</option>
+                  <option value="area">Area Effect</option>
+                  <option value="ray">Ray</option>
+                  <option value="projectile-burst">Projectile + Burst</option>
                 </select>
-              </Field>
+              </Box>
 
-              <Field>
-                <FieldLabel>Color</FieldLabel>
-                <ColorInput
-                  value={customSpell.color}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomSpell({ ...customSpell, color: e.target.value })}
-                />
-              </Field>
-
-              {/* Size field for area, burst, and projectile-burst spells */}
-              {(customSpell.category === 'area' || customSpell.category === 'burst' || customSpell.category === 'projectile-burst') && (
-                <Field>
-                  <FieldLabel>Effect Size (ft)</FieldLabel>
-                  <Input
-                    type="number"
-                    value={customSpell.size}
-                    onChange={(e) => setCustomSpell({ ...customSpell, size: Number(e.target.value) })}
-                    min={5}
-                    max={100}
-                  />
-                </Field>
-              )}
-
-              {/* Range field for projectile, ray, and projectile-burst spells */}
-              {(customSpell.category === 'projectile' || customSpell.category === 'ray' || customSpell.category === 'projectile-burst') && (
-                <Field>
-                  <FieldLabel>Spell Range (ft)</FieldLabel>
-                  <Input
-                    type="number"
-                    value={customSpell.range}
-                    onChange={(e) => setCustomSpell({ ...customSpell, range: Number(e.target.value) })}
-                    min={5}
-                    max={300}
-                  />
-                </Field>
-              )}
-
-              <Field>
-                <FieldLabel>Duration (seconds)</FieldLabel>
+              <Box marginBottom={3}>
+                <FieldLabel htmlFor="customColor">Color</FieldLabel>
                 <Input
-                  type="number"
-                  value={customSpell.duration}
-                  onChange={(e) => setCustomSpell({ ...customSpell, duration: Number(e.target.value) })}
-                  min={0}
-                  max={10}
-                  step={0.5}
+                  id="customColor"
+                  type="color"
+                  value={customSpell.color || '#9370db'}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleCustomSpellChange({ color: e.target.value })
+                  }
+                  size="sm"
                 />
-              </Field>
+              </Box>
 
-              <Field>
-                <FieldLabel>Persist Duration (rounds)</FieldLabel>
-                <Input
-                  type="number"
-                  value={customSpell.persistDuration}
-                  onChange={(e) => setCustomSpell({ ...customSpell, persistDuration: Number(e.target.value) })}
-                  min={0}
-                  max={100}
+              <Box display="grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }} gap={2} marginBottom={3}>
+                <Box>
+                  <FieldLabel htmlFor="customSize">Size</FieldLabel>
+                  <Input
+                    id="customSize"
+                    type="number"
+                    value={customSpell.size || 20}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleCustomSpellChange({ size: parseFloat(e.target.value) || 20 })
+                    }
+                    min="1"
+                    max="100"
+                    size="sm"
+                  />
+                </Box>
+
+                <Box>
+                  <FieldLabel htmlFor="customRange">Range</FieldLabel>
+                  <Input
+                    id="customRange"
+                    type="number"
+                    value={customSpell.range || 60}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleCustomSpellChange({ range: parseInt(e.target.value) || 60 })
+                    }
+                    min="0"
+                    max="1000"
+                    size="sm"
+                  />
+                </Box>
+              </Box>
+
+              <Box marginBottom={3}>
+                <FieldLabel htmlFor="customDescription">Description</FieldLabel>
+                <textarea
+                  id="customDescription"
+                  value={''}
+                  onChange={() => {
+                    // Description field not supported by SpellEventData
+                  }}
+                  placeholder="Describe the spell effect..."
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    backgroundColor: 'var(--gray700)',
+                    border: '1px solid var(--gray600)',
+                    borderRadius: 'var(--radii-md)',
+                    color: 'var(--white)',
+                    fontSize: '14px',
+                    resize: 'vertical',
+                    fontFamily: 'inherit'
+                  }}
                 />
-              </Field>
+              </Box>
 
-              {/* Projectile-specific options */}
-              {(customSpell.category === 'projectile' || customSpell.category === 'projectile-burst') && (
-                <>
-                  <Field>
-                    <FieldLabel>Projectile Speed</FieldLabel>
-                    <Input
-                      type="number"
-                      value={customSpell.projectileSpeed}
-                      onChange={(e) => setCustomSpell({ ...customSpell, projectileSpeed: Number(e.target.value) })}
-                      min={100}
-                      max={1000}
-                      step={50}
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                      <input
-                        type="checkbox"
-                        checked={customSpell.particleEffect}
-                        onChange={(e) => setCustomSpell({ ...customSpell, particleEffect: e.target.checked })}
-                      />
-                      Particle Trail Effect
-                    </FieldLabel>
-                  </Field>
-
-                  <Field>
-                    <FieldLabel css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                      <input
-                        type="checkbox"
-                        checked={customSpell.trackTarget}
-                        onChange={(e) => setCustomSpell({ ...customSpell, trackTarget: e.target.checked })}
-                      />
-                      Track Moving Target
-                    </FieldLabel>
-                  </Field>
-                </>
-              )}
-
-              {/* Ray-specific options */}
-              {customSpell.category === 'ray' && (
-                <Field>
-                  <FieldLabel css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
-                    <input
-                      type="checkbox"
-                      checked={customSpell.trackTarget}
-                      onChange={(e) => setCustomSpell({ ...customSpell, trackTarget: e.target.checked })}
-                    />
-                    Track Moving Target
-                  </FieldLabel>
-                </Field>
-              )}
-            </Grid>
-
-            <Box display="flex" css={{ marginTop: '$4', justifyContent: 'flex-end' }}>
-              <Button onClick={handleCustomSpellCreate} variant="primary">
+              <Button
+                onClick={handleSelectCustom}
+                variant="primary"
+                size="sm"
+                disabled={!customSpell.spellName?.trim()}
+                style={{ width: '100%' }}
+              >
                 Use Custom Spell
               </Button>
             </Box>
           </Box>
-        ) : (
-          /* Spell Presets Grid */
-          <Grid columns="3" gap="3">
-            {filteredPresets.map((spell) => {
-              const Icon = spell.icon
-              return (
-                <Box
-                  key={spell.id}
-                  css={{
-                    padding: '$3',
-                    backgroundColor: '$gray800',
-                    borderRadius: '$lg',
-                    border: '1px solid $gray700',
-                    cursor: 'pointer',
-                    transition: '$base',
-                    '&:hover': {
-                      backgroundColor: '$gray700',
-                      borderColor: '$primary',
-                      transform: 'translateY(-2px)'
-                    }
-                  }}
-                  onClick={() => handlePresetSelect(spell)}
-                >
-                  <Box display="flex" css={{ alignItems: 'center', marginBottom: '$2' }}>
-                    <Box
-                      css={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '$md',
-                        backgroundColor: spell.color + '20',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginRight: '$2'
-                      }}
-                    >
-                      <Icon size={20} color={spell.color} />
-                    </Box>
-                    <Box css={{ flex: 1 }}>
-                      <Text weight="medium" color="white" size="sm">
-                        {spell.name}
-                      </Text>
-                      <Text size="xs" color="gray400">
-                        {categoryDescriptions[spell.category]}
-                      </Text>
-                    </Box>
-                  </Box>
-                  <Text size="xs" color="gray300" css={{ lineHeight: 1.4 }}>
-                    {spell.description}
-                  </Text>
-                </Box>
-              )
-            })}
-          </Grid>
-        )}
-      </ModalBody>
+        </Box>
+
+        {/* Footer */}
+        <Box
+          padding={3}
+          style={{
+            borderTop: '1px solid var(--gray700)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <Text size="sm" color="textSecondary">
+            Select a preset spell or create a custom one
+          </Text>
+          <Button onClick={handleClose} variant="outline" size="sm">
+            Cancel
+          </Button>
+        </Box>
+      </Box>
     </Modal>
   )
 }
+
+export default SpellSelectionModal

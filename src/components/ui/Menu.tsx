@@ -25,7 +25,7 @@ export const MenuButton = styled(Button, {
 
   defaultVariants: {
     variant: 'menu',
-    size: 'sm',
+    // size: 'sm', // Inherited from Button component
   },
 })
 

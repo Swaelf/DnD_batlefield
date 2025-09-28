@@ -1,10 +1,15 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { Group, Rect, Circle, Line, Arc } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
-import { MapObject } from '@/types/map'
+import type { MapObject } from '@/types/map'
+
+// Extended type for objects with points (polygons, paths, etc.)
+type ShapeWithPoints = MapObject & {
+  points?: number[]
+}
 import useMapStore from '@store/mapStore'
-import { snapToGrid } from '@/utils/grid'
+// import { snapToGrid } from '@/utils/grid' // TODO: Use when implementing grid snapping
 
 type TransformMode = 'move' | 'resize' | 'rotate' | 'skew'
 type HandleType = 'tl' | 'tr' | 'bl' | 'br' | 'tm' | 'bm' | 'ml' | 'mr' | 'rotate'
@@ -37,7 +42,6 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
   const [isCtrlPressed, setIsCtrlPressed] = useState(false)
 
   const currentMap = useMapStore(state => state.currentMap)
-  const updateObjectPosition = useMapStore(state => state.updateObjectPosition)
   const batchUpdatePosition = useMapStore(state => state.batchUpdatePosition)
 
   // Calculate bounding box of selected objects
@@ -81,15 +85,18 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
               width: radius * 2,
               height: radius * 2
             }
-          } else if (obj.points) {
-            const points = obj.points as number[]
-            const xs = points.filter((_, i) => i % 2 === 0)
-            const ys = points.filter((_, i) => i % 2 === 1)
-            objBounds = {
-              x: Math.min(...xs),
-              y: Math.min(...ys),
-              width: Math.max(...xs) - Math.min(...xs),
-              height: Math.max(...ys) - Math.min(...ys)
+          } else {
+            const shapeObj = obj as ShapeWithPoints
+            if (shapeObj.points) {
+              const points = shapeObj.points
+              const xs = points.filter((_, i) => i % 2 === 0)
+              const ys = points.filter((_, i) => i % 2 === 1)
+              objBounds = {
+                x: Math.min(...xs),
+                y: Math.min(...ys),
+                width: Math.max(...xs) - Math.min(...xs),
+                height: Math.max(...ys) - Math.min(...ys)
+              }
             }
           }
           break
@@ -281,21 +288,23 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
         listening={false}
       />
 
-      {/* Transform mode indicator */}
-      <Group x={center.x} y={y - 40}>
-        <Circle
-          radius={15}
-          fill="rgba(0, 0, 0, 0.8)"
-          stroke="#C9AD6A"
-          strokeWidth={1}
-        />
-        <Circle
-          radius={8}
-          fill={transformMode === 'move' ? '#00FF00' :
-                transformMode === 'resize' ? '#FFD700' :
-                transformMode === 'rotate' ? '#FF6B6B' : '#9B59B6'}
-        />
-      </Group>
+      {/* Transform mode indicator - hidden for now */}
+      {false && (
+        <Group x={center.x} y={y - 40}>
+          <Circle
+            radius={15}
+            fill="rgba(0, 0, 0, 0.8)"
+            stroke="#C9AD6A"
+            strokeWidth={1}
+          />
+          <Circle
+            radius={8}
+            fill={transformMode === 'move' ? '#00FF00' :
+                  transformMode === 'resize' ? '#FFD700' :
+                  transformMode === 'rotate' ? '#FF6B6B' : '#9B59B6'}
+          />
+        </Group>
+      )}
 
       {/* Resize handles */}
       {(transformMode === 'resize' || transformMode === 'move') && (
@@ -410,20 +419,22 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
         </>
       )}
 
-      {/* Selection info */}
-      <Group x={x + width + 10} y={y}>
-        <Rect
-          width={120}
-          height={60}
-          fill="rgba(0, 0, 0, 0.8)"
-          cornerRadius={4}
-          stroke="#C9AD6A"
-          strokeWidth={1}
-        />
-      </Group>
+      {/* Selection info - hidden for now */}
+      {false && (
+        <Group x={x + width + 10} y={y}>
+          <Rect
+            width={120}
+            height={60}
+            fill="rgba(0, 0, 0, 0.8)"
+            cornerRadius={4}
+            stroke="#C9AD6A"
+            strokeWidth={1}
+          />
+        </Group>
+      )}
 
-      {/* Keyboard shortcuts hint */}
-      {(isShiftPressed || isCtrlPressed) && (
+      {/* Keyboard shortcuts hint - hidden for now */}
+      {false && (isShiftPressed || isCtrlPressed) && (
         <Group x={center.x - 60} y={y + height + 20}>
           <Rect
             width={120}

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Group, Circle, Ring, RegularPolygon, Line, Star } from 'react-konva'
-import { SpellEventData, Position } from '@/types/timeline'
+import type { SpellEventData } from '@/types/timeline'
+import type { Position } from '@/types/map'
 import useMapStore from '@/store/mapStore'
 
 interface SimpleSpellComponentProps {
@@ -34,9 +35,9 @@ export const SimpleSpellComponent: React.FC<SimpleSpellComponentProps> = ({
   const [isComplete, setIsComplete] = useState(false)
   const [trailPositions, setTrailPositions] = useState<TrailPosition[]>([])
   const [stoneBursts, setStoneBursts] = useState<StoneBurst[]>([])
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number>(0)
   const startTimeRef = useRef<number>(Date.now())
-  const lastTrailUpdateRef = useRef<number>(0)
+  // const _lastTrailUpdateRef = useRef<number>(0) // unused
   const lastStoneSpawnRef = useRef<number>(0)
   const currentMap = useMapStore(state => state.currentMap)
 
@@ -616,7 +617,7 @@ export const SimpleSpellComponent: React.FC<SimpleSpellComponentProps> = ({
         // Calculate the beam width based on distance
         const rayDx = getTargetPosition().x - spell.fromPosition.x
         const rayDy = getTargetPosition().y - spell.fromPosition.y
-        const rayDistance = Math.sqrt(rayDx * rayDx + rayDy * rayDy)
+        // const _rayDistance = Math.sqrt(rayDx * rayDx + rayDy * rayDy) // unused
 
         // Create points for the beam (tapered from source to target)
         const rayAngle = Math.atan2(rayDy, rayDx)

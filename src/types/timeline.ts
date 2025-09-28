@@ -1,5 +1,5 @@
-import Konva from 'konva'
-import { Position } from './map'
+import type Konva from 'konva'
+import type { Position } from './map'
 
 // Timeline and round management types
 export type Timeline = {
@@ -30,6 +30,7 @@ export type SpellCategory =
   | 'ray'              // Instant beam effect
   | 'area'             // Area effect that appears at location
   | 'burst'            // Explosion at target location
+  | 'cone'            // Cone area
 
 export type RoundEvent = {
   id: string
@@ -190,6 +191,7 @@ export type SequenceEventData = {
   actions: SequenceAction[]   // Ordered list of actions in sequence
   conditions?: SequenceCondition[] // Global conditions for sequence execution
   priority: number           // Execution priority (0-100)
+  duration?: number          // Animation duration in ms
   maxDuration?: number       // Maximum sequence duration in ms
   onSuccess?: SequenceAction[] // Actions to execute on sequence success
   onFailure?: SequenceAction[] // Actions to execute on sequence failure

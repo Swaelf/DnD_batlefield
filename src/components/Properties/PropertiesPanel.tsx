@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, memo } from 'react'
 import useMapStore from '@/store/mapStore'
-import { Shape, Token, MapObject } from '@/types'
+import type { Shape, Token, MapObject } from '@/types'
 import { nanoid } from 'nanoid'
 import { Trash2 } from 'lucide-react'
 import { BaseProperties } from './BaseProperties'
@@ -15,23 +15,28 @@ import {
   PanelHeader,
   PanelTitle,
   PanelBody,
-  PanelSection,
-  Button,
-  Text
-} from '@/components/ui'
+  PanelSection
+} from '@/components/ui/Panel'
+import { Button } from '@/components/primitives/ButtonVE'
+import { Text } from '@/components/primitives/TextVE'
 
-const PropertiesPanelComponent: React.FC = () => {
+export type PropertiesPanelProps = {
+  className?: string
+  style?: React.CSSProperties
+}
+
+const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) => {
   // Use specific selectors to prevent unnecessary re-renders
-  const selectedObjects = useMapStore(state => state.selectedObjects) as string[]
-  const currentMap = useMapStore(state => state.currentMap)
-  const updateObject = useMapStore(state => state.updateObject)
-  const deleteSelected = useMapStore(state => state.deleteSelected)
-  const addObject = useMapStore(state => state.addObject)
+  const selectedObjects = useMapStore((state: any) => state.selectedObjects) as string[]
+  const currentMap = useMapStore((state: any) => state.currentMap)
+  const updateObject = useMapStore((state: any) => state.updateObject)
+  const deleteSelected = useMapStore((state: any) => state.deleteSelected)
+  const addObject = useMapStore((state: any) => state.addObject)
 
   // Get selected object with memoization
   const selectedObject = useMemo(() => {
     if (selectedObjects.length !== 1) return null
-    return currentMap?.objects.find(obj => obj.id === selectedObjects[0]) || null
+    return currentMap?.objects.find((obj: MapObject) => obj.id === selectedObjects[0]) || null
   }, [selectedObjects, currentMap?.objects])
 
   const [localPosition, setLocalPosition] = useState({ x: 0, y: 0 })
@@ -93,15 +98,20 @@ const PropertiesPanelComponent: React.FC = () => {
     updateObject(selectedObject.id, updates)
   }
 
+  const panelStyles: React.CSSProperties = {
+    borderLeft: '1px solid var(--gray800)',
+    ...style,
+  }
+
   // Handle empty selection
   if (selectedObjects.length === 0) {
     return (
-      <Panel size="sidebar" css={{ borderLeft: '1px solid $gray800' }}>
+      <Panel size="sidebar" style={panelStyles} className={className}>
         <PanelHeader>
           <PanelTitle>Properties</PanelTitle>
         </PanelHeader>
         <PanelBody>
-          <Text size="sm" color="gray400" css={{ marginBottom: '$4' }}>
+          <Text style={{ fontSize: '14px', color: 'var(--gray400)', marginBottom: '16px' }}>
             Select an object to edit its properties
           </Text>
 
@@ -109,7 +119,7 @@ const PropertiesPanelComponent: React.FC = () => {
           <ShapeStylePanel />
 
           {/* Layer Management - Always Available */}
-          <PanelSection divider>
+          <PanelSection>
             <LayerManagementPanel />
           </PanelSection>
         </PanelBody>
@@ -120,12 +130,12 @@ const PropertiesPanelComponent: React.FC = () => {
   // Handle multi-selection
   if (selectedObjects.length > 1) {
     return (
-      <Panel size="sidebar" css={{ borderLeft: '1px solid $gray800' }}>
+      <Panel size="sidebar" style={panelStyles} className={className}>
         <PanelHeader>
           <PanelTitle>Multiple Selection</PanelTitle>
         </PanelHeader>
         <PanelBody>
-          <Text size="sm" color="gray300" css={{ marginBottom: '$4' }}>
+          <Text style={{ fontSize: '14px', color: 'var(--gray300)', marginBottom: '16px' }}>
             {selectedObjects.length} objects selected
           </Text>
 
@@ -135,8 +145,8 @@ const PropertiesPanelComponent: React.FC = () => {
           <Button
             onClick={deleteSelected}
             variant="destructive"
-            fullWidth
             size="sm"
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             <Trash2 size={16} />
             Delete Selected
@@ -150,7 +160,7 @@ const PropertiesPanelComponent: React.FC = () => {
 
   // Main properties panel
   return (
-    <Panel size="sidebar" css={{ borderLeft: '1px solid $gray800' }}>
+    <Panel size="sidebar" style={panelStyles} className={className}>
       <PanelHeader>
         <PanelTitle>Properties</PanelTitle>
       </PanelHeader>
@@ -182,12 +192,12 @@ const PropertiesPanelComponent: React.FC = () => {
         )}
 
         {/* Layer Management System */}
-        <PanelSection divider>
+        <PanelSection>
           <LayerManagementPanel />
         </PanelSection>
 
         {/* Legacy Layer Controls */}
-        <PanelSection divider>
+        <PanelSection>
           <LayerControls selectedObject={selectedObject} />
         </PanelSection>
 

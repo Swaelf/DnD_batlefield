@@ -10,7 +10,6 @@ import type {
   ActionType,
   ActionCategory,
   ActionSearchCriteria,
-  ActionLibrary,
   ActionCategoryInfo,
   UnifiedAction,
   ActionId
@@ -69,7 +68,7 @@ export class ActionLibraryService {
 
       // Level filter (for spells)
       if (criteria.minLevel !== undefined || criteria.maxLevel !== undefined) {
-        const template = this.getTemplateById(action.templateId)
+        const template = this.getTemplateById(action.templateId || null)
         if (template?.level !== undefined) {
           if (criteria.minLevel !== undefined && template.level < criteria.minLevel) {
             return false
@@ -139,34 +138,34 @@ export class ActionLibraryService {
 
     // Count actions per category
     allActions.forEach(action => {
-      const current = categoryCounts.get(action.category) || 0
-      categoryCounts.set(action.category, current + 1)
+      const current = categoryCounts.get(action.category as ActionCategory) || 0
+      categoryCounts.set(action.category as ActionCategory, current + 1)
     })
 
     return [
       {
-        id: 'combat',
+        id: 'attack',
         name: 'Combat',
         description: 'Spells and attacks for battle',
         icon: '⚔️',
         color: '#dc2626',
-        count: categoryCounts.get('combat') || 0
+        count: categoryCounts.get('attack') || 0
       },
       {
-        id: 'exploration',
+        id: 'interaction',
         name: 'Exploration',
         description: 'Actions for discovering and interacting',
         icon: '🗺️',
         color: '#059669',
-        count: categoryCounts.get('exploration') || 0
+        count: categoryCounts.get('interaction') || 0
       },
       {
-        id: 'social',
+        id: 'utility',
         name: 'Social',
         description: 'Influence and communication abilities',
         icon: '💬',
         color: '#7c3aed',
-        count: categoryCounts.get('social') || 0
+        count: categoryCounts.get('utility') || 0
       },
       {
         id: 'environmental',
@@ -185,12 +184,12 @@ export class ActionLibraryService {
         count: categoryCounts.get('utility') || 0
       },
       {
-        id: 'custom',
+        id: 'sequence',
         name: 'Custom',
         description: 'User-created actions',
         icon: '✨',
         color: '#8b5cf6',
-        count: categoryCounts.get('custom') || 0
+        count: categoryCounts.get('sequence') || 0
       }
     ]
   }
@@ -219,7 +218,7 @@ export class ActionLibraryService {
     // For now, return first few actions of each type
     // In the future, this could be based on usage analytics
     const popular: UnifiedAction[] = []
-    const types: ActionType[] = ['attack', 'spell', 'movement', 'interaction']
+    const types: ActionType[] = ['attack', 'spell', 'move', 'interaction']
 
     types.forEach(type => {
       const actionsOfType = this.getActionsByType(type)
@@ -262,8 +261,7 @@ export class ActionLibraryService {
       id: nanoid() as ActionId,
       templateId,
       isCustom: true,
-      category: 'custom',
-      createdAt: new Date()
+      category: 'sequence'
     }
   }
 
@@ -276,13 +274,29 @@ export class ActionLibraryService {
       templateId: template.id,
       name: template.name,
       description: template.description,
-      type: template.type,
+      type: template.type as 'spell' | 'attack' | 'move' | 'interaction',
       category: template.category,
-      data: template.data,
       customizable: true,
       isCustom: false,
       tags: template.tags,
-      createdAt: new Date()
+      // Required UnifiedAction properties
+      source: { x: 0, y: 0 },
+      target: { x: 0, y: 0 },
+      animation: {
+        type: 'burst',
+        duration: 1000,
+        color: '#ffffff'
+      },
+      effects: {
+        affectedTargets: [],
+        highlightColor: '#ffffff'
+      },
+      metadata: {
+        name: template.name,
+        description: template.description
+      },
+      timestamp: Date.now(),
+      duration: 1000
     }
   }
 
@@ -296,7 +310,7 @@ export class ActionLibraryService {
       name: 'Sword Attack',
       description: 'A standard melee sword attack',
       type: 'attack',
-      category: 'combat',
+      category: 'attack',
       tags: ['melee', 'weapon', 'sword', 'basic'],
       level: 0,
       isBuiltIn: true,
@@ -340,7 +354,7 @@ export class ActionLibraryService {
       name: 'Bow Attack',
       description: 'A ranged longbow attack',
       type: 'attack',
-      category: 'combat',
+      category: 'attack',
       tags: ['ranged', 'weapon', 'bow', 'basic'],
       level: 0,
       isBuiltIn: true,
@@ -383,7 +397,7 @@ export class ActionLibraryService {
       name: 'Fireball',
       description: 'A bright flash and a burst of flame at a target location',
       type: 'spell',
-      category: 'combat',
+      category: 'attack',
       tags: ['fire', 'evocation', 'area', 'damage'],
       level: 3,
       isBuiltIn: true,
@@ -436,7 +450,7 @@ export class ActionLibraryService {
       id: 'dash' as ActionTemplateId,
       name: 'Dash',
       description: 'Move up to your speed',
-      type: 'movement',
+      type: 'move',
       category: 'utility',
       tags: ['movement', 'basic', 'utility'],
       level: 0,
@@ -460,7 +474,7 @@ export class ActionLibraryService {
       name: 'Open Door',
       description: 'Open a door or similar barrier',
       type: 'interaction',
-      category: 'exploration',
+      category: 'interaction',
       tags: ['door', 'interaction', 'exploration'],
       level: 0,
       isBuiltIn: true,

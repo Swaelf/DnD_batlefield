@@ -8,9 +8,8 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { Stage, Layer } from 'react-konva'
-import Konva from 'konva'
-import { Box } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import type Konva from 'konva'
+import { Box } from '@/components/primitives/BoxVE'
 import { GridSystem, ViewportControls, CanvasToolbar, PerformanceMonitor } from '../../molecules'
 import { ViewportCursor } from '../../atoms'
 import {
@@ -18,15 +17,14 @@ import {
   layerService,
   viewportService,
   type CanvasId,
-  type CanvasConfig,
   type CanvasState,
-  type ViewportState,
   type GridConfig,
-  type ToolType,
   type CoordinateSpace
 } from '../../../services'
-import type { Point, Rectangle } from '@/types/geometry'
+import type { ViewportState } from '../../../types/viewport'
+import type { Point } from '@/types/geometry'
 import type { MapObject } from '@/types/map'
+import type { ToolType, ToolConfig } from '../../../types/tool'
 
 export interface MapCanvasProps {
   readonly width: number
@@ -47,54 +45,9 @@ export interface MapCanvasProps {
   readonly stageRef?: React.MutableRefObject<Konva.Stage | null>
 }
 
-const CanvasContainer = styled(Box, {
-  position: 'relative',
-  width: '100%',
-  height: '100%',
-  overflow: 'hidden',
-  backgroundColor: '$gray900'
-})
-
-const CanvasStage = styled(Stage, {
-  cursor: 'default'
-})
-
-const UIOverlay = styled(Box, {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  pointerEvents: 'none',
-  zIndex: 10
-})
-
-const ControlsPanel = styled(Box, {
-  position: 'absolute',
-  top: '$4',
-  right: '$4',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '$3',
-  pointerEvents: 'auto'
-})
-
-const ToolbarPanel = styled(Box, {
-  position: 'absolute',
-  top: '$4',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  pointerEvents: 'auto'
-})
-
-const PerformancePanel = styled(Box, {
-  position: 'absolute',
-  bottom: '$4',
-  right: '$4',
-  pointerEvents: 'auto'
-})
 
 const defaultGridConfig: GridConfig = {
+  enabled: true,
   size: 50,
   type: 'square',
   visible: true,
@@ -102,26 +55,18 @@ const defaultGridConfig: GridConfig = {
   opacity: 0.6,
   strokeWidth: 1,
   subGrid: {
-    divisions: 5,
+    enabled: true,
+    visible: true,
+    subdivisions: 5,
     color: '#1F2937',
     opacity: 0.4,
-    strokeWidth: 0.5,
-    visible: true
-  },
-  snap: {
-    enabled: true,
-    threshold: 10,
-    snapToIntersections: true,
-    snapToMidpoints: false,
-    snapToEdges: false,
-    visualFeedback: true,
-    feedbackColor: '#F59E0B'
+    strokeWidth: 0.5
   }
 }
 
-const defaultTools = [
-  { id: 'select', name: 'Select', type: 'select' as ToolType, cursor: { type: 'default' as const, size: 16, hotspot: { x: 0, y: 0 }, color: '#ffffff' }, settings: {}, keyboardShortcuts: ['v'], enabled: true },
-  { id: 'draw', name: 'Draw', type: 'draw' as ToolType, cursor: { type: 'draw' as const, size: 16, hotspot: { x: 8, y: 8 }, color: '#ffffff' }, settings: {}, keyboardShortcuts: ['d'], enabled: true },
+const defaultTools: readonly ToolConfig[] = [
+  { id: 'select', name: 'Select', type: 'select' as ToolType, cursor: { type: 'default' as const, size: 16, hotspot: { x: 0, y: 0 }, color: '#ffffff' }, settings: { strokeWidth: 2, strokeColor: '#ffffff', fillColor: 'transparent', opacity: 1, snapToGrid: false, showPreview: true }, keyboardShortcuts: ['v'], enabled: true },
+  { id: 'draw', name: 'Draw', type: 'draw' as ToolType, cursor: { type: 'draw' as const, size: 16, hotspot: { x: 8, y: 8 }, color: '#ffffff' }, settings: { strokeWidth: 2, strokeColor: '#ffffff', opacity: 1 }, keyboardShortcuts: ['d'], enabled: true },
   { id: 'pan', name: 'Pan', type: 'pan' as ToolType, cursor: { type: 'move' as const, size: 16, hotspot: { x: 8, y: 8 }, color: '#ffffff' }, settings: {}, keyboardShortcuts: ['h'], enabled: true },
   { id: 'zoom', name: 'Zoom', type: 'zoom' as ToolType, cursor: { type: 'zoom-in' as const, size: 16, hotspot: { x: 8, y: 8 }, color: '#ffffff' }, settings: {}, keyboardShortcuts: ['z'], enabled: true }
 ]
@@ -177,7 +122,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
     }
 
     // Create layer and viewport managers
-    const layerManager = layerService.createLayerManager(canvas.id, canvas.stage)
+    layerService.createLayerManager(canvas.id, canvas.stage)
     const viewportManager = viewportService.createViewportManager(canvas.id, canvas.stage)
 
     // Set initial canvas state
@@ -236,7 +181,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
     if (!pointer) return
 
     const zoomDelta = e.evt.deltaY > 0 ? -0.1 : 0.1
-    const newZoom = Math.max(0.1, Math.min(10, viewportState?.zoom + zoomDelta || 1))
+    const newZoom = Math.max(0.1, Math.min(10, (viewportState?.zoom || 1) + zoomDelta))
 
     viewportManager.setZoom(newZoom, pointer, false)
 
@@ -271,7 +216,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
     const viewportManager = viewportService.getViewportManager(canvasIdRef.current)
     if (!viewportManager) return
 
-    const newZoom = Math.min(10, viewportState.zoom + 0.2)
+    const newZoom = Math.min(10, (viewportState.zoom || 1) + 0.2)
     viewportManager.setZoom(newZoom, undefined, true)
     setViewportState(viewportManager.getState())
   }, [viewportState])
@@ -282,7 +227,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
     const viewportManager = viewportService.getViewportManager(canvasIdRef.current)
     if (!viewportManager) return
 
-    const newZoom = Math.max(0.1, viewportState.zoom - 0.2)
+    const newZoom = Math.max(0.1, (viewportState.zoom || 1) - 0.2)
     viewportManager.setZoom(newZoom, undefined, true)
     setViewportState(viewportManager.getState())
   }, [viewportState])
@@ -337,23 +282,46 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
 
   // Render viewport bounds for debugging
   const viewportBounds = viewportState ? {
-    x: -viewportState.position.x / viewportState.zoom,
-    y: -viewportState.position.y / viewportState.zoom,
-    width: width / viewportState.zoom,
-    height: height / viewportState.zoom
+    x: -(viewportState.position?.x || 0) / (viewportState.zoom || 1),
+    y: -(viewportState.position?.y || 0) / (viewportState.zoom || 1),
+    width: width / (viewportState.zoom || 1),
+    height: height / (viewportState.zoom || 1)
   } : null
 
   if (!canvasState || !viewportState) {
-    return <CanvasContainer ref={containerRef} />
+    return (
+      <Box
+        ref={containerRef}
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          backgroundColor: 'var(--colors-gray900)'
+        }}
+      />
+    )
   }
 
   return (
-    <CanvasContainer ref={containerRef}>
-      <CanvasStage
+    <Box
+      ref={containerRef}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        backgroundColor: 'var(--colors-gray900)'
+      }}
+    >
+      <Stage
         ref={internalStageRef}
         width={width}
         height={height}
         draggable={currentTool === 'pan'}
+        style={{
+          cursor: 'default'
+        }}
       >
         {/* Grid layer */}
         <Layer listening={false}>
@@ -380,16 +348,34 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
             color="#ffffff"
             opacity={0.8}
             isVisible={true}
-            snapToGrid={gridConfig.snap.enabled}
+            snapToGrid={gridConfig.enabled}
             gridSize={gridConfig.size}
           />
         </Layer>
-      </CanvasStage>
+      </Stage>
 
       {/* UI Overlays */}
-      <UIOverlay>
+      <Box
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: 'none',
+          zIndex: 10
+        }}
+      >
         {showToolbar && (
-          <ToolbarPanel>
+          <Box
+            style={{
+              position: 'absolute',
+              top: '16px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              pointerEvents: 'auto'
+            }}
+          >
             <CanvasToolbar
               activeTool={currentTool}
               availableTools={defaultTools}
@@ -398,10 +384,20 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
               showLabels={false}
               compact={true}
             />
-          </ToolbarPanel>
+          </Box>
         )}
 
-        <ControlsPanel>
+        <Box
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            pointerEvents: 'auto'
+          }}
+        >
           {showViewportControls && (
             <ViewportControls
               viewportState={viewportState}
@@ -420,19 +416,26 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
               showFitControls={true}
             />
           )}
-        </ControlsPanel>
+        </Box>
 
         {showPerformance && (
-          <PerformancePanel>
+          <Box
+            style={{
+              position: 'absolute',
+              bottom: '16px',
+              right: '16px',
+              pointerEvents: 'auto'
+            }}
+          >
             <PerformanceMonitor
               performance={canvasState.performance}
               showAll={false}
               compact={true}
             />
-          </PerformancePanel>
+          </Box>
         )}
-      </UIOverlay>
-    </CanvasContainer>
+      </Box>
+    </Box>
   )
 })
 

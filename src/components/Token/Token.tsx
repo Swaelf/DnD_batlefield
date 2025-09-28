@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
-import { Circle, Text, Group, Rect } from 'react-konva';
-import Konva from 'konva';
-import { Token as TokenType, TokenSize } from '@/types/token';
+import { Circle, Text, Group, Rect, Arc, Image } from 'react-konva';
+import type Konva from 'konva';
+import useImage from 'use-image';
+import type { Token as TokenType, TokenSize } from '@/types/token';
 
 // Size multipliers for D&D creature sizes (in grid squares)
 const SIZE_MAP: Record<TokenSize, number> = {
@@ -17,7 +18,7 @@ type TokenProps = {
   token: TokenType;
   gridSize: number;
   isSelected?: boolean;
-  onSelect?: (id: string) => void;
+  onSelect?: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void;
   onDragStart?: () => void;
   onDragMove?: (e: Konva.KonvaEventObject<DragEvent>) => void;
   onDragEnd?: (e: Konva.KonvaEventObject<DragEvent>) => void;
@@ -36,11 +37,26 @@ const TokenComponent: React.FC<TokenProps> = ({
   onContextMenu,
   isDraggable = true,
 }) => {
+  // Load image if provided
+  const [tokenImage, imageStatus] = useImage(token.image || '', 'anonymous');
+
+  // Debug logging
+  if (token.image && imageStatus === 'failed') {
+    console.warn(`Failed to load token image: ${token.image}`);
+  }
+
   // Validate gridSize to prevent NaN
   const safeGridSize = isNaN(gridSize) || !isFinite(gridSize) || !gridSize ? 50 : gridSize;
 
   const sizeInSquares = SIZE_MAP[token.size] || 1;
   const radius = (safeGridSize * sizeInSquares) / 2;
+
+  // Calculate HP percentage
+  const hpPercentage = token.maxHP && token.currentHP !== undefined
+    ? token.currentHP / token.maxHP
+    : 1;
+  const hpColor = token.hpBarColor || getHPColor(hpPercentage);
+  const hpArcAngle = 359.99 * hpPercentage; // Almost full circle to avoid rendering issues
 
   // Calculate label position and size with safety checks
   const fontSize = Math.max(12, radius / 3);
@@ -49,7 +65,7 @@ const TokenComponent: React.FC<TokenProps> = ({
   const handleClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true;
     if (onSelect) {
-      onSelect(token.id);
+      onSelect(token.id, e);
     }
   };
 
@@ -85,6 +101,59 @@ const TokenComponent: React.FC<TokenProps> = ({
             strokeWidth={token.borderWidth || 2}
             opacity={token.opacity}
           />
+
+          {/* HP Ring - Always show if HP values exist */}
+          {token.maxHP && token.currentHP !== undefined && (
+            <>
+              {/* Background ring */}
+              <Arc
+                innerRadius={radius - 4}
+                outerRadius={radius + 2}
+                angle={360}
+                fill="rgba(0, 0, 0, 0.3)"
+                rotation={-90}
+              />
+              {/* HP ring */}
+              <Arc
+                innerRadius={radius - 4}
+                outerRadius={radius + 2}
+                angle={hpArcAngle}
+                fill={hpColor}
+                rotation={-90}
+                opacity={0.9}
+              />
+              {/* Temp HP ring */}
+              {token.tempHP && token.tempHP > 0 && (
+                <Arc
+                  innerRadius={radius - 4}
+                  outerRadius={radius + 2}
+                  angle={Math.min(360, (token.tempHP / token.maxHP) * 360)}
+                  fill="#3B82F6"
+                  rotation={-90}
+                  opacity={0.6}
+                />
+              )}
+            </>
+          )}
+
+          {/* Token Image - Clipped to circle */}
+          {token.image && tokenImage && (
+            <Group
+              clipFunc={(ctx) => {
+                ctx.arc(0, 0, radius * 0.85, 0, Math.PI * 2, false);
+              }}
+            >
+              <Image
+                image={tokenImage}
+                x={-radius * 0.85}
+                y={-radius * 0.85}
+                width={radius * 1.7}
+                height={radius * 1.7}
+                opacity={1}
+                listening={false}
+              />
+            </Group>
+          )}
 
           {/* Selection indicator */}
           {isSelected && (
@@ -126,10 +195,22 @@ const TokenComponent: React.FC<TokenProps> = ({
               dash={[8, 4]}
             />
           )}
+
+          {/* Token Image for square */}
+          {token.image && tokenImage && (
+            <Image
+              image={tokenImage}
+              x={-(safeGridSize * sizeInSquares) / 2 + 4}
+              y={-(safeGridSize * sizeInSquares) / 2 + 4}
+              width={safeGridSize * sizeInSquares - 8}
+              height={safeGridSize * sizeInSquares - 8}
+              opacity={0.9}
+            />
+          )}
         </>
       )}
 
-      {/* Token label/name */}
+      {/* Token label/name with improved visibility */}
       {token.name && token.showLabel && (
         <Text
           text={token.name}
@@ -137,10 +218,13 @@ const TokenComponent: React.FC<TokenProps> = ({
           fontFamily="'Scala Sans', sans-serif"
           fill={token.labelColor || '#FFFFFF'}
           stroke="#000000"
-          strokeWidth={1}
+          strokeWidth={2}
           align="center"
           offsetX={fontSize * token.name.length * 0.3}
           y={labelY}
+          shadowColor="rgba(0, 0, 0, 0.8)"
+          shadowBlur={4}
+          shadowOffset={{ x: 1, y: 1 }}
         />
       )}
 
@@ -201,5 +285,12 @@ function getConditionColor(condition: string): string {
     blinded: '#000000',
   };
   return colors[condition] || '#FF0000';
+}
+
+// Helper function for HP color
+function getHPColor(percentage: number): string {
+  if (percentage > 0.5) return '#22C55E'; // Green
+  if (percentage > 0.25) return '#EAB308'; // Yellow
+  return '#DC2626'; // Red
 }
 export default Token;

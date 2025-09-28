@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { describe, it, expect, beforeEach } from 'vitest'
 import useEventCreationStore from '@/store/eventCreationStore'
 
 // Performance test utilities
@@ -186,8 +185,8 @@ describe('Spell Preview Benchmarks', () => {
       store.setSelectedSpell({
         type: 'spell' as const,
         spellName: spell.name,
-        category: spell.category as any,
-        ...spell
+        ...spell,
+        category: spell.category as any
       })
 
       const executionTime = measurePerformance(() => {

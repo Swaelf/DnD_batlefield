@@ -1,13 +1,13 @@
 import { sprinkles, type Sprinkles } from '../sprinkles.css'
-import { vars } from '../theme.css'
+// import { vars } from '../theme.css' // TODO: Use theme vars when needed
 
 // Create atomic style helpers for common patterns
 export const atoms = {
   // Reset styles
   reset: sprinkles({
-    margin: '0',
-    padding: '0',
-    border: '0',
+    margin: 0,
+    padding: 0,
+    borderWidth: 0,
   }),
 
   // Layout atoms
@@ -154,30 +154,30 @@ export const responsiveAtoms = {
 // Common spacing patterns
 export const spacing = {
   // Padding patterns
-  p0: sprinkles({ padding: '0' }),
-  p1: sprinkles({ padding: '1' }),
-  p2: sprinkles({ padding: '2' }),
-  p3: sprinkles({ padding: '3' }),
-  p4: sprinkles({ padding: '4' }),
-  p6: sprinkles({ padding: '6' }),
-  p8: sprinkles({ padding: '8' }),
+  p0: sprinkles({ padding: 0 }),
+  p1: sprinkles({ padding: 1 }),
+  p2: sprinkles({ padding: 2 }),
+  p3: sprinkles({ padding: 3 }),
+  p4: sprinkles({ padding: 4 }),
+  p6: sprinkles({ padding: 6 }),
+  p8: sprinkles({ padding: 8 }),
 
   // Margin patterns
-  m0: sprinkles({ margin: '0' }),
-  m1: sprinkles({ margin: '1' }),
-  m2: sprinkles({ margin: '2' }),
-  m3: sprinkles({ margin: '3' }),
-  m4: sprinkles({ margin: '4' }),
-  m6: sprinkles({ margin: '6' }),
-  m8: sprinkles({ margin: '8' }),
+  m0: sprinkles({ margin: 0 }),
+  m1: sprinkles({ margin: 1 }),
+  m2: sprinkles({ margin: 2 }),
+  m3: sprinkles({ margin: 3 }),
+  m4: sprinkles({ margin: 4 }),
+  m6: sprinkles({ margin: 6 }),
+  m8: sprinkles({ margin: 8 }),
 
   // Gap patterns
-  gap1: sprinkles({ gap: '1' }),
-  gap2: sprinkles({ gap: '2' }),
-  gap3: sprinkles({ gap: '3' }),
-  gap4: sprinkles({ gap: '4' }),
-  gap6: sprinkles({ gap: '6' }),
-  gap8: sprinkles({ gap: '8' }),
+  gap1: sprinkles({ gap: 1 }),
+  gap2: sprinkles({ gap: 2 }),
+  gap3: sprinkles({ gap: 3 }),
+  gap4: sprinkles({ gap: 4 }),
+  gap6: sprinkles({ gap: 6 }),
+  gap8: sprinkles({ gap: 8 }),
 }
 
 // Export type for atomic props

@@ -1,5 +1,5 @@
 import { memo, useRef, useEffect } from 'react'
-import { Group, Circle, Rect, RegularPolygon, Ring } from 'react-konva'
+import { Group, Circle, Rect, Ring } from 'react-konva'
 import Konva from 'konva'
 import type { UnifiedAction, CircularArea, SquareArea } from '@/types/unifiedAction'
 import type { Point } from '@/types/geometry'
@@ -11,8 +11,8 @@ type AreaAnimationProps = {
 
 const AreaAnimationComponent = ({ action, onComplete }: AreaAnimationProps) => {
   const groupRef = useRef<Konva.Group>(null)
-  const areaRef = useRef<Konva.Shape>(null)
-  const pulseRef = useRef<Konva.Shape>(null)
+  const areaRef = useRef<any>(null)
+  const pulseRef = useRef<any>(null)
   const animationRef = useRef<Konva.Animation | null>(null)
   const hasStartedRef = useRef(false)
 
@@ -41,7 +41,7 @@ const AreaAnimationComponent = ({ action, onComplete }: AreaAnimationProps) => {
 
     const duration = action.animation.duration || 1500
     const persistDuration = action.effects.persistDuration || 0
-    const color = action.animation.color || '#FF6600'
+    // const color = action.animation.color || '#FF6600' // unused
 
     const startTime = Date.now()
 

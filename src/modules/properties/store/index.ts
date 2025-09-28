@@ -5,6 +5,3 @@
  */
 
 export { usePropertyStore } from './propertyStore'
-export type {
-  PropertyStore
-} from './propertyStore'

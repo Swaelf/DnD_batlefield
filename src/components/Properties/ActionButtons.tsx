@@ -21,7 +21,7 @@ const ActionButtonsComponent: React.FC<ActionButtonsProps> = ({
 }) => {
   return (
     <PanelSection>
-      <Box display="flex" flexDirection="column" gap="2">
+      <Box display="flex" flexDirection="column" gap={2}>
         <Button
           onClick={onVisibilityToggle}
           variant="ghost"

@@ -1,6 +1,6 @@
-import { TestResult } from './TestRunner'
-import { BugReport } from './BugDetector'
-import { Screenshot } from './CanvasCapture'
+import type { TestResult } from './TestRunner'
+import type { BugReport } from './BugDetector'
+import type { Screenshot } from './CanvasCapture'
 
 export interface TestReport {
   id: string

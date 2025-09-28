@@ -4,7 +4,7 @@
  */
 
 import { produce } from 'immer'
-import { createStore } from '@/core/state'
+import { createStore, createStoreHook } from '@/core/state'
 import type {
   UnifiedAction,
   ActionId,
@@ -85,7 +85,7 @@ type ActionStore = ActionState & ActionActions
 /**
  * Create action store instance
  */
-export const useActionStore = createStore<ActionStore>(
+const actionStore = createStore<ActionStore>(
   (set, get) => ({
     // Initial state
     libraryService: new ActionLibraryService(),
@@ -134,21 +134,28 @@ export const useActionStore = createStore<ActionStore>(
     },
 
     setSearchQuery: (query: string) => {
-      set(produce((state: ActionState) => {
-        state.selection.searchQuery = query
+      set(produce((draft: ActionState) => {
+        draft.selection = {
+          ...draft.selection,
+          searchQuery: query
+        }
       }))
 
       // Trigger search
+      const activeCategory = get().selection.activeCategory
       const criteria: ActionSearchCriteria = {
         query: query || undefined,
-        category: get().selection.activeCategory !== 'all' ? get().selection.activeCategory : undefined
+        category: activeCategory !== 'all' ? activeCategory as ActionCategory : undefined
       }
       get().search(criteria)
     },
 
     setActiveCategory: (category: ActionCategory | 'all') => {
-      set(produce((state: ActionState) => {
-        state.selection.activeCategory = category
+      set(produce((draft: ActionState) => {
+        draft.selection = {
+          ...draft.selection,
+          activeCategory: category
+        }
       }))
 
       // Trigger search
@@ -160,8 +167,11 @@ export const useActionStore = createStore<ActionStore>(
     },
 
     setSortBy: (sortBy: ActionSortBy) => {
-      set(produce((state: ActionState) => {
-        state.selection.sortBy = sortBy
+      set(produce((draft: ActionState) => {
+        draft.selection = {
+          ...draft.selection,
+          sortBy: sortBy
+        }
       }))
 
       // Re-sort current results
@@ -172,8 +182,11 @@ export const useActionStore = createStore<ActionStore>(
     },
 
     setSortDirection: (direction: 'asc' | 'desc') => {
-      set(produce((state: ActionState) => {
-        state.selection.sortDirection = direction
+      set(produce((draft: ActionState) => {
+        draft.selection = {
+          ...draft.selection,
+          sortDirection: direction
+        }
       }))
 
       // Re-sort current results
@@ -184,28 +197,38 @@ export const useActionStore = createStore<ActionStore>(
     },
 
     setViewMode: (mode: 'grid' | 'list') => {
-      set(produce((state: ActionState) => {
-        state.selection.viewMode = mode
+      set(produce((draft: ActionState) => {
+        draft.selection = {
+          ...draft.selection,
+          viewMode: mode
+        }
       }))
     },
 
     toggleCustomActions: () => {
-      set(produce((state: ActionState) => {
-        state.selection.showCustomActions = !state.selection.showCustomActions
+      set(produce((draft: ActionState) => {
+        draft.selection = {
+          ...draft.selection,
+          showCustomActions: !draft.selection.showCustomActions
+        }
       }))
 
       // Re-run search with updated criteria
+      const activeCategory = get().selection.activeCategory
       const criteria: ActionSearchCriteria = {
         query: get().selection.searchQuery || undefined,
-        category: get().selection.activeCategory !== 'all' ? get().selection.activeCategory : undefined
+        category: activeCategory !== 'all' ? activeCategory as ActionCategory : undefined
       }
       get().search(criteria)
     },
 
     // Selection actions
     selectAction: (actionId: ActionId | null) => {
-      set(produce((state: ActionState) => {
-        state.selection.selectedActionId = actionId
+      set(produce((draft: ActionState) => {
+        draft.selection = {
+          ...draft.selection,
+          selectedActionId: actionId
+        }
       }))
     },
 
@@ -317,10 +340,13 @@ export const useActionStore = createStore<ActionStore>(
 
       if (deleted) {
         // Remove from current results if present
-        set(produce((state: ActionState) => {
-          state.searchResults = state.searchResults.filter(a => a.id !== actionId)
-          if (state.selection.selectedActionId === actionId) {
-            state.selection.selectedActionId = null
+        set(produce((draft: ActionState) => {
+          draft.searchResults = draft.searchResults.filter(a => a.id !== actionId)
+          if (draft.selection.selectedActionId === actionId) {
+            draft.selection = {
+              ...draft.selection,
+              selectedActionId: null
+            }
           }
         }))
       }
@@ -343,19 +369,13 @@ export const useActionStore = createStore<ActionStore>(
         state.popularActions = popular
       }))
     }
-  }),
-  {
-    name: 'action-store',
-    persist: {
-      partialize: (state) => ({
-        selection: {
-          ...state.selection,
-          selectedActionId: null // Don't persist selection
-        }
-      })
-    }
-  }
+  })
 )
+
+/**
+ * Action store hook
+ */
+export const useActionStore = createStoreHook(actionStore)
 
 /**
  * Sort actions by criteria
@@ -385,8 +405,8 @@ function sortActions(
         comparison = aLevel - bLevel
         break
       case 'recent':
-        // Sort by creation date (most recent first)
-        comparison = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        // Sort by timestamp (most recent first)
+        comparison = b.timestamp - a.timestamp
         break
       default:
         return 0
@@ -401,8 +421,7 @@ function sortActions(
  */
 function getActionLevel(action: UnifiedAction): number {
   if (action.type === 'spell') {
-    const spellData = action.data as any
-    return spellData.level || 0
+    return action.spellLevel || 0
   }
   return 0
 }

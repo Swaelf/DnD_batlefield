@@ -1,4 +1,5 @@
-import { TestScenario } from './TestScenarios'
+import type { TestScenario } from './TestScenarios'
+import type { SpellMapObject } from '@/types'
 import useMapStore from '@/store/mapStore'
 import useRoundStore from '@/store/roundStore'
 
@@ -137,7 +138,6 @@ export const persistentAreaCleanupTest: TestScenario = {
                 id: area.id,
                 roundCreated: area.roundCreated,
                 spellDuration: area.spellDuration,
-                expiresAt: area.roundCreated + area.spellDuration
               })
             })
           }
@@ -206,7 +206,6 @@ export const persistentAreaCleanupTest: TestScenario = {
                 roundCreated: area.roundCreated,
                 spellDuration: area.spellDuration,
                 currentRound: roundStore.currentRound,
-                expiresAt: area.roundCreated + area.spellDuration,
                 shouldBeRemoved
               })
             })
@@ -292,7 +291,7 @@ export const persistentAreaCleanupTest: TestScenario = {
             const mapStore = useMapStore.getState()
             const darknessAreas = mapStore.currentMap?.objects.filter(obj =>
               obj.type === 'persistent-area' &&
-              obj.persistentAreaData?.spellName === 'Darkness'
+              (obj as SpellMapObject).persistentAreaData?.spellName === 'Darkness'
             ) || []
             return darknessAreas.length === 1
           }
@@ -329,7 +328,7 @@ export const persistentAreaCleanupTest: TestScenario = {
             const roundStore = useRoundStore.getState()
             const darknessAreas = mapStore.currentMap?.objects.filter(obj =>
               obj.type === 'persistent-area' &&
-              obj.persistentAreaData?.spellName === 'Darkness'
+              (obj as SpellMapObject).persistentAreaData?.spellName === 'Darkness'
             ) || []
             console.log('Round', roundStore.currentRound, '- Darkness areas:', darknessAreas.length)
             return darknessAreas.length === 1
@@ -382,7 +381,7 @@ export const persistentAreaCleanupTest: TestScenario = {
             const roundStore = useRoundStore.getState()
             const darknessAreas = mapStore.currentMap?.objects.filter(obj =>
               obj.type === 'persistent-area' &&
-              obj.persistentAreaData?.spellName === 'Darkness'
+              (obj as SpellMapObject).persistentAreaData?.spellName === 'Darkness'
             ) || []
             console.log('Round', roundStore.currentRound, '- Darkness areas after cleanup:', darknessAreas.length)
             return darknessAreas.length === 0

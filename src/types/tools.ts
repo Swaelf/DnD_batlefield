@@ -1,4 +1,4 @@
-import { Point } from './geometry'
+import type { Point } from './geometry'
 
 export type ToolType =
   | 'select'

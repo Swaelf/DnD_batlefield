@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import useRoundStore from '../roundStore'
-import { RoundEvent } from '@/types'
 
 // Mock crypto.randomUUID for consistent testing
 Object.defineProperty(global, 'crypto', {
@@ -235,7 +234,10 @@ describe('roundStore', () => {
         spellName: 'Fireball',
         category: 'projectile-burst' as const,
         fromPosition: { x: 100, y: 100 },
-        toPosition: { x: 200, y: 200 }
+        toPosition: { x: 200, y: 200 },
+        color: '#ff4500',
+        size: 20,
+        duration: 1000
       }
 
       act(() => {
@@ -251,7 +253,11 @@ describe('roundStore', () => {
     it('should create round when adding event to non-existent round', () => {
       const { result } = renderHook(() => useRoundStore())
 
-      const eventData = { type: 'move' as const }
+      const eventData = {
+        type: 'move' as const,
+        fromPosition: { x: 0, y: 0 },
+        toPosition: { x: 100, y: 100 }
+      }
 
       act(() => {
         result.current.addEvent('token-1', 'move', eventData, 10)
@@ -271,9 +277,9 @@ describe('roundStore', () => {
       const { result } = renderHook(() => useRoundStore())
 
       act(() => {
-        result.current.addEvent('token-1', 'move', { type: 'move' })
-        result.current.addEvent('token-2', 'spell', { type: 'spell' })
-        result.current.addEvent('token-3', 'move', { type: 'move' })
+        result.current.addEvent('token-1', 'move', { type: 'move', fromPosition: { x: 0, y: 0 }, toPosition: { x: 100, y: 100 } })
+        result.current.addEvent('token-2', 'spell', { type: 'spell', spellName: 'Magic Missile', category: 'projectile' as const, fromPosition: { x: 50, y: 50 }, toPosition: { x: 150, y: 150 }, color: '#0000ff', size: 10, duration: 500 })
+        result.current.addEvent('token-3', 'move', { type: 'move', fromPosition: { x: 200, y: 200 }, toPosition: { x: 300, y: 300 } })
       })
 
       const round1 = result.current.timeline?.rounds.find(r => r.number === 1)
@@ -287,7 +293,12 @@ describe('roundStore', () => {
 
       // Add event first
       act(() => {
-        result.current.addEvent('token-1', 'move', { type: 'move', duration: 1000 })
+        result.current.addEvent('token-1', 'move', {
+          type: 'move',
+          fromPosition: { x: 0, y: 0 },
+          toPosition: { x: 100, y: 100 },
+          duration: 1000
+        })
       })
 
       const eventId = result.current.timeline?.rounds[0].events[0].id
@@ -307,8 +318,8 @@ describe('roundStore', () => {
 
       // Add multiple events
       act(() => {
-        result.current.addEvent('token-1', 'move', { type: 'move' })
-        result.current.addEvent('token-2', 'spell', { type: 'spell' })
+        result.current.addEvent('token-1', 'move', { type: 'move', fromPosition: { x: 0, y: 0 }, toPosition: { x: 100, y: 100 } })
+        result.current.addEvent('token-2', 'spell', { type: 'spell', spellName: 'Magic Missile', category: 'projectile' as const, fromPosition: { x: 50, y: 50 }, toPosition: { x: 150, y: 150 }, color: '#0000ff', size: 10, duration: 500 })
       })
 
       const eventId = result.current.timeline?.rounds[0].events[0].id
@@ -357,8 +368,22 @@ describe('roundStore', () => {
 
       // Add events to round 1
       act(() => {
-        result.current.addEvent('token-1', 'move', { type: 'move', duration: 100 })
-        result.current.addEvent('token-2', 'spell', { type: 'spell', duration: 200 })
+        result.current.addEvent('token-1', 'move', {
+          type: 'move',
+          fromPosition: { x: 0, y: 0 },
+          toPosition: { x: 100, y: 100 },
+          duration: 100
+        })
+        result.current.addEvent('token-2', 'spell', {
+          type: 'spell',
+          spellName: 'Fireball',
+          category: 'area',
+          fromPosition: { x: 50, y: 50 },
+          toPosition: { x: 150, y: 150 },
+          color: '#FF4500',
+          size: 20,
+          duration: 200
+        })
       })
 
       await act(async () => {
@@ -376,7 +401,7 @@ describe('roundStore', () => {
 
       // Add and execute round
       act(() => {
-        result.current.addEvent('token-1', 'move', { type: 'move' })
+        result.current.addEvent('token-1', 'move', { type: 'move', fromPosition: { x: 0, y: 0 }, toPosition: { x: 100, y: 100 } })
       })
 
       await act(async () => {
@@ -413,7 +438,12 @@ describe('roundStore', () => {
       })
 
       act(() => {
-        result.current.addEvent('token-1', 'move', { type: 'move', duration: 1000 })
+        result.current.addEvent('token-1', 'move', {
+          type: 'move',
+          fromPosition: { x: 0, y: 0 },
+          toPosition: { x: 100, y: 100 },
+          duration: 1000
+        })
       })
 
       const startTime = Date.now()
@@ -468,7 +498,7 @@ describe('roundStore', () => {
       act(() => {
         result.current.startCombat('test-map')
         result.current.nextRound()
-        result.current.addEvent('token-1', 'move', { type: 'move' })
+        result.current.addEvent('token-1', 'move', { type: 'move', fromPosition: { x: 0, y: 0 }, toPosition: { x: 100, y: 100 } })
       })
 
       expect(result.current.timeline).toBeDefined()
@@ -496,7 +526,12 @@ describe('roundStore', () => {
         roundNumber: 1,
         tokenId: 'token-1',
         type: 'move' as const,
-        data: { type: 'move' as const },
+        data: {
+          type: 'move' as const,
+          fromPosition: { x: 0, y: 0 },
+          toPosition: { x: 100, y: 100 },
+          duration: 1000
+        },
         executed: false,
         order: 0
       }
@@ -519,7 +554,7 @@ describe('roundStore', () => {
       // Timeline is null initially
       expect(() => {
         act(() => {
-          result.current.addEvent('token-1', 'move', { type: 'move' })
+          result.current.addEvent('token-1', 'move', { type: 'move', fromPosition: { x: 0, y: 0 }, toPosition: { x: 100, y: 100 } })
         })
       }).not.toThrow()
 
@@ -558,7 +593,7 @@ describe('roundStore', () => {
       const originalTimeline = result.current.timeline
 
       act(() => {
-        result.current.addEvent('token-1', 'move', { type: 'move' })
+        result.current.addEvent('token-1', 'move', { type: 'move', fromPosition: { x: 0, y: 0 }, toPosition: { x: 100, y: 100 } })
       })
 
       const newTimeline = result.current.timeline

@@ -1,12 +1,14 @@
 /**
- * Action Grid Component
+ * ActionGrid Molecule Component
  * Grid display of action cards with search and filtering
  */
 
 import React from 'react'
-import { styled } from '@/foundation/theme'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import { ActionCard } from '../../atoms'
-import type { UnifiedAction, ActionSortBy } from '../../types'
+import type { UnifiedAction, ActionSortBy } from '@/types/unifiedAction'
 
 export type ActionGridProps = {
   actions: UnifiedAction[]
@@ -22,122 +24,6 @@ export type ActionGridProps = {
   className?: string
 }
 
-const Container = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100%',
-  minHeight: 200
-})
-
-const Header = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '$2 0',
-  borderBottom: '1px solid $gray700',
-  marginBottom: '$3'
-})
-
-const ActionCount = styled('span', {
-  fontSize: '$2',
-  color: '$gray400'
-})
-
-const SortControls = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2'
-})
-
-const SortButton = styled('button', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  padding: '$1 $2',
-  borderRadius: '$sm',
-  border: '1px solid $gray600',
-  background: '$gray800',
-  color: '$gray300',
-  fontSize: '$1',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    background: '$gray700',
-    borderColor: '$gray500'
-  },
-
-  variants: {
-    active: {
-      true: {
-        background: '$dndRed',
-        borderColor: '$dndRed',
-        color: 'white'
-      }
-    }
-  }
-})
-
-const Grid = styled('div', {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-  gap: '$3',
-  flex: 1,
-  alignContent: 'start'
-})
-
-const EmptyState = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '$6',
-  color: '$gray400',
-  textAlign: 'center',
-  minHeight: 200
-})
-
-const EmptyIcon = styled('div', {
-  fontSize: '$8',
-  marginBottom: '$3',
-  opacity: 0.5
-})
-
-const EmptyText = styled('p', {
-  margin: 0,
-  fontSize: '$3',
-  color: '$gray300',
-  marginBottom: '$2'
-})
-
-const EmptySubtext = styled('p', {
-  margin: 0,
-  fontSize: '$2',
-  color: '$gray500'
-})
-
-const LoadingState = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '$6',
-  color: '$gray400',
-  minHeight: 200
-})
-
-const LoadingSpinner = styled('div', {
-  width: 32,
-  height: 32,
-  border: '2px solid $gray600',
-  borderTop: '2px solid $dndRed',
-  borderRadius: '$round',
-  animation: 'spin 1s linear infinite',
-
-  '@keyframes spin': {
-    '0%': { transform: 'rotate(0deg)' },
-    '100%': { transform: 'rotate(360deg)' }
-  }
-})
 
 const SORT_OPTIONS = [
   { value: 'name' as ActionSortBy, label: 'Name' },
@@ -179,48 +65,169 @@ export const ActionGrid: React.FC<ActionGridProps> = ({
 
   if (isLoading) {
     return (
-      <Container className={className}>
-        <LoadingState>
-          <LoadingSpinner />
-        </LoadingState>
-      </Container>
+      <Box
+        className={className}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          minHeight: '200px'
+        }}
+      >
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+            color: 'var(--colors-gray400)',
+            minHeight: '200px'
+          }}
+        >
+          <Box
+            style={{
+              width: '32px',
+              height: '32px',
+              border: '2px solid var(--colors-gray600)',
+              borderTop: '2px solid var(--colors-dndRed)',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }}
+          />
+        </Box>
+      </Box>
     )
   }
 
   if (actions.length === 0) {
     return (
-      <Container className={className}>
-        <EmptyState>
-          <EmptyIcon>🎯</EmptyIcon>
-          <EmptyText>No Actions Found</EmptyText>
-          <EmptySubtext>{emptyMessage}</EmptySubtext>
-        </EmptyState>
-      </Container>
+      <Box
+        className={className}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          minHeight: '200px'
+        }}
+      >
+        <Box
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+            color: 'var(--colors-gray400)',
+            textAlign: 'center',
+            minHeight: '200px'
+          }}
+        >
+          <Box
+            style={{
+              fontSize: '48px',
+              marginBottom: '12px',
+              opacity: 0.5
+            }}
+          >
+            🎯
+          </Box>
+          <Text
+            variant="heading"
+            size="md"
+            style={{
+              margin: 0,
+              color: 'var(--colors-gray300)',
+              marginBottom: '8px'
+            }}
+          >
+            No Actions Found
+          </Text>
+          <Text
+            variant="body"
+            size="sm"
+            style={{
+              margin: 0,
+              color: 'var(--colors-gray500)'
+            }}
+          >
+            {emptyMessage}
+          </Text>
+        </Box>
+      </Box>
     )
   }
 
   return (
-    <Container className={className}>
-      <Header>
-        <ActionCount>
+    <Box
+      className={className}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: '200px'
+      }}
+    >
+      {/* Header */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 0',
+          borderBottom: '1px solid var(--colors-gray700)',
+          marginBottom: '12px'
+        }}
+      >
+        <Text
+          variant="body"
+          size="sm"
+          style={{
+            color: 'var(--colors-gray400)'
+          }}
+        >
           {actions.length} action{actions.length !== 1 ? 's' : ''}
-        </ActionCount>
+        </Text>
 
-        <SortControls>
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
           {SORT_OPTIONS.map(option => (
-            <SortButton
+            <Button
               key={option.value}
-              active={sortBy === option.value}
+              variant={sortBy === option.value ? 'primary' : 'outline'}
+              size="sm"
               onClick={() => handleSortChange(option.value)}
               title={`Sort by ${option.label.toLowerCase()}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '12px',
+                backgroundColor: sortBy === option.value ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
+                borderColor: sortBy === option.value ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
+                color: sortBy === option.value ? 'white' : 'var(--colors-gray300)'
+              }}
             >
               {option.label} {getSortIcon(option.value)}
-            </SortButton>
+            </Button>
           ))}
-        </SortControls>
-      </Header>
+        </Box>
+      </Box>
 
-      <Grid>
+      {/* Grid */}
+      <Box
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '12px',
+          flex: 1,
+          alignContent: 'start'
+        }}
+      >
         {actions.map(action => (
           <ActionCard
             key={action.id}
@@ -231,7 +238,7 @@ export const ActionGrid: React.FC<ActionGridProps> = ({
             onEdit={onActionEdit}
           />
         ))}
-      </Grid>
-    </Container>
+      </Box>
+    </Box>
   )
 }

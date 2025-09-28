@@ -1,11 +1,14 @@
-import { UnifiedAction } from '@/types/unifiedAction'
+import type { UnifiedAction } from '@/types/unifiedAction'
 
 export const spellTemplates: UnifiedAction[] = [
   // Fire Spells
   {
     id: 'fireball-template',
+    name: 'Fireball',
+    description: 'A magical spell effect',
     type: 'spell',
     category: 'fire',
+    tags: ["spell","magic"],
     source: { x: 0, y: 0 }, // Will be set when used
     target: { x: 0, y: 0 }, // Will be set when used
     animation: {
@@ -60,8 +63,11 @@ export const spellTemplates: UnifiedAction[] = [
   // Force Spells
   {
     id: 'magic-missile-template',
+    name: 'Magic Missile',
+    description: 'A magical spell effect',
     type: 'spell',
     category: 'force',
+    tags: ["spell","magic"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -103,8 +109,11 @@ export const spellTemplates: UnifiedAction[] = [
   // Darkness Spell
   {
     id: 'darkness-template',
+    name: 'Darkness',
+    description: 'A magical spell effect',
     type: 'spell',
     category: 'illusion',
+    tags: ["spell","magic"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -142,8 +151,11 @@ export const spellTemplates: UnifiedAction[] = [
   },
   {
     id: 'ray-of-frost-template',
+    name: 'Ray Of Frost',
+    description: 'A magical spell effect',
     type: 'spell',
     category: 'ice',
+    tags: ["spell","magic"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -171,8 +183,11 @@ export const spellTemplates: UnifiedAction[] = [
   // Lightning Spells
   {
     id: 'lightning-bolt-template',
+    name: 'Lightning Bolt',
+    description: 'A magical spell effect',
     type: 'spell',
     category: 'lightning',
+    tags: ["spell","magic"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -201,8 +216,11 @@ export const spellTemplates: UnifiedAction[] = [
   },
   {
     id: 'shocking-grasp-template',
+    name: 'Shocking Grasp',
+    description: 'A magical spell effect',
     type: 'spell',
     category: 'lightning',
+    tags: ["spell","magic"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -227,8 +245,11 @@ export const spellTemplates: UnifiedAction[] = [
   // Healing Spells
   {
     id: 'cure-wounds-template',
+    name: 'Cure Wounds',
+    description: 'A magical spell effect',
     type: 'spell',
     category: 'healing',
+    tags: ["spell","magic"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -253,8 +274,11 @@ export const spellTemplates: UnifiedAction[] = [
   // Poison Spells
   {
     id: 'poison-spray-template',
+    name: 'Poison Spray',
+    description: 'A magical spell effect',
     type: 'spell',
     category: 'poison',
+    tags: ["spell","magic"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -286,12 +310,15 @@ export const spellTemplates: UnifiedAction[] = [
   // Earth/Elemental Spells
   {
     id: 'stone-rain-template',
+    name: 'Stone Rain',
+    description: 'A magical spell effect',
     type: 'spell',
     category: 'earth',
+    tags: ["spell","magic"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'multi-burst',  // New type for multiple bursts
+      type: 'burst',  // New type for multiple bursts
       duration: 2000,       // Total duration for all stone impacts
       color: '#8B7355',     // Stone brown color
       secondaryColor: '#696969',  // Gray for stone variety
@@ -330,8 +357,11 @@ export const spellTemplates: UnifiedAction[] = [
   // Divine Spells
   {
     id: 'sacred-flame-template',
+    name: 'Sacred Flame',
+    description: 'A magical spell effect',
     type: 'spell',
     category: 'divine',
+    tags: ["spell","magic"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -354,8 +384,11 @@ export const spellTemplates: UnifiedAction[] = [
   },
   {
     id: 'guiding-bolt-template',
+    name: 'Guiding Bolt',
+    description: 'A magical spell effect',
     type: 'spell',
     category: 'divine',
+    tags: ["spell","magic"],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {

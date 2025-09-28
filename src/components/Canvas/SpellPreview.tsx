@@ -1,9 +1,8 @@
-import React, { memo, useMemo, useEffect } from 'react'
-import { Circle, Group, Text, Line, Arc, Wedge } from 'react-konva'
+import React, { memo, useMemo } from 'react'
+import { Circle, Group, Text, Line, Wedge } from 'react-konva'
 import useEventCreationStore from '@/store/eventCreationStore'
 import useMapStore from '@/store/mapStore'
-import { SpellEventData } from '@/types/timeline'
-import { Position } from '@/types/map'
+import type { Position } from '@/types/map'
 
 type SpellPreviewProps = {
   gridSize: number
@@ -15,7 +14,6 @@ const SpellPreviewComponent: React.FC<SpellPreviewProps> = ({ gridSize }) => {
   const selectedSpell = useEventCreationStore(state => state.selectedSpell)
   const fromPosition = useEventCreationStore(state => state.fromPosition)
   const toPosition = useEventCreationStore(state => state.toPosition)
-  const currentMap = useMapStore(state => state.currentMap)
   const spellPreviewEnabled = useMapStore(state => state.spellPreviewEnabled)
 
   // Only show preview when picking position for a spell AND preview is enabled
@@ -234,51 +232,6 @@ const SpellPreviewComponent: React.FC<SpellPreviewProps> = ({ gridSize }) => {
       )}
     </Group>
   )
-}
-
-// Helper function to render affected grid squares
-function renderAffectedSquares(center: Position, radius: number, gridSize: number) {
-  const squares: React.ReactNode[] = []
-  const squareRadius = Math.ceil(radius / gridSize)
-
-  for (let x = -squareRadius; x <= squareRadius; x++) {
-    for (let y = -squareRadius; y <= squareRadius; y++) {
-      const squareX = Math.floor(center.x / gridSize) * gridSize + x * gridSize
-      const squareY = Math.floor(center.y / gridSize) * gridSize + y * gridSize
-      const squareCenter = {
-        x: squareX + gridSize / 2,
-        y: squareY + gridSize / 2
-      }
-
-      // Check if square center is within spell radius
-      const distance = Math.sqrt(
-        Math.pow(squareCenter.x - center.x, 2) +
-        Math.pow(squareCenter.y - center.y, 2)
-      )
-
-      if (distance <= radius) {
-        squares.push(
-          <React.Fragment key={`${x},${y}`}>
-            <Line
-              points={[
-                squareX, squareY,
-                squareX + gridSize, squareY,
-                squareX + gridSize, squareY + gridSize,
-                squareX, squareY + gridSize,
-                squareX, squareY
-              ]}
-              stroke="#FF6B35"
-              strokeWidth={1}
-              opacity={0.3}
-              closed
-            />
-          </React.Fragment>
-        )
-      }
-    }
-  }
-
-  return squares
 }
 
 // Helper function to calculate angle between two points

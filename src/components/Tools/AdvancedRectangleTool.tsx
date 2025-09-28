@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { Group, Rect, Circle } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
 import { snapToGrid } from '@/utils/grid'
 
@@ -86,7 +86,7 @@ export const AdvancedRectangleTool: React.FC<AdvancedRectangleToolProps> = ({
     const transform = stage.getAbsoluteTransform().copy().invert()
     const pos = transform.point(pointer)
 
-    const snappedPos = gridSnap ? snapToGrid(pos, gridSize) : pos
+    const snappedPos = gridSnap ? snapToGrid(pos, gridSize, true) : pos
 
     setStartPoint(snappedPos)
     setCurrentPoint(snappedPos)
@@ -106,7 +106,7 @@ export const AdvancedRectangleTool: React.FC<AdvancedRectangleToolProps> = ({
     let pos = transform.point(pointer)
 
     if (gridSnap) {
-      pos = snapToGrid(pos, gridSize)
+      pos = snapToGrid(pos, gridSize, true)
     }
 
     // Handle proportional scaling with Shift key
@@ -129,8 +129,8 @@ export const AdvancedRectangleTool: React.FC<AdvancedRectangleToolProps> = ({
 
     let x = Math.min(startPoint.x, currentPoint.x)
     let y = Math.min(startPoint.y, currentPoint.y)
-    let width = Math.abs(currentPoint.x - startPoint.x)
-    let height = Math.abs(currentPoint.y - startPoint.y)
+    const width = Math.abs(currentPoint.x - startPoint.x)
+    const height = Math.abs(currentPoint.y - startPoint.y)
 
     // Handle center-point drawing with Alt key
     if (isAltPressed) {
@@ -194,8 +194,8 @@ export const AdvancedRectangleTool: React.FC<AdvancedRectangleToolProps> = ({
 
   let x = Math.min(startPoint.x, currentPoint.x)
   let y = Math.min(startPoint.y, currentPoint.y)
-  let width = Math.abs(currentPoint.x - startPoint.x)
-  let height = Math.abs(currentPoint.y - startPoint.y)
+  const width = Math.abs(currentPoint.x - startPoint.x)
+  const height = Math.abs(currentPoint.y - startPoint.y)
 
   // Handle center-point drawing preview
   if (isAltPressed) {

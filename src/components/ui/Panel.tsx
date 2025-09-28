@@ -1,43 +1,109 @@
-import { styled } from '@/styles/theme.config'
-import type { ComponentProps } from '@/types'
-import { Box } from '@/components/primitives'
+import React, { forwardRef } from 'react'
 
-export const Panel = styled(Box, {
-  display: 'block',
-  backgroundColor: '$surface',
-  border: '1px solid $gray700',
-  borderRadius: '$lg',
-  boxShadow: '$panel',
+// Panel event handlers
+type PanelEventHandlers = {
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onMouseEnter?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onMouseLeave?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onFocus?: (event: React.FocusEvent<HTMLDivElement>) => void
+  onBlur?: (event: React.FocusEvent<HTMLDivElement>) => void
+  onKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void
+  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void
+}
 
-  variants: {
-    padding: {
-      none: { padding: 0 },
-      sm: { padding: '$3' },
-      md: { padding: '$4' },
-      lg: { padding: '$6' },
+// Panel component props with exact typing
+export type PanelProps = {
+  children: React.ReactNode
+  padding?: 'none' | 'sm' | 'md' | 'lg'
+  elevation?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+  variant?: 'default' | 'elevated' | 'outlined' | 'ghost'
+  size?: 'sm' | 'md' | 'lg' | 'full' | 'sidebar'
+  className?: string
+  style?: React.CSSProperties
+
+  // HTML attributes
+  id?: string
+  role?: string
+  tabIndex?: number
+
+  // ARIA attributes
+  'aria-label'?: string
+  'aria-labelledby'?: string
+  'aria-describedby'?: string
+  'aria-expanded'?: boolean
+  'aria-hidden'?: boolean
+
+  // Data attributes
+  'data-testid'?: string
+  'data-test-id'?: string
+  'data-state'?: string
+} & PanelEventHandlers
+
+export const Panel = forwardRef<HTMLDivElement, PanelProps>(
+  (
+    {
+      children,
+      padding = 'md',
+      elevation = 'md',
+      variant = 'default',
+      size,
+      className,
+      style,
+      id,
+      role,
+      tabIndex,
+      onClick,
+      onMouseEnter,
+      onMouseLeave,
+      onFocus,
+      onBlur,
+      onKeyDown,
+      onScroll,
+      'aria-label': ariaLabel,
+      'aria-labelledby': ariaLabelledby,
+      'aria-describedby': ariaDescribedby,
+      'aria-expanded': ariaExpanded,
+      'aria-hidden': ariaHidden,
+      'data-testid': dataTestId,
+      'data-test-id': dataTestId2,
+      'data-state': dataState,
     },
+    ref
+  ) => {
+    // Padding styles
+    const paddingStyles = {
+      none: { padding: '0' },
+      sm: { padding: '12px' },
+      md: { padding: '16px' },
+      lg: { padding: '24px' },
+    }
 
-    elevation: {
+    // Elevation styles
+    const elevationStyles = {
       none: { boxShadow: 'none' },
-      sm: { boxShadow: '$sm' },
-      md: { boxShadow: '$panel' },
-      lg: { boxShadow: '$lg' },
-      xl: { boxShadow: '$xl' },
-    },
+      sm: { boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)' },
+      md: { boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' },
+      lg: { boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)' },
+      xl: { boxShadow: '0 16px 48px rgba(0, 0, 0, 0.25)' },
+    }
 
-    variant: {
+    // Variant styles
+    const variantStyles = {
       default: {
-        backgroundColor: '$surface',
-        borderColor: '$gray700',
+        backgroundColor: 'var(--surface)',
+        borderColor: 'var(--gray700)',
+        border: '1px solid var(--gray700)',
       },
       elevated: {
-        backgroundColor: '$gray800',
-        borderColor: '$gray600',
-        boxShadow: '$lg',
+        backgroundColor: 'var(--gray800)',
+        borderColor: 'var(--gray600)',
+        border: '1px solid var(--gray600)',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
       },
       outlined: {
         backgroundColor: 'transparent',
-        borderColor: '$gray600',
+        borderColor: 'var(--gray600)',
+        border: '1px solid var(--gray600)',
         boxShadow: 'none',
       },
       ghost: {
@@ -45,15 +111,16 @@ export const Panel = styled(Box, {
         border: 'none',
         boxShadow: 'none',
       },
-    },
+    }
 
-    size: {
+    // Size styles
+    const sizeStyles = {
       sm: {
         minWidth: '200px',
         minHeight: '150px',
       },
       md: {
-        minWidth: '$sidebarWidth',
+        minWidth: '320px',
         minHeight: '200px',
       },
       lg: {
@@ -65,189 +132,413 @@ export const Panel = styled(Box, {
         height: '100%',
       },
       sidebar: {
-        width: '$sidebarWidth',
+        width: '320px',
         height: '100%',
       },
-    },
-  },
+    }
 
-  defaultVariants: {
-    padding: 'md',
-    elevation: 'md',
-    variant: 'default',
-  },
-})
+    // Base styles
+    const baseStyles: React.CSSProperties = {
+      display: 'block',
+      borderRadius: '8px',
+      position: 'relative',
+      overflow: 'hidden',
+      cursor: onClick ? 'pointer' : 'default',
+      outline: 'none',
+    }
 
-export const PanelHeader = styled(Box, {
-  display: 'block',
-  borderBottom: '1px solid $gray700',
-  marginBottom: '$4',
-  paddingBottom: '$3',
-  marginX: '-$4', // Negative margin to extend to panel edges
-  paddingX: '$4',
+    const combinedStyles: React.CSSProperties = {
+      ...baseStyles,
+      ...paddingStyles[padding],
+      ...elevationStyles[elevation],
+      ...variantStyles[variant],
+      ...(size && sizeStyles[size]),
+      ...style,
+    }
 
-  variants: {
-    sticky: {
-      true: {
+    return (
+      <div
+        ref={ref}
+        style={combinedStyles}
+        className={className}
+        id={id}
+        role={role}
+        tabIndex={tabIndex}
+        onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onKeyDown={onKeyDown}
+        onScroll={onScroll}
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledby}
+        aria-describedby={ariaDescribedby}
+        aria-expanded={ariaExpanded}
+        aria-hidden={ariaHidden}
+        data-testid={dataTestId}
+        data-test-id={dataTestId2}
+        data-state={dataState}
+        data-variant={variant}
+        data-size={size}
+        data-padding={padding}
+        data-elevation={elevation}
+      >
+        {children}
+      </div>
+    )
+  }
+)
+
+Panel.displayName = 'Panel'
+
+// Panel Header component
+export type PanelHeaderProps = {
+  children: React.ReactNode
+  sticky?: boolean
+  className?: string
+  style?: React.CSSProperties
+  'data-testid'?: string
+}
+
+export const PanelHeader = forwardRef<HTMLDivElement, PanelHeaderProps>(
+  ({ children, sticky = false, className, style, 'data-testid': dataTestId }, ref) => {
+    const headerStyles: React.CSSProperties = {
+      display: 'block',
+      borderBottom: '1px solid var(--gray700)',
+      marginBottom: '16px',
+      paddingBottom: '12px',
+      marginLeft: '-16px',
+      marginRight: '-16px',
+      paddingLeft: '16px',
+      paddingRight: '16px',
+      ...(sticky && {
         position: 'sticky',
         top: 0,
-        backgroundColor: '$surface',
-        zIndex: '$sticky',
+        backgroundColor: 'var(--surface)',
+        zIndex: 10,
+      }),
+      ...style,
+    }
+
+    return (
+      <div
+        ref={ref}
+        style={headerStyles}
+        className={className}
+        data-testid={dataTestId}
+        data-sticky={sticky}
+      >
+        {children}
+      </div>
+    )
+  }
+)
+
+PanelHeader.displayName = 'PanelHeader'
+
+// Panel Title component
+export type PanelTitleProps = {
+  children: React.ReactNode
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+  className?: string
+  style?: React.CSSProperties
+  id?: string
+}
+
+export const PanelTitle = forwardRef<HTMLHeadingElement, PanelTitleProps>(
+  ({ children, as: Component = 'h2', className, style, id }, ref) => {
+    const titleStyles: React.CSSProperties = {
+      margin: 0,
+      fontSize: '18px',
+      fontWeight: '600',
+      color: 'var(--gray100)',
+      fontFamily: 'system-ui, sans-serif',
+      lineHeight: 1.2,
+      ...style,
+    }
+
+    return React.createElement(
+      Component,
+      {
+        ref,
+        style: titleStyles,
+        className,
+        id,
       },
+      children
+    )
+  }
+)
+
+PanelTitle.displayName = 'PanelTitle'
+
+// Panel Body component
+export type PanelBodyProps = {
+  children: React.ReactNode
+  scrollable?: boolean
+  padding?: 'none' | 'sm' | 'md'
+  className?: string
+  style?: React.CSSProperties
+  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void
+}
+
+export const PanelBody = forwardRef<HTMLDivElement, PanelBodyProps>(
+  (
+    {
+      children,
+      scrollable = true,
+      padding = 'none',
+      className,
+      style,
+      onScroll,
     },
-  },
-})
+    ref
+  ) => {
+    const paddingStyles = {
+      none: { padding: 0 },
+      sm: { padding: '8px' },
+      md: { padding: '16px' },
+    }
 
-export const PanelTitle = styled('h2', {
-  margin: 0,
-  fontSize: '$lg',
-  fontWeight: '$semibold',
-  color: '$gray100',
-  fontFamily: '$dnd',
-})
-
-export const PanelBody = styled(Box, {
-  display: 'block',
-  flex: 1,
-  overflow: 'auto',
-
-  variants: {
-    scrollable: {
-      true: {
+    const bodyStyles: React.CSSProperties = {
+      display: 'block',
+      flex: 1,
+      ...(scrollable && {
         overflowY: 'auto',
         overflowX: 'hidden',
-      },
-    },
+      }),
+      ...paddingStyles[padding],
+      ...style,
+    }
 
-    padding: {
-      none: { padding: 0 },
-      sm: { padding: '$2' },
-      md: { padding: '$4' },
-    },
-  },
+    return (
+      <div
+        ref={ref}
+        style={bodyStyles}
+        className={className}
+        onScroll={onScroll}
+        data-scrollable={scrollable}
+        data-padding={padding}
+      >
+        {children}
+      </div>
+    )
+  }
+)
 
-  defaultVariants: {
-    scrollable: true,
-    padding: 'none',
-  },
-})
+PanelBody.displayName = 'PanelBody'
 
-export const PanelFooter = styled(Box, {
-  borderTop: '1px solid $gray700',
-  marginTop: '$4',
-  paddingTop: '$3',
-  marginX: '-$4', // Negative margin to extend to panel edges
-  paddingX: '$4',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$3',
-  justifyContent: 'flex-end',
-})
+// Panel Footer component
+export type PanelFooterProps = {
+  children: React.ReactNode
+  justify?: 'start' | 'center' | 'end' | 'between'
+  className?: string
+  style?: React.CSSProperties
+}
 
-export const PanelSection = styled(Box, {
-  display: 'block',
-  marginBottom: '$6',
+export const PanelFooter = forwardRef<HTMLDivElement, PanelFooterProps>(
+  ({ children, justify = 'end', className, style }, ref) => {
+    const justifyContentValues = {
+      start: 'flex-start',
+      center: 'center',
+      end: 'flex-end',
+      between: 'space-between',
+    }
 
-  '&:last-child': {
-    marginBottom: 0,
-  },
+    const footerStyles: React.CSSProperties = {
+      borderTop: '1px solid var(--gray700)',
+      marginTop: '16px',
+      paddingTop: '12px',
+      marginLeft: '-16px',
+      marginRight: '-16px',
+      paddingLeft: '16px',
+      paddingRight: '16px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      justifyContent: justifyContentValues[justify],
+      ...style,
+    }
 
-  variants: {
-    spacing: {
+    return (
+      <div
+        ref={ref}
+        style={footerStyles}
+        className={className}
+        data-justify={justify}
+      >
+        {children}
+      </div>
+    )
+  }
+)
+
+PanelFooter.displayName = 'PanelFooter'
+
+// Panel Section component
+export type PanelSectionProps = {
+  children: React.ReactNode
+  spacing?: 'none' | 'sm' | 'md' | 'lg'
+  divider?: boolean
+  className?: string
+  style?: React.CSSProperties
+}
+
+export const PanelSection = forwardRef<HTMLDivElement, PanelSectionProps>(
+  ({ children, spacing = 'md', divider = false, className, style }, ref) => {
+    const spacingStyles = {
       none: { marginBottom: 0 },
-      sm: { marginBottom: '$3' },
-      md: { marginBottom: '$6' },
-      lg: { marginBottom: '$8' },
-    },
+      sm: { marginBottom: '12px' },
+      md: { marginBottom: '24px' },
+      lg: { marginBottom: '32px' },
+    }
 
-    divider: {
-      true: {
-        paddingBottom: '$4',
-        borderBottom: '1px solid $gray800',
-        marginBottom: '$4',
-      },
-    },
-  },
-})
+    const sectionStyles: React.CSSProperties = {
+      display: 'block',
+      ...spacingStyles[spacing],
+      ...(divider && {
+        paddingBottom: '16px',
+        borderBottom: '1px solid var(--gray800)',
+        marginBottom: '16px',
+      }),
+      ...style,
+    }
 
-export const PanelGroup = styled(Box, {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '$4',
+    return (
+      <div
+        ref={ref}
+        style={sectionStyles}
+        className={className}
+        data-spacing={spacing}
+        data-divider={divider}
+      >
+        {children}
+      </div>
+    )
+  }
+)
 
-  variants: {
-    direction: {
-      row: { flexDirection: 'row' },
-      column: { flexDirection: 'column' },
-    },
+PanelSection.displayName = 'PanelSection'
 
-    spacing: {
-      sm: { gap: '$2' },
-      md: { gap: '$4' },
-      lg: { gap: '$6' },
-    },
-  },
+// Panel Group component
+export type PanelGroupProps = {
+  children: React.ReactNode
+  direction?: 'row' | 'column'
+  spacing?: 'sm' | 'md' | 'lg'
+  className?: string
+  style?: React.CSSProperties
+}
 
-  defaultVariants: {
-    direction: 'column',
-    spacing: 'md',
-  },
-})
+export const PanelGroup = forwardRef<HTMLDivElement, PanelGroupProps>(
+  ({ children, direction = 'column', spacing = 'md', className, style }, ref) => {
+    const spacingValues = {
+      sm: '8px',
+      md: '16px',
+      lg: '24px',
+    }
 
-// Card is a simpler variant of Panel
-export const Card = styled(Panel, {
-  variants: {
-    ...Panel.variants,
-    interactive: {
-      true: {
-        cursor: 'pointer',
-        transition: '$base',
-        '&:hover': {
-          backgroundColor: '$gray750',
-          borderColor: '$gray600',
-          transform: 'translateY(-1px)',
-          boxShadow: '$lg',
-        },
-        '&:active': {
-          transform: 'translateY(0)',
-        },
-      },
-    },
+    const groupStyles: React.CSSProperties = {
+      display: 'flex',
+      flexDirection: direction,
+      gap: spacingValues[spacing],
+      ...style,
+    }
 
-    selected: {
-      true: {
-        borderColor: '$primary',
-        backgroundColor: 'rgba($colors$primary, 0.05)',
-        boxShadow: '$dnd',
-      },
-    },
-  },
+    return (
+      <div
+        ref={ref}
+        style={groupStyles}
+        className={className}
+        data-direction={direction}
+        data-spacing={spacing}
+      >
+        {children}
+      </div>
+    )
+  }
+)
 
-  compoundVariants: [
+PanelGroup.displayName = 'PanelGroup'
+
+// Card component (simplified Panel variant)
+export type CardProps = Omit<PanelProps, 'padding' | 'elevation'> & {
+  interactive?: boolean
+  selected?: boolean
+  padding?: 'sm' | 'md' | 'lg'
+  elevation?: 'sm' | 'md' | 'lg'
+}
+
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+  (
     {
-      interactive: true,
-      selected: true,
-      css: {
-        '&:hover': {
-          borderColor: '$primary',
-          backgroundColor: 'rgba($colors$primary, 0.1)',
-        },
-      },
+      children,
+      interactive = false,
+      selected = false,
+      padding = 'sm',
+      elevation = 'sm',
+      variant = 'default',
+      style,
+      onMouseEnter,
+      onMouseLeave,
+      onClick,
+      ...props
     },
-  ],
+    ref
+  ) => {
+    const [isHovered, setIsHovered] = React.useState(false)
 
-  defaultVariants: {
-    padding: 'sm',
-    elevation: 'sm',
-    variant: 'default',
-  },
-})
+    const handleMouseEnter = (event: React.MouseEvent<HTMLDivElement>) => {
+      if (interactive) setIsHovered(true)
+      onMouseEnter?.(event)
+    }
 
-export type PanelProps = ComponentProps<typeof Panel>
-export type PanelHeaderProps = ComponentProps<typeof PanelHeader>
-export type PanelTitleProps = ComponentProps<typeof PanelTitle>
-export type PanelBodyProps = ComponentProps<typeof PanelBody>
-export type PanelFooterProps = ComponentProps<typeof PanelFooter>
-export type PanelSectionProps = ComponentProps<typeof PanelSection>
-export type PanelGroupProps = ComponentProps<typeof PanelGroup>
-export type CardProps = ComponentProps<typeof Card>
+    const handleMouseLeave = (event: React.MouseEvent<HTMLDivElement>) => {
+      if (interactive) setIsHovered(false)
+      onMouseLeave?.(event)
+    }
+
+    const interactiveStyles: React.CSSProperties = interactive
+      ? {
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          ...(isHovered && {
+            backgroundColor: 'var(--gray750)',
+            borderColor: 'var(--gray600)',
+            transform: 'translateY(-1px)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+          }),
+          ...(selected && {
+            borderColor: 'var(--primary)',
+            backgroundColor: 'rgba(139, 69, 19, 0.05)',
+            boxShadow: '0 0 0 1px var(--primary)',
+          }),
+        }
+      : {}
+
+    const cardStyles: React.CSSProperties = {
+      ...interactiveStyles,
+      ...style,
+    }
+
+    return (
+      <Panel
+        ref={ref}
+        padding={padding}
+        elevation={elevation}
+        variant={variant}
+        style={cardStyles}
+        onClick={onClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        data-interactive={interactive}
+        data-selected={selected}
+        {...props}
+      >
+        {children}
+      </Panel>
+    )
+  }
+)
+
+Card.displayName = 'Card'

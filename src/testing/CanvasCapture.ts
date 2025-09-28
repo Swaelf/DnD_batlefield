@@ -1,6 +1,6 @@
-import Konva from 'konva'
-import { BattleMap } from '@/types/map'
-import { Timeline } from '@/types/timeline'
+import type Konva from 'konva'
+import type { BattleMap } from '@/types/map'
+import type { Timeline } from '@/types/timeline'
 
 export interface Screenshot {
   id: string

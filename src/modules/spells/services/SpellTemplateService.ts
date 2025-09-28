@@ -9,20 +9,19 @@ import { nanoid } from 'nanoid'
 import type {
   UnifiedSpell,
   UnifiedSpellTemplate,
-  SpellId,
   SpellTemplateId,
   SpellCategoryId,
   SpellSchoolId,
   SpellSearchCriteria,
   SpellCategory,
   SpellSchool,
-  SpellCustomization,
+  SpellCustomization
+} from '../types'
+import {
   createSpellId,
   createSpellTemplateId,
   createSpellCategoryId,
-  createSpellSchoolId
-} from '../types'
-import {
+  createSpellSchoolId,
   SPELL_TEMPLATES,
   SPELL_SCHOOLS,
   SPELL_CATEGORIES
@@ -45,7 +44,7 @@ export class SpellTemplateService {
    * Initialize built-in D&D 5e spell templates
    */
   private initializeBuiltInTemplates(): void {
-    Object.entries(SPELL_TEMPLATES).forEach(([key, template]) => {
+    Object.entries(SPELL_TEMPLATES).forEach(([_key, template]) => {
       const unifiedTemplate: UnifiedSpellTemplate = {
         ...template,
         id: createSpellTemplateId(template.id),
@@ -277,6 +276,7 @@ export class SpellTemplateService {
       id: createSpellId(nanoid()),
       templateId: template.id,
       name: template.name,
+      description: template.description,
       type: template.effect.type,
       position: { x: 0, y: 0 },
       rotation: 0,

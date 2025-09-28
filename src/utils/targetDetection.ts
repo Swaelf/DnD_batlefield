@@ -1,7 +1,7 @@
 import type { Token } from '@/types'
 import type { Point } from '@/types/geometry'
 import type { UnifiedAction, AreaShape } from '@/types/unifiedAction'
-import { isPointInArea, getTokensInArea } from './areaCalculations'
+import { getTokensInArea } from './areaCalculations'
 
 /**
  * Detects all tokens affected by an action based on its area of effect
@@ -200,7 +200,7 @@ const generateAttackArea = (
  * Generate interaction area
  */
 const generateInteractionArea = (
-  action: UnifiedAction,
+  _action: UnifiedAction,
   source: Point,
   target: Point | null
 ): AreaShape | null => {
@@ -296,7 +296,7 @@ export const groupTokensByDistance = (
  * Calculate optimal target point for area effect
  */
 export const calculateOptimalTargetPoint = (
-  caster: Point,
+  _caster: Point,
   enemies: Token[],
   allies: Token[],
   areaRadius: number

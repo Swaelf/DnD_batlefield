@@ -6,8 +6,7 @@
  */
 
 import React from 'react'
-import { Box, Text } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { Box, Text } from '@/components/primitives'
 
 export interface PerformanceMetricProps {
   readonly label: string
@@ -20,84 +19,7 @@ export interface PerformanceMetricProps {
   readonly maxValue?: number
 }
 
-const MetricContainer = styled(Box, {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '$1',
-  padding: '$2',
-  backgroundColor: '$gray900/60',
-  borderRadius: '$sm',
-  border: '1px solid $gray800',
-  minWidth: '80px'
-})
-
-const MetricHeader = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '$1'
-})
-
-const MetricLabel = styled(Text, {
-  fontSize: '$xs',
-  color: '$gray400',
-  fontWeight: '$medium',
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px'
-})
-
-const MetricValue = styled(Text, {
-  fontSize: '$sm',
-  fontFamily: '$mono',
-  fontWeight: '$bold',
-
-  variants: {
-    status: {
-      good: { color: '$success' },
-      warning: { color: '$warning' },
-      error: { color: '$error' },
-      neutral: { color: '$gray100' }
-    }
-  }
-})
-
-const StatusIndicator = styled(Box, {
-  width: '$2',
-  height: '$2',
-  borderRadius: '50%',
-
-  variants: {
-    status: {
-      good: { backgroundColor: '$success' },
-      warning: { backgroundColor: '$warning' },
-      error: { backgroundColor: '$error' },
-      neutral: { backgroundColor: '$gray600' }
-    }
-  }
-})
-
-const PerformanceBar = styled(Box, {
-  width: '100%',
-  height: '4px',
-  backgroundColor: '$gray800',
-  borderRadius: '$xs',
-  overflow: 'hidden'
-})
-
-const PerformanceBarFill = styled(Box, {
-  height: '100%',
-  borderRadius: '$xs',
-  transition: 'all 0.3s ease',
-
-  variants: {
-    status: {
-      good: { backgroundColor: '$success' },
-      warning: { backgroundColor: '$warning' },
-      error: { backgroundColor: '$error' },
-      neutral: { backgroundColor: '$gray600' }
-    }
-  }
-})
+// Component uses primitive components with style prop for styling
 
 export const PerformanceMetric: React.FC<PerformanceMetricProps> = React.memo(({
   label,
@@ -124,26 +46,102 @@ export const PerformanceMetric: React.FC<PerformanceMetricProps> = React.memo(({
   const status = getStatus()
   const percentage = Math.min((value / maxValue) * 100, 100)
 
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case 'good': return 'var(--success)'
+      case 'warning': return 'var(--warning)'
+      case 'error': return 'var(--error)'
+      default: return 'var(--gray-100)'
+    }
+  }
+
+  const getStatusBgColor = (status: string): string => {
+    switch (status) {
+      case 'good': return 'var(--success)'
+      case 'warning': return 'var(--warning)'
+      case 'error': return 'var(--error)'
+      default: return 'var(--gray-600)'
+    }
+  }
+
   return (
-    <MetricContainer>
-      <MetricHeader>
-        <MetricLabel>{label}</MetricLabel>
-        <StatusIndicator status={status} />
-      </MetricHeader>
+    <Box
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
+        padding: '8px',
+        backgroundColor: 'rgba(17, 24, 39, 0.6)',
+        borderRadius: '4px',
+        border: '1px solid var(--gray-800)',
+        minWidth: '80px'
+      }}
+    >
+      {/* Header */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '4px'
+        }}
+      >
+        <Text
+          style={{
+            fontSize: '12px',
+            color: 'var(--gray-400)',
+            fontWeight: '500',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}
+        >
+          {label}
+        </Text>
+        <Box
+          style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: getStatusBgColor(status)
+          }}
+        />
+      </Box>
 
-      <MetricValue status={status}>
+      {/* Value */}
+      <Text
+        style={{
+          fontSize: '14px',
+          fontFamily: 'monospace',
+          fontWeight: 'bold',
+          color: getStatusColor(status)
+        }}
+      >
         {formatValue(value)} {unit}
-      </MetricValue>
+      </Text>
 
+      {/* Performance Bar */}
       {showBar && (
-        <PerformanceBar>
-          <PerformanceBarFill
-            status={status}
-            css={{ width: `${percentage}%` }}
+        <Box
+          style={{
+            width: '100%',
+            height: '4px',
+            backgroundColor: 'var(--gray-800)',
+            borderRadius: '2px',
+            overflow: 'hidden'
+          }}
+        >
+          <Box
+            style={{
+              height: '100%',
+              borderRadius: '2px',
+              transition: 'all 0.3s ease',
+              backgroundColor: getStatusBgColor(status),
+              width: `${percentage}%`
+            }}
           />
-        </PerformanceBar>
+        </Box>
       )}
-    </MetricContainer>
+    </Box>
   )
 })
 

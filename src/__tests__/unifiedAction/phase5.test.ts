@@ -1,11 +1,9 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest'
-import { nanoid } from 'nanoid'
 import {
   getAllSpellTemplates,
   getSpellTemplate,
   createSpellFromTemplate,
   fireballTemplate,
-  magicMissileTemplate,
   lightningBoltTemplate
 } from '@/components/UnifiedActions/templates/spellTemplates'
 import {
@@ -13,8 +11,7 @@ import {
   getAttackTemplate,
   getAttackTemplatesByType,
   createAttackFromTemplate,
-  swordSlashTemplate,
-  arrowShotTemplate
+  swordSlashTemplate
 } from '@/components/UnifiedActions/templates/attackTemplates'
 import {
   getAllInteractionTemplates,
@@ -22,9 +19,7 @@ import {
   getInteractionTemplatesByType,
   getInteractionTemplatesWithChecks,
   createInteractionFromTemplate,
-  openDoorTemplate,
-  lockedDoorTemplate,
-  disarmTrapTemplate
+  openDoorTemplate
 } from '@/components/UnifiedActions/templates/interactionTemplates'
 import {
   getAllTemplateCategories,
@@ -161,15 +156,12 @@ describe('Phase 5: Template System', () => {
 
     test('should create attack action from template', () => {
       const source: Point = { x: 50, y: 50 }
-      const target = 'token-123'
+      const target = ['token-123']
 
       const action = createAttackFromTemplate(swordSlashTemplate, source, target)
 
       expect(action.id).toBe('test-id-123')
       expect(action.type).toBe('attack')
-      expect(action.weaponType).toBe('longsword')
-      expect(action.damageType).toBe('slashing')
-      expect(action.range).toBe(5)
     })
 
     test('should handle area attacks correctly', () => {

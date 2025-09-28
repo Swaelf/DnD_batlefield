@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
-import { MapStore } from '../types'
-import { MapObject, AttackEventData } from '../types'
+import type { MapStore } from '../types'
+import type { MapObject, SpellMapObject, AttackEventData } from '../types'
 import { useHistoryStore } from './historyStore'
 import { useLayerStore } from './layerStore'
 
@@ -117,7 +117,7 @@ const useMapStore = create<MapStore>()(
       })
     },
 
-    addSpellEffect: (spell) => set((state) => {
+    addSpellEffect: (spell: SpellMapObject) => set((state) => {
       if (state.currentMap) {
         // Add spell/persistent area with round tracking
         // Preserve ALL properties from the original spell object

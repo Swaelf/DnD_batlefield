@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Play, Pause, SkipForward, SkipBack, Clock, Zap, Eye, EyeOff, Move } from 'lucide-react'
 import useRoundStore from '@/store/roundStore'
 import useMapStore from '@/store/mapStore'
-import { EventType } from '@/types/timeline'
+import type { EventType } from '@/types/timeline'
 
 type TimelineProps = {
   onAddEvent?: (type: EventType) => void
@@ -125,7 +125,7 @@ export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) 
                 <input
                   type="number"
                   value={currentRound}
-                  onChange={(e) => goToRound(parseInt(e.target.value) || 1)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => goToRound(parseInt(e.target.value) || 1)}
                   className="w-16 px-2 py-1 bg-dnd-gray-700 text-white rounded text-center"
                   min="1"
                   disabled={isAnimating}
@@ -190,7 +190,7 @@ export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) 
                   max="3"
                   step="0.5"
                   value={animationSpeed}
-                  onChange={(e) => setAnimationSpeed(parseFloat(e.target.value))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAnimationSpeed(parseFloat(e.target.value))}
                   className="w-24"
                 />
                 <span className="text-sm text-gray-300 w-10">{animationSpeed}x</span>

@@ -23,8 +23,8 @@ const RoundCounterComponent: React.FC<RoundCounterProps> = ({
     <>
       {/* Round Counter */}
       <RoundCounterContainer>
-        <Clock size={16} color="$secondary" />
-        <Text size="xl" weight="bold" color="white">Round {currentRound}</Text>
+        <Clock size={16} color="secondary" />
+        <Text size="xl" weight="bold" color="textInverse">Round {currentRound}</Text>
       </RoundCounterContainer>
 
       {/* Navigation Controls */}

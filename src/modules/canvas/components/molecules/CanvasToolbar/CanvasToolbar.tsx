@@ -16,8 +16,7 @@ import {
   Hand,
   ZoomIn
 } from 'lucide-react'
-import { Box, Text, Button } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { Box, Text, Button } from '@/components/primitives'
 import type { ToolType, ToolConfig } from '../../../types'
 
 export interface CanvasToolbarProps {
@@ -30,79 +29,58 @@ export interface CanvasToolbarProps {
   readonly compact?: boolean
 }
 
-const ToolbarContainer = styled(Box, {
-  display: 'flex',
-  gap: '$1',
-  padding: '$2',
-  backgroundColor: '$dndBlack/95',
-  borderRadius: '$md',
-  border: '1px solid $gray800',
-  backdropFilter: 'blur(8px)',
+// Component uses primitive components with style prop for styling
 
-  variants: {
-    orientation: {
-      horizontal: { flexDirection: 'row' },
-      vertical: { flexDirection: 'column' }
-    },
-    compact: {
-      true: { padding: '$1' }
-    }
-  }
+// Helper functions for styling
+const getToolbarContainerStyles = (orientation: 'horizontal' | 'vertical' = 'horizontal', compact = false): React.CSSProperties => ({
+  display: 'flex',
+  gap: '4px',
+  padding: compact ? '4px' : '8px',
+  backgroundColor: 'rgba(26, 26, 26, 0.95)',
+  borderRadius: '6px',
+  border: '1px solid var(--gray-800)',
+  backdropFilter: 'blur(8px)',
+  flexDirection: orientation === 'vertical' ? 'column' as const : 'row' as const
 })
 
-const ToolButton = styled(Button, {
+const getToolButtonStyles = (isActive = false, compact = false): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '$2',
-  padding: '$2',
-  borderRadius: '$sm',
+  gap: '8px',
+  padding: compact ? '4px' : '8px',
+  borderRadius: '4px',
   border: '1px solid transparent',
+  backgroundColor: isActive ? 'rgba(146, 38, 16, 0.2)' : 'transparent',
+  borderColor: isActive ? 'var(--dnd-red)' : 'transparent',
+  color: isActive ? 'var(--dnd-red)' : 'var(--gray-300)',
   transition: 'all 0.2s ease',
-  minWidth: 'auto',
-
-  '&:hover': {
-    backgroundColor: '$gray800/60',
-    borderColor: '$gray700'
-  },
-
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$dndRed/20',
-        borderColor: '$dndRed',
-        color: '$dndRed'
-      }
-    },
-    compact: {
-      true: {
-        padding: '$1',
-        minWidth: '32px',
-        minHeight: '32px'
-      }
-    }
-  }
+  minWidth: compact ? '32px' : 'auto',
+  minHeight: compact ? '32px' : 'auto',
+  cursor: 'pointer'
 })
 
-const ToolLabel = styled(Text, {
-  fontSize: '$xs',
-  fontWeight: '$medium',
-  whiteSpace: 'nowrap'
+// Additional helper styles
+const getToolLabelStyles = (): React.CSSProperties => ({
+  fontSize: '12px',
+  fontWeight: '500',
+  whiteSpace: 'nowrap' as const,
+  color: 'var(--gray-300)'
 })
 
-const ToolIcon = styled(Box, {
+const getToolIconStyles = (): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center'
 })
 
-const ShortcutBadge = styled(Text, {
-  fontSize: '$xs',
-  color: '$gray500',
-  backgroundColor: '$gray800',
-  padding: '$1',
-  borderRadius: '$xs',
-  fontFamily: '$mono',
+const getShortcutBadgeStyles = (): React.CSSProperties => ({
+  fontSize: '12px',
+  color: 'var(--gray-500)',
+  backgroundColor: 'var(--gray-800)',
+  padding: '4px',
+  borderRadius: '2px',
+  fontFamily: 'monospace',
   lineHeight: 1
 })
 
@@ -140,38 +118,50 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = React.memo(({
   }
 
   return (
-    <ToolbarContainer
-      orientation={orientation}
-      compact={compact}
-    >
+    <Box style={getToolbarContainerStyles(orientation, compact)}>
       {availableTools.map(tool => {
         const isActive = tool.type === activeTool
         const shortcut = getShortcut(tool)
 
         return (
-          <ToolButton
+          <Button
             key={tool.id}
-            active={isActive}
-            compact={compact}
             onClick={() => onToolSelect(tool.type)}
             onDoubleClick={() => onToolSettings?.(tool.type)}
             title={`${getToolLabel(tool)}${shortcut ? ` (${shortcut})` : ''}`}
+            style={{
+              ...getToolButtonStyles(isActive, compact),
+              border: 'none',
+              background: 'none'
+            }}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              if (!isActive) {
+                e.currentTarget.style.backgroundColor = 'rgba(55, 65, 81, 0.6)'
+                e.currentTarget.style.borderColor = 'var(--gray-700)'
+              }
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              if (!isActive) {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.borderColor = 'transparent'
+              }
+            }}
           >
-            <ToolIcon>
+            <Box style={getToolIconStyles()}>
               {getToolIcon(tool.type)}
-            </ToolIcon>
+            </Box>
 
             {showLabels && !compact && (
-              <ToolLabel>{getToolLabel(tool)}</ToolLabel>
+              <Text style={getToolLabelStyles()}>{getToolLabel(tool)}</Text>
             )}
 
             {shortcut && !compact && (
-              <ShortcutBadge>{shortcut}</ShortcutBadge>
+              <Text style={getShortcutBadgeStyles()}>{shortcut}</Text>
             )}
-          </ToolButton>
+          </Button>
         )
       })}
-    </ToolbarContainer>
+    </Box>
   )
 })
 

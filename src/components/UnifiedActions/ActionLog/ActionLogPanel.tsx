@@ -1,7 +1,8 @@
 import { memo, useState, useEffect } from 'react'
-import { styled } from '@/styles/theme.config'
 import { useUnifiedActionStore } from '@/store/unifiedActionStore'
 import { Activity, ChevronUp, ChevronDown } from 'lucide-react'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
 import type { ActionHistoryEntry } from '@/types/unifiedAction'
 
 type ActionLogPanelProps = {
@@ -9,171 +10,6 @@ type ActionLogPanelProps = {
   position?: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right'
 }
 
-const PanelContainer = styled('div', {
-  position: 'fixed',
-  width: 280,
-  maxHeight: 200,
-  backgroundColor: '$gray900',
-  border: '1px solid $gray700',
-  borderRadius: '$medium',
-  display: 'flex',
-  flexDirection: 'column',
-  zIndex: 30,
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-  transition: 'all 0.3s ease',
-
-  variants: {
-    position: {
-      'bottom-left': {
-        bottom: '$3',
-        left: '$3'
-      },
-      'bottom-right': {
-        bottom: '$3',
-        right: '$3'
-      },
-      'top-left': {
-        top: '$3',
-        left: '$3'
-      },
-      'top-right': {
-        top: '$3',
-        right: '$3'
-      }
-    },
-    collapsed: {
-      true: {
-        maxHeight: 40
-      }
-    }
-  },
-
-  defaultVariants: {
-    position: 'bottom-left'
-  }
-})
-
-const Header = styled('div', {
-  padding: '$2',
-  borderBottom: '1px solid $gray700',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  cursor: 'pointer',
-  userSelect: 'none',
-
-  '&:hover': {
-    backgroundColor: '$gray850'
-  }
-})
-
-const Title = styled('div', {
-  fontSize: '$small',
-  fontWeight: 500,
-  color: '$text',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1'
-})
-
-const Badge = styled('span', {
-  padding: '2px 6px',
-  backgroundColor: '$primary',
-  borderRadius: '$small',
-  fontSize: '$tiny',
-  color: 'white',
-  marginLeft: '$1'
-})
-
-const LogContent = styled('div', {
-  flex: 1,
-  overflowY: 'auto',
-  padding: '$1',
-  maxHeight: 150
-})
-
-const LogItem = styled('div', {
-  padding: '$1 $2',
-  fontSize: '$tiny',
-  color: '$gray400',
-  borderRadius: '$small',
-  marginBottom: '$1',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$1',
-  transition: 'background-color 0.2s',
-
-  '&:hover': {
-    backgroundColor: '$gray850'
-  },
-
-  '&:last-child': {
-    marginBottom: 0
-  }
-})
-
-const ActionIcon = styled('span', {
-  width: 16,
-  height: 16,
-  borderRadius: '$small',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexShrink: 0,
-
-  variants: {
-    type: {
-      spell: {
-        backgroundColor: '$purple',
-        '&::before': {
-          content: '"✨"',
-          fontSize: 10
-        }
-      },
-      attack: {
-        backgroundColor: '$dndRed',
-        '&::before': {
-          content: '"⚔"',
-          fontSize: 10
-        }
-      },
-      interaction: {
-        backgroundColor: '$secondary',
-        '&::before': {
-          content: '"✋"',
-          fontSize: 10
-        }
-      },
-      move: {
-        backgroundColor: '$gray600',
-        '&::before': {
-          content: '"➜"',
-          fontSize: 10
-        }
-      }
-    }
-  }
-})
-
-const ActionText = styled('span', {
-  flex: 1,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap'
-})
-
-const TimeStamp = styled('span', {
-  fontSize: '$tiny',
-  color: '$gray600',
-  flexShrink: 0
-})
-
-const EmptyState = styled('div', {
-  padding: '$3',
-  textAlign: 'center',
-  color: '$gray600',
-  fontSize: '$tiny'
-})
 
 const ActionLogPanelComponent = ({
   maxItems = 5,
@@ -223,35 +59,178 @@ const ActionLogPanelComponent = ({
     }
   }
 
-  return (
-    <PanelContainer position={position} collapsed={isCollapsed}>
-      <Header onClick={() => setIsCollapsed(!isCollapsed)}>
-        <Title>
-          <Activity size={14} />
-          Action Log
-          {recentActions.length > 0 && (
-            <Badge>{recentActions.length}</Badge>
-          )}
-        </Title>
-        {isCollapsed ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-      </Header>
+  const getPositionStyles = () => {
+    switch (position) {
+      case 'bottom-right':
+        return { bottom: '12px', right: '12px' }
+      case 'top-left':
+        return { top: '12px', left: '12px' }
+      case 'top-right':
+        return { top: '12px', right: '12px' }
+      default: // bottom-left
+        return { bottom: '12px', left: '12px' }
+    }
+  }
 
+  const getActionIcon = (type: string) => {
+    const iconStyle = {
+      width: '16px',
+      height: '16px',
+      borderRadius: '4px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+      fontSize: '10px'
+    }
+
+    switch (type) {
+      case 'spell':
+        return <Box style={{ ...iconStyle, backgroundColor: 'var(--colors-purple)' }}>✨</Box>
+      case 'attack':
+        return <Box style={{ ...iconStyle, backgroundColor: 'var(--colors-dndRed)' }}>⚔</Box>
+      case 'interaction':
+        return <Box style={{ ...iconStyle, backgroundColor: 'var(--colors-secondary)' }}>✋</Box>
+      case 'move':
+        return <Box style={{ ...iconStyle, backgroundColor: 'var(--colors-gray600)' }}>➜</Box>
+      default:
+        return <Box style={{ ...iconStyle, backgroundColor: 'var(--colors-gray600)' }}>•</Box>
+    }
+  }
+
+  return (
+    <Box
+      style={{
+        position: 'fixed',
+        ...getPositionStyles(),
+        width: '280px',
+        maxHeight: isCollapsed ? '40px' : '200px',
+        backgroundColor: 'var(--colors-gray900)',
+        border: '1px solid var(--colors-gray700)',
+        borderRadius: '8px',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 30,
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+        transition: 'all 0.3s ease'
+      }}
+    >
+      {/* Header */}
+      <Box
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        style={{
+          padding: '8px',
+          borderBottom: '1px solid var(--colors-gray700)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: 'pointer',
+          userSelect: 'none'
+        }}
+      >
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
+          <Activity size={14} />
+          <Text
+            variant="body"
+            size="sm"
+            style={{
+              fontWeight: '500',
+              color: 'var(--colors-text)'
+            }}
+          >
+            Action Log
+          </Text>
+          {recentActions.length > 0 && (
+            <Text
+              variant="body"
+              size="xs"
+              style={{
+                padding: '2px 6px',
+                backgroundColor: 'var(--colors-primary)',
+                borderRadius: '4px',
+                color: 'white',
+                marginLeft: '4px'
+              }}
+            >
+              {recentActions.length}
+            </Text>
+          )}
+        </Box>
+        {isCollapsed ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      </Box>
+
+      {/* Content */}
       {!isCollapsed && (
-        <LogContent>
+        <Box
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '4px',
+            maxHeight: '150px'
+          }}
+        >
           {recentActions.length === 0 ? (
-            <EmptyState>No recent actions</EmptyState>
+            <Box
+              style={{
+                padding: '12px',
+                textAlign: 'center',
+                color: 'var(--colors-gray600)',
+                fontSize: '12px'
+              }}
+            >
+              <Text variant="body" size="xs">No recent actions</Text>
+            </Box>
           ) : (
             recentActions.map(entry => (
-              <LogItem key={entry.id}>
-                <ActionIcon type={entry.type} />
-                <ActionText>{getActionLabel(entry)}</ActionText>
-                <TimeStamp>{formatTime(entry.timestamp)}</TimeStamp>
-              </LogItem>
+              <Box
+                key={entry.id}
+                style={{
+                  padding: '4px 8px',
+                  fontSize: '12px',
+                  color: 'var(--colors-gray400)',
+                  borderRadius: '4px',
+                  marginBottom: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                {getActionIcon(entry.type)}
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{
+                    flex: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {getActionLabel(entry)}
+                </Text>
+                <Text
+                  variant="body"
+                  size="xs"
+                  style={{
+                    color: 'var(--colors-gray600)',
+                    flexShrink: 0
+                  }}
+                >
+                  {formatTime(entry.timestamp)}
+                </Text>
+              </Box>
             ))
           )}
-        </LogContent>
+        </Box>
       )}
-    </PanelContainer>
+    </Box>
   )
 }
 

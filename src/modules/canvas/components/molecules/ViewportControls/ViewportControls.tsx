@@ -6,12 +6,12 @@
  */
 
 import React from 'react'
-import { RotateCcw, Square, MousePointer } from 'lucide-react'
-import { Box, Button } from '@/components/ui'
-import { styled } from '@/styles/theme.config'
+import { RotateCcw, Square } from 'lucide-react'
+import { Box, Button } from '@/components/primitives'
 import { ZoomControl, CoordinateDisplay } from '../../atoms'
-import type { Point, Rectangle } from '@/types/geometry'
-import type { ViewportState, CoordinateSpace } from '../../../types'
+import type { Point } from '@/types/geometry'
+import type { ViewportState } from '../../../types/viewport'
+import type { CoordinateSpace } from '../../../types/canvas'
 
 export interface ViewportControlsProps {
   readonly viewportState: ViewportState
@@ -30,53 +30,55 @@ export interface ViewportControlsProps {
   readonly showFitControls?: boolean
 }
 
-const ControlsContainer = styled(Box, {
+// Helper functions for styling
+const getControlsContainerStyles = (): React.CSSProperties => ({
   display: 'flex',
-  flexDirection: 'column',
-  gap: '$2',
-  padding: '$3',
-  backgroundColor: '$dndBlack/90',
-  borderRadius: '$md',
-  border: '1px solid $gray800',
+  flexDirection: 'column' as const,
+  gap: '8px',
+  padding: '12px',
+  backgroundColor: 'rgba(26, 26, 26, 0.9)',
+  borderRadius: '6px',
+  border: '1px solid var(--gray-800)',
   backdropFilter: 'blur(8px)'
 })
 
-const ControlRow = styled(Box, {
+const getControlRowStyles = (): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '$2'
+  gap: '8px'
 })
 
-const ViewportButton = styled(Button, {
-  fontSize: '$xs',
-  padding: '$2',
-  minWidth: 'auto'
-})
-
-const CoordinateSection = styled(Box, {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '$2'
-})
-
-const SpaceToggle = styled(Box, {
-  display: 'flex',
-  gap: '$1'
-})
-
-const SpaceButton = styled(Button, {
-  fontSize: '$xs',
-  padding: '$1 $2',
+const getViewportButtonStyles = (): React.CSSProperties => ({
+  fontSize: '12px',
+  padding: '8px',
   minWidth: 'auto',
+  backgroundColor: 'transparent',
+  border: '1px solid var(--gray-600)',
+  color: 'var(--gray-300)',
+  borderRadius: '4px',
+  cursor: 'pointer'
+})
 
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$dndRed',
-        color: '$white'
-      }
-    }
-  }
+const getCoordinateSectionStyles = (): React.CSSProperties => ({
+  display: 'flex',
+  flexDirection: 'column' as const,
+  gap: '8px'
+})
+
+const getSpaceToggleStyles = (): React.CSSProperties => ({
+  display: 'flex',
+  gap: '4px'
+})
+
+const getSpaceButtonStyles = (isActive = false): React.CSSProperties => ({
+  fontSize: '12px',
+  padding: '4px 8px',
+  minWidth: 'auto',
+  backgroundColor: isActive ? 'var(--secondary)' : 'transparent',
+  color: isActive ? 'var(--gray-900)' : 'var(--gray-400)',
+  border: '1px solid var(--gray-600)',
+  borderRadius: '4px',
+  cursor: 'pointer'
 })
 
 export const ViewportControls: React.FC<ViewportControlsProps> = React.memo(({
@@ -98,9 +100,9 @@ export const ViewportControls: React.FC<ViewportControlsProps> = React.memo(({
   const coordinateSpaces: CoordinateSpace[] = ['screen', 'stage', 'world']
 
   return (
-    <ControlsContainer>
+    <Box style={getControlsContainerStyles()}>
       {/* Zoom controls */}
-      <ControlRow>
+      <Box style={getControlRowStyles()}>
         <ZoomControl
           zoom={viewportState.zoom}
           minZoom={minZoom}
@@ -111,49 +113,45 @@ export const ViewportControls: React.FC<ViewportControlsProps> = React.memo(({
           showPercentage={true}
           showButtons={true}
         />
-      </ControlRow>
+      </Box>
 
       {/* Viewport controls */}
       {showFitControls && (
-        <ControlRow>
-          <ViewportButton
-            variant="ghost"
-            size="sm"
+        <Box style={getControlRowStyles()}>
+          <Button
             onClick={onFitToBounds}
             title="Fit to content bounds"
+            style={getViewportButtonStyles()}
           >
             <Square size={14} />
             Fit
-          </ViewportButton>
+          </Button>
 
-          <ViewportButton
-            variant="ghost"
-            size="sm"
+          <Button
             onClick={onResetView}
             title="Reset viewport to default"
+            style={getViewportButtonStyles()}
           >
             <RotateCcw size={14} />
             Reset
-          </ViewportButton>
-        </ControlRow>
+          </Button>
+        </Box>
       )}
 
       {/* Coordinate display */}
       {showCoordinates && (
-        <CoordinateSection>
-          <SpaceToggle>
+        <Box style={getCoordinateSectionStyles()}>
+          <Box style={getSpaceToggleStyles()}>
             {coordinateSpaces.map(space => (
-              <SpaceButton
+              <Button
                 key={space}
-                variant="ghost"
-                size="xs"
-                active={coordinateSpace === space}
                 onClick={() => onCoordinateSpaceChange(space)}
+                style={getSpaceButtonStyles(coordinateSpace === space)}
               >
                 {space.toUpperCase()}
-              </SpaceButton>
+              </Button>
             ))}
-          </SpaceToggle>
+          </Box>
 
           <CoordinateDisplay
             position={mousePosition}
@@ -162,19 +160,19 @@ export const ViewportControls: React.FC<ViewportControlsProps> = React.memo(({
             showGrid={!!gridSize}
             precision={coordinateSpace === 'world' ? 1 : 0}
           />
-        </CoordinateSection>
+        </Box>
       )}
 
       {/* Viewport info */}
-      <ControlRow>
+      <Box style={getControlRowStyles()}>
         <CoordinateDisplay
-          position={viewportState.pan}
+          position={viewportState.position || { x: 0, y: 0 }}
           space="stage"
           label="PAN"
           precision={0}
         />
-      </ControlRow>
-    </ControlsContainer>
+      </Box>
+    </Box>
   )
 })
 

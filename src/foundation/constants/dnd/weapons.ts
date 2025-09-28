@@ -3,7 +3,7 @@
  * These define weapon characteristics for combat animations
  */
 
-import type { DamageType, WeaponProperty, Color } from '../../types'
+import type { DamageType, Color } from '../../types'
 
 export type WeaponCategory = 'simple' | 'martial'
 export type WeaponType = 'melee' | 'ranged'

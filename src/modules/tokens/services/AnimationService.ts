@@ -16,7 +16,6 @@ import type {
   HealAnimation,
   AnimationConfig,
   AnimationMetrics,
-  PathfindingOptions,
   CreateAnimationOptions,
   BatchAnimation,
   EasingFunction
@@ -452,11 +451,6 @@ export class AnimationService {
   private completeAnimation(handle: AnimationHandle): void {
     const animation = this.activeAnimations.get(handle)
     if (!animation) return
-
-    const updatedAnimation: TokenAnimation = {
-      ...animation,
-      status: 'completed'
-    }
 
     // Call onComplete callback
     if (animation.onComplete) {

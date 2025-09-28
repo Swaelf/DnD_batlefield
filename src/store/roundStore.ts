@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
-import { RoundStore } from '../types'
-import { RoundEvent } from '../types'
+import type { RoundStore } from '../types'
+import type { RoundEvent } from '../types'
 import useMapStore from './mapStore'
 
 const useRoundStore = create<RoundStore>()(
@@ -192,7 +192,7 @@ const useRoundStore = create<RoundStore>()(
 
         switch (event.type) {
           case 'spell':
-            // Create proper MapObject for spell
+            // Create proper SpellMapObject for spell
             const spellData = event.data as any
             const spellObject = {
               id: `spell-${Date.now()}-${Math.random()}`,
@@ -200,6 +200,9 @@ const useRoundStore = create<RoundStore>()(
               position: spellData.fromPosition || { x: 0, y: 0 },
               rotation: 0,
               layer: 10,
+              isSpellEffect: true,
+              roundCreated: get().currentRound,
+              spellDuration: spellData.duration || 1,
               spellData: spellData
             }
             mapStore.addSpellEffect(spellObject)
@@ -272,7 +275,7 @@ const useRoundStore = create<RoundStore>()(
       })
     },
 
-    previewEvent: (event) => {
+    previewEvent: (_event) => {
       // This will trigger a preview animation
       // Implementation will be in the Canvas component
       // Preview event implementation will be in the Canvas component

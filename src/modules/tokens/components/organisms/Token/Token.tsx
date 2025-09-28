@@ -8,10 +8,9 @@
 
 import React from 'react'
 import { Group } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 import { TokenVisuals, TokenOverlay } from '../../molecules'
 import type { Token as TokenType } from '../../../types'
-import type { Point } from '@/types/geometry'
 
 export interface TokenProps {
   readonly token: TokenType
@@ -78,7 +77,7 @@ export const Token: React.FC<TokenProps> = React.memo(({
   }, [onHover])
 
   // Handle drag start
-  const handleDragStart = React.useCallback((e: Konva.KonvaEventObject<DragEvent>) => {
+  const handleDragStart = React.useCallback(() => {
     setIsDragging(true)
     onDragStart?.()
   }, [onDragStart])

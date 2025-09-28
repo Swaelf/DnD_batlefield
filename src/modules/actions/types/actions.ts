@@ -3,13 +3,51 @@
  * Types for the unified action system and templates
  */
 
-import type { BrandedString, Point } from '@/foundation/types'
+// Import basic types from unifiedAction
+import type {
+  UnifiedAction,
+  ActionType,
+  ActionCategory
+} from '@/types/unifiedAction'
 
-// Re-export the action types from timeline for consistency
+// Import timeline action types
+import type {
+  ActionData,
+  AttackActionData,
+  SpellActionData,
+  MovementActionData,
+  InteractionActionData,
+  EnvironmentalActionData,
+  SequenceActionData,
+  UtilityActionData,
+  WeaponTemplate,
+  DamageTemplate,
+  AreaTemplate,
+  ActionEffect,
+  SpellSchool,
+  CastingTime,
+  SpellDuration,
+  SpellTargetTemplate,
+  SpellEffectTemplate,
+  MovementType,
+  InteractionTemplate,
+  EnvironmentalTemplate,
+  SequenceTemplate,
+  UtilityTemplate,
+  ExecutionRule,
+  ActionParameter,
+  ValidationRule,
+  WeaponProperty,
+  ActionToEventConversionResult,
+  EventToActionConversionResult
+} from '@/modules/timeline/types'
+
+// Create local types that actions module needs
+export type ActionId = string
+export type ActionTemplateId = string
+
 export type {
   UnifiedAction,
-  ActionId,
-  ActionTemplateId,
   ActionType,
   ActionCategory,
   ActionData,
@@ -40,7 +78,7 @@ export type {
   WeaponProperty,
   ActionToEventConversionResult,
   EventToActionConversionResult
-} from '@/modules/timeline/types'
+}
 
 /**
  * Action selection and filtering

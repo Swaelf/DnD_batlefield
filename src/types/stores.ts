@@ -1,8 +1,8 @@
-import { BattleMap, MapObject, Position, StaticObjectTemplate } from './map'
-import { Timeline, RoundEvent, EventType, EventData, AttackEventData } from './timeline'
-import { ToolType, DrawingState } from './tools'
-import { TokenTemplate } from './token'
-import { SpellEffectTemplate } from './spells'
+import type { BattleMap, MapObject, SpellMapObject, Position, StaticObjectTemplate } from './map'
+import type { Timeline, RoundEvent, EventType, EventData, AttackEventData } from './timeline'
+import type { ToolType, DrawingState } from './tools'
+import type { TokenTemplate } from './token'
+import type { SpellEffectTemplate } from './spells'
 
 // Layer Store Types
 export type LayerDefinition = {
@@ -167,7 +167,7 @@ export type MapStore = {
   createNewMap: (name: string) => void
   loadMap: (map: BattleMap) => void
   addObject: (object: MapObject) => void
-  addSpellEffect: (spell: MapObject & { roundCreated: number; spellDuration: number }) => void
+  addSpellEffect: (spell: SpellMapObject) => void
   addAttackEffect: (attack: AttackEventData) => void
   selectObject: (id: string) => void
   selectMultiple: (ids: string[]) => void

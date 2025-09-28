@@ -213,8 +213,7 @@ export class TimelineService {
       return timeline // Already executed
     }
 
-    // Sort events by execution order
-    const sortedEvents = [...round.events].sort((a, b) => a.order - b.order)
+    // Events are already sorted by execution order in the round
 
     // Mark round as executed
     const updatedRound: Round = {

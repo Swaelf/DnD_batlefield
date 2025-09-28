@@ -53,7 +53,7 @@ const AppContainer = styled(Box, {
   backgroundColor: '$background',
   color: '$gray100',
   overflow: 'hidden',
-  display: 'flex',
+  display:'flex',
   flexDirection: 'column',
 })
 
@@ -61,14 +61,14 @@ const AppHeader = styled(Box, {
   height: '$toolButtonSize',
   backgroundColor: '$dndBlack',
   borderBottom: '1px solid $gray800',
-  display: 'flex',
-  alignItems: 'center',
+  display:'flex',
+ alignItems:'center',
   justifyContent: 'space-between',
-  paddingX: '$4',
+  paddingX: "4",
 })
 
 const AppTitle = styled(Text, {
-  fontSize: '$lg',
+  fontSize:'$lg',
   fontWeight: '$semibold',
   color: '$secondary',
   fontFamily: '$dnd',
@@ -87,11 +87,11 @@ const CanvasArea = styled(Box, {
 })
 
 const AutoSaveIndicator = styled(Box, {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2',
-  fontSize: '$xs',
-  color: '$gray500',
+  display:'flex',
+  alignItems:'center',
+  gap: "2",
+  fontSize:'$xs',
+  color:'$gray500',
 
   '&[data-saving="true"]': {
     '& svg': {
@@ -100,7 +100,7 @@ const AutoSaveIndicator = styled(Box, {
   },
 
   '&[data-saved="true"]': {
-    color: '$success',
+    color:'$success',
   },
 })
 
@@ -127,7 +127,7 @@ function App() {
 
   // Performance and accessibility
   const { score: performanceScore, warnings } = usePerformanceMonitor()
-  const { preferences, announceMessage } = useAccessibility()
+  const { preferences } = useAccessibility()
   useKeyboardShortcuts()
 
   // Add keyboard shortcuts for help and testing dialogs
@@ -162,13 +162,13 @@ function App() {
     if (!currentMap) {
       createNewMap('Untitled Map')
     }
-  }, [currentMap]) // Removed createNewMap as zustand actions are stable
+  }, [currentMap, createNewMap])
 
   return (
     <AppContainer>
       {/* Header */}
       <AppHeader>
-        <Box css={{ display: 'flex', alignItems: 'center', gap: '$4' }}>
+        <Box display="flex" alignItems="center" gap={4}>
           <AppTitle>D&D Map Maker</AppTitle>
           {currentMap && (
             <Text size="sm" color="gray400">
@@ -178,20 +178,18 @@ function App() {
 
           {/* Collaboration Status */}
           {isCollaborating && (
-            <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+            <Box display="flex" alignItems="center" gap={2}>
               <Box
-                css={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  backgroundColor: connectionStatus === 'connected' ? '$success' : '$warning'
-                }}
+                  width={8}
+                  height={8}
+                  borderRadius="lg"
+                  backgroundColor={connectionStatus === 'connected' ? 'success' : 'warning'}
               />
-              <Text css={{ fontSize: '$sm', color: '$success' }}>
+              <Text size='sm' color='success' >
                 {connectedUsers.size} user{connectedUsers.size !== 1 ? 's' : ''} online
               </Text>
               {isHost && (
-                <Text css={{ fontSize: '$xs', color: '$secondary' }}>
+                <Text size='xs' color='secondary' >
                   (Host)
                 </Text>
               )}
@@ -199,7 +197,7 @@ function App() {
           )}
         </Box>
 
-        <Box css={{ display: 'flex', alignItems: 'center', gap: '$4' }}>
+        <Box display="flex" alignItems="center" gap={4}>
           {/* Auto-save indicator */}
           <AutoSaveIndicator
             data-saving={isSaving}
@@ -218,36 +216,35 @@ function App() {
           {isCollaborating && (
             <Button
               onClick={() => setShowUserManagement(true)}
-              variant="ghost"
+              variant="ghost" 
               size="sm"
               title="Manage Users"
             >
               <Users size={16} />
-              <Text css={{ fontSize: '$sm' }}>{connectedUsers.size}</Text>
+              <Text size='sm' >{connectedUsers.size}</Text>
             </Button>
           )}
 
           {!isCollaborating && (
             <Button
               onClick={() => setShowSessionCreator(true)}
-              variant="ghost"
-              size="sm"
+              variant="ghost" size="sm"
               title="Start Collaboration"
             >
               <UserPlus size={16} />
-              <Text css={{ fontSize: '$sm' }}>Collaborate</Text>
+              <Text size='sm' >Collaborate</Text>
             </Button>
           )}
 
           {/* Performance Button */}
           <Button
             onClick={() => setShowPerformance(true)}
-            variant="ghost"
+            variant="ghost" 
             size="icon"
             title="Performance Dashboard (Ctrl+Shift+P)"
-            css={{
-              color: performanceScore < 70 ? '$error' :
-                    warnings.length > 0 ? '$warning' : '$gray400'
+            style={{
+              color: performanceScore < 70 ? 'var(--colors-error)' :
+                     warnings.length > 0 ? 'var(--colors-warning)' : 'var(--colors-gray400)'
             }}
           >
             <Activity size={16} />
@@ -256,10 +253,12 @@ function App() {
           {/* Accessibility Button */}
           <Button
             onClick={() => setShowAccessibility(true)}
-            variant="ghost"
+            variant="ghost" 
             size="icon"
             title="Accessibility Settings (Alt+A)"
-            css={{ color: preferences.screenReaderMode ? '$primary' : '$gray400' }}
+            style={{
+              color: preferences.screenReaderMode ? 'var(--colors-primary)' : 'var(--colors-gray400)'
+            }}
           >
             <Accessibility size={16} />
           </Button>
@@ -270,7 +269,9 @@ function App() {
             variant="ghost"
             size="icon"
             title="Visual Testing (Ctrl+Shift+T)"
-            css={{ color: showTesting ? '$primary' : '$gray400' }}
+            style={{
+              color: showTesting ? 'var(--colors-primary)' : 'var(--colors-gray400)'
+            }}
           >
             <Bug size={16} />
           </Button>
@@ -278,8 +279,7 @@ function App() {
           {/* Help Button */}
           <Button
             onClick={() => setShowHelp(true)}
-            variant="ghost"
-            size="icon"
+            {...({ variant: "ghost", size: "icon" } as any)}
             title="Keyboard Shortcuts (?)"
           >
             <HelpCircle size={16} />
@@ -315,7 +315,7 @@ function App() {
           </FeatureErrorBoundary>
 
           {/* Combat Tracker */}
-          <Suspense fallback={<Box css={{ position: 'absolute', bottom: 0, left: 0 }} />}>
+          <Suspense fallback={<Box position='absolute' bottom={0} left={0} />}>
             <CombatTracker />
           </Suspense>
         </CanvasArea>
@@ -327,7 +327,7 @@ function App() {
         ) : currentTool === 'staticObject' ? (
           <StaticObjectLibrary />
         ) : currentTool === 'spellEffect' ? (
-          <Suspense fallback={<Box css={{ width: 320, backgroundColor: '$dndBlack' }} />}>
+          <Suspense fallback={<Box width={64} backgroundColor="dndBlack"/>}>
             <SpellEffectsPanel />
           </Suspense>
         ) : currentTool === 'layers' ? (

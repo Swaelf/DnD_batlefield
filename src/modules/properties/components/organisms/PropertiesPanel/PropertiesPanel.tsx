@@ -1,14 +1,13 @@
 /**
  * PropertiesPanel Organism Component
- *
- * Complete properties editing interface replacing the existing Properties Panel.
- * Maintains API compatibility while using atomic design patterns.
- * Follows organism design patterns with 100-150 line constraint.
+ * Complete properties editing interface replacing the existing Properties Panel
  */
 
 import React from 'react'
 import { Settings, X, RotateCcw, Save } from 'lucide-react'
-import { styled } from '@/styles/theme.config'
+import { Box } from '@/components/primitives/BoxVE'
+import { Text } from '@/components/primitives/TextVE'
+import { Button } from '@/components/primitives/ButtonVE'
 import { usePropertyEditor, usePropertyGroups } from '../../../hooks'
 import { PropertyGroup, PropertyValidation } from '../../molecules'
 import type { PropertyField } from '../../../types'
@@ -19,132 +18,6 @@ interface PropertiesPanelProps {
   className?: string
 }
 
-const PanelContainer = styled('div', {
-  width: '320px',
-  height: '100%',
-  background: 'white',
-  borderLeft: '1px solid $gray300',
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-
-  variants: {
-    open: {
-      true: { transform: 'translateX(0)' },
-      false: { transform: 'translateX(100%)' }
-    }
-  }
-})
-
-const PanelHeader = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '$3',
-  borderBottom: '1px solid $gray300',
-  background: '$gray50'
-})
-
-const PanelTitle = styled('h3', {
-  margin: 0,
-  fontSize: '$md',
-  fontWeight: 600,
-  color: '$gray900'
-})
-
-const PanelActions = styled('div', {
-  display: 'flex',
-  gap: '$1'
-})
-
-const ActionButton = styled('button', {
-  padding: '$1',
-  background: 'none',
-  border: 'none',
-  borderRadius: '$1',
-  cursor: 'pointer',
-  color: '$gray600',
-  display: 'flex',
-  alignItems: 'center',
-
-  '&:hover': {
-    background: '$gray200',
-    color: '$gray800'
-  }
-})
-
-const PanelContent = styled('div', {
-  flex: 1,
-  overflow: 'auto',
-  padding: '$3'
-})
-
-const NoSelectionMessage = styled('div', {
-  padding: '$4',
-  textAlign: 'center',
-  color: '$gray600',
-  fontSize: '$sm'
-})
-
-const MultiSelectionInfo = styled('div', {
-  padding: '$2',
-  background: '$blue50',
-  border: '1px solid $blue200',
-  borderRadius: '$2',
-  marginBottom: '$3',
-  fontSize: '$sm',
-  color: '$blue800'
-})
-
-const ObjectTypeHeader = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '$2',
-  padding: '$2',
-  background: '$dndRed',
-  color: 'white',
-  borderRadius: '$2',
-  marginBottom: '$3',
-  fontSize: '$sm',
-  fontWeight: 600
-})
-
-const PanelFooter = styled('div', {
-  padding: '$3',
-  borderTop: '1px solid $gray300',
-  background: '$gray50',
-  display: 'flex',
-  gap: '$2'
-})
-
-const FooterButton = styled('button', {
-  flex: 1,
-  padding: '$2',
-  borderRadius: '$2',
-  border: 'none',
-  cursor: 'pointer',
-  fontSize: '$sm',
-  fontWeight: 500,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '$1',
-
-  variants: {
-    variant: {
-      primary: {
-        background: '$dndRed',
-        color: 'white',
-        '&:hover': { background: '$red700' }
-      },
-      secondary: {
-        background: '$gray200',
-        color: '$gray800',
-        '&:hover': { background: '$gray300' }
-      }
-    }
-  }
-})
 
 export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   isOpen = true,
@@ -184,46 +57,151 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   if (!isOpen) return null
 
   return (
-    <PanelContainer open={isOpen} className={className}>
-      <PanelHeader>
-        <PanelTitle>Properties</PanelTitle>
-        <PanelActions>
-          <ActionButton onClick={() => updateConfig({ showHelpText: !ui.isPanelCollapsed('help') })}>
+    <Box
+      className={className}
+      style={{
+        width: '320px',
+        height: '100%',
+        backgroundColor: 'white',
+        borderLeft: '1px solid var(--colors-gray300)',
+        display: isOpen ? 'flex' : 'none',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        transform: isOpen ? 'translateX(0)' : 'translateX(100%)'
+      }}
+    >
+      {/* Panel Header */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px',
+          borderBottom: '1px solid var(--colors-gray300)',
+          backgroundColor: 'var(--colors-gray50)'
+        }}
+      >
+        <Text
+          variant="heading"
+          size="md"
+          style={{
+            margin: 0,
+            fontWeight: '600',
+            color: 'var(--colors-gray900)'
+          }}
+        >
+          Properties
+        </Text>
+        <Box style={{ display: 'flex', gap: '4px' }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => updateConfig({ showHelpText: !ui.isPanelCollapsed('help') })}
+            style={{
+              padding: '4px',
+              backgroundColor: 'none',
+              color: 'var(--colors-gray600)'
+            }}
+          >
             <Settings size={16} />
-          </ActionButton>
+          </Button>
           {onClose && (
-            <ActionButton onClick={handleClose}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClose}
+              style={{
+                padding: '4px',
+                backgroundColor: 'none',
+                color: 'var(--colors-gray600)'
+              }}
+            >
               <X size={16} />
-            </ActionButton>
+            </Button>
           )}
-        </PanelActions>
-      </PanelHeader>
+        </Box>
+      </Box>
 
-      <PanelContent>
+      {/* Panel Content */}
+      <Box
+        style={{
+          flex: 1,
+          overflow: 'auto',
+          padding: '12px'
+        }}
+      >
         {!selectionState.hasSelection ? (
-          <NoSelectionMessage>
-            Select an object to edit its properties
-          </NoSelectionMessage>
+          <Box
+            style={{
+              padding: '16px',
+              textAlign: 'center',
+              color: 'var(--colors-gray600)',
+              fontSize: '14px'
+            }}
+          >
+            <Text variant="body" size="sm" style={{ color: 'var(--colors-gray600)' }}>
+              Select an object to edit its properties
+            </Text>
+          </Box>
         ) : (
           <>
+            {/* Multi-Selection Info */}
             {selectionState.isMultiSelection && (
-              <MultiSelectionInfo>
-                Editing {selectionState.selectedCount} objects.
-                Common properties will affect all selected objects.
-              </MultiSelectionInfo>
+              <Box
+                style={{
+                  padding: '8px',
+                  backgroundColor: 'var(--colors-blue50)',
+                  border: '1px solid var(--colors-blue200)',
+                  borderRadius: '8px',
+                  marginBottom: '12px',
+                  fontSize: '14px',
+                  color: 'var(--colors-blue800)'
+                }}
+              >
+                <Text variant="body" size="sm" style={{ color: 'var(--colors-blue800)' }}>
+                  Editing {selectionState.selectedCount} objects.
+                  Common properties will affect all selected objects.
+                </Text>
+              </Box>
             )}
 
+            {/* Object Properties */}
             {primaryObjectProperties && (
               <>
-                <ObjectTypeHeader>
-                  {primaryObjectProperties.objectType.toUpperCase()} PROPERTIES
-                </ObjectTypeHeader>
+                {/* Object Type Header */}
+                <Box
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px',
+                    backgroundColor: 'var(--colors-dndRed)',
+                    color: 'white',
+                    borderRadius: '8px',
+                    marginBottom: '12px',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}
+                >
+                  <Text
+                    variant="body"
+                    size="sm"
+                    style={{
+                      color: 'white',
+                      fontWeight: '600'
+                    }}
+                  >
+                    {primaryObjectProperties.objectType.toUpperCase()} PROPERTIES
+                  </Text>
+                </Box>
 
+                {/* Property Validation */}
                 <PropertyValidation
                   objectId={primaryObjectProperties.objectId}
                   showDetailedErrors={false}
                 />
 
+                {/* Property Groups */}
                 {groups.groups
                   .sort((a, b) => a.order - b.order)
                   .map(group => (
@@ -240,28 +218,57 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             )}
           </>
         )}
-      </PanelContent>
+      </Box>
 
+      {/* Panel Footer */}
       {selectionState.hasSelection && (
-        <PanelFooter>
-          <FooterButton
-            variant="secondary"
+        <Box
+          style={{
+            padding: '12px',
+            borderTop: '1px solid var(--colors-gray300)',
+            backgroundColor: 'var(--colors-gray50)',
+            display: 'flex',
+            gap: '8px'
+          }}
+        >
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleReset}
             disabled={!editingState.isDirty}
+            style={{
+              flex: 1,
+              backgroundColor: 'var(--colors-gray200)',
+              color: 'var(--colors-gray800)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px'
+            }}
           >
             <RotateCcw size={14} />
             Reset
-          </FooterButton>
-          <FooterButton
+          </Button>
+          <Button
             variant="primary"
+            size="sm"
             onClick={handleSave}
             disabled={!editingState.isDirty}
+            style={{
+              flex: 1,
+              backgroundColor: 'var(--colors-dndRed)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px'
+            }}
           >
             <Save size={14} />
             Save
-          </FooterButton>
-        </PanelFooter>
+          </Button>
+        </Box>
       )}
-    </PanelContainer>
+    </Box>
   )
 }

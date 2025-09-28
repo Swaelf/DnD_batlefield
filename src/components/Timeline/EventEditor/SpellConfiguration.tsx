@@ -1,7 +1,9 @@
 import React, { memo } from 'react'
 import { Wand2 } from 'lucide-react'
-import { SpellEventData } from '@/types/timeline'
-import { Box, Button, Text } from '@/components/ui'
+import type { SpellEventData } from '@/types/timeline'
+import { Box, Text, Button } from '@/components/primitives'
+
+// Component uses primitive components with style prop for styling
 
 type SpellConfigurationProps = {
   selectedSpell: Partial<SpellEventData> | null
@@ -17,67 +19,96 @@ const SpellConfigurationComponent: React.FC<SpellConfigurationProps> = ({
   onOpenSpellModal
 }) => {
   return (
-    <Box css={{
-      padding: '$3',
-      backgroundColor: '$purple900/30',
-      borderRadius: '$lg',
-      border: '1px solid $purple700/50'
-    }}>
-      <Text size="sm" weight="medium" color="gray300" css={{ marginBottom: '$3', color: '$purple300' }}>
+    <Box
+      style={{
+        padding: '12px',
+        backgroundColor: 'rgba(76, 29, 149, 0.3)',
+        borderRadius: '8px',
+        border: '1px solid rgba(109, 40, 217, 0.5)'
+      }}
+    >
+      {/* Header */}
+      <Text
+        style={{
+          fontSize: '14px',
+          fontWeight: '500',
+          color: 'var(--gray-300)',
+          marginBottom: '12px'
+        }}
+      >
         Spell Configuration
       </Text>
 
       {/* Environment Caster Toggle */}
-      <Box display="flex" alignItems="center" gap="2" css={{ marginBottom: '$3' }}>
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginBottom: '12px'
+        }}
+      >
         <input
           type="checkbox"
           checked={useEnvironmentCaster}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUseEnvironmentCaster(e.target.checked)}
           style={{ accentColor: 'var(--colors-purple500)' }}
         />
-        <Text size="xs" color="gray300">Cast from environment (no caster token)</Text>
+        <Text style={{ fontSize: '12px', color: 'var(--gray-300)' }}>
+          Cast from environment (no caster token)
+        </Text>
       </Box>
 
       {/* Selected Spell Display */}
       {selectedSpell ? (
-        <Box css={{
-          padding: '$3',
-          backgroundColor: '$gray800',
-          borderRadius: '$md',
-          marginBottom: '$3'
-        }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
+        <Box
+          style={{
+            padding: '12px',
+            backgroundColor: 'var(--gray-800)',
+            borderRadius: '6px',
+            marginBottom: '12px'
+          }}
+        >
+          <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Box>
-              <Text size="sm" weight="medium" color="white">
+              <Text style={{ fontSize: '14px', fontWeight: '500', color: 'var(--gray-100)' }}>
                 {selectedSpell.spellName || 'Custom Spell'}
               </Text>
-              <Text size="xs" color="gray400" css={{ marginTop: '$1' }}>
+              <Text
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--gray-400)',
+                  marginTop: '4px'
+                }}
+              >
                 {selectedSpell.category?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </Text>
             </Box>
             <Box
-              css={{
+              style={{
                 width: '24px',
                 height: '24px',
-                borderRadius: '$round',
-                backgroundColor: selectedSpell.color || '#ff0000',
-                border: '2px solid $gray700'
+                borderRadius: '50%',
+                border: '2px solid var(--gray-700)',
+                backgroundColor: selectedSpell.color || '#ff0000'
               }}
             />
           </Box>
         </Box>
       ) : (
-        <Box css={{
-          padding: '$4',
-          backgroundColor: '$gray800',
-          borderRadius: '$md',
-          marginBottom: '$3',
-          textAlign: 'center',
-          borderStyle: 'dashed',
-          borderWidth: '2px',
-          borderColor: '$gray700'
-        }}>
-          <Text size="sm" color="gray400">
+        <Box
+          style={{
+            padding: '16px',
+            backgroundColor: 'var(--gray-800)',
+            borderRadius: '6px',
+            marginBottom: '12px',
+            textAlign: 'center',
+            borderStyle: 'dashed',
+            borderWidth: '2px',
+            borderColor: 'var(--gray-700)'
+          }}
+        >
+          <Text style={{ fontSize: '14px', color: 'var(--gray-400)' }}>
             No spell selected
           </Text>
         </Box>
@@ -86,14 +117,24 @@ const SpellConfigurationComponent: React.FC<SpellConfigurationProps> = ({
       {/* Select Spell Button */}
       <Button
         onClick={onOpenSpellModal}
-        variant="secondary"
-        css={{
+        style={{
           width: '100%',
-          backgroundColor: '$purple600',
-          color: '$white',
-          '&:hover': {
-            backgroundColor: '$purple700'
-          }
+          backgroundColor: 'var(--purple-600)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          padding: '8px 16px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'background-color 0.2s'
+        }}
+        onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+          e.currentTarget.style.backgroundColor = 'var(--purple-700)'
+        }}
+        onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+          e.currentTarget.style.backgroundColor = 'var(--purple-600)'
         }}
       >
         <Wand2 size={16} style={{ marginRight: '8px' }} />

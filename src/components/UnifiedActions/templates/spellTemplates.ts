@@ -16,8 +16,11 @@ export type SpellTemplate = Omit<UnifiedAction, 'id' | 'timestamp' | 'source' | 
  */
 export const fireballTemplate: SpellTemplate = {
   templateId: 'fireball',
+  name: 'Fireball',
+  description: 'A classic fireball spell that explodes in a 20-foot radius',
   type: 'spell',
   category: 'fire',
+  tags: ["spell","magic"],
   animation: {
     type: 'projectile',
     duration: 800,
@@ -61,8 +64,11 @@ export const fireballTemplate: SpellTemplate = {
  */
 export const magicMissileTemplate: SpellTemplate = {
   templateId: 'magic-missile',
+  name: 'Magic Missile',
+  description: 'Auto-hit projectiles that never miss their target',
   type: 'spell',
   category: 'force',
+  tags: ["spell","magic"],
   animation: {
     type: 'projectile',
     duration: 600,
@@ -101,8 +107,11 @@ export const magicMissileTemplate: SpellTemplate = {
  */
 export const lightningBoltTemplate: SpellTemplate = {
   templateId: 'lightning-bolt',
+  name: 'Lightning Bolt',
+  description: 'A bolt of lightning in a 100-foot line',
   type: 'spell',
   category: 'lightning',
+  tags: ["spell","magic"],
   animation: {
     type: 'ray',
     duration: 400,
@@ -147,8 +156,11 @@ export const lightningBoltTemplate: SpellTemplate = {
  */
 export const healingWordTemplate: SpellTemplate = {
   templateId: 'healing-word',
+  name: 'Healing Word',
+  description: 'A ranged healing spell that restores hit points',
   type: 'spell',
   category: 'healing',
+  tags: ["spell","magic"],
   animation: {
     type: 'projectile',
     duration: 500,
@@ -186,8 +198,11 @@ export const healingWordTemplate: SpellTemplate = {
  */
 export const coneOfColdTemplate: SpellTemplate = {
   templateId: 'cone-of-cold',
+  name: 'Cone of Cold',
+  description: 'A cone of freezing air that deals cold damage',
   type: 'spell',
   category: 'ice',
+  tags: ["spell","magic"],
   animation: {
     type: 'area',
     duration: 1000,
@@ -233,8 +248,11 @@ export const coneOfColdTemplate: SpellTemplate = {
  */
 export const burningHandsTemplate: SpellTemplate = {
   templateId: 'burning-hands',
+  name: 'Burning Hands',
+  description: 'Flames spring from your hands in a 15-foot cone',
   type: 'spell',
   category: 'fire',
+  tags: ["spell","magic"],
   animation: {
     type: 'area',
     duration: 800,

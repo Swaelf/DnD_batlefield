@@ -11,9 +11,6 @@ import type {
   UnifiedSpell,
   UnifiedSpellTemplate,
   SpellId,
-  SpellTemplateId,
-  SpellCategoryId,
-  SpellSchoolId,
   SpellSearchCriteria,
   SpellCustomization
 } from '../types'

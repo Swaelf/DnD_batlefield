@@ -1,6 +1,6 @@
-import React from 'react'
-import Konva from 'konva'
-import { Position } from '@/types/map'
+import type React from 'react'
+import type Konva from 'konva'
+import type { Position } from '@/types/map'
 
 // Canvas Hooks Types
 export type CanvasSize = {

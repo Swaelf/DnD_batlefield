@@ -30,7 +30,7 @@ export type UseEventBusReturn = {
   /**
    * Emit an event
    */
-  emit: <T extends EventType>(event: T, payload: EventPayload<T>) => void
+  emit: <T extends EventType>(event: T, payload?: EventPayload<T>) => void
 
   /**
    * Emit a domain event with proper typing
@@ -92,7 +92,7 @@ export const useEventBus = (options: UseEventBusOptions = {}): UseEventBusReturn
 
   const emit = useCallback(<T extends EventType>(
     event: T,
-    payload: EventPayload<T>
+    payload?: EventPayload<T>
   ): void => {
     eventBus.emit(event, payload)
   }, [])
@@ -121,6 +121,7 @@ export const useEventBus = (options: UseEventBusOptions = {}): UseEventBusReturn
     if (autoCleanup) {
       return cleanup
     }
+    return undefined
   }, [autoCleanup, cleanup])
 
   return {
@@ -155,7 +156,7 @@ export const useEventSubscription = <T extends EventType>(
  * Hook for emitting events with a stable reference
  */
 export const useEventEmitter = (): {
-  emit: <T extends EventType>(event: T, payload: EventPayload<T>) => void
+  emit: <T extends EventType>(event: T, payload?: EventPayload<T>) => void
   emitEvent: (event: DomainEvent) => void
 } => {
   const { emit, emitEvent } = useEventBus()

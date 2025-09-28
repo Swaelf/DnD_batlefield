@@ -1,9 +1,9 @@
 import React, { useCallback, useRef, useState } from 'react'
 import { Group, Line, Circle } from 'react-konva'
-import Konva from 'konva'
+import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
-import { Point, MapObject } from '@/types'
+import type { Point, Shape } from '@/types'
 
 interface BezierPoint {
   point: Point
@@ -270,19 +270,21 @@ export const AdvancedPenTool: React.FC<AdvancedPenToolProps> = ({
 
     if (currentPath.length >= 2) {
       // Complete the path and create shape object
-      const pathData = pathToSVG(currentPath)
+      // const pathData = pathToSVG(currentPath) // unused for now
       const linePoints = bezierToPoints(currentPath)
 
-      const shapeObject: MapObject = {
+      const shapeObject: Shape = {
         id: crypto.randomUUID(),
         type: 'shape',
-        shapeType: 'path',
+        shapeType: 'line', // Use 'line' for path-based shapes
         position: { x: 0, y: 0 }, // Path coordinates are absolute
         points: linePoints,
-        pathData,
         fill: fillColor,
+        fillColor,
         stroke: strokeColor,
+        strokeColor,
         strokeWidth,
+        opacity: 1,
         layer: 30, // Default to objects layer
         rotation: 0,
         visible: true,
