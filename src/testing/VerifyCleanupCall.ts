@@ -1,5 +1,5 @@
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 
 /**
  * Verify that cleanup is actually being called when rounds advance
@@ -8,7 +8,7 @@ export async function verifyCleanupCall() {
   console.log('\n🔍 VERIFYING CLEANUP FUNCTION CALLS\n')
 
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   // Setup
   if (!mapStore.currentMap) {
@@ -19,7 +19,7 @@ export async function verifyCleanupCall() {
     roundStore.startCombat(mapStore.currentMap!.id)
   }
 
-  roundStore.goToRound(1)
+  roundStore.goToEvent(1)
 
   // Monkey-patch the cleanup function to log calls
   const originalCleanup = mapStore.cleanupExpiredSpells
@@ -48,7 +48,7 @@ export async function verifyCleanupCall() {
   mapStore.cleanupExpiredSpells = wrappedCleanup
 
   console.log('📋 Initial state:')
-  console.log('  Current round:', roundStore.currentRound)
+  console.log('  Current round:', roundStore.currentEvent)
   console.log('  Cleanup calls so far:', cleanupCallCount)
 
   // Create a test persistent area
@@ -74,12 +74,12 @@ export async function verifyCleanupCall() {
   mapStore.addSpellEffect(testArea)
   console.log('\n✅ Created test area that expires after 1 round')
 
-  console.log('\n1️⃣ Calling nextRound()...')
-  await roundStore.nextRound()
+  console.log('\n1️⃣ Calling nextEvent()...')
+  await roundStore.nextEvent()
   await new Promise(resolve => setTimeout(resolve, 100))
 
   console.log('\n📊 After nextRound:')
-  console.log('  Current round:', roundStore.currentRound)
+  console.log('  Current round:', roundStore.currentEvent)
   console.log('  Cleanup calls:', cleanupCallCount)
   console.log('  Last cleanup round:', lastCleanupRound)
 
@@ -96,12 +96,12 @@ export async function verifyCleanupCall() {
     console.log('\n✅ SUCCESS: Cleanup was called and worked correctly!')
   }
 
-  console.log('\n2️⃣ Testing goToRound()...')
+  console.log('\n2️⃣ Testing goToEvent()...')
   cleanupCallCount = 0
-  roundStore.goToRound(5)
+  roundStore.goToEvent(5)
   await new Promise(resolve => setTimeout(resolve, 100))
 
-  console.log('  Cleanup calls after goToRound:', cleanupCallCount)
+  console.log('  Cleanup calls after goToEvent:', cleanupCallCount)
   console.log('  Last cleanup round:', lastCleanupRound)
 
   console.log('\n3️⃣ Testing previousRound()...')
@@ -129,7 +129,7 @@ export function checkStoreImport() {
   console.log('\n🔍 CHECKING STORE IMPORT\n')
 
   // Check if we can access mapStore from roundStore context
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   console.log('Testing store access from roundStore.nextRound:')
 

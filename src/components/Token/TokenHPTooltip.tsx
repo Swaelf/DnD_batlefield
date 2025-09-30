@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom'
 import type { Token } from '@/types'
-import { Heart, Shield } from 'lucide-react'
+import { Heart, Shield } from '@/utils/optimizedIcons'
 
 export type TokenHPTooltipProps = {
   token: Token

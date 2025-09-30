@@ -9,7 +9,7 @@ import {
   Lock,
   Unlock,
   MousePointer2
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'

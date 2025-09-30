@@ -8,7 +8,7 @@ export type ToolType =
   | 'polygon'
   | 'token'
   | 'staticObject'
-  | 'spellEffect'
+  | 'staticEffect'
   | 'layers'
   | 'pan'
   | 'measure'
@@ -80,12 +80,12 @@ export const TOOLS: Record<ToolType, Tool> = {
     shortcut: 'O',
     tooltip: 'Place static objects (O)'
   },
-  spellEffect: {
-    id: 'spellEffect',
-    name: 'Spells',
-    icon: 'Sparkles',
+  staticEffect: {
+    id: 'staticEffect',
+    name: 'Effects',
+    icon: 'MapPin',
     shortcut: 'S',
-    tooltip: 'Place spell effects (S)'
+    tooltip: 'Place static effects (S)'
   },
   layers: {
     id: 'layers',

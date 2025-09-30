@@ -17,7 +17,7 @@ export const useKeyboardShortcuts = () => {
   useHotkeys('p', () => setTool('polygon'), [setTool])
   useHotkeys('t', () => setTool('token'), [setTool])
   useHotkeys('o', () => setTool('staticObject'), [setTool])
-  useHotkeys('s', () => setTool('spellEffect'), [setTool])
+  useHotkeys('s', () => setTool('staticEffect'), [setTool])
   useHotkeys('h', () => setTool('pan'), [setTool])
   useHotkeys('m', () => setTool('measure'), [setTool])
   useHotkeys('x', () => setTool('text'), [setTool])
@@ -78,7 +78,6 @@ export const useKeyboardShortcuts = () => {
   useHotkeys('ctrl+s, cmd+s', (e) => {
     e.preventDefault()
     // Trigger manual save (will be connected to export function)
-    console.log('Manual save triggered')
   }, [])
 
   // Grid shortcuts

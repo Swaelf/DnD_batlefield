@@ -3,5 +3,7 @@
  */
 
 export * from './tokens'
-export * from './stitches'
 export * from './variants'
+
+// Note: Stitches has been removed as part of performance optimization
+// All components should now use Vanilla Extract CSS

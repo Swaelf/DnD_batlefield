@@ -1,5 +1,5 @@
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 
 /**
  * Detailed debug for spell persistence cleanup issue
@@ -9,10 +9,10 @@ export function detailedDebugCleanup() {
   console.log('=' .repeat(60))
 
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   console.log('\n📅 Round Info:')
-  console.log('  Current Round:', roundStore.currentRound)
+  console.log('  Current Round:', roundStore.currentEvent)
   console.log('  Is In Combat:', roundStore.isInCombat)
 
   const allObjects = mapStore.currentMap?.objects || []
@@ -41,8 +41,8 @@ export function detailedDebugCleanup() {
     // Calculate expiration
     if (area.roundCreated !== undefined && area.spellDuration !== undefined) {
       const expiresAt = area.roundCreated + area.spellDuration
-      const roundsRemaining = expiresAt - roundStore.currentRound
-      const shouldBeRemoved = roundStore.currentRound >= expiresAt
+      const roundsRemaining = expiresAt - roundStore.currentEvent
+      const shouldBeRemoved = roundStore.currentEvent >= expiresAt
 
       console.log('\n  ⏰ Timing:')
       console.log('    Created at round:', area.roundCreated)
@@ -81,12 +81,12 @@ export function detailedDebugCleanup() {
 
     // Calculate if it should be removed
     const expiresAt = obj.roundCreated + obj.spellDuration
-    const shouldKeep = roundStore.currentRound < expiresAt
+    const shouldKeep = roundStore.currentEvent < expiresAt
 
     if (shouldKeep) {
-      console.log(`  🟢 ${obj.id}: Expires at round ${expiresAt}, current is ${roundStore.currentRound}, keeping`)
+      console.log(`  🟢 ${obj.id}: Expires at round ${expiresAt}, current is ${roundStore.currentEvent}, keeping`)
     } else {
-      console.log(`  🔴 ${obj.id}: Expired at round ${expiresAt}, current is ${roundStore.currentRound}, REMOVING`)
+      console.log(`  🔴 ${obj.id}: Expired at round ${expiresAt}, current is ${roundStore.currentEvent}, REMOVING`)
     }
 
     return shouldKeep
@@ -112,7 +112,7 @@ export function detailedDebugCleanup() {
   console.log('Before cleanup - persistent areas:', persistentAreas.length)
 
   // Call the actual cleanup
-  mapStore.cleanupExpiredSpells(roundStore.currentRound)
+  mapStore.cleanupExpiredSpells(roundStore.currentEvent)
 
   // Check after cleanup
   const areasAfterCleanup = mapStore.currentMap?.objects.filter(obj => obj.type === 'persistent-area') || []
@@ -149,7 +149,7 @@ export function testCreateAndCleanup() {
   console.log('─'.repeat(40))
 
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   // Ensure combat is started
   if (!roundStore.isInCombat) {
@@ -157,9 +157,9 @@ export function testCreateAndCleanup() {
   }
 
   const testId = `test-area-${Date.now()}`
-  const currentRound = roundStore.currentRound
+  const currentEvent = roundStore.currentEvent
 
-  console.log('Creating test area at round', currentRound)
+  console.log('Creating test area at round', currentEvent)
 
   // Create test persistent area with ALL required properties
   const testArea = {
@@ -171,7 +171,7 @@ export function testCreateAndCleanup() {
 
     // CRITICAL PROPERTIES FOR CLEANUP
     isSpellEffect: true,
-    roundCreated: currentRound,
+    roundCreated: currentEvent,
     spellDuration: 1, // Should expire after 1 round
 
     persistentAreaData: {
@@ -180,7 +180,7 @@ export function testCreateAndCleanup() {
       color: '#ff0000',
       opacity: 0.5,
       spellName: 'Test Spell',
-      roundCreated: currentRound
+      roundCreated: currentEvent
     }
   }
 
@@ -203,11 +203,11 @@ export function testCreateAndCleanup() {
 
   // Advance round
   console.log('\nAdvancing to next round...')
-  roundStore.nextRound()
+  roundStore.nextEvent()
 
   // Wait a bit for async operations
   setTimeout(() => {
-    const newRound = roundStore.currentRound
+    const newRound = roundStore.currentEvent
     console.log('Now at round', newRound)
 
     // Check if it still exists

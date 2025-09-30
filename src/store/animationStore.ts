@@ -6,6 +6,7 @@ import type { Position } from '../types'
 const useAnimationStore = create<AnimationStore>()(
   immer((set) => ({
     activePaths: [],
+    isPaused: false, // Add pause state for performance optimization
 
     startAnimation: (tokenId: string, from: Position, to: Position) => set((state) => {
       // Remove any existing path for this token
@@ -34,6 +35,14 @@ const useAnimationStore = create<AnimationStore>()(
 
     clearAllPaths: () => set((state) => {
       state.activePaths = []
+    }),
+
+    pauseAnimations: () => set((state) => {
+      state.isPaused = true
+    }),
+
+    resumeAnimations: () => set((state) => {
+      state.isPaused = false
     })
   }))
 )

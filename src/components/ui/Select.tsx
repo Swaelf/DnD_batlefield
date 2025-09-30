@@ -1,309 +1,214 @@
 import React from 'react'
 import * as SelectPrimitive from '@radix-ui/react-select'
-import { styled, keyframes } from '@/styles/theme.config'
-import { ChevronDown, ChevronUp, Check } from 'lucide-react'
+import { ChevronDown, ChevronUp, Check } from '@/utils/optimizedIcons'
 
-// Animations
-const slideDownAndFade = keyframes({
-  '0%': { opacity: 0, transform: 'translateY(-2px)' },
-  '100%': { opacity: 1, transform: 'translateY(0)' },
-})
+// TODO: Convert to Vanilla Extract CSS
+// Temporarily using inline styles and classes to fix build errors
 
-const slideUpAndFade = keyframes({
-  '0%': { opacity: 0, transform: 'translateY(2px)' },
-  '100%': { opacity: 1, transform: 'translateY(0)' },
-})
-
-// Select trigger (the main button that shows the selected value)
-const SelectTrigger = styled(SelectPrimitive.Trigger, {
-  all: 'unset',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  borderRadius: '$md',
-  padding: '$3',
-  fontSize: '$base',
-  lineHeight: 1,
-  height: '40px',
-  gap: 2,
-  backgroundColor: '$gray800',
-  color: '$gray100',
-  border: '1px solid $gray600',
-  cursor: 'pointer',
-  transition: '$base',
-  boxSizing: 'border-box',
-
-  '&:hover': {
-    borderColor: '$gray500',
-  },
-
-  '&:focus': {
-    borderColor: '$primary',
-    boxShadow: '0 0 0 2px rgba($colors$primary, 0.2)',
-  },
-
-  '&:disabled': {
-    opacity: 0.5,
-    cursor: 'not-allowed',
-    '&:hover': {
-      borderColor: '$gray600',
-    },
-  },
-
-  '&[data-placeholder]': {
-    color: '$gray500',
-  },
-
-  variants: {
-    size: {
-      sm: {
-        height: '32px',
-        padding: '$2',
-        fontSize: '$sm',
-      },
-      md: {
-        height: '40px',
-        padding: '$3',
-        fontSize: '$base',
-      },
-      lg: {
-        height: '48px',
-        padding: '$4',
-        fontSize: '$md',
-      },
-    },
-
-    variant: {
-      default: {
-        backgroundColor: '$gray800',
-        borderColor: '$gray600',
-      },
-      outline: {
-        backgroundColor: 'transparent',
-        borderColor: '$gray600',
-      },
-      ghost: {
-        backgroundColor: 'transparent',
-        borderColor: 'transparent',
-        '&:hover': {
-          backgroundColor: '$gray800',
-          borderColor: '$gray600',
-        },
-      },
-    },
-
-    state: {
-      default: {},
-      error: {
-        borderColor: '$error',
-        '&:focus': {
-          borderColor: '$error',
-          boxShadow: '0 0 0 2px rgba($colors$error, 0.2)',
-        },
-      },
-      success: {
-        borderColor: '$success',
-        '&:focus': {
-          borderColor: '$success',
-          boxShadow: '0 0 0 2px rgba($colors$success, 0.2)',
-        },
-      },
-    },
-
-    fullWidth: {
-      true: {
-        width: '100%',
-      },
-    },
-  },
-
-  defaultVariants: {
-    size: 'md',
-    variant: 'default',
-    state: 'default',
-  },
-})
-
-const SelectIcon = styled(SelectPrimitive.Icon, {
-  color: '$gray400',
-  transition: '$fast',
-
-  '[data-state=open] &': {
-    transform: 'rotate(180deg)',
-  },
-})
-
-// Content container (the dropdown)
-const SelectContent = styled(SelectPrimitive.Content, {
-  overflow: 'hidden',
-  backgroundColor: '$gray800',
-  borderRadius: '$md',
-  boxShadow: '$lg',
-  border: '1px solid $gray600',
-  zIndex: '$popover',
-  minWidth: 'var(--radix-select-trigger-width)',
-  maxHeight: 'var(--radix-select-content-available-height)',
-
-  '&[data-side=top]': {
-    animationName: slideUpAndFade,
-    animationDuration: '200ms',
-  },
-
-  '&[data-side=bottom]': {
-    animationName: slideDownAndFade,
-    animationDuration: '200ms',
-  },
-
-  variants: {
-    size: {
-      sm: {
-        maxHeight: '200px',
-      },
-      md: {
-        maxHeight: '300px',
-      },
-      lg: {
-        maxHeight: '400px',
-      },
-    },
-  },
-
-  defaultVariants: {
-    size: 'md',
-  },
-})
-
-const SelectViewport = styled(SelectPrimitive.Viewport, {
-  padding: '$1',
-})
-
-// Individual option items
-const SelectItem = styled(SelectPrimitive.Item, {
-  all: 'unset',
-  fontSize: '$base',
-  lineHeight: 1,
-  color: '$gray200',
-  borderRadius: '$sm',
-  display: 'flex',
-  alignItems: 'center',
-  height: '36px',
-  paddingX: '$3',
-  position: 'relative',
-  userSelect: 'none',
-  cursor: 'pointer',
-  transition: '$fast',
-
-  '&[data-disabled]': {
-    color: '$gray600',
-    pointerEvents: 'none',
-  },
-
-  '&[data-highlighted]': {
-    backgroundColor: '$primary',
-    color: '$white',
-  },
-
-  variants: {
-    size: {
-      sm: {
-        height: '28px',
-        paddingX: '$2',
-        fontSize: '$sm',
-      },
-      md: {
-        height: '36px',
-        paddingX: '$3',
-        fontSize: '$base',
-      },
-      lg: {
-        height: '44px',
-        paddingX: '$4',
-        fontSize: '$md',
-      },
-    },
-  },
-
-  defaultVariants: {
-    size: 'md',
-  },
-})
-
-const SelectItemIndicator = styled(SelectPrimitive.ItemIndicator, {
-  position: 'absolute',
-  right: '$3',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: 'inherit',
-})
-
-const SelectItemText = styled(SelectPrimitive.ItemText, {
-  flex: 1,
-})
-
-// Label for option groups
-const SelectLabel = styled(SelectPrimitive.Label, {
-  padding: '$2 $3',
-  fontSize: '$sm',
-  color: '$gray400',
-  fontWeight: '$medium',
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px',
-})
-
-// Separator between groups
-const SelectSeparator = styled(SelectPrimitive.Separator, {
-  height: '1px',
-  backgroundColor: '$gray700',
-  margin: '$1',
-})
-
-// Scroll buttons
-const SelectScrollUpButton = styled(SelectPrimitive.ScrollUpButton, {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: '$6',
-  backgroundColor: '$gray800',
-  color: '$gray400',
-  cursor: 'default',
-})
-
-const SelectScrollDownButton = styled(SelectPrimitive.ScrollDownButton, {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: '$6',
-  backgroundColor: '$gray800',
-  color: '$gray400',
-  cursor: 'default',
-})
-
-// Main Select component
-type SelectProps = {
-  children: React.ReactNode
+// Select Component Types
+export interface SelectProps {
   value?: string
   defaultValue?: string
   onValueChange?: (value: string) => void
-  disabled?: boolean
   placeholder?: string
-  size?: 'sm' | 'md' | 'lg'
-  variant?: 'default' | 'outline' | 'ghost'
-  state?: 'default' | 'error' | 'success'
+  disabled?: boolean
+  children: React.ReactNode
+  name?: string
+  required?: boolean
+  'aria-label'?: string
+  size?: string
   fullWidth?: boolean
 }
 
+export interface SelectOptionProps {
+  value: string
+  disabled?: boolean
+  children: React.ReactNode
+}
+
+export interface SelectGroupProps {
+  label?: string
+  children: React.ReactNode
+}
+
+// Temporary styled components using inline styles
+const SelectTrigger = React.forwardRef<HTMLButtonElement, any>((props, ref) => (
+  <SelectPrimitive.Trigger
+    ref={ref}
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderRadius: '8px',
+      padding: '8px 12px',
+      fontSize: '14px',
+      lineHeight: '1',
+      gap: '8px',
+      backgroundColor: 'var(--colors-surface)',
+      color: 'var(--colors-text)',
+      border: '1px solid var(--colors-border)',
+      cursor: 'pointer',
+      minWidth: '160px',
+      ...props.style
+    }}
+    {...props}
+  />
+))
+SelectTrigger.displayName = 'SelectTrigger'
+
+const SelectContent = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+  <SelectPrimitive.Content
+    ref={ref}
+    style={{
+      overflow: 'hidden',
+      backgroundColor: 'var(--colors-surface)',
+      borderRadius: '8px',
+      border: '1px solid var(--colors-border)',
+      boxShadow: '0 10px 38px -10px rgba(0, 0, 0, 0.35), 0 10px 20px -15px rgba(0, 0, 0, 0.2)',
+      ...props.style
+    }}
+    {...props}
+  />
+))
+SelectContent.displayName = 'SelectContent'
+
+const SelectViewport = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+  <SelectPrimitive.Viewport
+    ref={ref}
+    style={{
+      padding: '4px',
+      ...props.style
+    }}
+    {...props}
+  />
+))
+SelectViewport.displayName = 'SelectViewport'
+
+const SelectItem = React.forwardRef<HTMLDivElement, any>(({ style, onMouseEnter, onMouseLeave, value, ...props }, ref) => (
+  <SelectPrimitive.Item
+    ref={ref}
+    value={value}
+    style={{
+      fontSize: '14px',
+      lineHeight: '1',
+      color: 'var(--colors-text)',
+      borderRadius: '4px',
+      display: 'flex',
+      alignItems: 'center',
+      padding: '8px 8px 8px 32px',
+      position: 'relative',
+      userSelect: 'none',
+      cursor: 'pointer',
+      ...style
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
+      onMouseEnter?.(e)
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = 'transparent'
+      onMouseLeave?.(e)
+    }}
+    {...props}
+  />
+))
+SelectItem.displayName = 'SelectItem'
+
+const SelectLabel = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+  <SelectPrimitive.Label
+    ref={ref}
+    style={{
+      padding: '8px 8px 4px 8px',
+      fontSize: '12px',
+      lineHeight: '20px',
+      color: 'var(--colors-gray500)',
+      ...props.style
+    }}
+    {...props}
+  />
+))
+SelectLabel.displayName = 'SelectLabel'
+
+const SelectSeparator = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+  <SelectPrimitive.Separator
+    ref={ref}
+    style={{
+      height: '1px',
+      backgroundColor: 'var(--colors-gray700)',
+      margin: '4px',
+      ...props.style
+    }}
+    {...props}
+  />
+))
+SelectSeparator.displayName = 'SelectSeparator'
+
+const StyledItemIndicator = React.forwardRef<HTMLSpanElement, any>((props, ref) => (
+  <SelectPrimitive.ItemIndicator
+    ref={ref}
+    style={{
+      position: 'absolute',
+      left: '0',
+      width: '32px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...props.style
+    }}
+    {...props}
+  />
+))
+StyledItemIndicator.displayName = 'StyledItemIndicator'
+
+const StyledScrollUpButton = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+  <SelectPrimitive.ScrollUpButton
+    ref={ref}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '24px',
+      backgroundColor: 'var(--colors-surface)',
+      color: 'var(--colors-secondary)',
+      cursor: 'default',
+      ...props.style
+    }}
+    {...props}
+  />
+))
+StyledScrollUpButton.displayName = 'StyledScrollUpButton'
+
+const StyledScrollDownButton = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+  <SelectPrimitive.ScrollDownButton
+    ref={ref}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '24px',
+      backgroundColor: 'var(--colors-surface)',
+      color: 'var(--colors-secondary)',
+      cursor: 'default',
+      ...props.style
+    }}
+    {...props}
+  />
+))
+StyledScrollDownButton.displayName = 'StyledScrollDownButton'
+
+// Main Select component
 export const Select: React.FC<SelectProps> = ({
-  children,
   value,
   defaultValue,
   onValueChange,
+  placeholder = 'Select an option...',
   disabled,
-  placeholder,
-  size = 'md',
-  variant = 'default',
-  state = 'default',
-  fullWidth = false,
+  children,
+  name,
+  required,
+  'aria-label': ariaLabel,
+  size: _size, // Prefix with underscore to indicate intentionally unused
+  fullWidth,
 }) => {
   return (
     <SelectPrimitive.Root
@@ -311,30 +216,31 @@ export const Select: React.FC<SelectProps> = ({
       defaultValue={defaultValue}
       onValueChange={onValueChange}
       disabled={disabled}
+      name={name}
+      required={required}
     >
       <SelectTrigger
-        size={size}
-        variant={variant}
-        state={state}
-        fullWidth={fullWidth}
+        aria-label={ariaLabel}
+        style={{
+          width: fullWidth ? '100%' : 'auto',
+          minWidth: fullWidth ? '100%' : '160px',
+        }}
       >
         <SelectPrimitive.Value placeholder={placeholder} />
-        <SelectIcon>
+        <SelectPrimitive.Icon>
           <ChevronDown size={16} />
-        </SelectIcon>
+        </SelectPrimitive.Icon>
       </SelectTrigger>
 
       <SelectPrimitive.Portal>
-        <SelectContent size={size}>
-          <SelectScrollUpButton>
-            <ChevronUp size={14} />
-          </SelectScrollUpButton>
-          <SelectViewport>
-            {children}
-          </SelectViewport>
-          <SelectScrollDownButton>
-            <ChevronDown size={14} />
-          </SelectScrollDownButton>
+        <SelectContent>
+          <StyledScrollUpButton>
+            <ChevronUp size={16} />
+          </StyledScrollUpButton>
+          <SelectViewport>{children}</SelectViewport>
+          <StyledScrollDownButton>
+            <ChevronDown size={16} />
+          </StyledScrollDownButton>
         </SelectContent>
       </SelectPrimitive.Portal>
     </SelectPrimitive.Root>
@@ -342,35 +248,22 @@ export const Select: React.FC<SelectProps> = ({
 }
 
 // Select Option component
-type SelectOptionProps = {
-  value: string
-  children: React.ReactNode
-  disabled?: boolean
-  size?: 'sm' | 'md' | 'lg'
-}
-
 export const SelectOption: React.FC<SelectOptionProps> = ({
   value,
-  children,
   disabled,
-  size = 'md',
+  children,
 }) => {
   return (
-    <SelectItem value={value} disabled={disabled} size={size}>
-      <SelectItemText>{children}</SelectItemText>
-      <SelectItemIndicator>
-        <Check size={14} />
-      </SelectItemIndicator>
+    <SelectItem value={value} disabled={disabled}>
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      <StyledItemIndicator>
+        <Check size={16} />
+      </StyledItemIndicator>
     </SelectItem>
   )
 }
 
-// Select Group component
-type SelectGroupProps = {
-  children: React.ReactNode
-  label?: string
-}
-
+// Select Group component for grouping options
 export const SelectGroup: React.FC<SelectGroupProps> = ({ children, label }) => {
   return (
     <SelectPrimitive.Group>
@@ -380,10 +273,10 @@ export const SelectGroup: React.FC<SelectGroupProps> = ({ children, label }) => 
   )
 }
 
-// Export separator for convenience
+// Export renamed to avoid conflicts
 export const SelectSeparator_Export = SelectSeparator
 
-// Typed exports
+// Export types
 export type SelectProps_Export = SelectProps
 export type SelectOptionProps_Export = SelectOptionProps
 export type SelectGroupProps_Export = SelectGroupProps

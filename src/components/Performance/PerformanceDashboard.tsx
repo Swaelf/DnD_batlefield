@@ -13,7 +13,7 @@ import {
   Download,
   Play,
   Square
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 
 type PerformanceDashboardProps = {
   isOpen: boolean

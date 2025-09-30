@@ -261,9 +261,9 @@ export function useAsyncOperation<T>(
   // Auto-execute on mount if requested
   useEffect(() => {
     if (autoExecute && state.isIdle) {
-      execute()
+      void execute()
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -346,10 +346,8 @@ export function useBatchOperation<T, R>(
       const end = Math.min(start + batchSize, items.length)
       const batch = items.slice(start, end)
 
-      // Update progress
-      const progress = Math.round(((i + 1) / totalBatches) * 100)
-      // Note: This would need to be connected to the async operation's updateProgress
-      console.log(`Processing batch ${i + 1}/${totalBatches} (${progress}%)`)
+      // Progress tracking would be implemented via updateProgress callback
+      // const progress = Math.round(((i + 1) / totalBatches) * 100)
 
       const batchResults = await batchProcessor(batch)
       results.push(...batchResults)

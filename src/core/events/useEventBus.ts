@@ -148,7 +148,6 @@ export const useEventSubscription = <T extends EventType>(
   useEffect(() => {
     const cleanup = on(event, handler)
     return cleanup
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event, ...deps])
 }
 

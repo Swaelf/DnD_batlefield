@@ -1,37 +1,15 @@
 import React, { memo } from 'react'
-import { MousePointer } from 'lucide-react'
+import { MousePointer } from '@/utils/optimizedIcons'
 import type { Token } from '@/types/token'
 import { Box, Button } from '@/components/ui'
 import { Label } from '@/components/primitives'
-import { styled } from '@/styles/theme.config'
-
-const StyledPickerButton = styled(Button, {
-  backgroundColor: '$gray700',
-  color: '$gray300',
-  border: '1px solid $gray600',
-  '&:hover': {
-    backgroundColor: '$gray600',
-    borderColor: '$secondary'
-  },
-  variants: {
-    picking: {
-      true: {
-        backgroundColor: '$blue600',
-        color: '$white',
-        animation: 'pulse 2s infinite',
-        '&:hover': {
-          backgroundColor: '$blue700'
-        }
-      }
-    }
-  }
-})
+import * as styles from './TokenSelector.css'
 
 type TokenSelectorProps = {
   selectedToken: string
   setSelectedToken: (tokenId: string) => void
   tokens: Token[]
-  isPicking: 'token' | 'from' | 'to' | null
+  isPicking: 'token' | 'from' | 'to' | 'targetToken' | null
   onTokenPick: () => void
 }
 
@@ -55,14 +33,14 @@ const TokenSelectorComponent: React.FC<TokenSelectorProps> = ({
         <Label size="sm" weight="medium" color="gray300">Select Token</Label>
       </Box>
       <Box display="flex" gap={2}>
-        <StyledPickerButton
+        <Button
           onClick={onTokenPick}
           size="icon"
           title="Pick from map"
-          picking={isPicking === 'token'}
+          className={isPicking === 'token' ? styles.pickerButton.picking : styles.pickerButton.normal}
         >
           <MousePointer size={16} />
-        </StyledPickerButton>
+        </Button>
         <Box flexGrow={1}>
           <select
             value={selectedToken || ''}

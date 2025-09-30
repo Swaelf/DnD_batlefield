@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useCallback } from 'react'
-import { Search, Zap, Sword, Users, X, Move, Edit } from 'lucide-react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import { Search, Zap, Sword, Users, X, Move, Edit } from '@/utils/optimizedIcons'
+import useAnimationStore from '@/store/animationStore'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -26,8 +27,25 @@ export const ActionSelectionModal = ({
   onSelect,
   onEdit
 }: ActionSelectionModalProps) => {
+  const pauseAnimations = useAnimationStore(state => state.pauseAnimations)
+  const resumeAnimations = useAnimationStore(state => state.resumeAnimations)
+
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<ActionCategory>('all')
+
+  // Performance optimization: Pause animations when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      pauseAnimations()
+    } else {
+      resumeAnimations()
+    }
+
+    // Cleanup: Resume animations when component unmounts
+    return () => {
+      resumeAnimations()
+    }
+  }, [isOpen, pauseAnimations, resumeAnimations])
 
   // Combine all action templates
   const allActions = useMemo(() => {
@@ -108,7 +126,16 @@ export const ActionSelectionModal = ({
   ]
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      size="lg"
+      padding="none"
+      style={{
+        backgroundColor: '#1A1A1A',
+        border: '1px solid #374151'
+      }}
+    >
       <Box
         style={{
           width: '700px',
@@ -120,26 +147,46 @@ export const ActionSelectionModal = ({
       >
         {/* Header */}
         <Box
-          padding={4}
           style={{
-            borderBottom: '1px solid var(--gray700)',
+            padding: '20px 24px',
+            borderBottom: '1px solid #374151',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            backgroundColor: '#1A1A1A'
           }}
         >
-          <Text size="lg" weight="semibold">
+          <Text
+            size="lg"
+            weight="semibold"
+            style={{ color: '#FFFFFF' }}
+          >
             Select Action
           </Text>
-          <Button onClick={handleClose} variant="ghost" size="sm">
+          <Button
+            onClick={handleClose}
+            variant="ghost"
+            size="sm"
+            style={{
+              backgroundColor: 'transparent',
+              color: '#9CA3AF',
+              border: 'none'
+            }}
+          >
             <X size={16} />
           </Button>
         </Box>
 
         {/* Search and Filters */}
-        <Box padding={4} style={{ borderBottom: '1px solid var(--gray700)' }}>
+        <Box
+          style={{
+            padding: '20px 24px',
+            borderBottom: '1px solid #374151',
+            backgroundColor: '#1A1A1A'
+          }}
+        >
           {/* Search Input */}
-          <Box marginBottom={3} style={{ position: 'relative' }}>
+          <Box style={{ marginBottom: '16px', position: 'relative' }}>
             <Search
               size={16}
               style={{
@@ -147,7 +194,7 @@ export const ActionSelectionModal = ({
                 left: '12px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: 'var(--gray400)',
+                color: '#9CA3AF',
                 pointerEvents: 'none'
               }}
             />
@@ -157,8 +204,11 @@ export const ActionSelectionModal = ({
               placeholder="Search actions..."
               style={{
                 paddingLeft: '40px',
-                backgroundColor: 'var(--gray800)',
-                border: '1px solid var(--gray600)'
+                backgroundColor: '#374151',
+                border: '1px solid #4B5563',
+                borderRadius: '6px',
+                color: '#FFFFFF',
+                width: '100%'
               }}
             />
           </Box>
@@ -174,7 +224,11 @@ export const ActionSelectionModal = ({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '4px',
+                  backgroundColor: selectedCategory === category.key ? '#C9AD6A' : '#374151',
+                  color: selectedCategory === category.key ? '#000000' : '#D1D5DB',
+                  border: selectedCategory === category.key ? '1px solid #C9AD6A' : '1px solid #4B5563',
+                  borderRadius: '6px'
                 }}
               >
                 {category.icon}
@@ -189,8 +243,8 @@ export const ActionSelectionModal = ({
           style={{
             flex: 1,
             overflow: 'auto',
-            padding: '16px',
-            backgroundColor: 'var(--gray900)',
+            padding: '20px 24px',
+            backgroundColor: '#111827',
             minHeight: '400px'
           }}
         >
@@ -203,20 +257,20 @@ export const ActionSelectionModal = ({
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    padding: '12px',
-                    backgroundColor: 'var(--gray800)',
-                    borderRadius: 'var(--radii-md)',
-                    border: '1px solid var(--gray700)',
+                    padding: '14px',
+                    backgroundColor: '#1F2937',
+                    borderRadius: '8px',
+                    border: '1px solid #374151',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--gray700)'
-                    e.currentTarget.style.borderColor = 'var(--secondary)'
+                    e.currentTarget.style.backgroundColor = '#374151'
+                    e.currentTarget.style.borderColor = '#C9AD6A'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--gray800)'
-                    e.currentTarget.style.borderColor = 'var(--gray700)'
+                    e.currentTarget.style.backgroundColor = '#1F2937'
+                    e.currentTarget.style.borderColor = '#374151'
                   }}
                 >
                   {/* Action Icon */}
@@ -224,7 +278,7 @@ export const ActionSelectionModal = ({
                     style={{
                       width: '44px',
                       height: '44px',
-                      borderRadius: 'var(--radii-xl)',
+                      borderRadius: '12px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -240,14 +294,23 @@ export const ActionSelectionModal = ({
 
                   {/* Action Details */}
                   <Box style={{ flex: 1 }}>
-                    <Text weight="medium">
+                    <Text
+                      weight="medium"
+                      style={{ color: '#FFFFFF' }}
+                    >
                       {action.metadata.name}
                     </Text>
-                    <Text size="sm" color="textSecondary">
+                    <Text
+                      size="sm"
+                      style={{ color: '#9CA3AF' }}
+                    >
                       {action.category} • {action.type}
                     </Text>
                     {action.metadata?.description && (
-                      <Text size="xs" color="textTertiary">
+                      <Text
+                        size="xs"
+                        style={{ color: '#6B7280' }}
+                      >
                         {action.metadata.description}
                       </Text>
                     )}
@@ -259,12 +322,14 @@ export const ActionSelectionModal = ({
                       <Box
                         style={{
                           padding: '2px 8px',
-                          backgroundColor: 'var(--gray700)',
-                          borderRadius: 'var(--radii-sm)',
+                          backgroundColor: '#374151',
+                          borderRadius: '4px',
                           fontSize: '12px'
                         }}
                       >
-                        <Text size="xs">Level {(action.metadata as any).level}</Text>
+                        <Text size="xs" style={{ color: '#D1D5DB' }}>
+                          Level {(action.metadata as any).level}
+                        </Text>
                       </Box>
                     )}
 
@@ -272,17 +337,19 @@ export const ActionSelectionModal = ({
                       <Box
                         style={{
                           padding: '2px 8px',
-                          backgroundColor: 'var(--error)',
-                          borderRadius: 'var(--radii-sm)',
+                          backgroundColor: '#DC2626',
+                          borderRadius: '4px',
                           fontSize: '12px'
                         }}
                       >
-                        <Text size="xs" color="textInverse">{action.metadata.damage}</Text>
+                        <Text size="xs" style={{ color: '#FFFFFF' }}>
+                          {action.metadata.damage}
+                        </Text>
                       </Box>
                     )}
 
                     {(action.metadata as any)?.range && (
-                      <Text size="xs" color="textTertiary">
+                      <Text size="xs" style={{ color: '#6B7280' }}>
                         Range: {(action.metadata as any).range}
                       </Text>
                     )}
@@ -294,7 +361,12 @@ export const ActionSelectionModal = ({
                       onClick={(e) => handleEdit(action, e)}
                       variant="ghost"
                       size="sm"
-                      style={{ marginLeft: '8px' }}
+                      style={{
+                        marginLeft: '8px',
+                        backgroundColor: 'transparent',
+                        color: '#9CA3AF',
+                        border: 'none'
+                      }}
                     >
                       <Edit size={14} />
                     </Button>
@@ -310,14 +382,21 @@ export const ActionSelectionModal = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 height: '200px',
-                color: 'var(--gray500)'
+                color: '#6B7280'
               }}
             >
-              <Search size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-              <Text size="lg" weight="medium">
+              <Search size={48} style={{ marginBottom: '16px', opacity: 0.5, color: '#6B7280' }} />
+              <Text
+                size="lg"
+                weight="medium"
+                style={{ color: '#D1D5DB' }}
+              >
                 No actions found
               </Text>
-              <Text size="sm" color="textSecondary">
+              <Text
+                size="sm"
+                style={{ color: '#9CA3AF' }}
+              >
                 Try adjusting your search terms or category filters
               </Text>
             </Box>
@@ -326,19 +405,32 @@ export const ActionSelectionModal = ({
 
         {/* Footer */}
         <Box
-          padding={3}
           style={{
-            borderTop: '1px solid var(--gray700)',
-            backgroundColor: 'var(--gray800)',
+            padding: '16px 24px',
+            borderTop: '1px solid #374151',
+            backgroundColor: '#1A1A1A',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
           }}
         >
-          <Text size="sm" color="textSecondary">
+          <Text
+            size="sm"
+            style={{ color: '#9CA3AF' }}
+          >
             {filteredActions.length} action{filteredActions.length !== 1 ? 's' : ''} available
           </Text>
-          <Button onClick={handleClose} variant="outline" size="sm">
+          <Button
+            onClick={handleClose}
+            variant="outline"
+            size="sm"
+            style={{
+              backgroundColor: '#374151',
+              color: '#D1D5DB',
+              border: '1px solid #4B5563',
+              borderRadius: '6px'
+            }}
+          >
             Cancel
           </Button>
         </Box>

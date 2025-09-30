@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
-import { Play, Pause, SkipForward, SkipBack, Clock, Zap, Eye, EyeOff, Move } from 'lucide-react'
-import useRoundStore from '@/store/roundStore'
+import { Play, Pause, SkipForward, SkipBack, Clock, Zap, Eye, EyeOff, Move } from '@/utils/optimizedIcons'
+import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
 import type { EventType } from '@/types/timeline'
+import * as styles from './Timeline.css'
+import { clsx } from 'clsx'
 
 type TimelineProps = {
   onAddEvent?: (type: EventType) => void
@@ -12,16 +14,16 @@ type TimelineProps = {
 export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
   const [isExpanded] = useState(false)
   // Use specific selectors to prevent unnecessary re-renders
-  const timeline = useRoundStore(state => state.timeline)
-  const currentRound = useRoundStore(state => state.currentRound)
-  const isInCombat = useRoundStore(state => state.isInCombat)
-  const animationSpeed = useRoundStore(state => state.animationSpeed)
-  const startCombat = useRoundStore(state => state.startCombat)
-  const endCombat = useRoundStore(state => state.endCombat)
-  const nextRound = useRoundStore(state => state.nextRound)
-  const previousRound = useRoundStore(state => state.previousRound)
-  const goToRound = useRoundStore(state => state.goToRound)
-  const setAnimationSpeed = useRoundStore(state => state.setAnimationSpeed)
+  const timeline = useTimelineStore(state => state.timeline)
+  const currentEvent = useTimelineStore(state => state.currentEvent)
+  const isInCombat = useTimelineStore(state => state.isInCombat)
+  const animationSpeed = useTimelineStore(state => state.animationSpeed)
+  const startCombat = useTimelineStore(state => state.startCombat)
+  const endCombat = useTimelineStore(state => state.endCombat)
+  const nextEvent = useTimelineStore(state => state.nextEvent)
+  const previousEvent = useTimelineStore(state => state.previousEvent)
+  const goToEvent = useTimelineStore(state => state.goToEvent)
+  const setAnimationSpeed = useTimelineStore(state => state.setAnimationSpeed)
 
   // Use specific selectors to prevent unnecessary re-renders
   const currentMap = useMapStore(state => state.currentMap)
@@ -33,90 +35,85 @@ export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) 
     }
   }
 
-  const handleNextRound = async () => {
+  const handleNextEvent = async () => {
     setIsAnimating(true)
-    await nextRound()
+    await nextEvent()
     setIsAnimating(false)
   }
 
-  const currentRoundData = timeline?.rounds.find(r => r.number === currentRound)
-  const eventCount = currentRoundData?.events.length || 0
-
-  // Calculate position based on expansion state
-  const bottomPosition = isExpanded ? 'bottom-4' : 'bottom-4'
-  const heightClass = isExpanded ? 'max-h-96' : 'max-h-32'
+  const currentEventData = timeline?.events.find(e => e.number === currentEvent)
+  const actionCount = currentEventData?.actions.length || 0
 
   return (
-    <div className={`absolute ${bottomPosition} left-1/2 -translate-x-1/2 z-20 transition-all duration-300`}>
-      <div className={`bg-dnd-black/90 backdrop-blur-sm rounded-lg shadow-xl border border-dnd-gold/20 ${heightClass} transition-all`}>
-        <div className="p-3">
+    <div className={styles.timelineContainer}>
+      <div className={clsx(styles.timelinePanel, isExpanded && styles.timelinePanelExpanded)}>
+        <div className={styles.timelineContent}>
           {/* Compact Header */}
-          <div className="flex items-center justify-between gap-4 mb-2">
-            <div className="flex items-center gap-3">
+          <div className={styles.timelineHeader}>
+            <div className={styles.roundInfo}>
               {/* Combat Toggle */}
               <button
                 onClick={isInCombat ? endCombat : handleStartCombat}
-                className={`px-4 py-2 rounded-md font-medium transition-all ${
-                  isInCombat
-                    ? 'bg-dnd-red text-white hover:bg-red-700'
-                    : 'bg-dnd-gray-700 text-gray-300 hover:bg-dnd-gray-600'
-                }`}
+                className={clsx(
+                  styles.combatButton,
+                  isInCombat ? styles.combatButtonActive : styles.combatButtonInactive
+                )}
                 disabled={!currentMap}
               >
                 {isInCombat ? (
                   <>
-                    <Pause className="inline-block w-4 h-4 mr-2" />
+                    <Pause className={styles.iconInline} />
                     End Combat
                   </>
                 ) : (
                   <>
-                    <Play className="inline-block w-4 h-4 mr-2" />
+                    <Play className={styles.iconInline} />
                     Start Combat
                   </>
                 )}
               </button>
 
-              {/* Round Display */}
+              {/* Event Display */}
               {isInCombat && (
-                <div className="bg-dnd-gray-800 rounded-lg px-4 py-2">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-dnd-gold" />
-                    <span className="text-lg font-bold text-white">Round {currentRound}</span>
-                    {currentRoundData?.name && (
-                      <span className="text-sm text-gray-400 ml-1">"{currentRoundData.name}"</span>
+                <div className={styles.roundDisplay}>
+                  <div className={styles.roundDisplayContent}>
+                    <Clock className={styles.iconGold} />
+                    <span className={styles.roundNumber}>Event {currentEvent}</span>
+                    {currentEventData?.name && (
+                      <span className={styles.roundName}>"{currentEventData.name}"</span>
                     )}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Round Navigation */}
+            {/* Event Navigation */}
             {isInCombat && (
-              <div className="flex items-center gap-2">
+              <div className={styles.roundControls}>
                 <button
-                  onClick={previousRound}
-                  disabled={currentRound <= 1 || isAnimating}
-                  className="p-2 bg-dnd-gray-700 text-gray-300 rounded hover:bg-dnd-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  title="Previous Round"
+                  onClick={previousEvent}
+                  disabled={currentEvent <= 1 || isAnimating}
+                  className={styles.roundButton}
+                  title="Previous Event"
                 >
-                  <SkipBack className="w-4 h-4" />
+                  <SkipBack className={styles.icon} />
                 </button>
 
                 <button
-                  onClick={handleNextRound}
+                  onClick={handleNextEvent}
                   disabled={isAnimating}
-                  className="px-4 py-2 bg-dnd-gold text-dnd-black rounded font-bold hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  title="Next Round"
+                  className={styles.nextRoundButton}
+                  title="Next Event"
                 >
                   {isAnimating ? (
-                    <span className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 animate-pulse" />
+                    <span className={clsx(styles.flex, styles.itemsCenter, styles.gap2)}>
+                      <Zap className={clsx(styles.icon, styles.iconAnimated)} />
                       Animating...
                     </span>
                   ) : (
                     <>
-                      <SkipForward className="inline-block w-4 h-4 mr-1" />
-                      Next Round
+                      <SkipForward className={styles.iconInline} />
+                      Next Event
                     </>
                   )}
                 </button>
@@ -124,9 +121,9 @@ export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) 
                 {/* Quick Jump */}
                 <input
                   type="number"
-                  value={currentRound}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => goToRound(parseInt(e.target.value) || 1)}
-                  className="w-16 px-2 py-1 bg-dnd-gray-700 text-white rounded text-center"
+                  value={currentEvent}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => goToEvent(parseInt(e.target.value) || 1)}
+                  className={styles.roundInput}
                   min="1"
                   disabled={isAnimating}
                 />
@@ -136,45 +133,45 @@ export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) 
 
           {/* Event Management Bar */}
           {isInCombat && (
-            <div className="flex items-center justify-between border-t border-dnd-gray-700 pt-3">
-              <div className="flex items-center gap-2">
+            <div className={styles.eventManagementBar}>
+              <div className={styles.eventControls}>
                 {/* Event Count */}
-                {eventCount > 0 && (
-                  <div className="px-3 py-1 bg-dnd-gray-700 rounded text-sm text-gray-300">
-                    {eventCount} event{eventCount !== 1 ? 's' : ''} scheduled
+                {actionCount > 0 && (
+                  <div className={styles.eventIndicator}>
+                    {actionCount} event{actionCount !== 1 ? 's' : ''} scheduled
                   </div>
                 )}
 
                 {/* Add Event Buttons */}
-                <div className="flex items-center gap-1">
+                <div className={styles.eventButtons}>
                   <button
                     onClick={() => onAddEvent?.('move')}
-                    className="p-2 bg-dnd-gray-700 text-gray-300 rounded hover:bg-dnd-gray-600 transition-all"
+                    className={styles.eventButton}
                     title="Add Move Event"
                   >
-                    <Move className="w-4 h-4" />
+                    <Move className={styles.icon} />
                   </button>
                   <button
                     onClick={() => onAddEvent?.('appear')}
-                    className="p-2 bg-dnd-gray-700 text-gray-300 rounded hover:bg-dnd-gray-600 transition-all"
+                    className={styles.eventButton}
                     title="Add Appear Event"
                   >
-                    <Eye className="w-4 h-4" />
+                    <Eye className={styles.icon} />
                   </button>
                   <button
                     onClick={() => onAddEvent?.('disappear')}
-                    className="p-2 bg-dnd-gray-700 text-gray-300 rounded hover:bg-dnd-gray-600 transition-all"
+                    className={styles.eventButton}
                     title="Add Disappear Event"
                   >
-                    <EyeOff className="w-4 h-4" />
+                    <EyeOff className={styles.icon} />
                   </button>
                 </div>
 
                 {/* Edit Events */}
-                {eventCount > 0 && (
+                {actionCount > 0 && (
                   <button
                     onClick={onEditEvents}
-                    className="px-3 py-1 bg-dnd-gray-700 text-gray-300 rounded hover:bg-dnd-gray-600 transition-all text-sm"
+                    className={styles.editEventsButton}
                   >
                     Edit Events
                   </button>
@@ -182,8 +179,8 @@ export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) 
               </div>
 
               {/* Animation Speed */}
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Speed:</label>
+              <div className={styles.animationControls}>
+                <label className={styles.speedLabel}>Speed:</label>
                 <input
                   type="range"
                   min="0.5"
@@ -191,45 +188,48 @@ export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) 
                   step="0.5"
                   value={animationSpeed}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAnimationSpeed(parseFloat(e.target.value))}
-                  className="w-24"
+                  className={styles.speedSlider}
                 />
-                <span className="text-sm text-gray-300 w-10">{animationSpeed}x</span>
+                <span className={styles.speedValue}>{animationSpeed}x</span>
               </div>
             </div>
           )}
 
           {/* Event Preview (mini timeline) */}
           {isInCombat && timeline && (
-            <div className="mt-3 border-t border-dnd-gray-700 pt-3">
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                {timeline.rounds.slice(0, 10).map((round) => (
+            <div className={styles.eventPreview}>
+              <div className={styles.eventPreviewContent}>
+                {timeline.events.slice(0, 10).map((event) => (
                   <button
-                    key={round.id}
-                    onClick={() => goToRound(round.number)}
-                    className={`min-w-[60px] px-3 py-2 rounded text-sm font-medium transition-all ${
-                      round.number === currentRound
-                        ? 'bg-dnd-gold text-dnd-black'
-                        : round.executed
-                        ? 'bg-dnd-gray-700 text-gray-400'
-                        : 'bg-dnd-gray-800 text-gray-300 hover:bg-dnd-gray-700'
-                    }`}
+                    key={event.id}
+                    onClick={() => goToEvent(event.number)}
+                    className={clsx(
+                      styles.roundPreviewButton,
+                      event.number === currentEvent
+                        ? styles.roundPreviewButtonCurrent
+                        : event.executed
+                        ? styles.roundPreviewButtonExecuted
+                        : styles.roundPreviewButtonPending
+                    )}
                     disabled={isAnimating}
                   >
-                    <div className="text-xs">R{round.number}</div>
-                    {round.events.length > 0 && (
-                      <div className="flex justify-center gap-1 mt-1">
-                        {round.events.slice(0, 3).map((event, i) => (
+                    <div className={styles.roundPreviewNumber}>E{event.number}</div>
+                    {event.actions.length > 0 && (
+                      <div className={styles.eventIndicators}>
+                        {event.actions.slice(0, 3).map((action, i) => (
                           <div
                             key={i}
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              event.type === 'move' ? 'bg-blue-400' :
-                              event.type === 'appear' ? 'bg-green-400' :
-                              'bg-red-400'
-                            }`}
+                            className={clsx(
+                              styles.eventDot,
+                              action.type === 'move' ? styles.eventDotMove :
+                              action.type === 'appear' ? styles.eventDotAppear :
+                              action.type === 'disappear' ? styles.eventDotDisappear :
+                              styles.eventDotOther
+                            )}
                           />
                         ))}
-                        {round.events.length > 3 && (
-                          <span className="text-xs">+{round.events.length - 3}</span>
+                        {event.actions.length > 3 && (
+                          <span className={styles.moreEventsIndicator}>+{event.actions.length - 3}</span>
                         )}
                       </div>
                     )}

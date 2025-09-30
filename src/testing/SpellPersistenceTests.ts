@@ -1,5 +1,5 @@
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 import type { SpellEventData } from '@/types/timeline'
 
 interface TestResult {
@@ -53,13 +53,13 @@ export class SpellPersistenceTests {
     console.log('📍 Test: Fireball Persistence (1 round)')
 
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const errors: string[] = []
     const details: any = {}
 
     // Start fresh combat
     roundStore.startCombat(mapStore.currentMap!.id)
-    const startRound = roundStore.currentRound
+    const startRound = roundStore.currentEvent
     details.startRound = startRound
 
     // Create Fireball persistent area
@@ -77,16 +77,16 @@ export class SpellPersistenceTests {
     details.existsAtCreation = exists
 
     // Advance to next round
-    await roundStore.nextRound()
+    await roundStore.nextEvent()
     await this.wait(100)
 
     // Check if removed after 1 round
     exists = this.checkAreaExists(fireballArea.id)
     details.existsAfterRound1 = exists
-    details.currentRound = roundStore.currentRound
+    details.currentEvent = roundStore.currentEvent
 
     if (exists) {
-      errors.push(`Fireball area still exists at round ${roundStore.currentRound}, should be removed after 1 round`)
+      errors.push(`Fireball area still exists at round ${roundStore.currentEvent}, should be removed after 1 round`)
 
       // Debug info
       const area = mapStore.currentMap?.objects.find(obj => obj.id === fireballArea.id)
@@ -123,13 +123,13 @@ export class SpellPersistenceTests {
     console.log('📍 Test: Darkness Persistence (3 rounds)')
 
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const errors: string[] = []
     const details: any = {}
 
     // Reset to round 1
-    roundStore.goToRound(1)
-    const startRound = roundStore.currentRound
+    roundStore.goToEvent(1)
+    const startRound = roundStore.currentEvent
     details.startRound = startRound
 
     // Create Darkness persistent area
@@ -142,27 +142,27 @@ export class SpellPersistenceTests {
     // Check through rounds 1-3 (should exist)
     for (let i = 0; i < 3; i++) {
       if (i > 0) {
-        await roundStore.nextRound()
+        await roundStore.nextEvent()
         await this.wait(100)
       }
 
       const exists = this.checkAreaExists(darknessArea.id)
-      details[`round${roundStore.currentRound}Exists`] = exists
+      details[`round${roundStore.currentEvent}Exists`] = exists
 
       if (!exists) {
-        errors.push(`Darkness should exist at round ${roundStore.currentRound} but was removed`)
+        errors.push(`Darkness should exist at round ${roundStore.currentEvent} but was removed`)
       }
     }
 
     // Advance to round 4 (should be removed)
-    await roundStore.nextRound()
+    await roundStore.nextEvent()
     await this.wait(100)
 
     const existsAfterExpiry = this.checkAreaExists(darknessArea.id)
     details.existsAtRound4 = existsAfterExpiry
 
     if (existsAfterExpiry) {
-      errors.push(`Darkness still exists at round ${roundStore.currentRound}, should be removed after 3 rounds`)
+      errors.push(`Darkness still exists at round ${roundStore.currentEvent}, should be removed after 3 rounds`)
     }
 
     // Cleanup
@@ -188,13 +188,13 @@ export class SpellPersistenceTests {
     console.log('📍 Test: Web Persistence (10 rounds)')
 
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const errors: string[] = []
     const details: any = {}
 
     // Reset to round 1
-    roundStore.goToRound(1)
-    const startRound = roundStore.currentRound
+    roundStore.goToEvent(1)
+    const startRound = roundStore.currentEvent
     details.startRound = startRound
 
     // Create Web persistent area
@@ -207,7 +207,7 @@ export class SpellPersistenceTests {
     // Check at rounds 1, 5, and 10 (should exist)
     const checkRounds = [1, 5, 10]
     for (const targetRound of checkRounds) {
-      roundStore.goToRound(targetRound)
+      roundStore.goToEvent(targetRound)
       await this.wait(100)
 
       const exists = this.checkAreaExists(webArea.id)
@@ -219,7 +219,7 @@ export class SpellPersistenceTests {
     }
 
     // Check at round 11 (should be removed)
-    roundStore.goToRound(11)
+    roundStore.goToEvent(11)
     await this.wait(100)
 
     const existsAfterExpiry = this.checkAreaExists(webArea.id)
@@ -252,13 +252,13 @@ export class SpellPersistenceTests {
     console.log('📍 Test: Magic Missile (no persistence)')
 
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const errors: string[] = []
     const details: any = {}
 
     // Reset to round 1
-    roundStore.goToRound(1)
-    const startRound = roundStore.currentRound
+    roundStore.goToEvent(1)
+    const startRound = roundStore.currentEvent
 
     // Count persistent areas before
     const areasBefore = mapStore.currentMap?.objects.filter(
@@ -328,13 +328,13 @@ export class SpellPersistenceTests {
     console.log('📍 Test: Cloud of Daggers Persistence (10 rounds)')
 
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const errors: string[] = []
     const details: any = {}
 
     // Reset to round 1
-    roundStore.goToRound(1)
-    const startRound = roundStore.currentRound
+    roundStore.goToEvent(1)
+    const startRound = roundStore.currentEvent
 
     // Create Cloud of Daggers area
     const cloudArea = this.createPersistentArea('Cloud of Daggers', startRound, 10, {
@@ -344,7 +344,7 @@ export class SpellPersistenceTests {
     mapStore.addSpellEffect(cloudArea)
 
     // Jump to round 10 (should still exist)
-    roundStore.goToRound(10)
+    roundStore.goToEvent(10)
     await this.wait(100)
 
     let exists = this.checkAreaExists(cloudArea.id)
@@ -355,7 +355,7 @@ export class SpellPersistenceTests {
     }
 
     // Jump to round 11 (should be removed)
-    roundStore.goToRound(11)
+    roundStore.goToEvent(11)
     await this.wait(100)
 
     exists = this.checkAreaExists(cloudArea.id)
@@ -388,13 +388,13 @@ export class SpellPersistenceTests {
     console.log('📍 Test: Multiple Spells Cleanup')
 
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const errors: string[] = []
     const details: any = {}
 
     // Reset to round 1
-    roundStore.goToRound(1)
-    const startRound = roundStore.currentRound
+    roundStore.goToEvent(1)
+    const startRound = roundStore.currentEvent
 
     // Create multiple spells with different durations
     const spell1 = this.createPersistentArea('Spell1', startRound, 1, { x: 200, y: 200 }, '#ff0000', 30)
@@ -406,7 +406,7 @@ export class SpellPersistenceTests {
     mapStore.addSpellEffect(spell3)
 
     // Round 2: spell1 should be gone, others remain
-    await roundStore.nextRound()
+    await roundStore.nextEvent()
     await this.wait(100)
 
     details.round2 = {
@@ -426,7 +426,7 @@ export class SpellPersistenceTests {
     }
 
     // Round 3: spell2 should be gone, spell3 remains
-    await roundStore.nextRound()
+    await roundStore.nextEvent()
     await this.wait(100)
 
     details.round3 = {
@@ -442,7 +442,7 @@ export class SpellPersistenceTests {
     }
 
     // Round 4: all should be gone
-    await roundStore.nextRound()
+    await roundStore.nextEvent()
     await this.wait(100)
 
     details.round4 = {
@@ -478,19 +478,19 @@ export class SpellPersistenceTests {
     console.log('📍 Test: Persistence with Round Jumps')
 
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const errors: string[] = []
     const details: any = {}
 
     // Start at round 1
-    roundStore.goToRound(1)
+    roundStore.goToEvent(1)
 
     // Create a spell that lasts 5 rounds
     const testSpell = this.createPersistentArea('Jump Test', 1, 5, { x: 250, y: 250 }, '#ff00ff', 40)
     mapStore.addSpellEffect(testSpell)
 
     // Jump directly to round 5 (should still exist)
-    roundStore.goToRound(5)
+    roundStore.goToEvent(5)
     await this.wait(100)
 
     details.existsAtRound5 = this.checkAreaExists(testSpell.id)
@@ -499,7 +499,7 @@ export class SpellPersistenceTests {
     }
 
     // Jump back to round 3 (should still exist)
-    roundStore.goToRound(3)
+    roundStore.goToEvent(3)
     await this.wait(100)
 
     details.existsAtRound3 = this.checkAreaExists(testSpell.id)
@@ -508,7 +508,7 @@ export class SpellPersistenceTests {
     }
 
     // Jump to round 6 (should be removed)
-    roundStore.goToRound(6)
+    roundStore.goToEvent(6)
     await this.wait(100)
 
     details.existsAtRound6 = this.checkAreaExists(testSpell.id)
@@ -517,7 +517,7 @@ export class SpellPersistenceTests {
     }
 
     // Jump back to round 2 (should NOT reappear)
-    roundStore.goToRound(2)
+    roundStore.goToEvent(2)
     await this.wait(100)
 
     details.reappearsAtRound2 = this.checkAreaExists(testSpell.id)
@@ -635,19 +635,19 @@ export class SpellPersistenceTests {
    */
   debugCurrentAreas() {
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
 
     const areas = mapStore.currentMap?.objects.filter(
       obj => obj.type === 'persistent-area'
     ) || []
 
     console.log('\n🔍 Current Persistent Areas:')
-    console.log(`Round: ${roundStore.currentRound}`)
+    console.log(`Round: ${roundStore.currentEvent}`)
     console.log(`Total: ${areas.length}`)
 
     areas.forEach(area => {
       const expiresAt = (area.roundCreated || 0) + (area.spellDuration || 0)
-      const shouldBeRemoved = roundStore.currentRound >= expiresAt
+      const shouldBeRemoved = roundStore.currentEvent >= expiresAt
 
       console.log(`\n  ${area.persistentAreaData?.spellName || 'Unknown'}:`)
       console.log(`    - ID: ${area.id}`)

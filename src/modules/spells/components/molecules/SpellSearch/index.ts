@@ -1,1 +1,0 @@
-export { SpellSearch } from './SpellSearch'

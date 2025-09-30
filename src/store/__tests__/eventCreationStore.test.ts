@@ -100,7 +100,7 @@ describe('eventCreationStore', () => {
       expect(result.current.isPicking).toBe('token')
     })
 
-    it('should set selected token and stop picking', () => {
+    it('should set selected token but not change picking state', () => {
       const { result } = renderHook(() => useEventCreationStore())
 
       // Start picking token first
@@ -110,13 +110,13 @@ describe('eventCreationStore', () => {
 
       expect(result.current.isPicking).toBe('token')
 
-      // Set selected token
+      // Set selected token - should not clear isPicking (UI components manage this)
       act(() => {
         result.current.setSelectedToken('new-token-456')
       })
 
       expect(result.current.selectedTokenId).toBe('new-token-456')
-      expect(result.current.isPicking).toBeNull()
+      expect(result.current.isPicking).toBe('token') // Should still be 'token'
     })
 
     it('should set from position', () => {

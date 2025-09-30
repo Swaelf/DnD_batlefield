@@ -213,7 +213,6 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
     switch (activeHandle) {
       case 'rotate':
         // Rotation logic would go here
-        console.log('Rotating by', Math.atan2(deltaY, deltaX))
         break
 
       case 'tl':
@@ -225,7 +224,6 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
       case 'ml':
       case 'mr':
         // Resize logic would go here
-        console.log('Resizing from handle', activeHandle, 'delta:', deltaX, deltaY)
         break
 
       default:

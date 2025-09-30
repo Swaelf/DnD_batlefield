@@ -14,7 +14,7 @@ import {
   MousePointer2,
   ZoomIn,
   Grid3X3
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -53,7 +53,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         e.preventDefault()
         onClose()
         break
-      case 'ArrowDown':
+      case 'ArrowDown': {
         e.preventDefault()
         // Focus next menu item
         const activeElement = document.activeElement as HTMLElement
@@ -66,6 +66,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           firstItem?.focus()
         }
         break
+      }
       case 'ArrowUp':
         e.preventDefault()
         // Focus previous menu item

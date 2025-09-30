@@ -6,7 +6,7 @@ import type { Point, MapObject } from '@/types'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
-import { Bold, Italic, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
+import { Bold, Italic, AlignLeft, AlignCenter, AlignRight } from '@/utils/optimizedIcons'
 
 interface TextStyle {
   fontFamily: string

@@ -7,7 +7,7 @@ import React, { useCallback, useState } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
-import { Download, FileText, Image, Printer, X } from 'lucide-react'
+import { Download, FileText, Image, Printer, X } from '@/utils/optimizedIcons'
 import useMapStore from '@/store/mapStore'
 import type Konva from 'konva'
 

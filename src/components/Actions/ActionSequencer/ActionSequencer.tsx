@@ -1,5 +1,5 @@
 import React, { memo, useState, useCallback } from 'react'
-import { Play, Pause, Plus, Trash2, Copy, Settings } from 'lucide-react'
+import { Play, Pause, Plus, Trash2, Copy, Settings } from '@/utils/optimizedIcons'
 import {
   SEQUENCE_TYPES,
   SEQUENCE_TIMING,

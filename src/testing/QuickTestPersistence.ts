@@ -1,5 +1,5 @@
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 
 /**
  * Quick test to verify persistent area cleanup is working
@@ -8,7 +8,7 @@ export async function quickTestPersistence() {
   console.log('=== QUICK PERSISTENCE TEST ===')
 
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   // Ensure we have a map
   if (!mapStore.currentMap) {
@@ -20,7 +20,7 @@ export async function quickTestPersistence() {
     roundStore.startCombat(mapStore.currentMap!.id)
   }
 
-  const startRound = roundStore.currentRound
+  const startRound = roundStore.currentEvent
   console.log('Starting at round', startRound)
 
   // Create test persistent areas
@@ -74,13 +74,13 @@ export async function quickTestPersistence() {
   console.log(`Round ${startRound}: Fireball=${fireballExists}, Darkness=${darknessExists}`)
 
   // Advance to next round
-  await roundStore.nextRound()
+  await roundStore.nextEvent()
   await new Promise(resolve => setTimeout(resolve, 100))
 
   // Check after round 2
   fireballExists = mapStore.currentMap!.objects.some(obj => obj.id === 'test-fireball')
   darknessExists = mapStore.currentMap!.objects.some(obj => obj.id === 'test-darkness')
-  console.log(`Round ${roundStore.currentRound}: Fireball=${fireballExists}, Darkness=${darknessExists}`)
+  console.log(`Round ${roundStore.currentEvent}: Fireball=${fireballExists}, Darkness=${darknessExists}`)
 
   if (fireballExists) {
     console.error('❌ ERROR: Fireball should be removed after 1 round!')
@@ -95,13 +95,13 @@ export async function quickTestPersistence() {
   }
 
   // Advance 2 more rounds to test Darkness removal
-  await roundStore.nextRound()
-  await roundStore.nextRound()
+  await roundStore.nextEvent()
+  await roundStore.nextEvent()
   await new Promise(resolve => setTimeout(resolve, 100))
 
   // Check after round 4
   darknessExists = mapStore.currentMap!.objects.some(obj => obj.id === 'test-darkness')
-  console.log(`Round ${roundStore.currentRound}: Darkness=${darknessExists}`)
+  console.log(`Round ${roundStore.currentEvent}: Darkness=${darknessExists}`)
 
   if (darknessExists) {
     console.error('❌ ERROR: Darkness should be removed after 3 rounds!')

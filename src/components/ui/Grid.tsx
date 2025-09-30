@@ -1,128 +1,64 @@
-import type React from 'react'
-import { styled } from '@/styles/theme.config'
+import type { ComponentProps } from 'react'
+import { gridRecipe, gridItemRecipe } from './Grid.css'
 
-export const Grid = styled('div', {
-  display: 'grid',
+export type GridProps = {
+  columns?: 1 | 2 | 3 | 4 | 5 | 6 | 12
+  gap?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12 | 16 | 20
+  autoFit?: boolean
+  autoFill?: boolean
+  responsive?: boolean | 'cards' | 'tokens'
+  dense?: boolean
+  align?: 'start' | 'center' | 'end' | 'stretch'
+  justify?: 'start' | 'center' | 'end' | 'stretch'
+} & Omit<ComponentProps<'div'>, 'className'>
 
-  variants: {
-    columns: {
-      1: { gridTemplateColumns: 'repeat(1, minmax(0, 1fr))' },
-      2: { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' },
-      3: { gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' },
-      4: { gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' },
-      5: { gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' },
-      6: { gridTemplateColumns: 'repeat(6, minmax(0, 1fr))' },
-      12: { gridTemplateColumns: 'repeat(12, minmax(0, 1fr))' },
-    },
+export type GridItemProps = {
+  colSpan?: 1 | 2 | 3 | 4 | 5 | 6 | 'full'
+  rowSpan?: 1 | 2 | 3 | 4 | 5 | 6
+  colStart?: 1 | 2 | 3 | 4 | 5 | 6 | 'auto'
+  colEnd?: 1 | 2 | 3 | 4 | 5 | 6 | 'auto'
+} & Omit<ComponentProps<'div'>, 'className'>
 
-    gap: {
-      0: { gap: 0 },
-      1: { gap: '$1' },
-      2: { gap: '$2' },
-      3: { gap: '$3' },
-      4: { gap: '$4' },
-      5: { gap: '$5' },
-      6: { gap: '$6' },
-      8: { gap: '$8' },
-      10: { gap: '$10' },
-      12: { gap: '$12' },
-      16: { gap: '$16' },
-      20: { gap: '$20' },
-    },
+export const Grid = ({
+  columns,
+  gap = 4,
+  autoFit,
+  autoFill,
+  responsive,
+  dense,
+  align,
+  justify,
+  ...props
+}: GridProps) => (
+  <div
+    {...props}
+    className={gridRecipe({
+      columns,
+      gap,
+      autoFit,
+      autoFill,
+      responsive,
+      dense,
+      align,
+      justify
+    })}
+  />
+)
 
-    autoFit: {
-      true: {
-        gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))',
-      },
-    },
-
-    autoFill: {
-      true: {
-        gridTemplateColumns: 'repeat(auto-fill, minmax(0, 1fr))',
-      },
-    },
-
-    responsive: {
-      // Responsive grid that adapts to screen size
-      true: {
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-      },
-      cards: {
-        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-      },
-      tokens: {
-        gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
-      },
-    },
-
-    dense: {
-      true: {
-        gridAutoFlow: 'dense',
-      },
-    },
-
-    align: {
-      start: { alignItems: 'flex-start' },
-      center: { alignItems: 'center' },
-      end: { alignItems: 'flex-end' },
-      stretch: { alignItems: 'stretch' },
-    },
-
-    justify: {
-      start: { justifyItems: 'start' },
-      center: { justifyItems: 'center' },
-      end: { justifyItems: 'end' },
-      stretch: { justifyItems: 'stretch' },
-    },
-  },
-
-  defaultVariants: {
-    gap: 4,
-  },
-})
-
-export const GridItem = styled('div', {
-  variants: {
-    colSpan: {
-      1: { gridColumn: 'span 1 / span 1' },
-      2: { gridColumn: 'span 2 / span 2' },
-      3: { gridColumn: 'span 3 / span 3' },
-      4: { gridColumn: 'span 4 / span 4' },
-      5: { gridColumn: 'span 5 / span 5' },
-      6: { gridColumn: 'span 6 / span 6' },
-      full: { gridColumn: '1 / -1' },
-    },
-
-    rowSpan: {
-      1: { gridRow: 'span 1 / span 1' },
-      2: { gridRow: 'span 2 / span 2' },
-      3: { gridRow: 'span 3 / span 3' },
-      4: { gridRow: 'span 4 / span 4' },
-      5: { gridRow: 'span 5 / span 5' },
-      6: { gridRow: 'span 6 / span 6' },
-    },
-
-    colStart: {
-      1: { gridColumnStart: '1' },
-      2: { gridColumnStart: '2' },
-      3: { gridColumnStart: '3' },
-      4: { gridColumnStart: '4' },
-      5: { gridColumnStart: '5' },
-      6: { gridColumnStart: '6' },
-      auto: { gridColumnStart: 'auto' },
-    },
-
-    colEnd: {
-      1: { gridColumnEnd: '1' },
-      2: { gridColumnEnd: '2' },
-      3: { gridColumnEnd: '3' },
-      4: { gridColumnEnd: '4' },
-      5: { gridColumnEnd: '5' },
-      6: { gridColumnEnd: '6' },
-      auto: { gridColumnEnd: 'auto' },
-    },
-  },
-})
-
-export type GridProps = React.ComponentProps<typeof Grid>
-export type GridItemProps = React.ComponentProps<typeof GridItem>
+export const GridItem = ({
+  colSpan,
+  rowSpan,
+  colStart,
+  colEnd,
+  ...props
+}: GridItemProps) => (
+  <div
+    {...props}
+    className={gridItemRecipe({
+      colSpan,
+      rowSpan,
+      colStart,
+      colEnd
+    })}
+  />
+)

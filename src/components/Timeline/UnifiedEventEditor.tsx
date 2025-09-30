@@ -1,24 +1,29 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Plus, X, Move, Target, Sparkles } from 'lucide-react'
-import useRoundStore from '@/store/roundStore'
+import { Plus, X, Sparkles } from '@/utils/optimizedIcons'
+import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
 import useEventCreationStore from '@/store/eventCreationStore'
+import useAnimationStore from '@/store/animationStore'
 import { useUnifiedActionStore } from '@/store/unifiedActionStore'
 import type { Token } from '@/types/token'
 import type { Position } from '@/types/map'
 import type { UnifiedAction } from '@/types/unifiedAction'
-import type { ActionId } from '@/modules/timeline/types/actions'
+// ActionId is just a string identifier
+type ActionId = string
 import { createUnifiedRoundEvent } from '@/types/timelineUnified'
 import { Box, Text, Button } from '@/components/primitives'
 import { Modal } from '@/components/ui/Modal'
 import { ActionSelectionModal } from './ActionSelectionModal'
 import { ActionCustomizationModal } from './ActionCustomizationModal'
 import {
-  TokenSelector,
-  PositionPicker,
-  EventsList
+  EventsList,
+  SelectToken,
+  SelectTarget,
+  SelectAction,
+  ActionPreview
 } from './EventEditor/index'
 import type { EventType } from '@/types'
+import { getEnvironmentTokenCanvasPosition } from '@/utils/stageRegistry'
 
 // All styled components removed - using primitive components with style props
 
@@ -35,14 +40,16 @@ const UnifiedEventEditorComponent = ({
   tokenId: initialTokenId
 }: UnifiedEventEditorProps) => {
   // Use specific selectors to prevent unnecessary re-renders
-  const currentRound = useRoundStore(state => state.currentRound)
-  const timeline = useRoundStore(state => state.timeline)
-  const addEvent = useRoundStore(state => state.addEvent)
-  const removeEvent = useRoundStore(state => state.removeEvent)
+  const currentEvent = useTimelineStore(state => state.currentEvent)
+  const timeline = useTimelineStore(state => state.timeline)
+  const addAction = useTimelineStore(state => state.addAction)
+  const removeAction = useTimelineStore(state => state.removeAction)
   const currentMap = useMapStore(state => state.currentMap)
   const spellPreviewEnabled = useMapStore(state => state.spellPreviewEnabled)
   const toggleSpellPreview = useMapStore(state => state.toggleSpellPreview)
   const executeAction = useUnifiedActionStore(state => state.executeAction)
+  const pauseAnimations = useAnimationStore(state => state.pauseAnimations)
+  const resumeAnimations = useAnimationStore(state => state.resumeAnimations)
 
   const [selectedToken, setSelectedToken] = useState<string>(initialTokenId || '')
   const [selectedAction, setSelectedAction] = useState<UnifiedAction | null>(null)
@@ -50,10 +57,13 @@ const UnifiedEventEditorComponent = ({
   const [isCustomizationModalOpen, setIsCustomizationModalOpen] = useState(false)
   const [actionToCustomize, setActionToCustomize] = useState<UnifiedAction | null>(null)
   const [targetPosition, setTargetPosition] = useState<Position>({ x: 0, y: 0 })
+  const [targetTokenId, setTargetTokenId] = useState<string>('')
   const [isTemporarilyHidden, setIsTemporarilyHidden] = useState(false)
+  const [targetingMode, setTargetingMode] = useState<'position' | 'token' | null>(null) // Track user's explicit targeting choice
+  const [useEnvironmentToken, setUseEnvironmentToken] = useState(false)
 
   // Fixed values
-  const targetRound = currentRound // Events execute in current round, not next
+  const targetEvent = currentEvent // Events execute in current event, not next
 
   // Use specific selectors to prevent unnecessary re-renders
   const isPicking = useEventCreationStore(state => state.isPicking)
@@ -73,8 +83,8 @@ const UnifiedEventEditorComponent = ({
     return filteredTokens
   }, [isOpen, currentMap?.objects])
 
-  // Get events for the current round
-  const roundEvents = timeline?.rounds.find(r => r.number === currentRound)?.events || []
+  // Get actions for the current event
+  const eventActions = timeline?.events.find(e => e.number === currentEvent)?.actions || []
 
   useEffect(() => {
     if (selectedToken && currentMap) {
@@ -88,55 +98,67 @@ const UnifiedEventEditorComponent = ({
   useEffect(() => {
     if (pickedToPosition && isPicking === null && isTemporarilyHidden) {
       setTargetPosition(pickedToPosition)
+      // Clear the picked position so we can pick again
+      setTimeout(() => {
+        const eventStore = useEventCreationStore.getState()
+        eventStore.setPosition('to', { x: 0, y: 0 }) // Reset to allow re-picking
+      }, 50)
       setIsTemporarilyHidden(false)
     }
   }, [pickedToPosition, isPicking, isTemporarilyHidden])
 
+  // Performance optimization: Pause animations when modal is open
   useEffect(() => {
-    if (pickedTokenId && isPicking === null && isTemporarilyHidden) {
-      setSelectedToken(pickedTokenId)
+    if (isOpen && !isTemporarilyHidden) {
+      pauseAnimations()
+    } else {
+      resumeAnimations()
+    }
+
+    // Cleanup: Resume animations when component unmounts
+    return () => {
+      resumeAnimations()
+    }
+  }, [isOpen, isTemporarilyHidden, pauseAnimations, resumeAnimations])
+
+  // Handle token picking for main token selection
+  useEffect(() => {
+    if (pickedTokenId && isPicking === 'token' && isTemporarilyHidden) {
+      setSelectedToken(pickedTokenId) // Set the local component state
+      // Clear the picking state and show the modal again
+      const eventStore = useEventCreationStore.getState()
+      eventStore.setPickingMode(null)
+      // For token picking, clear the selectedTokenId to allow re-picking
+      // Use a small delay to ensure state updates properly
+      setTimeout(() => {
+        eventStore.setSelectedToken('')
+      }, 50)
       setIsTemporarilyHidden(false)
     }
   }, [pickedTokenId, isPicking, isTemporarilyHidden])
 
+  // Handle target token picking
+  useEffect(() => {
+    if (pickedTokenId && isPicking === 'targetToken' && isTemporarilyHidden) {
+      // When a token is picked as target, set the targetTokenId and target position
+      setTargetTokenId(pickedTokenId)
+      const token = tokens.find(t => t.id === pickedTokenId)
+      if (token) {
+        setTargetPosition(token.position)
+      }
+      // Clear the picking state and store state, then show the modal again
+      const eventStore = useEventCreationStore.getState()
+      eventStore.setPickingMode(null)
+      eventStore.setSelectedToken('') // Clear the picked token ID so we can pick again
+      setIsTemporarilyHidden(false)
+    }
+  }, [pickedTokenId, isPicking, isTemporarilyHidden, tokens])
+
   const handleActionSelect = (action: UnifiedAction) => {
     setSelectedAction(action)
 
-    // If this is a spell action, sync it to the event creation store for preview
-    if (action.type === 'spell' && action.animation) {
-      const setEventStoreSelectedSpell = useEventCreationStore.getState().setSelectedSpell
-      const setEventStorePosition = useEventCreationStore.getState().setPosition
-
-      // Create spell config from unified action
-      // Check if action has custom properties for range and area
-      const range = (action as any).range || 150
-      const areaOfEffect = (action as any).areaOfEffect || 0
-      const burstSize = action.animation.burstSize || 0
-
-      const spellConfig = {
-        type: 'spell' as const,
-        spellName: action.metadata?.name || 'Spell',
-        category: action.animation.type?.includes('burst') ? 'projectile-burst' :
-                  action.animation.type === 'projectile' ? 'projectile' :
-                  action.animation.type === 'ray' ? 'ray' :
-                  action.animation.type as any,
-        color: action.animation.color || '#ff0000',
-        range: range,
-        burstRadius: areaOfEffect || burstSize, // Use areaOfEffect if available, otherwise burstSize
-        size: action.animation.size || 20,
-        duration: action.duration || 2000
-      }
-
-      setEventStoreSelectedSpell(spellConfig)
-
-      // Also set fromPosition if we have a token
-      if (selectedToken && currentMap) {
-        const token = currentMap.objects.find(obj => obj.id === selectedToken)
-        if (token) {
-          setEventStorePosition('from', token.position)
-        }
-      }
-    }
+    // Note: Spell preview is now handled by the mapStore.spellPreviewEnabled flag
+    // The unified action contains all necessary data for preview
   }
 
   const handleActionEdit = (action: UnifiedAction) => {
@@ -156,29 +178,45 @@ const UnifiedEventEditorComponent = ({
     const token = currentMap.objects.find(obj => obj.id === selectedToken)
     if (!token) return
 
-    // Check if target position corresponds to a token for target tracking
-    let targetTokenId = ''
-    if (selectedAction.animation.trackTarget) {
+    // Calculate source position for environment token
+    // For environment token, use viewport-relative bottom-left corner
+    let sourcePosition = token.position
+    if (useEnvironmentToken && token.id === 'void-token') {
+      // Use utility function to get viewport-relative position
+      sourcePosition = getEnvironmentTokenCanvasPosition()
+    }
+
+    // Use the explicitly selected target token ID if available,
+    // otherwise fall back to position-based detection for backwards compatibility
+    let finalTargetTokenId = targetTokenId // Use the explicit target token selection
+
+
+    // Only auto-detect tokens if user chose token targeting or hasn't made an explicit choice
+    // If user explicitly chose position targeting, respect that choice and don't auto-detect
+    if (!finalTargetTokenId && selectedAction.animation.trackTarget && targetingMode !== 'position') {
       const targetToken = currentMap.objects.find(obj =>
         obj.type === 'token' &&
+        obj.id !== selectedToken && // Don't target self
         Math.abs(obj.position.x - targetPosition.x) < 25 && // Within 25 pixels
         Math.abs(obj.position.y - targetPosition.y) < 25
       )
       if (targetToken) {
-        targetTokenId = targetToken.id
+        finalTargetTokenId = targetToken.id
       }
     }
+
 
     // Create a customized action based on the selected template and current context
     const customizedAction: UnifiedAction = {
       ...selectedAction,
       id: `action-${Date.now()}` as ActionId, // Generate new unique ID
-      source: token.position,      // Set source to token position
+      source: sourcePosition,      // Set source to calculated position (viewport-relative for environment token)
       target: targetPosition,      // Set target to selected position
       timestamp: Date.now(),
       animation: {
         ...selectedAction.animation,
-        targetTokenId: targetTokenId // Set target token ID for tracking
+        targetTokenId: finalTargetTokenId, // Use the determined target token ID
+        trackTarget: !!(finalTargetTokenId && selectedAction.animation.trackTarget) // Only track if we have a target token
       }
     }
 
@@ -189,18 +227,19 @@ const UnifiedEventEditorComponent = ({
     createUnifiedRoundEvent(
       selectedToken,
       customizedAction,
-      targetRound
+      targetEvent
     )
 
-    // For now, convert to legacy format for existing roundStore
-    // This will be updated when roundStore is migrated to unified actions
+    // For now, convert to legacy format for existing timelineStore
+    // This will be updated when timelineStore is migrated to unified actions
     const legacyEventType = mapActionTypeToLegacyType(customizedAction.type) as EventType
-    const legacyEventData = convertActionToLegacyData(customizedAction)
+    const legacyEventData = convertActionToLegacyData(customizedAction, finalTargetTokenId)
 
-    addEvent(selectedToken, legacyEventType, legacyEventData, targetRound)
+    addAction(selectedToken, legacyEventType, legacyEventData, targetEvent)
 
     // Reset form
     setSelectedAction(null)
+    setTargetingMode(null) // Reset targeting mode for next event
   }
 
   // Helper to map unified action types to legacy event types
@@ -215,7 +254,7 @@ const UnifiedEventEditorComponent = ({
   }
 
   // Helper to convert unified action to legacy event data
-  const convertActionToLegacyData = (action: UnifiedAction): any => {
+  const convertActionToLegacyData = (action: UnifiedAction, finalTargetTokenId?: string): any => {
     switch (action.type) {
       case 'spell':
         // Map unified animation types to legacy spell categories
@@ -244,11 +283,11 @@ const UnifiedEventEditorComponent = ({
           curved: action.animation.curved || false,
           curveHeight: action.animation.curveHeight || 30,
           curveDirection: action.animation.curveDirection || 'auto',
-          // Target tracking properties
-          trackTarget: action.animation.trackTarget || false,
-          targetTokenId: action.animation.targetTokenId || ''
+          // Target tracking properties - only enable if we have a target token
+          trackTarget: !!(finalTargetTokenId && action.animation.trackTarget),
+          targetTokenId: finalTargetTokenId || ''
         }
-        return result;
+        return result
 
       case 'attack':
         return {
@@ -291,46 +330,13 @@ const UnifiedEventEditorComponent = ({
   }
 
   const handleDeleteEvent = (eventId: string) => {
-    removeEvent(eventId)
+    removeAction(eventId)
   }
 
   const handlePositionPick = () => {
-    // Before starting position picking, ensure spell data is synced if we have a spell action
-    if (selectedAction && selectedAction.type === 'spell') {
-      const setEventStoreSelectedSpell = useEventCreationStore.getState().setSelectedSpell
-      const setEventStorePosition = useEventCreationStore.getState().setPosition
-
-      // Create spell config from unified action
-      // Check if action has custom properties for range and area
-      const range = (selectedAction as any).range || 150
-      const areaOfEffect = (selectedAction as any).areaOfEffect || 0
-      const burstSize = selectedAction.animation?.burstSize || 0
-
-      const spellConfig = {
-        type: 'spell' as const,
-        spellName: selectedAction.metadata?.name || 'Spell',
-        category: selectedAction.animation?.type?.includes('burst') ? 'projectile-burst' :
-                  selectedAction.animation?.type === 'projectile' ? 'projectile' :
-                  selectedAction.animation?.type === 'ray' ? 'ray' :
-                  selectedAction.animation?.type as any || 'projectile',
-        color: selectedAction.animation?.color || '#ff0000',
-        range: range,
-        burstRadius: areaOfEffect || burstSize, // Use areaOfEffect if available
-        size: selectedAction.animation?.size || 20,
-        duration: selectedAction.duration || 2000
-      }
-
-      setEventStoreSelectedSpell(spellConfig)
-
-      // Also ensure fromPosition is set
-      if (selectedToken && currentMap) {
-        const token = currentMap.objects.find(obj => obj.id === selectedToken)
-        if (token) {
-          setEventStorePosition('from', token.position)
-        }
-      }
-    }
-
+    // Clear target token when switching to position mode
+    setTargetTokenId('')
+    setTargetingMode('position') // Explicitly set position targeting mode
     startPickingPosition('to')
     setIsTemporarilyHidden(true)
   }
@@ -340,8 +346,18 @@ const UnifiedEventEditorComponent = ({
     setIsTemporarilyHidden(true)
   }
 
+  const handleTargetTokenPick = () => {
+    // Clear target position when switching to token mode to avoid confusion
+    setTargetPosition({ x: 0, y: 0 })
+    setTargetingMode('token') // Explicitly set token targeting mode
+    // Use a custom picking mode for target tokens
+    const setPickingMode = useEventCreationStore.getState().setPickingMode
+    setPickingMode('targetToken')
+    setIsTemporarilyHidden(true)
+  }
+
   const canAddEvent = () => {
-    return selectedToken && selectedAction && (targetPosition.x !== 0 || targetPosition.y !== 0)
+    return selectedToken && selectedAction && (targetTokenId || targetPosition.x !== 0 || targetPosition.y !== 0)
   }
 
   if (!isOpen && !isTemporarilyHidden) {
@@ -353,30 +369,34 @@ const UnifiedEventEditorComponent = ({
       <Modal
         isOpen={isOpen && !isTemporarilyHidden}
         onClose={onClose}
+        size="xl"
+        padding="none"
+        style={{
+          backgroundColor: '#1A1A1A',
+          border: '1px solid #374151',
+          minHeight: '70vh'
+        }}
       >
         <Box
           style={{
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: 'row',
             height: '70vh',
             overflow: 'hidden'
           }}
         >
-          {/* Main Content */}
+          {/* Main Content - Left Side */}
           <Box
             style={{
               flex: 1,
-              padding: '16px',
+              padding: '24px',
               overflowY: 'auto',
-              maxHeight: '70vh'
+              backgroundColor: '#1A1A1A',
+              borderRight: '1px solid #374151'
             }}
           >
             <Box
               style={{
-                padding: '16px',
-                backgroundColor: 'var(--colors-gray800)',
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
                 display: 'flex',
                 flexDirection: 'column'
               }}
@@ -386,219 +406,95 @@ const UnifiedEventEditorComponent = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: '16px'
+                  marginBottom: '24px',
+                  paddingBottom: '16px',
+                  borderBottom: '1px solid #374151'
                 }}
               >
-                <Box style={{ display: 'flex', flexDirection: 'column', width: 'auto' }}>
+                <Box style={{ display: 'flex', flexDirection: 'column' }}>
                   <Text
                     variant="heading"
                     size="lg"
                     style={{
                       fontWeight: '600',
-                      color: 'var(--colors-white)',
+                      color: '#FFFFFF',
                       marginBottom: '4px'
                     }}
                   >
-                    Create Unified Action Event
+                    Create Action Event
                   </Text>
                   <Text
                     variant="body"
                     size="sm"
-                    style={{ color: 'var(--colors-gray400)' }}
+                    style={{ color: '#9CA3AF' }}
                   >
-                    Schedule unified actions for Round {targetRound}
+                    Schedule actions for Event {targetEvent}
                   </Text>
                 </Box>
 
-                <Box style={{ display: 'flex' }}>
-                  <Button
-                    variant="primary"
-                    onClick={handleAddEvent}
-                    disabled={!canAddEvent()}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <Plus size={16} />
-                    Add Action Event
-                  </Button>
-                </Box>
+                <Button
+                  variant="primary"
+                  onClick={handleAddEvent}
+                  disabled={!canAddEvent()}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    backgroundColor: '#C9AD6A',
+                    color: '#000000',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '10px 16px',
+                    fontWeight: '500'
+                  }}
+                >
+                  <Plus size={16} />
+                  Add Event
+                </Button>
               </Box>
 
-                <Box style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <Box style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   {/* Token Selection */}
-                  <TokenSelector
+                  <SelectToken
                     selectedToken={selectedToken}
                     setSelectedToken={setSelectedToken}
                     tokens={tokens}
                     isPicking={isPicking}
                     onTokenPick={handleTokenPick}
+                    useEnvironmentToken={useEnvironmentToken}
+                    onUseEnvironmentTokenChange={setUseEnvironmentToken}
                   />
 
-                  {/* Position Picker */}
-                  <PositionPicker
+                  {/* Target Position */}
+                  <SelectTarget
                     targetPosition={targetPosition}
+                    targetTokenId={targetTokenId}
+                    tokens={tokens}
                     onPositionPick={handlePositionPick}
+                    onTargetTokenPick={handleTargetTokenPick}
                     isPicking={isPicking}
-                    eventType="spell"
                   />
 
                   {/* Action Selection */}
-                  <Box style={{ display: 'flex', flexDirection: 'column', width: 'auto' }}>
-                    <Text
-                      variant="body"
-                      size="md"
-                      style={{
-                        fontWeight: '600',
-                        color: 'var(--colors-white)',
-                        marginBottom: '8px'
-                      }}
-                    >
-                      Action
-                    </Text>
-                    {selectedAction ? (
-                      <Box
-                        style={{
-                          padding: '12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          backgroundColor: 'var(--colors-gray700)',
-                          borderRadius: '8px',
-                          border: '1px solid var(--colors-gray600)'
-                        }}
-                      >
-                        <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <Box
-                            style={{
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '6px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              backgroundColor:
-                                selectedAction.type === 'spell' ? 'var(--colors-blue500)' :
-                                selectedAction.type === 'attack' ? 'var(--colors-red500)' :
-                                'var(--colors-green500)'
-                            }}
-                          >
-                            {selectedAction.type === 'spell' && <Target size={16} />}
-                            {selectedAction.type === 'attack' && <Target size={16} />}
-                            {selectedAction.type === 'interaction' && <Target size={16} />}
-                            {selectedAction.type === 'move' && <Move size={16} />}
-                          </Box>
-                          <Box>
-                            <Text
-                              variant="body"
-                              size="md"
-                              style={{
-                                fontWeight: '600',
-                                color: 'var(--colors-white)',
-                                marginBottom: '2px'
-                              }}
-                            >
-                              {selectedAction.metadata.name}
-                            </Text>
-                            <Text
-                              variant="body"
-                              size="sm"
-                              style={{
-                                color: 'var(--colors-gray400)',
-                                marginBottom: '4px'
-                              }}
-                            >
-                              {selectedAction.category} • {selectedAction.type}
-                            </Text>
-                          </Box>
-                        </Box>
-                        <Button
-                          onClick={() => setIsActionModalOpen(true)}
-                          variant="secondary"
-                          size="sm"
-                          style={{
-                            backgroundColor: 'var(--colors-gray600)',
-                            color: 'var(--colors-gray300)',
-                            border: '1px solid var(--colors-gray500)'
-                          }}
-                        >
-                          Change
-                        </Button>
-                      </Box>
-                    ) : (
-                      <Button
-                        onClick={() => setIsActionModalOpen(true)}
-                        variant="secondary"
-                        style={{
-                          padding: '16px',
-                          backgroundColor: 'var(--colors-gray700)',
-                          color: 'var(--colors-gray300)',
-                          border: '2px dashed var(--colors-gray500)',
-                          borderRadius: '8px',
-                          display: 'flex',
-                          alignItems: 'center'
-                        }}
-                      >
-                        <Plus size={16} style={{ marginRight: '8px' }} />
-                        Select Action
-                      </Button>
-                    )}
-                  </Box>
+                  <SelectAction
+                    selectedAction={selectedAction}
+                    onSelectAction={() => setIsActionModalOpen(true)}
+                  />
 
                   {/* Action Preview */}
-                  {selectedAction && (
-                    <Box>
-                      <Text
-                        variant="body"
-                        size="md"
-                        style={{
-                          fontWeight: '600',
-                          color: 'var(--colors-white)',
-                          marginBottom: '8px'
-                        }}
-                      >
-                        Action Preview
-                      </Text>
-                      <Box
-                        style={{
-                          padding: '12px',
-                          backgroundColor: 'var(--colors-gray700)',
-                          borderRadius: '6px',
-                          border: '1px solid var(--colors-gray600)'
-                        }}
-                      >
-                        <Text
-                          variant="body"
-                          size="xs"
-                          style={{ color: 'var(--colors-gray400)', marginBottom: '4px' }}
-                        >
-                          Animation: {selectedAction.animation.type} • Duration: {selectedAction.animation.duration}ms
-                        </Text>
-                        {selectedAction.metadata.description && (
-                          <Text
-                            variant="body"
-                            size="xs"
-                            style={{ color: 'var(--colors-gray300)' }}
-                          >
-                            {selectedAction.metadata.description}
-                          </Text>
-                        )}
-                      </Box>
-                    </Box>
-                  )}
+                  <ActionPreview selectedAction={selectedAction} targetTokenId={targetTokenId} />
                 </Box>
             </Box>
-
-            {/* Events List Sidebar */}
-            <EventsList
-              roundEvents={roundEvents}
-              tokens={tokens}
-              nextRound={currentRound}
-              onDeleteEvent={handleDeleteEvent}
-            />
           </Box>
+
+          {/* Right Sidebar - Events List */}
+          <EventsList
+            roundEvents={eventActions}
+            tokens={tokens}
+            nextRound={currentEvent}
+            onDeleteEvent={handleDeleteEvent}
+          />
+        </Box>
 
         {/* Footer */}
         <Box
@@ -607,52 +503,55 @@ const UnifiedEventEditorComponent = ({
             justifyContent: 'space-between',
             alignItems: 'center',
             gap: '8px',
-            padding: '16px',
-            borderTop: '1px solid var(--colors-gray700)',
-            backgroundColor: 'rgba(17, 24, 39, 0.5)'
+            padding: '16px 24px',
+            borderTop: '1px solid #374151',
+            backgroundColor: '#1A1A1A'
           }}
         >
           {/* Action Preview Toggle */}
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
-              <Button
-                onClick={toggleSpellPreview}
-                variant="secondary"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  backgroundColor: spellPreviewEnabled ? 'rgba(201, 173, 106, 0.2)' : 'var(--colors-gray700)',
-                  color: spellPreviewEnabled ? 'var(--colors-secondary)' : 'var(--colors-gray400)',
-                  border: spellPreviewEnabled ? '1px solid var(--colors-secondary)' : '1px solid var(--colors-gray600)'
-                }}
-                title={spellPreviewEnabled ? 'Disable Action Preview (Spells & Movement)' : 'Enable Action Preview (Spells & Movement)'}
-              >
-                <Sparkles size={14} />
-                <Text
-                  variant="body"
-                  size="xs"
-                  style={{ fontWeight: '500' }}
-                >
-                  {spellPreviewEnabled ? 'Preview: ON' : 'Preview: OFF'}
-                </Text>
-              </Button>
-            </Box>
-
-            {/* Close Button */}
-            <Button
-              onClick={onClose}
-              variant="secondary"
-              style={{
-                backgroundColor: 'var(--colors-gray700)',
-                color: 'var(--colors-gray300)'
-              }}
+          <Button
+            onClick={toggleSpellPreview}
+            variant="secondary"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 12px',
+              borderRadius: '6px',
+              backgroundColor: spellPreviewEnabled ? 'rgba(201, 173, 106, 0.2)' : '#374151',
+              color: spellPreviewEnabled ? '#C9AD6A' : '#9CA3AF',
+              border: spellPreviewEnabled ? '1px solid #C9AD6A' : '1px solid #4B5563'
+            }}
+            title={spellPreviewEnabled ? 'Disable Action Preview (Spells & Movement)' : 'Enable Action Preview (Spells & Movement)'}
+          >
+            <Sparkles size={14} />
+            <Text
+              variant="body"
+              size="xs"
+              style={{ fontWeight: '500' }}
             >
-              <X size={16} style={{ marginRight: '4px' }} />
-              Close
-            </Button>
-          </Box>
+              {spellPreviewEnabled ? 'Preview: ON' : 'Preview: OFF'}
+            </Text>
+          </Button>
+
+          {/* Close Button */}
+          <Button
+            onClick={onClose}
+            variant="secondary"
+            style={{
+              backgroundColor: '#374151',
+              color: '#D1D5DB',
+              border: '1px solid #4B5563',
+              borderRadius: '6px',
+              padding: '8px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <X size={16} />
+            Close
+          </Button>
         </Box>
       </Modal>
 

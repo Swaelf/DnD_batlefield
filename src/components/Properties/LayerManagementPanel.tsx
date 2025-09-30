@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Eye, EyeOff, Lock, Unlock, Plus, Trash2, ChevronUp, ChevronDown, Layers } from 'lucide-react'
+import { Eye, EyeOff, Lock, Unlock, Plus, Trash2, ChevronUp, ChevronDown, Layers } from '@/utils/optimizedIcons'
 import { useLayerStore } from '@/store/layerStore'
 import useMapStore from '@/store/mapStore'
 import { Box } from '@/components/primitives/BoxVE'

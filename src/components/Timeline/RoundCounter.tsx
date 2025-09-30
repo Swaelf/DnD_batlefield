@@ -1,53 +1,51 @@
 import React, { memo } from 'react'
-import { Clock, SkipForward } from 'lucide-react'
+import { SkipForward } from '@/utils/optimizedIcons'
 import { Text } from '@/components/primitives'
 import {
   RoundCounter as RoundCounterContainer,
   NavControls,
   NavButton,
   NextRoundButton
-} from './CombatTracker.styled'
+} from './CombatTracker.styled.tsx'
 
 type RoundCounterProps = {
-  currentRound: number
-  onNextRound: () => void
-  onPreviousRound: () => void
+  currentGroup: number
+  onNextGroup: () => void
+  onPreviousGroup: () => void
 }
 
 const RoundCounterComponent: React.FC<RoundCounterProps> = ({
-  currentRound,
-  onNextRound,
-  onPreviousRound
+  currentGroup,
+  onNextGroup,
+  onPreviousGroup
 }) => {
   return (
     <>
-      {/* Round Counter */}
+      {/* Event Counter */}
       <RoundCounterContainer>
-        <Clock size={16} color="secondary" />
-        <Text size="xl" weight="bold" color="textInverse">Round {currentRound}</Text>
+        <Text size="md" weight="bold" color="text">Event {currentGroup}</Text>
       </RoundCounterContainer>
 
       {/* Navigation Controls */}
       <NavControls>
         <NavButton
-          onClick={onPreviousRound}
-          disabled={currentRound <= 1}
-          title="Previous Round (←)"
+          onClick={onPreviousGroup}
+          disabled={currentGroup <= 1}
+          title="Previous Event (←)"
         >
-          <SkipForward size={16} style={{ transform: 'rotate(180deg)' }} />
+          <SkipForward size={20} style={{ transform: 'rotate(180deg)' }} />
         </NavButton>
 
         <NextRoundButton
-          onClick={onNextRound}
-          title="Next Round (Space)"
+          onClick={onNextGroup}
+          title="Next Event (Space)"
         >
-          <SkipForward size={16} />
-          Next Round
+          <SkipForward size={20} />
         </NextRoundButton>
       </NavControls>
     </>
   )
 }
 
-export const RoundCounter = memo(RoundCounterComponent)
-RoundCounter.displayName = 'RoundCounter'
+export const EventGroupCounter = memo(RoundCounterComponent)
+EventGroupCounter.displayName = 'EventGroupCounter'

@@ -1,1 +1,0 @@
-export { SpellBadge } from './SpellBadge'

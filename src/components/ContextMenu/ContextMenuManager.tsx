@@ -41,7 +41,6 @@ export const ContextMenuManager: React.FC<ContextMenuManagerProps> = ({ children
           {
             onCopy: () => {
               // TODO: Implement copy to clipboard
-              console.log('Copy object:', objectId)
             },
             onDelete: () => {
               if (selectedObjects.includes(objectId)) {
@@ -66,7 +65,6 @@ export const ContextMenuManager: React.FC<ContextMenuManagerProps> = ({ children
             },
             onMoveToLayer: () => {
               // TODO: Open layer selection dialog
-              console.log('Move to layer:', objectId)
             },
             onBringForward: () => {
               const currentLayer = object.layer || 0
@@ -87,7 +85,6 @@ export const ContextMenuManager: React.FC<ContextMenuManagerProps> = ({ children
         return createCanvasContextMenu({
           onPaste: () => {
             // TODO: Implement paste from clipboard
-            console.log('Paste to canvas')
           },
           onSelectAll: () => {
             if (currentMap) {
@@ -100,7 +97,6 @@ export const ContextMenuManager: React.FC<ContextMenuManagerProps> = ({ children
           },
           onResetZoom: () => {
             // TODO: Reset zoom to 100%
-            console.log('Reset zoom')
           },
           onToggleGrid: () => {
             toggleGridVisibility()

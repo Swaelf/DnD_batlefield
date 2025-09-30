@@ -10,7 +10,7 @@ import {
   FileImage,
   Import,
   Share
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import type Konva from 'konva'
 import useMapStore from '@/store/mapStore'
 import { useAutoSave } from '@/hooks/useAutoSave'
@@ -28,14 +28,15 @@ import { Button } from '@/components/primitives/ButtonVE'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import {
-  Menu,
-  MenuButton,
+  Dropdown,
+  MenuItem,
+  MenuSeparator
+} from '@/components/ui/Popover'
+import {
   MenuHeader,
   MenuStatus,
   MenuGroup,
-  MenuItem,
-  MenuSeparator
-} from '@/components/ui'
+} from '@/components/ui/Menu'
 
 type FileMenuProps = {
   stageRef?: React.RefObject<Konva.Stage>
@@ -152,12 +153,12 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
 
   return (
     <>
-      <Menu
+      <Dropdown
         trigger={
-          <MenuButton>
+          <Button variant="ghost" size="sm">
             <Save size={16} />
             File
-          </MenuButton>
+          </Button>
         }
         open={isMenuOpen}
         onOpenChange={setIsMenuOpen}
@@ -268,7 +269,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
             Clear All Data
           </MenuItem>
         </MenuGroup>
-      </Menu>
+      </Dropdown>
 
       {/* New Map Dialog */}
       <Modal

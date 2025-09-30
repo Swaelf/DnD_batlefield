@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Play, StopCircle, Download, Bug, Camera, CheckCircle, XCircle } from 'lucide-react'
+import { Play, StopCircle, Download, Bug, Camera, CheckCircle, XCircle } from '@/utils/optimizedIcons'
 import { TestRunner } from './TestRunner'
 import { canvasCapture } from './CanvasCapture'
 import { VisualAssertions } from './VisualAssertions'

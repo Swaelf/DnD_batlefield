@@ -17,7 +17,7 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 
 type ActionLogEntryProps = {
   entry: ActionHistoryEntry

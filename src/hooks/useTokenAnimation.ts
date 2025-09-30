@@ -1,9 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react'
 import type Konva from 'konva'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
 import useAnimationStore from '@/store/animationStore'
-import type { RoundEvent} from '@/types/timeline';
+import type { TimelineAction } from '@/types/timeline';
 import { isMoveEvent, isAppearEvent, isDisappearEvent, isSpellEvent } from '@/types/timeline'
 
 export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage | null>) {
@@ -14,7 +14,7 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
   const { startAnimation, updateProgress, endAnimation } = useAnimationStore()
 
   // Execute animations for a specific event
-  const animateEvent = useCallback((event: RoundEvent, tokenNode: Konva.Node | null) => {
+  const animateEvent = useCallback((event: TimelineAction, tokenNode: Konva.Node | null) => {
     if (!stageRef.current) {
       return Promise.resolve()
     }
@@ -26,7 +26,7 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
       return Promise.resolve()
     }
 
-    const { animationSpeed } = useRoundStore.getState()
+    const { animationSpeed } = useTimelineStore.getState()
     // Convert milliseconds to seconds and adjust for speed
     const adjustedDuration = (event.data.duration || 1000) / 1000 / animationSpeed
 
@@ -257,9 +257,9 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
             // For area spells, keep persistDuration for the AreaSpell component to use
             // For other spells, set to 0 since they don't use persistent effects
             persistDuration: spellData.category === 'area' ? persistDuration : 0,
-            roundCreated: event.roundNumber
+            roundCreated: event.eventNumber
           },
-          roundCreated: event.roundNumber,
+          roundCreated: event.eventNumber,
           spellDuration: spellData.category === 'area' ? 0 : 0 // Initial spell objects don't persist
         }
 
@@ -301,9 +301,9 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
                 color: spellData.persistColor || spellData.color || '#CC2500',
                 opacity: spellData.persistOpacity || (spellData.category === 'projectile-burst' ? 0.3 : 0.4),
                 spellName: spellData.spellName || 'Unknown Spell',
-                roundCreated: event.roundNumber
+                roundCreated: event.eventNumber
               },
-              roundCreated: event.roundNumber,
+              roundCreated: event.eventNumber,
               // For Fireball and similar spells, persist for 1 round
               // Convert milliseconds to rounds: if persistDuration > 0, use 1 round
               spellDuration: persistDuration > 0 ? 1 : 0
@@ -355,14 +355,14 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
   const executeRoundAnimations = useCallback(async (roundNumber: number) => {
     if (!stageRef.current) return
 
-    const { timeline } = useRoundStore.getState()
+    const { timeline } = useTimelineStore.getState()
     if (!timeline) return
 
     // Don't clean up persistent areas here - let cleanupExpiredSpells handle it
     // This was incorrectly deleting persistent areas that should still be active
 
-    const round = timeline.rounds.find(r => r.number === roundNumber)
-    if (!round || round.events.length === 0) {
+    const event = timeline.events.find((e: any) => e.number === roundNumber)
+    if (!event || event.actions.length === 0) {
       return
     }
 
@@ -391,16 +391,16 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
     // Get the actual container to search in - prefer the group if it has getChildren method
     const searchContainer = objectsGroup && 'getChildren' in objectsGroup ? objectsGroup : objectLayer
 
-    // Sort events by order
-    const sortedEvents = [...round.events].sort((a, b) => (a.order || 0) - (b.order || 0))
+    // Sort actions by order
+    const sortedActions = [...event.actions].sort((a, b) => (a.order || 0) - (b.order || 0))
 
     // Execute animations sequentially
-    for (const event of sortedEvents) {
+    for (const action of sortedActions) {
 
       // Special handling for spell events - they don't always need a token node
-      if (event.type === 'spell' || (event.data && isSpellEvent(event.data))) {
+      if (action.type === 'spell' || isSpellEvent(action.data)) {
         // For spell events, we can pass null as tokenNode since spells create their own effects
-        await animateEvent(event, null)
+        await animateEvent(action, null)
         continue
       }
 
@@ -409,12 +409,12 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
 
       // Strategy 1: Direct search in container
       if ('findOne' in searchContainer && typeof searchContainer.findOne === 'function') {
-        tokenNode = searchContainer.findOne(`#${event.tokenId}`) as Konva.Node | null
+        tokenNode = searchContainer.findOne(`#${action.tokenId}`) as Konva.Node | null
       }
 
       // Strategy 2: If not found, try searching from the stage level
       if (!tokenNode) {
-        tokenNode = stageRef.current.findOne(`#${event.tokenId}`) || null
+        tokenNode = stageRef.current.findOne(`#${action.tokenId}`) || null
       }
 
       // Strategy 3: Manual search through all children
@@ -422,7 +422,7 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
         if ('getChildren' in searchContainer && typeof searchContainer.getChildren === 'function') {
           const children = (searchContainer as Konva.Group | Konva.Layer).getChildren()
           children.forEach((child: Konva.Node) => {
-            if (!tokenNode && child.id() === event.tokenId) {
+            if (!tokenNode && child.id() === action.tokenId) {
               tokenNode = child
             }
           })
@@ -432,21 +432,22 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
       // Make sure we have the Group node, not a child shape
       if (tokenNode && tokenNode.className !== 'Group') {
         const parent = tokenNode.getParent()
-        if (parent && parent.id() === event.tokenId) {
+        if (parent && parent.id() === action.tokenId) {
           tokenNode = parent
         }
       }
 
       if (tokenNode) {
-        await animateEvent(event, tokenNode)
+        await animateEvent(action, tokenNode)
       }
     }
 
-
-    // Mark round as executed
-    const { updateEvent } = useRoundStore.getState()
-    round.events.forEach(event => {
-      updateEvent(event.id, { executed: true })
+    // Mark event as executed (the event containing all these actions)
+    useTimelineStore.setState((state: any) => {
+      const evt = state.timeline?.events.find((e: any) => e.number === roundNumber)
+      if (evt) {
+        evt.executed = true
+      }
     })
   }, [animateEvent])
 
@@ -468,25 +469,24 @@ export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage |
     activeSpellAnimations.current.clear()
   }, [])
 
-  // Listen for round changes
+  // Listen for event changes
   useEffect(() => {
-    let previousRound = useRoundStore.getState().currentRound
+    let previousEvent = useTimelineStore.getState().currentEvent
 
-    const unsubscribe = useRoundStore.subscribe(
+    const unsubscribe = useTimelineStore.subscribe(
       async (state) => {
-        const newRound = state.currentRound
+        const newEvent = state.currentEvent
 
 
-        // Check if we moved forward and should execute events
-        if (newRound > previousRound && state.isInCombat) {
-          // Execute events for the round we just entered
-          // Events are scheduled FOR a specific round
-          // When we advance TO that round, we execute those events
-          await executeRoundAnimations(newRound)
-        } else {
+        // Check if we moved forward and should execute actions
+        if (newEvent > previousEvent && state.isInCombat) {
+          // Execute actions for the event we just entered
+          // Actions are scheduled FOR a specific event
+          // When we advance TO that event, we execute those actions
+          await executeRoundAnimations(newEvent)
         }
 
-        previousRound = newRound
+        previousEvent = newEvent
       }
     )
 

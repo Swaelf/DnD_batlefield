@@ -160,7 +160,10 @@ export const SimpleSpellComponent: React.FC<SimpleSpellComponentProps> = ({
         setIsComplete(true)
         onAnimationComplete?.()
       } else {
-        animationFrameRef.current = requestAnimationFrame(animate)
+        // Only continue animation if page is visible for performance
+        if (!document.hidden) {
+          animationFrameRef.current = requestAnimationFrame(animate)
+        }
       }
     }
 

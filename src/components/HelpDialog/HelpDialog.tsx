@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react'
-import { X, HelpCircle } from 'lucide-react'
+import { X, HelpCircle } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'

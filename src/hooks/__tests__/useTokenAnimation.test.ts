@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useTokenAnimation } from '../useTokenAnimation'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
 import Konva from 'konva'
 
 // Mock the stores
-vi.mock('@/store/roundStore', () => ({
+vi.mock('@/store/timelineStore', () => ({
   default: () => ({
     timeline: {
       id: 'test-timeline',
@@ -206,9 +206,9 @@ describe('useTokenAnimation', () => {
     }
 
     vi.mocked(useMapStore).mockReturnValue(mockMapStore as any)
-    vi.mocked(useRoundStore).mockImplementation(() => mockRoundStore as any)
-    vi.mocked(useRoundStore).getState = vi.fn(() => mockRoundStore as any)
-    vi.mocked(useRoundStore).subscribe = vi.fn()
+    vi.mocked(useTimelineStore).mockImplementation(() => mockRoundStore as any)
+    vi.mocked(useTimelineStore).getState = vi.fn(() => mockRoundStore as any)
+    vi.mocked(useTimelineStore).subscribe = vi.fn()
   })
 
   afterEach(() => {
@@ -408,14 +408,13 @@ describe('useTokenAnimation', () => {
       const stageRef = { current: mockStage }
 
       // Setup subscribe mock to capture the callback
-      let subscribeCallback: any
       // Mock implementation simplified for type safety
-      subscribeCallback = mockRoundStore.subscribe
+      const subscribeCallback = mockRoundStore.subscribe
 
       renderHook(() => useTokenAnimation(stageRef as any))
 
       // Verify subscribe was called
-      expect(useRoundStore.subscribe).toHaveBeenCalled()
+      expect(useTimelineStore.subscribe).toHaveBeenCalled()
 
       // Simulate round change
       act(() => {
@@ -521,8 +520,8 @@ describe('useTokenAnimation', () => {
     })
 
     it('should handle round with no events', async () => {
-      const mockRoundStore = vi.mocked(useRoundStore).getState()
-      mockRoundStore.timeline!.rounds[1].events = []
+      const mockTimelineStore = vi.mocked(useTimelineStore).getState()
+      mockTimelineStore.timeline!.events[1].actions = []
 
       const stageRef = { current: mockStage }
       const { result } = renderHook(() => useTokenAnimation(stageRef as any))

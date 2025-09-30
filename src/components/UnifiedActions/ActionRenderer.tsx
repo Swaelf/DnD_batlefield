@@ -26,13 +26,11 @@ const ActionRendererComponent = ({ action, onAnimationComplete }: ActionRenderer
     // Mark action as started
     if (!hasStartedRef.current) {
       hasStartedRef.current = true
-      console.log(`Starting action: ${action.metadata.name} (${action.id})`)
     }
 
     // Cleanup on unmount
     return () => {
       if (hasStartedRef.current) {
-        console.log(`Cleaning up action: ${action.metadata.name} (${action.id})`)
       }
     }
   }, [action.id, action.metadata.name])
@@ -44,7 +42,6 @@ const ActionRendererComponent = ({ action, onAnimationComplete }: ActionRenderer
     // Call external callback if provided
     onAnimationComplete?.(action.id)
 
-    console.log(`Completed action: ${action.metadata.name} (${action.id})`)
   }
 
   // Select appropriate animation component based on action type and animation type

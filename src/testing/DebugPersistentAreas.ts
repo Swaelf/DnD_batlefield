@@ -1,15 +1,15 @@
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 
 /**
  * Debug utility for persistent area cleanup issues
  */
 export function debugPersistentAreas() {
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   console.log('=== PERSISTENT AREAS DEBUG ===')
-  console.log('Current Round:', roundStore.currentRound)
+  console.log('Current Round:', roundStore.currentEvent)
 
   const allObjects = mapStore.currentMap?.objects || []
   const persistentAreas = allObjects.filter(obj => obj.type === 'persistent-area')
@@ -25,11 +25,11 @@ export function debugPersistentAreas() {
     console.log('Has isSpellEffect flag:', area.isSpellEffect === true)
     console.log('Round Created:', area.roundCreated)
     console.log('Spell Duration:', area.spellDuration)
-    console.log('Current Round:', roundStore.currentRound)
+    console.log('Current Round:', roundStore.currentEvent)
 
     if (area.roundCreated !== undefined && area.spellDuration !== undefined) {
       const expiresAt = area.roundCreated + area.spellDuration
-      const shouldBeRemoved = roundStore.currentRound >= expiresAt
+      const shouldBeRemoved = roundStore.currentEvent >= expiresAt
       console.log('Expires at round:', expiresAt)
       console.log('Should be removed:', shouldBeRemoved)
     } else {
@@ -43,7 +43,7 @@ export function debugPersistentAreas() {
   console.log('Before cleanup - persistent areas:', persistentAreas.length)
 
   // Test the cleanup function
-  mapStore.cleanupExpiredSpells(roundStore.currentRound)
+  mapStore.cleanupExpiredSpells(roundStore.currentEvent)
 
   const areasAfterCleanup = mapStore.currentMap?.objects.filter(obj => obj.type === 'persistent-area') || []
   console.log('After cleanup - persistent areas:', areasAfterCleanup.length)
@@ -82,14 +82,14 @@ if (typeof window !== 'undefined') {
 
 export function testFireballCleanup() {
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   console.log('=== TESTING FIREBALL CLEANUP ===')
 
   // Start combat if not already started
   if (!roundStore.isInCombat) {
     roundStore.startCombat(mapStore.currentMap!.id)
-    console.log('Started combat at round', roundStore.currentRound)
+    console.log('Started combat at round', roundStore.currentEvent)
   }
 
   // Create a test persistent area for Fireball
@@ -106,15 +106,15 @@ export function testFireballCleanup() {
       color: '#ff4500',
       opacity: 0.3,
       spellName: 'Fireball Test',
-      roundCreated: roundStore.currentRound
+      roundCreated: roundStore.currentEvent
     },
-    roundCreated: roundStore.currentRound,
+    roundCreated: roundStore.currentEvent,
     spellDuration: 1 // Should last 1 round
   }
 
   mapStore.addSpellEffect(testArea)
-  console.log('Added Fireball area at round', roundStore.currentRound)
-  console.log('Should expire at round', roundStore.currentRound + 1)
+  console.log('Added Fireball area at round', roundStore.currentEvent)
+  console.log('Should expire at round', roundStore.currentEvent + 1)
 
   // Check it exists
   const exists = mapStore.currentMap?.objects.some(obj => obj.id === testArea.id)
@@ -122,10 +122,10 @@ export function testFireballCleanup() {
 
   // Advance round
   console.log('Advancing to next round...')
-  roundStore.nextRound()
+  roundStore.nextEvent()
 
   setTimeout(() => {
-    console.log('Current round after advance:', roundStore.currentRound)
+    console.log('Current round after advance:', roundStore.currentEvent)
 
     // Check if it's removed
     const stillExists = mapStore.currentMap?.objects.some(obj => obj.id === testArea.id)

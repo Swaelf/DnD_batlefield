@@ -15,7 +15,7 @@ import {
   Activity,
   // Calendar, // unused
   Clock
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import type { ActionFilter } from '@/types/unifiedAction'
 
 type ActionLogSidebarProps = {
@@ -46,7 +46,6 @@ const ActionLogSidebarComponent: React.FC<ActionLogSidebarProps> = ({
 
   // Temporary implementations until store methods are added
   const exportHistory = (_history?: ActionHistoryEntry[]) => {
-    console.log('Export history not implemented')
   }
 
   const getFilteredHistory = (_filter: ActionFilter, _searchTerm: string) => {

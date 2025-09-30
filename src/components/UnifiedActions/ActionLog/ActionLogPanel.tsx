@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from 'react'
 import { useUnifiedActionStore } from '@/store/unifiedActionStore'
-import { Activity, ChevronUp, ChevronDown } from 'lucide-react'
+import { Activity, ChevronUp, ChevronDown } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import type { ActionHistoryEntry } from '@/types/unifiedAction'

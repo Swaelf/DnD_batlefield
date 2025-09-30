@@ -212,20 +212,30 @@ const TokenComponent: React.FC<TokenProps> = ({
 
       {/* Token label/name with improved visibility */}
       {token.name && token.showLabel && (
-        <Text
-          text={token.name}
-          fontSize={fontSize}
-          fontFamily="'Scala Sans', sans-serif"
-          fill={token.labelColor || '#FFFFFF'}
-          stroke="#000000"
-          strokeWidth={2}
-          align="center"
-          offsetX={fontSize * token.name.length * 0.3}
-          y={labelY}
-          shadowColor="rgba(0, 0, 0, 0.8)"
-          shadowBlur={4}
-          shadowOffset={{ x: 1, y: 1 }}
-        />
+        <>
+          {/* Background text for shadow effect */}
+          <Text
+            text={token.name}
+            fontSize={fontSize}
+            fontFamily="'Scala Sans', sans-serif"
+            fill="#000000"
+            align="center"
+            offsetX={fontSize * token.name.length * 0.3}
+            y={labelY}
+            opacity={0.8}
+            offsetY={-2}
+          />
+          {/* Main text with color from token */}
+          <Text
+            text={token.name}
+            fontSize={fontSize}
+            fontFamily="'Scala Sans', sans-serif"
+            fill={token.labelColor || '#E0E0E0'}
+            align="center"
+            offsetX={fontSize * token.name.length * 0.3}
+            y={labelY}
+          />
+        </>
       )}
 
       {/* Initiative indicator (optional) */}

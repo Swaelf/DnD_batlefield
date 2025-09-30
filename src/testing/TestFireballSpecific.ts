@@ -1,5 +1,5 @@
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 
 /**
  * Test specifically for Fireball's persistent burn area issue
@@ -10,7 +10,7 @@ export async function testFireballBurnArea() {
   console.log('=' .repeat(50))
 
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   // Setup
   if (!mapStore.currentMap) {
@@ -29,8 +29,8 @@ export async function testFireballBurnArea() {
   }
 
   // Start at round 1
-  roundStore.goToRound(1)
-  const startRound = roundStore.currentRound
+  roundStore.goToEvent(1)
+  const startRound = roundStore.currentEvent
   console.log('📍 Starting at round:', startRound)
 
   // Simulate what happens when Fireball creates its burn area after burst
@@ -96,13 +96,13 @@ export async function testFireballBurnArea() {
   console.log('\n3️⃣ Advancing to round', startRound + 1)
 
   // Log what nextRound should do
-  console.log('  Calling roundStore.nextRound()...')
+  console.log('  Calling roundStore.nextEvent()...')
 
-  await roundStore.nextRound()
+  await roundStore.nextEvent()
   await new Promise(resolve => setTimeout(resolve, 200))
 
-  const currentRound = roundStore.currentRound
-  console.log('  Now at round:', currentRound)
+  const currentEvent = roundStore.currentEvent
+  console.log('  Now at round:', currentEvent)
 
   // Check if burn area still exists
   exists = mapStore.currentMap?.objects.some(obj => obj.id === burnAreaId)
@@ -116,19 +116,19 @@ export async function testFireballBurnArea() {
       console.log('\nBurn area still in store:')
       console.log('  roundCreated:', stillThere.roundCreated)
       console.log('  spellDuration:', stillThere.spellDuration)
-      console.log('  currentRound:', currentRound)
-      console.log('  Should remove:', currentRound >= (stillThere.roundCreated || 0) + (stillThere.spellDuration || 0))
+      console.log('  currentEvent:', currentEvent)
+      console.log('  Should remove:', currentEvent >= (stillThere.roundCreated || 0) + (stillThere.spellDuration || 0))
     }
 
     // Try manual cleanup
     console.log('\n🔧 Trying manual cleanup...')
-    console.log('  Calling cleanupExpiredSpells(' + currentRound + ')')
+    console.log('  Calling cleanupExpiredSpells(' + currentEvent + ')')
 
     // Log objects before cleanup
     const beforeCleanup = mapStore.currentMap?.objects.filter(obj => obj.type === 'persistent-area').length || 0
     console.log('  Persistent areas before cleanup:', beforeCleanup)
 
-    mapStore.cleanupExpiredSpells(currentRound)
+    mapStore.cleanupExpiredSpells(currentEvent)
 
     const afterCleanup = mapStore.currentMap?.objects.filter(obj => obj.type === 'persistent-area').length || 0
     console.log('  Persistent areas after cleanup:', afterCleanup)
@@ -147,11 +147,11 @@ export async function testFireballBurnArea() {
 
   console.log('\n4️⃣ Testing multiple rounds to ensure it doesn\'t come back')
 
-  await roundStore.nextRound()
+  await roundStore.nextEvent()
   await new Promise(resolve => setTimeout(resolve, 100))
 
   exists = mapStore.currentMap?.objects.some(obj => obj.id === burnAreaId)
-  console.log(`  Round ${roundStore.currentRound}: Burn area exists: ${exists ? '❌ YES' : '✅ NO'}`)
+  console.log(`  Round ${roundStore.currentEvent}: Burn area exists: ${exists ? '❌ YES' : '✅ NO'}`)
 
   console.log('\n' + '='.repeat(50))
   console.log('TEST COMPLETE')
@@ -175,7 +175,7 @@ export function testCleanupCondition() {
     { round: 3, created: 1, duration: 2, shouldRemove: true, desc: 'Expires at round 3' },
   ]
 
-  console.log('Cleanup condition: currentRound >= roundCreated + spellDuration')
+  console.log('Cleanup condition: currentEvent >= roundCreated + spellDuration')
   console.log('')
 
   testCases.forEach(test => {

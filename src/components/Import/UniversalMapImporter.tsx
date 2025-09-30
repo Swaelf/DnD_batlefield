@@ -13,7 +13,7 @@ import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
 import { Checkbox } from '@/components/ui/Checkbox'
-import { Upload, FileText, Map, AlertTriangle, CheckCircle, X } from 'lucide-react'
+import { Upload, FileText, Map, AlertTriangle, CheckCircle, X } from '@/utils/optimizedIcons'
 
 // Supported map formats
 interface MapFormat {

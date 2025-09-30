@@ -7,7 +7,7 @@ import {
   XCircle,
   ArrowRight,
   Zap
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -228,7 +228,6 @@ export const ConflictResolutionSystem = ({
   useEffect(() => {
     if (conflictGroups.length > 0 && !activeConflictGroup) {
       // Show notification for new conflicts
-      console.log(`${conflictGroups.length} conflict(s) detected`)
     }
   }, [conflictGroups.length, activeConflictGroup])
 

@@ -6,32 +6,35 @@ import { useKeyboardShortcuts } from '@hooks/useKeyboardShortcuts'
 import { useAutoSave } from '@hooks/useAutoSave'
 import MapCanvas from './components/Canvas/MapCanvas'
 import Toolbar from './components/Toolbar/Toolbar'
-import PropertiesPanel from './components/Properties/PropertiesPanel'
-import TokenLibrary from './components/Token/TokenLibrary'
-import { StaticObjectLibrary } from './components/StaticObject/StaticObjectLibrary'
-import { AdvancedLayerPanel } from './components/Layers/AdvancedLayerPanel'
-import { AdvancedSelectionManager } from './components/Selection/AdvancedSelectionManager'
-import { RealTimeCollaborationManager } from './components/Collaboration/RealTimeCollaborationManager'
-import { UserManagementPanel } from './components/Collaboration/UserManagementPanel'
-import { ConflictResolutionSystem } from './components/Collaboration/ConflictResolutionSystem'
-import { CollaborationSessionCreator } from './components/Collaboration/CollaborationSessionCreator'
-import { PerformanceDashboard } from './components/Performance/PerformanceDashboard'
-import { AccessibilityPanel } from './components/Accessibility/AccessibilityPanel'
+// Lazy load heavy components for better initial load performance
+const PropertiesPanel = lazy(() => import('./components/Properties/PropertiesPanel'))
+const TokenLibrary = lazy(() => import('./components/Token/TokenLibrary'))
+const StaticObjectLibrary = lazy(() => import('./components/StaticObject/StaticObjectLibrary').then(m => ({ default: m.StaticObjectLibrary })))
+const AdvancedLayerPanel = lazy(() => import('./components/Layers/AdvancedLayerPanel').then(m => ({ default: m.AdvancedLayerPanel })))
+const AdvancedSelectionManager = lazy(() => import('./components/Selection/AdvancedSelectionManager').then(m => ({ default: m.AdvancedSelectionManager })))
+const RealTimeCollaborationManager = lazy(() => import('./components/Collaboration/RealTimeCollaborationManager').then(m => ({ default: m.RealTimeCollaborationManager })))
+const UserManagementPanel = lazy(() => import('./components/Collaboration/UserManagementPanel').then(m => ({ default: m.UserManagementPanel })))
+const ConflictResolutionSystem = lazy(() => import('./components/Collaboration/ConflictResolutionSystem').then(m => ({ default: m.ConflictResolutionSystem })))
+const CollaborationSessionCreator = lazy(() => import('./components/Collaboration/CollaborationSessionCreator').then(m => ({ default: m.CollaborationSessionCreator })))
+const PerformanceDashboard = lazy(() => import('./components/Performance/PerformanceDashboard').then(m => ({ default: m.PerformanceDashboard })))
+const AccessibilityPanel = lazy(() => import('./components/Accessibility/AccessibilityPanel').then(m => ({ default: m.AccessibilityPanel })))
 import { FeatureErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
 import { usePerformanceMonitor } from './hooks/usePerformanceMonitor'
 import { useAccessibility } from './hooks/useAccessibility'
 import useCollaborationStore from '@store/collaborationStore'
 // Lazy load heavy components for better initial load performance
-const SpellEffectsPanel = lazy(() => import('./components/SpellEffect/SpellEffectsPanel').then(m => ({ default: m.SpellEffectsPanel })))
-import { FileMenu } from './components/Menu/FileMenu'
+const StaticEffectsPanel = lazy(() => import('./components/StaticEffect/StaticEffectsPanel').then(m => ({ default: m.StaticEffectsPanel })))
+const FileMenu = lazy(() => import('./components/Menu/FileMenu').then(m => ({ default: m.FileMenu })))
 import StatusBar from './components/StatusBar/StatusBar'
 const HelpDialog = lazy(() => import('./components/HelpDialog/HelpDialog').then(m => ({ default: m.HelpDialog })))
 const CombatTracker = lazy(() => import('./components/Timeline/CombatTracker').then(m => ({ default: m.CombatTracker })))
 const TestingPanel = lazy(() => import('./testing/TestingPanel').then(m => ({ default: m.TestingPanel })))
-import { Save, HelpCircle, Bug, Users, UserPlus, Activity, Accessibility } from 'lucide-react'
+import { Save, HelpCircle, Bug, Users, UserPlus, Activity, Accessibility, ZoomIn, ZoomOut, Maximize2, Grid3x3 } from '@/utils/optimizedIcons'
 import { Box, Text } from '@/components/ui'
 import { Button } from '@/components/primitives'
 import { ContextMenuManager } from '@/components/ContextMenu/ContextMenuManager'
+import { initializePerformanceOptimizations } from '@/utils/performanceOptimizations'
+import { NavigationPad, EnvironmentToken } from '@/components/Navigation'
 
 // Debug utilities available but not auto-imported to prevent startup animations
 // These can be manually imported in TestingPanel or browser console if needed:
@@ -44,65 +47,7 @@ import { ContextMenuManager } from '@/components/ContextMenu/ContextMenuManager'
 // - @/testing/SimulateSpellCasting
 // - @/testing/TestFireballSpecific
 // - @/testing/VerifyCleanupCall
-import { styled } from '@/styles/theme.config'
-
-// Move styled components outside to prevent re-creation on every render
-const AppContainer = styled(Box, {
-  height: '100vh',
-  width: '100vw',
-  backgroundColor: '$background',
-  color: '$gray100',
-  overflow: 'hidden',
-  display:'flex',
-  flexDirection: 'column',
-})
-
-const AppHeader = styled(Box, {
-  height: '$toolButtonSize',
-  backgroundColor: '$dndBlack',
-  borderBottom: '1px solid $gray800',
-  display:'flex',
- alignItems:'center',
-  justifyContent: 'space-between',
-  paddingX: "4",
-})
-
-const AppTitle = styled(Text, {
-  fontSize:'$lg',
-  fontWeight: '$semibold',
-  color: '$secondary',
-  fontFamily: '$dnd',
-})
-
-const AppBody = styled(Box, {
-  display: 'flex',
-  flex: 1,
-  overflow: 'hidden',
-})
-
-const CanvasArea = styled(Box, {
-  flex: 1,
-  backgroundColor: '$gray800',
-  position: 'relative',
-})
-
-const AutoSaveIndicator = styled(Box, {
-  display:'flex',
-  alignItems:'center',
-  gap: "2",
-  fontSize:'$xs',
-  color:'$gray500',
-
-  '&[data-saving="true"]': {
-    '& svg': {
-      animation: 'pulse 1s infinite',
-    },
-  },
-
-  '&[data-saved="true"]': {
-    color:'$success',
-  },
-})
+import * as styles from './App.css'
 
 function App() {
   // Use specific selectors to prevent unnecessary re-renders
@@ -129,6 +74,98 @@ function App() {
   const { score: performanceScore, warnings } = usePerformanceMonitor()
   const { preferences } = useAccessibility()
   useKeyboardShortcuts()
+
+  // Navigation handlers
+  const PAN_AMOUNT = 100 // pixels to pan per click
+
+  const handleZoomIn = () => {
+    if (!stageRef.current) return
+    const newZoom = Math.min(zoom * 1.2, 3)
+    stageRef.current.scale({ x: newZoom, y: newZoom })
+    setZoom(newZoom)
+  }
+
+  const handleZoomOut = () => {
+    if (!stageRef.current) return
+    const newZoom = Math.max(zoom / 1.2, 0.1)
+    stageRef.current.scale({ x: newZoom, y: newZoom })
+    setZoom(newZoom)
+  }
+
+  const handleZoomReset = () => {
+    if (!stageRef.current) return
+    stageRef.current.scale({ x: 1, y: 1 })
+    stageRef.current.position({ x: 0, y: 0 })
+    setZoom(1)
+  }
+
+  const handlePanUp = () => {
+    if (!stageRef.current) return
+    const pos = stageRef.current.position()
+    stageRef.current.position({ x: pos.x, y: pos.y + PAN_AMOUNT })
+  }
+
+  const handlePanDown = () => {
+    if (!stageRef.current) return
+    const pos = stageRef.current.position()
+    stageRef.current.position({ x: pos.x, y: pos.y - PAN_AMOUNT })
+  }
+
+  const handlePanLeft = () => {
+    if (!stageRef.current) return
+    const pos = stageRef.current.position()
+    stageRef.current.position({ x: pos.x + PAN_AMOUNT, y: pos.y })
+  }
+
+  const handlePanRight = () => {
+    if (!stageRef.current) return
+    const pos = stageRef.current.position()
+    stageRef.current.position({ x: pos.x - PAN_AMOUNT, y: pos.y })
+  }
+
+  // Smart preloading: Load commonly used components after initial render
+  useEffect(() => {
+    const preloadTimer = setTimeout(() => {
+      // Preload properties panel (most common sidebar)
+      void import('./components/Properties/PropertiesPanel')
+
+      // Preload token library (2nd most common)
+      void import('./components/Token/TokenLibrary')
+
+      // Preload file menu (often used for save/export)
+      void import('./components/Menu/FileMenu')
+
+      // Preload help dialog (users often need shortcuts)
+      void import('./components/HelpDialog/HelpDialog')
+    }, 2000) // Wait 2s after initial load to avoid interfering with critical path
+
+    return () => clearTimeout(preloadTimer)
+  }, [])
+
+  // Tool-based intelligent preloading
+  useEffect(() => {
+    const preloadBasedOnTool = () => {
+      switch (currentTool) {
+        case 'select':
+          // When using select tool, they might switch to properties or layers
+          void import('./components/Properties/PropertiesPanel')
+          void import('./components/Layers/AdvancedLayerPanel')
+          break
+        case 'token':
+          // When placing tokens, they might need static effects or static objects next
+          void import('./components/StaticEffect/StaticEffectsPanel')
+          void import('./components/StaticObject/StaticObjectLibrary')
+          break
+        case 'staticEffect':
+          // When using static effects, they might need combat tracker
+          void import('./components/Timeline/CombatTracker')
+          break
+      }
+    }
+
+    const timer = setTimeout(preloadBasedOnTool, 1000)
+    return () => clearTimeout(timer)
+  }, [currentTool])
 
   // Add keyboard shortcuts for help and testing dialogs
   useEffect(() => {
@@ -158,6 +195,9 @@ function App() {
   }, [showTesting])
 
   useEffect(() => {
+    // Initialize performance optimizations on app startup
+    initializePerformanceOptimizations()
+
     // Create default map on load - only run when currentMap changes from null
     if (!currentMap) {
       createNewMap('Untitled Map')
@@ -165,11 +205,11 @@ function App() {
   }, [currentMap, createNewMap])
 
   return (
-    <AppContainer>
+    <div className={styles.appContainer}>
       {/* Header */}
-      <AppHeader>
+      <div className={styles.appHeader}>
         <Box display="flex" alignItems="center" gap={4}>
-          <AppTitle>D&D Map Maker</AppTitle>
+          <Text className={styles.appTitle}>D&D Map Maker</Text>
           {currentMap && (
             <Text size="sm" color="gray400">
               {currentMap.name} ({currentMap.width}x{currentMap.height})
@@ -199,24 +239,82 @@ function App() {
 
         <Box display="flex" alignItems="center" gap={4}>
           {/* Auto-save indicator */}
-          <AutoSaveIndicator
+          <div
+            className={styles.autoSaveIndicator}
             data-saving={isSaving}
             data-saved={!!lastSaved && !isSaving}
           >
-            <Save size={12} />
+            <Save size={12} className={styles.autoSaveSpinner} />
             <Text size="xs">
               {isSaving ? 'Saving...' : 'Saved'}
             </Text>
-          </AutoSaveIndicator>
+          </div>
 
           {/* File Menu */}
-          <FileMenu stageRef={stageRef} />
+          <Suspense fallback={<Button variant="ghost" size="sm" disabled><Text size="sm">File</Text></Button>}>
+            <FileMenu stageRef={stageRef} />
+          </Suspense>
+
+          {/* Zoom Controls */}
+          <Box display="flex" alignItems="center" gap={2}>
+            <Button
+              onClick={handleZoomOut}
+              variant="ghost"
+              size="icon"
+              title="Zoom out (-)"
+              disabled={zoom <= 0.1}
+            >
+              <ZoomOut size={16} />
+            </Button>
+
+            <Button
+              onClick={handleZoomReset}
+              variant="ghost"
+              size="sm"
+              title="Reset zoom (0)"
+              style={{ minWidth: '60px' }}
+            >
+              <Maximize2 size={14} />
+              <Text size="xs" style={{ fontFamily: 'monospace' }}>
+                {Math.round(zoom * 100)}%
+              </Text>
+            </Button>
+
+            <Button
+              onClick={handleZoomIn}
+              variant="ghost"
+              size="icon"
+              title="Zoom in (+)"
+              disabled={zoom >= 3}
+            >
+              <ZoomIn size={16} />
+            </Button>
+          </Box>
+
+          {/* Grid Snap Toggle */}
+          <Button
+            onClick={() => useMapStore.getState().toggleGridSnap()}
+            variant="ghost"
+            size="sm"
+            title={`Grid snap: ${currentMap?.grid?.snap ? 'ON' : 'OFF'} (G)`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: currentMap?.grid?.snap ? '#3B82F6' : 'transparent',
+              color: currentMap?.grid?.snap ? 'white' : undefined,
+              border: currentMap?.grid?.snap ? '1px solid #60A5FA' : undefined
+            }}
+          >
+            <Grid3x3 size={14} />
+            <Text size="xs">Grid</Text>
+          </Button>
 
           {/* Collaboration Controls */}
           {isCollaborating && (
             <Button
               onClick={() => setShowUserManagement(true)}
-              variant="ghost" 
+              variant="ghost"
               size="sm"
               title="Manage Users"
             >
@@ -239,7 +337,7 @@ function App() {
           {/* Performance Button */}
           <Button
             onClick={() => setShowPerformance(true)}
-            variant="ghost" 
+            variant="ghost"
             size="icon"
             title="Performance Dashboard (Ctrl+Shift+P)"
             style={{
@@ -253,7 +351,7 @@ function App() {
           {/* Accessibility Button */}
           <Button
             onClick={() => setShowAccessibility(true)}
-            variant="ghost" 
+            variant="ghost"
             size="icon"
             title="Accessibility Settings (Alt+A)"
             style={{
@@ -285,14 +383,14 @@ function App() {
             <HelpCircle size={16} />
           </Button>
         </Box>
-      </AppHeader>
+      </div>
 
-      <AppBody>
+      <div className={styles.appBody}>
         {/* Toolbar */}
         <Toolbar />
 
         {/* Canvas Area */}
-        <CanvasArea ref={containerRef}>
+        <div className={styles.canvasArea} ref={containerRef}>
           <FeatureErrorBoundary name="Canvas">
           <MapCanvas
             width={canvasSize.width}
@@ -302,43 +400,58 @@ function App() {
             onZoomChange={(z) => setZoom(z)}
           />
 
+          {/* Navigation Pad */}
+          <NavigationPad
+            onPanUp={handlePanUp}
+            onPanDown={handlePanDown}
+            onPanLeft={handlePanLeft}
+            onPanRight={handlePanRight}
+          />
+
+          {/* Environment Token */}
+          <EnvironmentToken />
+
           {/* Real-time Collaboration Layer */}
           {isCollaborating && (
-            <RealTimeCollaborationManager
-              stageRef={stageRef}
-              isActive={isCollaborating}
-            />
+            <Suspense fallback={null}>
+              <RealTimeCollaborationManager
+                stageRef={stageRef}
+                isActive={isCollaborating}
+              />
+            </Suspense>
           )}
 
           {/* Conflict Resolution System */}
-          <ConflictResolutionSystem isActive={!!isCollaborating} />
+          <Suspense fallback={null}>
+            <ConflictResolutionSystem isActive={!!isCollaborating} />
+          </Suspense>
           </FeatureErrorBoundary>
 
           {/* Combat Tracker */}
           <Suspense fallback={<Box position='absolute' bottom={0} left={0} />}>
             <CombatTracker />
           </Suspense>
-        </CanvasArea>
+        </div>
 
         {/* Sidebar - Show appropriate panel based on current tool */}
         <FeatureErrorBoundary name="Sidebar">
-          {currentTool === 'token' ? (
-            <TokenLibrary />
-        ) : currentTool === 'staticObject' ? (
-          <StaticObjectLibrary />
-        ) : currentTool === 'spellEffect' ? (
-          <Suspense fallback={<Box width={64} backgroundColor="dndBlack"/>}>
-            <SpellEffectsPanel />
+          <Suspense fallback={<Box style={{ width: 320, backgroundColor: 'var(--colors-dndBlack)', borderLeft: '1px solid var(--colors-gray700)' }} />}>
+            {currentTool === 'token' ? (
+              <TokenLibrary />
+            ) : currentTool === 'staticObject' ? (
+              <StaticObjectLibrary />
+            ) : currentTool === 'staticEffect' ? (
+              <StaticEffectsPanel />
+            ) : currentTool === 'layers' ? (
+              <AdvancedLayerPanel />
+            ) : currentTool === 'select' ? (
+              <AdvancedSelectionManager />
+            ) : (
+              <PropertiesPanel />
+            )}
           </Suspense>
-        ) : currentTool === 'layers' ? (
-          <AdvancedLayerPanel />
-        ) : currentTool === 'select' ? (
-          <AdvancedSelectionManager />
-        ) : (
-          <PropertiesPanel />
-        )}
         </FeatureErrorBoundary>
-      </AppBody>
+      </div>
 
       {/* Status Bar */}
       <StatusBar mousePosition={mousePosition} zoom={zoom} />
@@ -358,32 +471,40 @@ function App() {
       </Suspense>
 
       {/* User Management Panel */}
-      <UserManagementPanel
-        isOpen={showUserManagement}
-        onClose={() => setShowUserManagement(false)}
-      />
+      <Suspense fallback={null}>
+        <UserManagementPanel
+          isOpen={showUserManagement}
+          onClose={() => setShowUserManagement(false)}
+        />
+      </Suspense>
 
       {/* Session Creator */}
-      <CollaborationSessionCreator
-        isOpen={showSessionCreator}
-        onClose={() => setShowSessionCreator(false)}
-        onSessionCreated={(sessionId) => {
-          console.log('Session created:', sessionId)
-        }}
-      />
+      <Suspense fallback={null}>
+        <CollaborationSessionCreator
+          isOpen={showSessionCreator}
+          onClose={() => setShowSessionCreator(false)}
+          onSessionCreated={() => {
+            // Session created successfully
+          }}
+        />
+      </Suspense>
 
       {/* Performance Dashboard */}
-      <PerformanceDashboard
-        isOpen={showPerformance}
-        onClose={() => setShowPerformance(false)}
-      />
+      <Suspense fallback={null}>
+        <PerformanceDashboard
+          isOpen={showPerformance}
+          onClose={() => setShowPerformance(false)}
+        />
+      </Suspense>
 
       {/* Accessibility Panel */}
-      <AccessibilityPanel
-        isOpen={showAccessibility}
-        onClose={() => setShowAccessibility(false)}
-      />
-    </AppContainer>
+      <Suspense fallback={null}>
+        <AccessibilityPanel
+          isOpen={showAccessibility}
+          onClose={() => setShowAccessibility(false)}
+        />
+      </Suspense>
+    </div>
   )
 }
 

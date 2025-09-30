@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { Wand2 } from 'lucide-react'
+import { Wand2 } from '@/utils/optimizedIcons'
 import type { SpellEventData } from '@/types/timeline'
 import { Box, Text, Button } from '@/components/primitives'
 

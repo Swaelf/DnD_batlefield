@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import useMapStore from '@/store/mapStore'
+import useMapStore, { migrateTokenLabels } from '@/store/mapStore'
 import { useDebouncedCallback } from 'use-debounce'
 
 const AUTOSAVE_KEY = 'mapmaker_autosave'
@@ -60,6 +60,8 @@ export const useAutoSave = () => {
         if (map && !currentMap) {
           loadMap(map)
           setLastSaved(new Date(timestamp))
+          // Run migration after map is loaded
+          setTimeout(() => migrateTokenLabels(), 100)
         }
       }
     } catch (error) {
@@ -70,7 +72,7 @@ export const useAutoSave = () => {
   // Save whenever map changes
   useEffect(() => {
     if (!currentMap || isFirstLoad.current) return
-    debouncedSave()
+    void debouncedSave()
   }, [currentMap, debouncedSave])
 
   // Save before unload
@@ -91,7 +93,7 @@ export const useAutoSave = () => {
   }, [currentMap, isSaving])
 
   const manualSave = () => {
-    debouncedSave.flush()
+    void debouncedSave.flush()
   }
 
   const clearAutoSave = () => {

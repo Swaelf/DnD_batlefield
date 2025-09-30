@@ -1,26 +1,18 @@
 /**
- * Token Component - Legacy API Adapter
+ * Token Component Exports
  *
- * Phase 8 Migration Adapter: Provides complete backward compatibility
- * with existing Token usage while seamlessly integrating the new
- * atomic Token module architecture.
- *
- * This adapter ensures zero breaking changes during migration.
+ * Central export point for Token-related components.
  */
 
-// Re-export the new atomic Token component with legacy-compatible interface
-export { Token } from './LegacyTokenAdapter'
-export { TokenLibrary } from './LegacyTokenLibraryAdapter'
+// Primary Token component export
+export { Token, Token as default } from './Token'
 
-// Legacy exports for existing imports
-export { Token as default } from './LegacyTokenAdapter'
-export type { TokenProps } from './LegacyTokenAdapter'
-export type { LegacyTokenLibraryProps } from './LegacyTokenLibraryAdapter'
+// TokenLibrary component
+export { default as TokenLibrary } from './TokenLibrary'
 
-// Also export the originals for direct access if needed
-export { Token as LegacyToken } from './Token'
-export { default as LegacyTokenLibrary } from './TokenLibrary'
+// TokenHPTooltip component
+export { default as TokenHPTooltip } from './TokenHPTooltip'
 
-// Export types for compatibility
+// Export types for convenience
 export type { Token as TokenType } from '@/types/token'
 export type { TokenTemplate } from '@/types/token'

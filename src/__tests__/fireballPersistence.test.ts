@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 import type { SpellMapObject } from '@/types/map'
 
 /**
@@ -27,9 +27,9 @@ describe('Fireball Spell Persistence', () => {
       mapVersion: 0
     })
 
-    useRoundStore.setState({
+    useTimelineStore.setState({
       timeline: null,
-      currentRound: 1,
+      currentEvent: 1,
       isInCombat: false,
       animationSpeed: 1
     })
@@ -38,7 +38,7 @@ describe('Fireball Spell Persistence', () => {
     const mapStore = useMapStore.getState()
     mapStore.createNewMap('Test Map')
 
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const mapId = useMapStore.getState().currentMap?.id
     if (mapId) {
       roundStore.startCombat(mapId)
@@ -129,7 +129,7 @@ describe('Fireball Spell Persistence', () => {
   describe('Fireball Burn Area Cleanup', () => {
     it('should remove Fireball burn area after exactly 1 round', async () => {
       const mapStore = useMapStore.getState()
-      const roundStore = useRoundStore.getState()
+      const roundStore = useTimelineStore.getState()
 
       // Create Fireball burn area at round 1
       const burnArea: SpellMapObject = {
@@ -158,7 +158,7 @@ describe('Fireball Spell Persistence', () => {
       expect(state.currentMap?.objects.some(obj => obj.id === 'fireball-cleanup-test')).toBe(true)
 
       // Advance to round 2
-      await roundStore.nextRound()
+      await roundStore.nextEvent()
       await new Promise(resolve => setTimeout(resolve, 100))
 
       // Verify it's removed at round 2
@@ -168,7 +168,7 @@ describe('Fireball Spell Persistence', () => {
 
     it('should handle multiple Fireballs cast in different rounds', async () => {
       const mapStore = useMapStore.getState()
-      const roundStore = useRoundStore.getState()
+      const roundStore = useTimelineStore.getState()
 
       // Cast first Fireball at round 1
       mapStore.addSpellEffect({
@@ -191,7 +191,7 @@ describe('Fireball Spell Persistence', () => {
       })
 
       // Advance to round 2
-      await roundStore.nextRound()
+      await roundStore.nextEvent()
       await new Promise(resolve => setTimeout(resolve, 100))
 
       // Cast second Fireball at round 2
@@ -221,7 +221,7 @@ describe('Fireball Spell Persistence', () => {
       expect(state.currentMap?.objects.some(obj => obj.id === 'fireball-2')).toBe(true)
 
       // Advance to round 3
-      await roundStore.nextRound()
+      await roundStore.nextEvent()
       await new Promise(resolve => setTimeout(resolve, 100))
 
       state = useMapStore.getState()
@@ -254,13 +254,13 @@ describe('Fireball Spell Persistence', () => {
 
     it('should be called automatically when advancing rounds', async () => {
       const mapStore = useMapStore.getState()
-      const roundStore = useRoundStore.getState()
+      const roundStore = useTimelineStore.getState()
 
       // Spy on cleanup function
       const cleanupSpy = vi.spyOn(mapStore, 'cleanupExpiredSpells')
 
       // Advance round
-      await roundStore.nextRound()
+      await roundStore.nextEvent()
 
       // Verify cleanup was called with the new round number
       expect(cleanupSpy).toHaveBeenCalled()
@@ -273,10 +273,10 @@ describe('Fireball Spell Persistence', () => {
   describe('Edge Cases', () => {
     it('should handle Fireball at high round numbers', async () => {
       const mapStore = useMapStore.getState()
-      const roundStore = useRoundStore.getState()
+      const roundStore = useTimelineStore.getState()
 
       // Jump to round 10
-      roundStore.goToRound(10)
+      roundStore.goToEvent(10)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       // Cast Fireball at round 10
@@ -303,7 +303,7 @@ describe('Fireball Spell Persistence', () => {
       expect(state.currentMap?.objects.some(obj => obj.id === 'fireball-high-round')).toBe(true)
 
       // Advance to round 11
-      await roundStore.nextRound()
+      await roundStore.nextEvent()
       await new Promise(resolve => setTimeout(resolve, 100))
 
       state = useMapStore.getState()

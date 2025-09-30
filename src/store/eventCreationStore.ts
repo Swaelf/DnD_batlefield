@@ -1,93 +1,48 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
-import type { EventCreationState } from '../types'
-import type { Position } from '../types'
-import useRoundStore from './roundStore'
+import type { EventCreationState, Position, ToolType } from '../types'
+import useTimelineStore from './timelineStore'
 import useMapStore from './mapStore'
+import useToolStore from './toolStore'
 
 // Helper function to calculate token's expected position after all pending events
-const calculateTokenExpectedPosition = (tokenId: string, currentPreview?: { toPosition: Position | null, selectedTokenId: string | null, selectedSpell: any }): Position | null => {
+const calculateTokenExpectedPosition = (tokenId: string, currentPreview?: { toPosition: Position | null, selectedTokenId: string | null }): Position | null => {
   const currentMap = useMapStore.getState().currentMap
   const token = currentMap?.objects.find((obj: any) => obj.id === tokenId)
   if (!token) {
     return null
   }
 
-  const roundStore = useRoundStore.getState()
-
-  console.log('🧮 calculateTokenExpectedPosition DEBUG:', {
-    tokenId,
-    tokenCurrentPosition: token.position,
-    isInCombat: roundStore.isInCombat,
-    hasTimeline: !!roundStore.timeline,
-    currentRound: roundStore.currentRound
-  })
+  const roundStore = useTimelineStore.getState()
 
   // Start with the token's current position
   let expectedPosition = token.position
 
   // First, apply any timeline events if we're in combat mode
   if (roundStore.isInCombat && roundStore.timeline) {
-    const currentRound = roundStore.timeline.rounds.find(r => r.number === roundStore.currentRound)
+    const currentEventData = roundStore.timeline.events.find((e: any) => e.number === roundStore.currentEvent)
 
-    console.log('🧮 Looking for current round:', {
-      requestedRound: roundStore.currentRound,
-      foundRound: !!currentRound,
-      totalRounds: roundStore.timeline.rounds.length,
-      allRounds: roundStore.timeline.rounds.map(r => ({number: r.number, eventCount: r.events.length}))
-    })
-
-    if (currentRound) {
-      // Find all movement events for this token in the current round
-      const tokenMoveEvents = currentRound.events
-        .filter(event => event.tokenId === tokenId && event.type === 'move' && !event.executed)
-        .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by execution order
-
-      console.log('🧮 Found movement events:', {
-        tokenId,
-        totalEvents: currentRound.events.length,
-        allEvents: currentRound.events.map(e => ({
-          id: e.id,
-          tokenId: e.tokenId,
-          type: e.type,
-          executed: e.executed,
-          order: e.order
-        })),
-        tokenMoveEvents: tokenMoveEvents.map(e => ({
-          id: e.id,
-          type: e.type,
-          executed: e.executed,
-          order: e.order,
-          fromPos: (e.data as any).fromPosition,
-          toPos: (e.data as any).toPosition
-        }))
-      })
+    if (currentEventData) {
+      // Find all movement actions for this token in the current event
+      const tokenMoveEvents = currentEventData.actions
+        .filter((event: any) => event.tokenId === tokenId && event.type === 'move' && !event.executed)
+        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by execution order
 
       // Apply timeline events
       if (tokenMoveEvents.length > 0) {
         const lastTimelineEvent = tokenMoveEvents[tokenMoveEvents.length - 1]
         expectedPosition = (lastTimelineEvent.data as any).toPosition || expectedPosition
-        console.log('🧮 Applied timeline events, new position:', expectedPosition)
-      } else {
-        console.log('🧮 No timeline movement events found for token')
       }
-    } else {
-      console.log('🧮 Current round not found in timeline')
     }
-  } else {
-    console.log('🧮 Not in combat mode or no timeline')
   }
 
   // Finally, apply current preview state if it exists and matches this token
   if (currentPreview &&
       currentPreview.selectedTokenId === tokenId &&
-      currentPreview.toPosition &&
-      !currentPreview.selectedSpell) {
+      currentPreview.toPosition) {
     expectedPosition = currentPreview.toPosition
-    console.log('🧮 Applied current preview state, final position:', expectedPosition)
   }
 
-  console.log('🧮 Final calculated expected position:', expectedPosition)
   return expectedPosition
 }
 
@@ -99,30 +54,23 @@ const useEventCreationStore = create<EventCreationState>()(
     fromPosition: null,
     toPosition: null,
     pathPreview: [],
-    selectedSpell: undefined,
+    savedToolMode: null,
 
     startEventCreation: (tokenId: string) => set((state) => {
+      // Save current tool mode before switching to 'select'
+      state.savedToolMode = useToolStore.getState().currentTool
+
+      // Switch to select tool to avoid interference
+      useToolStore.getState().setTool('select' as ToolType)
+
+      // Clear drawing state and templates to prevent preview rendering
+      useToolStore.getState().resetDrawingState()
+
       // If we're starting a new event for the same token and we have a previous destination,
       // use it as the starting point for the new movement (chained movements)
-      const previousDestination = (state.selectedTokenId === tokenId && state.toPosition && !state.selectedSpell)
+      const previousDestination = (state.selectedTokenId === tokenId && state.toPosition)
         ? state.toPosition
         : null
-
-      console.log('🔗 startEventCreation CHAINING DEBUG:', {
-        tokenId,
-        currentState: {
-          selectedTokenId: state.selectedTokenId,
-          toPosition: state.toPosition,
-          selectedSpell: !!state.selectedSpell
-        },
-        chaining: {
-          sameToken: state.selectedTokenId === tokenId,
-          hasToPosition: !!state.toPosition,
-          noSpell: !state.selectedSpell,
-          previousDestination,
-          willChain: !!previousDestination
-        }
-      })
 
       // Set up new event creation state
       state.isCreatingEvent = true
@@ -131,39 +79,71 @@ const useEventCreationStore = create<EventCreationState>()(
       state.fromPosition = previousDestination // Use previous destination as new starting point
       state.toPosition = null
       state.pathPreview = []
-      state.selectedSpell = undefined // ALWAYS clear spell
-
-      console.log('🔗 startEventCreation RESULT:', {
-        tokenId,
-        resultingState: {
-          fromPosition: state.fromPosition,
-          toPosition: state.toPosition,
-          selectedSpell: state.selectedSpell
-        }
-      })
     }),
 
     cancelEventCreation: () => set((state) => {
+      // Restore saved tool mode
+      if (state.savedToolMode) {
+        useToolStore.getState().setTool(state.savedToolMode as ToolType)
+      }
+
       state.isCreatingEvent = false
       state.isPicking = null
       state.selectedTokenId = null
       state.fromPosition = null
       state.toPosition = null
       state.pathPreview = []
-      state.selectedSpell = undefined
+      state.savedToolMode = null
     }),
 
     startPickingPosition: (type: 'from' | 'to') => set((state) => {
+      // If not already in event creation mode, initialize it
+      if (!state.isCreatingEvent) {
+        state.savedToolMode = useToolStore.getState().currentTool
+        useToolStore.getState().setTool('select' as ToolType)
+        useToolStore.getState().resetDrawingState()
+        state.isCreatingEvent = true
+      }
+
       state.isPicking = type
     }),
 
     startPickingToken: () => set((state) => {
+      // If not already in event creation mode, initialize it
+      if (!state.isCreatingEvent) {
+        state.savedToolMode = useToolStore.getState().currentTool
+        useToolStore.getState().setTool('select' as ToolType)
+        useToolStore.getState().resetDrawingState()
+        state.isCreatingEvent = true
+      }
+
       state.isPicking = 'token'
+    }),
+
+    setPickingMode: (mode: 'from' | 'to' | 'token' | 'targetToken' | null) => set((state) => {
+      // If entering picking mode (not null) and not already in event creation, initialize it
+      if (mode !== null && !state.isCreatingEvent) {
+        state.savedToolMode = useToolStore.getState().currentTool
+        useToolStore.getState().setTool('select' as ToolType)
+        useToolStore.getState().resetDrawingState()
+        state.isCreatingEvent = true
+      }
+
+      // If exiting picking mode (null) and in event creation, restore tool
+      if (mode === null && state.isCreatingEvent) {
+        if (state.savedToolMode) {
+          useToolStore.getState().setTool(state.savedToolMode as ToolType)
+        }
+        state.isCreatingEvent = false
+        state.savedToolMode = null
+      }
+
+      state.isPicking = mode
     }),
 
     setSelectedToken: (tokenId: string) => set((state) => {
       state.selectedTokenId = tokenId
-      state.isPicking = null
+      // Don't clear isPicking here - let the UI components manage the picking state
     }),
 
     setPosition: (type: 'from' | 'to', position: Position) => set((state) => {
@@ -187,20 +167,6 @@ const useEventCreationStore = create<EventCreationState>()(
       state.isPicking = null
     }),
 
-    setSelectedSpell: (spell) => set((state) => {
-      state.selectedSpell = spell
-      // When a spell is selected, set the from position to the caster's expected position
-      if (spell && state.selectedTokenId) {
-        const expectedPosition = calculateTokenExpectedPosition(state.selectedTokenId)
-        if (expectedPosition) {
-          state.fromPosition = expectedPosition
-        }
-      }
-    }),
-
-    clearSpellSelection: () => set((state) => {
-      state.selectedSpell = undefined
-    }),
 
     getTokenExpectedPosition: (tokenId?: string | null) => {
       const state = get()
@@ -211,15 +177,8 @@ const useEventCreationStore = create<EventCreationState>()(
       // But we need to be careful about which preview to consider - only apply preview
       // for OTHER tokens, not the token we're currently calculating for (avoid circular logic)
       const currentPreview = state.selectedTokenId !== id
-        ? { toPosition: state.toPosition, selectedTokenId: state.selectedTokenId, selectedSpell: state.selectedSpell }
+        ? { toPosition: state.toPosition, selectedTokenId: state.selectedTokenId }
         : undefined
-
-      console.log('🔄 getTokenExpectedPosition:', {
-        requestedTokenId: id,
-        currentlySelectedTokenId: state.selectedTokenId,
-        willUsePreview: !!currentPreview,
-        previewToPosition: currentPreview?.toPosition
-      })
 
       const expectedPosition = calculateTokenExpectedPosition(id, currentPreview)
 

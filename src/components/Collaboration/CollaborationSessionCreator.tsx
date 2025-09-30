@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { Users, Crown } from 'lucide-react'
+import { Users, Crown } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'

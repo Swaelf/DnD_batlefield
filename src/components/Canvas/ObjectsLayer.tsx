@@ -8,7 +8,7 @@ import useMapStore from '@/store/mapStore'
 import useToolStore from '@/store/toolStore'
 import useEventCreationStore from '@/store/eventCreationStore'
 import useAnimationStore from '@/store/animationStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 import { useLayerStore } from '@/store/layerStore'
 import { useContextMenu } from '@/hooks/useContextMenu'
 import { Token } from '../Token/Token'
@@ -16,6 +16,7 @@ import { snapToGrid } from '@/utils/grid'
 import { PersistentArea } from '../Spells'
 import { AttackRenderer } from '../Actions/ActionRenderer/AttackRenderer'
 import { SimpleSpellComponent } from '../Spells/SimpleSpellComponent'
+import { StaticObjectRenderer } from '../StaticObject/StaticObjectRenderer'
 
 // Track completed spell animations to prevent duplicate persistent areas
 const completedSpellAnimations = new Set<string>()
@@ -70,7 +71,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
   const gridSettings = currentMap?.grid
   const { isPicking, setSelectedToken } = useEventCreationStore()
   const { activePaths } = useAnimationStore()
-  const currentRound = useRoundStore(state => state.currentRound)
+  const currentEvent = useTimelineStore(state => state.currentEvent)
   const { layers, getDefaultLayerForObjectType, migrateNumericLayer } = useLayerStore()
   const { handleContextMenu } = useContextMenu()
 
@@ -110,8 +111,8 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
   }
 
   const handleObjectClick = (objId: string, e: Konva.KonvaEventObject<MouseEvent> | null) => {
-    // If we're picking a token, handle that first
-    if (isPicking === 'token') {
+    // If we're picking a token (either main token or target token), handle that first
+    if (isPicking === 'token' || isPicking === 'targetToken') {
       const obj = currentMap?.objects.find(o => o.id === objId)
       if (obj && isToken(obj)) {
         setSelectedToken(objId)
@@ -119,10 +120,17 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
       }
     }
 
-    // Check if this is a token and we're using the select tool
+    // Check if this is a token
     const obj = currentMap?.objects.find(o => o.id === objId)
 
-    if (obj && isToken(obj) && currentTool === 'select' && onTokenSelect) {
+    // Priority 1: If in token picking mode for events, select the token for the event
+    if (obj && isToken(obj) && (isPicking === 'token' || isPicking === 'targetToken')) {
+      setSelectedToken(objId)
+      return
+    }
+
+    // Priority 2: If using select tool and not in picking mode, show HP tooltip
+    if (obj && isToken(obj) && currentTool === 'select' && !isPicking && onTokenSelect) {
       // Get stage position for tooltip placement
       if (e && e.target) {
         const stage = e.target.getStage()
@@ -227,7 +235,22 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
 
   const renderShape = (shape: Shape, isSelected: boolean, isDraggable: boolean) => {
     // Determine if this is a static object based on its properties
-    const isStaticObject = shape.metadata?.isStatic ||
+    // EXCLUDE static effects (they are simple shapes, not complex static objects)
+    const isStaticEffect = shape.metadata?.isStaticEffect === true
+    const isStaticObject = !isStaticEffect && (
+      shape.metadata?.isStatic ||
+      shape.fill?.includes('#6B7280') || // Wall/Stairs
+      shape.fill?.includes('#8B4513') || // Door/furniture
+      shape.fill?.includes('#9CA3AF') || // Pillar
+      shape.fill?.includes('#5A5A5A') || // Spiral stairs
+      shape.fill?.includes('#10B981') || // Tree
+      shape.fill?.includes('#059669') || // Bush
+      shape.fill?.includes('#78716C') || // Rock
+      shape.fill?.includes('#3B82F6') || // Water
+      shape.fill?.includes('#92400E') || // Table/chest/barrel
+      shape.fill?.includes('#78350F') || // Chair
+      shape.fill?.includes('#EF4444') || // Trap
+      shape.fill?.includes('#EA580C') || // Brazier
       shape.fill?.includes('#228B22') || // Tree colors - Summer Oak
       shape.fill?.includes('#0F5132') || // Pine tree
       shape.fill?.includes('#CD853F') || // Autumn Oak
@@ -242,8 +265,41 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
       shape.fill?.includes('#8B008B') || // Berry Bush
       shape.fill?.includes('#FF69B4') || // Flowering Bush
       shape.fill?.includes('#5c5c5c') || // Stone wall
-      shape.fill?.includes('#8B4513') || // Wood/furniture
       shape.fill?.includes('#654321')    // Wood/furniture
+    )
+
+    // Use enhanced StaticObjectRenderer for static objects (but NOT static effects)
+    if (isStaticObject) {
+      return (
+        <StaticObjectRenderer
+          key={shape.id}
+          shape={shape}
+          isSelected={isSelected}
+          isDraggable={isDraggable}
+          onClick={(e: Konva.KonvaEventObject<MouseEvent>) => handleObjectClick(shape.id, e)}
+          onDragEnd={(e: Konva.KonvaEventObject<MouseEvent>) => handleObjectDragEnd(shape.id, e)}
+          onContextMenu={(e: Konva.KonvaEventObject<MouseEvent>) => handleObjectRightClick(shape.id, e)}
+          onMouseEnter={(e: Konva.KonvaEventObject<MouseEvent>) => {
+            const target = e.target
+            target.scaleX(1.05)
+            target.scaleY(1.05)
+            const stage = target.getStage()
+            if (stage) {
+              stage.container().style.cursor = isDraggable ? 'move' : 'pointer'
+            }
+          }}
+          onMouseLeave={(e: Konva.KonvaEventObject<MouseEvent>) => {
+            const target = e.target
+            target.scaleX(1)
+            target.scaleY(1)
+            const stage = target.getStage()
+            if (stage) {
+              stage.container().style.cursor = 'default'
+            }
+          }}
+        />
+      )
+    }
 
     // Different visual styles for static objects vs regular shapes
     const shadowConfig = isStaticObject ? {
@@ -519,22 +575,37 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
 
       // Area spells and projectile-burst spells can create persistent areas
       if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst')) {
+        // Determine position for persistent area - use current target position if tracking enabled
+        let persistentPosition = spell.spellData.toPosition
+        if (spell.spellData.trackTarget && spell.spellData.targetTokenId) {
+          // Get current token position for tracking spells
+          const targetToken = currentMap?.objects.find(obj =>
+            obj.id === spell.spellData?.targetTokenId && obj.type === 'token'
+          )
+          if (targetToken) {
+            persistentPosition = targetToken.position
+          }
+        }
+
         // Create persistent area object
         const persistentAreaObject = {
           id: `persistent-area-${Date.now()}-${Math.random()}`,
           type: 'persistent-area' as const,
-          position: spell.spellData.toPosition,
+          position: persistentPosition,
           rotation: 0,
           layer: 9,
           persistentAreaData: {
-            position: spell.spellData.toPosition,
-            radius: spell.spellData.size || 60,
+            position: persistentPosition,
+            radius: spell.spellData.burstRadius || spell.spellData.size || 60, // Use burst radius for area effects
             color: spell.spellData.persistColor || spell.spellData.color || '#3D3D2E',
             opacity: spell.spellData.persistOpacity || 0.8,
             spellName: spell.spellData.spellName || 'Area Effect',
-            roundCreated: currentRound // Use actual current round
+            roundCreated: currentEvent, // Use actual current event number
+            // Store token tracking information for persistent areas
+            trackTarget: spell.spellData.trackTarget || false,
+            targetTokenId: spell.spellData.targetTokenId || null
           },
-          roundCreated: currentRound, // Use actual current round
+          roundCreated: currentEvent, // Use actual current event number
           spellDuration: persistDuration,
           isSpellEffect: true as const // Mark as spell effect for cleanup
         }
@@ -592,10 +663,21 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
       return null
     }
 
+    // Determine current position - track token if enabled
+    let currentPosition = area.persistentAreaData.position
+    if (area.persistentAreaData.trackTarget && area.persistentAreaData.targetTokenId) {
+      const targetToken = currentMap?.objects.find(obj =>
+        obj.id === area.persistentAreaData.targetTokenId && obj.type === 'token'
+      )
+      if (targetToken) {
+        currentPosition = targetToken.position
+      }
+    }
+
     return (
       <PersistentArea
         key={area.id}
-        position={area.persistentAreaData.position}
+        position={currentPosition}
         radius={area.persistentAreaData.radius}
         color={area.persistentAreaData.color}
         opacity={area.persistentAreaData.opacity}

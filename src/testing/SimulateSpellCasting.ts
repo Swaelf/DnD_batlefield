@@ -1,5 +1,5 @@
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 import type { SpellEventData } from '@/types/timeline'
 
 /**
@@ -9,7 +9,7 @@ export async function simulateSpellCasting() {
   console.log('\n🎮 SIMULATING ACTUAL SPELL CASTING FLOW\n')
 
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   // Setup
   if (!mapStore.currentMap) {
@@ -26,9 +26,9 @@ export async function simulateSpellCasting() {
   if (!roundStore.isInCombat) {
     roundStore.startCombat(mapStore.currentMap!.id)
   }
-  roundStore.goToRound(1)
+  roundStore.goToEvent(1)
 
-  console.log('📍 Starting at round', roundStore.currentRound)
+  console.log('📍 Starting at round', roundStore.currentEvent)
 
   console.log('\n🎯 STEP 1: Simulating Fireball Spell Cast')
   console.log('─'.repeat(40))
@@ -45,7 +45,7 @@ export async function simulateSpellCasting() {
     duration: 500, // Animation duration in ms
     persistDuration: 1, // Persist for 1 round
     burstRadius: 40,
-    roundCreated: roundStore.currentRound
+    roundCreated: roundStore.currentEvent
   }
 
   // Create initial spell object (what useTokenAnimation does)
@@ -58,7 +58,7 @@ export async function simulateSpellCasting() {
     layer: 100,
     isSpellEffect: true,
     spellData: fireballSpellData,
-    roundCreated: roundStore.currentRound,
+    roundCreated: roundStore.currentEvent,
     spellDuration: 0 // Initial spell doesn't persist
   }
 
@@ -92,9 +92,9 @@ export async function simulateSpellCasting() {
       color: fireballSpellData.color,
       opacity: 0.3,
       spellName: 'Fireball',
-      roundCreated: roundStore.currentRound
+      roundCreated: roundStore.currentEvent
     },
-    roundCreated: roundStore.currentRound,
+    roundCreated: roundStore.currentEvent,
     spellDuration: fireballSpellData.persistDuration || 1
   }
 
@@ -133,7 +133,7 @@ export async function simulateSpellCasting() {
   console.log('\n⏭️ STEP 4: Advancing to Round 2')
   console.log('─'.repeat(40))
 
-  console.log('Current round before advance:', roundStore.currentRound)
+  console.log('Current round before advance:', roundStore.currentEvent)
 
   // Check if nextRound is properly connected
   console.log('\nChecking nextRound implementation...')
@@ -141,10 +141,10 @@ export async function simulateSpellCasting() {
   const hasCleanupCall = nextRoundFn.includes('cleanupExpiredSpells')
   console.log('nextRound calls cleanupExpiredSpells:', hasCleanupCall ? '✅ YES' : '❌ NO')
 
-  await roundStore.nextRound()
+  await roundStore.nextEvent()
   await new Promise(resolve => setTimeout(resolve, 200))
 
-  console.log('Current round after advance:', roundStore.currentRound)
+  console.log('Current round after advance:', roundStore.currentEvent)
 
   console.log('\n🎯 STEP 5: Checking if Persistent Area was Removed')
   console.log('─'.repeat(40))
@@ -161,14 +161,14 @@ export async function simulateSpellCasting() {
     console.log('  spellName:', area.persistentAreaData?.spellName)
     console.log('  roundCreated:', area.roundCreated)
     console.log('  spellDuration:', area.spellDuration)
-    console.log('  currentRound:', roundStore.currentRound)
+    console.log('  currentEvent:', roundStore.currentEvent)
 
-    const shouldBeRemoved = roundStore.currentRound >= (area.roundCreated || 0) + (area.spellDuration || 0)
+    const shouldBeRemoved = roundStore.currentEvent >= (area.roundCreated || 0) + (area.spellDuration || 0)
     console.log('  Should be removed:', shouldBeRemoved)
 
     // Try manual cleanup
     console.log('\n🔧 Trying manual cleanup...')
-    mapStore.cleanupExpiredSpells(roundStore.currentRound)
+    mapStore.cleanupExpiredSpells(roundStore.currentEvent)
 
     const areasAfterManual = mapStore.currentMap?.objects.filter(obj => obj.type === 'persistent-area') || []
     console.log('Areas after manual cleanup:', areasAfterManual.length)
@@ -202,7 +202,7 @@ export function testCleanupFunction() {
   console.log('\n🧪 TESTING CLEANUP FUNCTION IN ISOLATION\n')
 
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   // Ensure map exists
   if (!mapStore.currentMap) {
@@ -210,7 +210,7 @@ export function testCleanupFunction() {
   }
 
   // Set to round 5 for testing
-  roundStore.goToRound(5)
+  roundStore.goToEvent(5)
 
   // Create test areas with different expiration rounds
   const testAreas = [
@@ -219,7 +219,7 @@ export function testCleanupFunction() {
     { id: 'expire-r7', roundCreated: 3, spellDuration: 4 }, // Expires at round 7
   ]
 
-  console.log('Current round:', roundStore.currentRound)
+  console.log('Current round:', roundStore.currentEvent)
   console.log('\nCreating test areas:')
 
   testAreas.forEach(test => {
@@ -245,18 +245,18 @@ export function testCleanupFunction() {
     mapStore.addSpellEffect(area)
 
     const expiresAt = test.roundCreated + test.spellDuration
-    const shouldBeRemoved = roundStore.currentRound >= expiresAt
+    const shouldBeRemoved = roundStore.currentEvent >= expiresAt
     console.log(`  ${test.id}: expires at round ${expiresAt} - should remove: ${shouldBeRemoved}`)
   })
 
   console.log('\n🔧 Calling cleanupExpiredSpells...')
-  mapStore.cleanupExpiredSpells(roundStore.currentRound)
+  mapStore.cleanupExpiredSpells(roundStore.currentEvent)
 
   console.log('\n📊 Results:')
   testAreas.forEach(test => {
     const stillExists = mapStore.currentMap?.objects.some(obj => obj.id === test.id)
     const expiresAt = test.roundCreated + test.spellDuration
-    const shouldExist = roundStore.currentRound < expiresAt
+    const shouldExist = roundStore.currentEvent < expiresAt
     const correct = stillExists === shouldExist
 
     console.log(`  ${test.id}: ${stillExists ? 'exists' : 'removed'} - ${correct ? '✅ CORRECT' : '❌ WRONG'}`)

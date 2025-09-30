@@ -5,7 +5,7 @@ import type { Point } from '@/types'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
-import { Grid3x3, Move, RotateCw, Square, Circle as CircleIcon, Settings } from 'lucide-react'
+import { Grid3x3, Move, RotateCw, Square, Circle as CircleIcon, Settings } from '@/utils/optimizedIcons'
 
 interface SnapGuide {
   type: 'grid' | 'object' | 'angle' | 'distance'

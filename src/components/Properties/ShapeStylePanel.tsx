@@ -1,5 +1,5 @@
 import React from 'react'
-import { Palette, Square, Circle, Triangle } from 'lucide-react'
+import { Palette, Square, Circle, Triangle } from '@/utils/optimizedIcons'
 import useToolStore from '@store/toolStore'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'

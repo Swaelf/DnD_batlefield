@@ -4,7 +4,7 @@
  */
 
 import React, { memo } from 'react'
-import { MapPin } from 'lucide-react'
+import { MapPin } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -14,7 +14,7 @@ import type { EventType } from '@/types/timeline'
 export type PositionPickerProps = {
   targetPosition: Position
   onPositionPick: () => void
-  isPicking: 'from' | 'to' | 'token' | null
+  isPicking: 'from' | 'to' | 'token' | 'targetToken' | null
   fadeEffect?: boolean
   setFadeEffect?: (value: boolean) => void
   eventType: EventType

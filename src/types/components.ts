@@ -54,11 +54,6 @@ export type ToolButtonProps = {
   onClick: () => void
 }
 
-export type DrawingLayerProps = {
-  stageRef: React.MutableRefObject<Konva.Stage | null>
-  gridSize: number
-}
-
 export type MeasureToolProps = {
   gridSize: number
 }

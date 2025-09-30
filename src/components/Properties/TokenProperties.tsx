@@ -1,7 +1,7 @@
 import React, { memo } from 'react'
 import type { Token } from '@/types'
 import { ColorPicker } from './ColorPicker'
-import { Heart, Shield, Plus, Minus } from 'lucide-react'
+import { Heart, Shield, Plus, Minus } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'

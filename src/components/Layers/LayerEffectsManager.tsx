@@ -15,7 +15,7 @@ import {
   RotateCcw,
   Settings,
   Trash2
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import type { LayerEffect } from '@/store/layerStore'
 import { useLayerStore } from '@/store/layerStore'
 

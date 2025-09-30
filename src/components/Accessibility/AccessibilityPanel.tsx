@@ -12,7 +12,7 @@ import {
   Palette,
   Zap,
   Info
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 
 interface AccessibilityPanelProps {
   isOpen: boolean

@@ -1,5 +1,5 @@
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 
 /**
  * Run tests and diagnose the persistence issue
@@ -8,7 +8,7 @@ export async function runAndDiagnose() {
   console.log('\n🔬 RUNNING DIAGNOSTIC TESTS\n')
 
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   // Ensure clean state
   if (!mapStore.currentMap) {
@@ -23,7 +23,7 @@ export async function runAndDiagnose() {
   if (!roundStore.isInCombat) {
     roundStore.startCombat(mapStore.currentMap!.id)
   }
-  roundStore.goToRound(1)
+  roundStore.goToEvent(1)
 
   console.log('📊 TEST 1: Direct Property Check')
   console.log('─'.repeat(40))
@@ -74,8 +74,8 @@ export async function runAndDiagnose() {
   console.log('─'.repeat(40))
 
   // Test 2: Check if cleanup logic works
-  const currentRound = roundStore.currentRound
-  console.log('Current round:', currentRound)
+  const currentEvent = roundStore.currentEvent
+  console.log('Current round:', currentEvent)
 
   const shouldBeRemoved = (obj: any) => {
     if (!obj.isSpellEffect) {
@@ -92,12 +92,12 @@ export async function runAndDiagnose() {
     }
 
     const expiresAt = obj.roundCreated + obj.spellDuration
-    const shouldRemove = currentRound >= expiresAt
-    console.log(`  ${obj.id}: Created=${obj.roundCreated}, Duration=${obj.spellDuration}, Expires=${expiresAt}, Current=${currentRound}, Remove=${shouldRemove}`)
+    const shouldRemove = currentEvent >= expiresAt
+    console.log(`  ${obj.id}: Created=${obj.roundCreated}, Duration=${obj.spellDuration}, Expires=${expiresAt}, Current=${currentEvent}, Remove=${shouldRemove}`)
     return shouldRemove
   }
 
-  console.log('\nChecking if test-1 should be removed at round', currentRound)
+  console.log('\nChecking if test-1 should be removed at round', currentEvent)
   const shouldRemove1 = shouldBeRemoved(storedObj1)
   console.log('Should remove test-1:', shouldRemove1 ? 'YES' : 'NO')
 
@@ -106,10 +106,10 @@ export async function runAndDiagnose() {
 
   // Test 3: Advance round and check cleanup
   console.log('Advancing to round 2...')
-  await roundStore.nextRound()
+  await roundStore.nextEvent()
   await new Promise(resolve => setTimeout(resolve, 100))
 
-  const round2 = roundStore.currentRound
+  const round2 = roundStore.currentEvent
   console.log('Now at round:', round2)
 
   const stillExists = mapStore.currentMap?.objects.some(obj => obj.id === 'test-1')
@@ -133,7 +133,7 @@ export async function runAndDiagnose() {
   console.log('─'.repeat(40))
 
   // Reset to round 1
-  roundStore.goToRound(1)
+  roundStore.goToEvent(1)
 
   // Create multiple spells
   const spells = [
@@ -168,7 +168,7 @@ export async function runAndDiagnose() {
 
   // Test each round
   for (let round = 2; round <= 4; round++) {
-    await roundStore.nextRound()
+    await roundStore.nextEvent()
     await new Promise(resolve => setTimeout(resolve, 100))
 
     console.log(`\nRound ${round}:`)
@@ -195,7 +195,7 @@ export async function runAndDiagnose() {
   }
 
   console.log('Testing if cleanup is called on nextRound...')
-  await roundStore.nextRound()
+  await roundStore.nextEvent()
 
   if (cleanupCalled) {
     console.log('✅ Cleanup IS being called')

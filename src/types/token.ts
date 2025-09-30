@@ -35,6 +35,7 @@ export type TokenTemplate = {
   category?: 'player' | 'enemy' | 'npc' | 'object';
   showLabel?: boolean;
   labelPosition?: 'top' | 'bottom';
+  labelColor?: string;
   opacity?: number;
   borderColor?: string;
   borderWidth?: number;

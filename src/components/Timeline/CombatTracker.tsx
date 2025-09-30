@@ -1,33 +1,33 @@
 import React, { useState, memo } from 'react'
-import { Shield } from 'lucide-react'
-import useRoundStore from '@/store/roundStore'
+import { Shield } from '@/utils/optimizedIcons'
+import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
 import { UnifiedEventEditor } from './UnifiedEventEditor'
-import { RoundCounter } from './RoundCounter'
+import { EventGroupCounter } from './RoundCounter'
 import { CombatControls, SpeedControls } from './CombatControls'
-import { RoundTimeline } from './RoundTimeline'
+import { EventGroupTimeline } from './RoundTimeline'
 import {
   TrackerContainer,
   StartCombatButton,
   CombatPanel,
   CombatBar,
   ExpandedSection
-} from './CombatTracker.styled'
+} from './CombatTracker.styled.tsx'
 
 const CombatTrackerComponent: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false)
   const [showEventEditor, setShowEventEditor] = useState(false)
 
   // Use specific selectors to prevent unnecessary re-renders
-  const timeline = useRoundStore(state => state.timeline)
-  const currentRound = useRoundStore(state => state.currentRound)
-  const isInCombat = useRoundStore(state => state.isInCombat)
-  const animationSpeed = useRoundStore(state => state.animationSpeed)
-  const startCombat = useRoundStore(state => state.startCombat)
-  const endCombat = useRoundStore(state => state.endCombat)
-  const nextRound = useRoundStore(state => state.nextRound)
-  const previousRound = useRoundStore(state => state.previousRound)
-  const setAnimationSpeed = useRoundStore(state => state.setAnimationSpeed)
+  const timeline = useTimelineStore(state => state.timeline)
+  const currentEvent = useTimelineStore(state => state.currentEvent)
+  const isInCombat = useTimelineStore(state => state.isInCombat)
+  const animationSpeed = useTimelineStore(state => state.animationSpeed)
+  const startCombat = useTimelineStore(state => state.startCombat)
+  const endCombat = useTimelineStore(state => state.endCombat)
+  const nextEvent = useTimelineStore(state => state.nextEvent)
+  const previousEvent = useTimelineStore(state => state.previousEvent)
+  const setAnimationSpeed = useTimelineStore(state => state.setAnimationSpeed)
 
   // Use specific selectors to prevent unnecessary re-renders
   const currentMap = useMapStore(state => state.currentMap)
@@ -39,16 +39,16 @@ const CombatTrackerComponent: React.FC = () => {
     }
   }
 
-  const handleNextRound = async () => {
-    await nextRound()
-    // Get the updated current round from the store after nextRound completes
-    const updatedRound = useRoundStore.getState().currentRound
-    // Clean up expired spells after round change
-    cleanupExpiredSpells(updatedRound)
+  const handleNextEvent = async () => {
+    await nextEvent()
+    // Get the updated current event from the store after nextEvent completes
+    const updatedEvent = useTimelineStore.getState().currentEvent
+    // Clean up expired spells after event change
+    cleanupExpiredSpells(updatedEvent)
   }
 
-  const currentRoundData = timeline?.rounds.find(r => r.number === currentRound)
-  const eventCount = currentRoundData?.events.length || 0
+  const currentEventData = timeline?.events.find(e => e.number === currentEvent)
+  const actionCount = currentEventData?.actions.length || 0
 
   // Count active spell effects
   const activeSpells = currentMap?.objects.filter(obj => obj.isSpellEffect).length || 0
@@ -73,16 +73,16 @@ const CombatTrackerComponent: React.FC = () => {
         <CombatPanel>
           {/* Main Combat Bar */}
           <CombatBar>
-            {/* Round Counter and Navigation */}
-            <RoundCounter
-              currentRound={currentRound}
-              onNextRound={handleNextRound}
-              onPreviousRound={previousRound}
+            {/* Event Counter and Navigation */}
+            <EventGroupCounter
+              currentGroup={currentEvent}
+              onNextGroup={handleNextEvent}
+              onPreviousGroup={previousEvent}
             />
 
             {/* Combat Controls */}
             <CombatControls
-              eventCount={eventCount}
+              eventCount={actionCount}
               activeSpells={activeSpells}
               animationSpeed={animationSpeed}
               isExpanded={isExpanded}
@@ -102,10 +102,10 @@ const CombatTrackerComponent: React.FC = () => {
                 onSetAnimationSpeed={setAnimationSpeed}
               />
 
-              {/* Round Timeline and Stats */}
-              <RoundTimeline
+              {/* Event Timeline and Stats */}
+              <EventGroupTimeline
                 timeline={timeline}
-                currentRound={currentRound}
+                currentGroup={currentEvent}
                 activeSpells={activeSpells}
               />
             </ExpandedSection>

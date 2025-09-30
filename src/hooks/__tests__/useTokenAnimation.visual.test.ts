@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useTokenAnimation } from '../useTokenAnimation'
-import useRoundStore from '@/store/roundStore'
-import useMapStore from '@/store/mapStore'
 import Konva from 'konva'
 
 /**
@@ -12,57 +10,108 @@ import Konva from 'konva'
  * and that the fix for the 0,0 position issue is working correctly.
  */
 
-// Mock the stores with proper Zustand store structure
-const mockRoundStore = {
-  timeline: {
-    id: 'test-timeline',
-    mapId: 'test-map',
-    rounds: [
-      {
-        id: 'round-1',
-        number: 1,
-        timestamp: Date.now(),
-        events: [] as any[],
-        executed: false
-      }
-    ],
-    currentRound: 1,
-    isActive: true,
-    history: []
-  },
-  currentRound: 1,
-  isInCombat: false,
-  animationSpeed: 1,
-  getState: () => mockRoundStore,
-  setState: vi.fn(),
-  subscribe: vi.fn(),
-  destroy: vi.fn()
-}
+vi.mock('@/store/timelineStore', () => {
+  const mockTimelineStoreData = {
+    timeline: {
+      id: 'test-timeline',
+      mapId: 'test-map',
+      events: [
+        {
+          id: 'event-1',
+          number: 1,
+          timestamp: Date.now(),
+          actions: [],
+          executed: false
+        },
+        {
+          id: 'event-2',
+          number: 2,
+          timestamp: Date.now(),
+          actions: [],
+          executed: false
+        }
+      ],
+      currentEvent: 1,
+      isActive: true,
+      history: []
+    },
+    currentEvent: 1,
+    isInCombat: false,
+    animationSpeed: 1
+  }
 
-const mockMapStore = {
-  currentMap: {
-    id: 'test-map',
-    name: 'Test Map',
-    width: 1920,
-    height: 1080,
-    grid: { size: 50, type: 'square', visible: true, snap: true, color: '#cccccc' },
-    objects: [] as any[]
-  },
-  addSpellEffect: vi.fn(),
-  deleteObject: vi.fn(),
-  getState: () => mockMapStore,
-  setState: vi.fn(),
-  subscribe: vi.fn(),
-  destroy: vi.fn()
-}
+  const mockTimelineStore = Object.assign(vi.fn(() => mockTimelineStoreData), {
+    getState: vi.fn(() => mockTimelineStoreData),
+    setState: vi.fn(),
+    subscribe: vi.fn(),
+    destroy: vi.fn()
+  })
 
-vi.mock('@/store/roundStore', () => ({
-  useRoundStore: mockRoundStore
+  return {
+    default: mockTimelineStore
+  }
+})
+
+vi.mock('@/store/mapStore', () => {
+  const mockMapStoreData = {
+    currentMap: {
+      id: 'test-map',
+      name: 'Test Map',
+      width: 1920,
+      height: 1080,
+      grid: { size: 50, type: 'square', visible: true, snap: true, color: '#cccccc' },
+      objects: []
+    },
+    addSpellEffect: vi.fn(),
+    deleteObject: vi.fn(),
+    updateObjectPosition: vi.fn()
+  }
+
+  const mockMapStore = Object.assign(vi.fn(() => mockMapStoreData), {
+    getState: vi.fn(() => mockMapStoreData),
+    setState: vi.fn(),
+    subscribe: vi.fn(),
+    destroy: vi.fn()
+  })
+
+  return {
+    default: mockMapStore
+  }
+})
+
+vi.mock('@/store/animationStore', () => {
+  const mockAnimationStoreData = {
+    activePaths: [],
+    isPaused: false,
+    startAnimation: vi.fn(),
+    updateProgress: vi.fn(),
+    endAnimation: vi.fn(),
+    pauseAnimations: vi.fn(),
+    resumeAnimations: vi.fn()
+  }
+
+  const mockAnimationStore = Object.assign(vi.fn(() => mockAnimationStoreData), {
+    getState: vi.fn(() => mockAnimationStoreData),
+    setState: vi.fn(),
+    subscribe: vi.fn(),
+    destroy: vi.fn()
+  })
+
+  return {
+    default: mockAnimationStore
+  }
+})
+
+// Mock Konva
+vi.mock('konva', () => ({
+  default: {
+    Tween: vi.fn()
+  }
 }))
 
-vi.mock('@/store/mapStore', () => ({
-  useMapStore: mockMapStore
-}))
+// Import the stores to access mocked versions
+import useTimelineStore from '@/store/timelineStore'
+import useMapStore from '@/store/mapStore'
 
 describe('Token Animation Visual Updates', () => {
   let mockStage: any
@@ -127,40 +176,55 @@ describe('Token Animation Visual Updates', () => {
     }
 
     // Setup store mocks
-    const mockMapStore = {
+    useMapStore.setState({
       currentMap: {
         id: 'map-1',
+        name: 'Test Map',
+        width: 1920,
+        height: 1080,
+        grid: { size: 50, type: 'square', visible: true, snap: true, color: '#cccccc' },
         objects: [
           {
             id: 'token-1',
             type: 'token',
             position: { x: 250, y: 350 },
+            rotation: 0,
+            layer: 1,
+            size: 'medium',
+            color: '#ff0000',
+            shape: 'circle',
             opacity: 1,
+            visible: true,
+            locked: false,
             name: 'Test Token'
-          }
+          } as any
         ]
-      },
-      updateObjectPosition: vi.fn()
-    }
+      }
+    })
 
-    const mockRoundStore = {
-      currentRound: 1,
+    useTimelineStore.setState({
+      currentEvent: 1,
       isInCombat: true,
       animationSpeed: 1,
       timeline: {
+        id: 'timeline-1',
         mapId: 'map-1',
-        rounds: [
+        events: [
           {
+            id: 'event-1',
             number: 1,
-            events: [] as any[],
+            timestamp: Date.now(),
+            actions: [] as any[],
             executed: false
           },
           {
+            id: 'event-2',
             number: 2,
-            events: [
+            timestamp: Date.now(),
+            actions: [
               {
-                id: 'event-1',
-                roundNumber: 2,
+                id: 'action-1',
+                eventNumber: 2,
                 tokenId: 'token-1',
                 type: 'move',
                 data: {
@@ -177,15 +241,13 @@ describe('Token Animation Visual Updates', () => {
             executed: false
           }
         ],
-        isActive: true
-      },
-      updateEvent: vi.fn()
-    }
+        currentEvent: 1,
+        isActive: true,
+        history: []
+      }
+    })
 
-    vi.mocked(useMapStore).mockReturnValue(mockMapStore as any)
-    vi.mocked(useRoundStore).mockImplementation(() => mockRoundStore as any)
-    vi.mocked(useRoundStore).getState = vi.fn(() => mockRoundStore as any)
-    vi.mocked(useRoundStore).subscribe = vi.fn()
+    // Stores are already mocked as default exports
 
     // Mock Konva.Tween to simulate animation
     vi.mocked(Konva.Tween).mockImplementation((config: any) => {
@@ -301,10 +363,11 @@ describe('Token Animation Visual Updates', () => {
 
     it('should handle appear animation with correct initial position', async () => {
       // Update event to appear type
-      mockRoundStore.timeline!.rounds[1].events = [
+      const timelineStore = useTimelineStore.getState()
+      timelineStore.timeline!.events[1].actions = [
         {
-          id: 'event-appear',
-          roundNumber: 2,
+          id: 'action-appear',
+          eventNumber: 2,
           tokenId: 'token-1',
           type: 'appear',
           data: {
@@ -342,10 +405,11 @@ describe('Token Animation Visual Updates', () => {
 
     it('should handle disappear animation from current position', async () => {
       // Update event to disappear type
-      mockRoundStore.timeline!.rounds[1].events = [
+      const timelineStore = useTimelineStore.getState()
+      timelineStore.timeline!.events[1].actions = [
         {
-          id: 'event-disappear',
-          roundNumber: 2,
+          id: 'action-disappear',
+          eventNumber: 2,
           tokenId: 'token-1',
           type: 'disappear',
           data: {
@@ -413,11 +477,11 @@ describe('Token Animation Visual Updates', () => {
       mockObjectLayer.getChildren.mockReturnValue([mockGroupWrapper])
 
       // Add events for both tokens
-      const mockRoundStore = vi.mocked(useRoundStore).getState()
-      mockRoundStore.timeline!.rounds[1].events = [
+      const timelineStore = useTimelineStore.getState()
+      timelineStore.timeline!.events[1].actions = [
         {
-          id: 'event-1',
-          roundNumber: 2,
+          id: 'action-1',
+          eventNumber: 2,
           tokenId: 'token-1',
           type: 'move',
           data: {
@@ -430,8 +494,8 @@ describe('Token Animation Visual Updates', () => {
           order: 1
         },
         {
-          id: 'event-2',
-          roundNumber: 2,
+          id: 'action-2',
+          eventNumber: 2,
           tokenId: 'token-2',
           type: 'move',
           data: {
@@ -445,13 +509,21 @@ describe('Token Animation Visual Updates', () => {
         }
       ]
 
-      mockMapStore.currentMap!.objects.push({
+      const mapStore = useMapStore.getState()
+      mapStore.currentMap!.objects.push({
         id: 'token-2',
         type: 'token',
         position: { x: 500, y: 600 },
+        rotation: 0,
+        layer: 1,
+        size: 'medium',
+        color: '#00ff00',
+        shape: 'circle',
         opacity: 1,
+        visible: true,
+        locked: false,
         name: 'Token 2'
-      })
+      } as any)
 
       const stageRef = { current: mockStage }
       const { result } = renderHook(() => useTokenAnimation(stageRef as any))

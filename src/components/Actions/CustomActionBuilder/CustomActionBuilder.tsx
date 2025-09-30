@@ -6,7 +6,7 @@ import {
   Code,
   Plus,
   Minus
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import { nanoid } from 'nanoid'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
@@ -53,9 +53,9 @@ export const CustomActionBuilder = ({
   onImportAction,
   // savedActions = [] // TODO: Implement saved actions
 }: CustomActionBuilderProps) => {
-  const [_validationErrors, setValidationErrors] = useState<ValidationError[]>([])
+  const [, setValidationErrors] = useState<ValidationError[]>([])
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const [_showValidation, setShowValidation] = useState(false)
+  const [, setShowValidation] = useState(false)
 
   const action = selectedAction || {
     sequenceName: '',

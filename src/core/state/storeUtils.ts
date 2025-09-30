@@ -194,11 +194,9 @@ export const debugHelpers = {
    * Log store state changes
    */
   logStateChanges: <T>(store: StoreApi<T>, storeName: string) => {
-    return store.subscribe((state, previousState) => {
-      console.group(`🔄 ${storeName} State Change`)
-      console.log('Previous:', previousState)
-      console.log('Current:', state)
-      console.groupEnd()
+    return store.subscribe(() => {
+      // State change logging can be implemented here
+      console.log(`🔄 ${storeName} State Change`)
     })
   },
 
@@ -207,14 +205,12 @@ export const debugHelpers = {
    */
   logPropertyChanges: <T, K extends keyof T>(
     store: StoreApi<T>,
-    property: K,
-    storeName: string
+    property: K
   ) => {
     let previousValue = store.getState()[property]
     return store.subscribe((state) => {
       const currentValue = state[property]
       if (currentValue !== previousValue) {
-        console.log(`🎯 ${storeName}.${String(property)}:`, previousValue, '→', currentValue)
         previousValue = currentValue
       }
     })

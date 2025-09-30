@@ -28,7 +28,7 @@ export const spellTemplates: UnifiedAction[] = [
       burstDuration: 600, // How long the explosion lasts
       burstColor: '#FF4500', // Explosion color (slightly different from projectile)
       // Post-effect properties
-      persistDuration: 2000, // Lingering fire effects duration (ms)
+      persistDuration: 2, // Lingering fire effects duration (rounds)
       persistColor: '#CC2500', // Darker fire for lingering effects
       persistOpacity: 0.4, // Opacity of lingering effects
       // Animation phases

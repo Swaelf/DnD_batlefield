@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { Group, Text as KonvaText, Rect } from 'react-konva'
 import type Konva from 'konva'
-import { Users, MessageSquare, Settings, UserPlus, Crown, Eye } from 'lucide-react'
+import { Users, MessageSquare, Settings, UserPlus, Crown, Eye } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -75,6 +75,15 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
       updateSelection(selectedObjects)
     }
   }, [selectedObjects, connectionStatus, updateSelection])
+
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (isTypingTimeout) {
+        clearTimeout(isTypingTimeout)
+      }
+    }
+  }, [isTypingTimeout])
 
   // Handle mouse leave to hide cursor
   const handleMouseLeave = useCallback(() => {
@@ -486,7 +495,7 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
               variant="outline"
               onClick={() => {
                 const email = prompt('Enter email to invite:')
-                if (email) inviteUser(email, 'player')
+                if (email) void inviteUser(email, 'player')
               }}
               style={{
                 width: '100%',

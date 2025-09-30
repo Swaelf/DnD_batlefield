@@ -5,7 +5,7 @@ import type { Point, Shape } from '@/types'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
-import { Shapes, ArrowRight, MessageSquare, Star, Hexagon, Triangle, Square, Circle as CircleIcon, Minus } from 'lucide-react'
+import { Shapes, ArrowRight, MessageSquare, Star, Hexagon, Triangle, Square, Circle as CircleIcon, Minus } from '@/utils/optimizedIcons'
 
 interface ShapeTemplate {
   id: string

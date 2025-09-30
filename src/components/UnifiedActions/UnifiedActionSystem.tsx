@@ -42,7 +42,6 @@ const UnifiedActionSystemComponent = ({
 
     // Process new actions
     newActions.forEach(action => {
-      console.log(`[UnifiedActionSystem] Starting action: ${action.metadata.name} (${action.id})`)
 
       // Detect and highlight affected targets
       const affectedTokens = detectAffectedTokens(action, tokens)
@@ -51,11 +50,7 @@ const UnifiedActionSystemComponent = ({
         highlightTargets(tokenIds, action.id, action.animation.color || '#FFD700')
       }
 
-      // Log affected targets
-      if (affectedTokens.length > 0) {
-        console.log(`[UnifiedActionSystem] Action ${action.metadata.name} affects:`,
-          affectedTokens.map(t => t.name || t.id).join(', '))
-      }
+      // Affected targets detected
     })
 
     // Check for completed actions
@@ -64,7 +59,6 @@ const UnifiedActionSystemComponent = ({
     )
 
     completedActions.forEach(action => {
-      console.log(`[UnifiedActionSystem] Completed action: ${action.metadata.name} (${action.id})`)
 
       // Clear highlights for this action
       clearHighlight(action.id)
@@ -75,7 +69,6 @@ const UnifiedActionSystemComponent = ({
 
     // Check if all actions completed
     if (previousActionsRef.current.length > 0 && activeActions.length === 0) {
-      console.log('[UnifiedActionSystem] All actions completed')
       onAllComplete?.()
     }
 
@@ -107,8 +100,7 @@ const UnifiedActionSystemComponent = ({
         <ActionRenderer
           key={action.id}
           action={action}
-          onAnimationComplete={(actionId) => {
-            console.log(`[UnifiedActionSystem] Animation complete for: ${actionId}`)
+          onAnimationComplete={() => {
             // The ActionRenderer already calls completeAction internally
           }}
         />

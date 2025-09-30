@@ -4,15 +4,15 @@
  */
 
 import React, { memo } from 'react'
-import { Move, Eye, EyeOff, Zap, Plus, Trash2 } from 'lucide-react'
+import { Move, Eye, EyeOff, Zap, Plus, Trash2 } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
-import type { RoundEvent, SpellEventData } from '@/types/timeline'
+import type { TimelineAction, SpellEventData } from '@/types/timeline'
 import type { Token } from '@/types/token'
 
 type EventsListProps = {
-  roundEvents: RoundEvent[]
+  roundEvents: TimelineAction[]
   tokens: Token[]
   nextRound: number
   onDeleteEvent: (eventId: string) => void
@@ -65,7 +65,7 @@ const EventsListComponent: React.FC<EventsListProps> = ({
     }
   }
 
-  const getEventDescription = (event: RoundEvent) => {
+  const getEventDescription = (event: TimelineAction) => {
     switch (event.type) {
       case 'move':
         return 'Move to position'
@@ -83,13 +83,11 @@ const EventsListComponent: React.FC<EventsListProps> = ({
   return (
     <Box
       style={{
-        width: '50%',
-        minWidth: '350px',
-        padding: '16px',
+        flex: '0 0 380px',
+        padding: '24px',
         overflowY: 'auto',
         maxHeight: '70vh',
-        borderLeft: '1px solid var(--colors-gray700)',
-        backgroundColor: 'rgba(23, 23, 23, 0.5)',
+        backgroundColor: '#111827',
         display: 'flex',
         flexDirection: 'column'
       }}
@@ -109,8 +107,8 @@ const EventsListComponent: React.FC<EventsListProps> = ({
             variant="heading"
             size="lg"
             style={{
-              fontWeight: '500',
-              color: 'var(--colors-gray200)'
+              fontWeight: '600',
+              color: '#FFFFFF'
             }}
           >
             Timeline Events
@@ -118,17 +116,17 @@ const EventsListComponent: React.FC<EventsListProps> = ({
           <Text
             variant="body"
             size="xs"
-            style={{ color: 'var(--colors-gray400)' }}
+            style={{ color: '#9CA3AF' }}
           >
             Round {nextRound} • {roundEvents.length} event{roundEvents.length !== 1 ? 's' : ''}
           </Text>
         </Box>
         <Box
           style={{
-            padding: '8px',
-            backgroundColor: 'var(--colors-gray800)',
+            padding: '8px 12px',
+            backgroundColor: '#374151',
             borderRadius: '6px',
-            border: '1px solid var(--colors-gray700)'
+            border: '1px solid #4B5563'
           }}
         >
           <Text
@@ -136,7 +134,7 @@ const EventsListComponent: React.FC<EventsListProps> = ({
             size="xs"
             style={{
               fontWeight: '500',
-              color: 'var(--colors-secondary)'
+              color: '#C9AD6A'
             }}
           >
             Next Round
@@ -150,9 +148,9 @@ const EventsListComponent: React.FC<EventsListProps> = ({
           style={{
             padding: '32px',
             textAlign: 'center',
-            backgroundColor: 'rgba(31, 41, 55, 0.5)',
+            backgroundColor: '#1F2937',
             borderRadius: '8px',
-            border: '1px dashed var(--colors-gray700)'
+            border: '1px dashed #4B5563'
           }}
         >
           <Box
@@ -160,7 +158,7 @@ const EventsListComponent: React.FC<EventsListProps> = ({
               width: '48px',
               height: '48px',
               borderRadius: '50%',
-              backgroundColor: 'var(--colors-gray700)',
+              backgroundColor: '#374151',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -168,12 +166,12 @@ const EventsListComponent: React.FC<EventsListProps> = ({
               marginBottom: '12px'
             }}
           >
-            <Plus size={24} style={{ color: '#666' }} />
+            <Plus size={24} style={{ color: '#9CA3AF' }} />
           </Box>
           <Text
             variant="body"
             size="sm"
-            style={{ color: 'var(--colors-gray400)' }}
+            style={{ color: '#D1D5DB' }}
           >
             No events scheduled
           </Text>
@@ -181,7 +179,7 @@ const EventsListComponent: React.FC<EventsListProps> = ({
             variant="body"
             size="xs"
             style={{
-              color: 'var(--colors-gray500)',
+              color: '#9CA3AF',
               marginTop: '4px'
             }}
           >
@@ -202,10 +200,10 @@ const EventsListComponent: React.FC<EventsListProps> = ({
               <Box
                 key={event.id}
                 style={{
-                  padding: '12px',
-                  backgroundColor: 'var(--colors-gray800)',
+                  padding: '14px',
+                  backgroundColor: '#1F2937',
                   borderRadius: '8px',
-                  border: '1px solid var(--colors-gray700)',
+                  border: '1px solid #374151',
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -220,7 +218,8 @@ const EventsListComponent: React.FC<EventsListProps> = ({
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '12px'
+                      gap: '12px',
+                      flex: 1
                     }}
                   >
                     {/* Event Type Icon */}
@@ -234,7 +233,7 @@ const EventsListComponent: React.FC<EventsListProps> = ({
                         variant="body"
                         size="sm"
                         style={{
-                          color: 'var(--colors-gray200)',
+                          color: '#F3F4F6',
                           fontWeight: '500'
                         }}
                       >
@@ -243,7 +242,7 @@ const EventsListComponent: React.FC<EventsListProps> = ({
                       <Text
                         variant="body"
                         size="xs"
-                        style={{ color: 'var(--colors-gray400)' }}
+                        style={{ color: '#9CA3AF' }}
                       >
                         {getEventDescription(event)}
                       </Text>
@@ -258,8 +257,11 @@ const EventsListComponent: React.FC<EventsListProps> = ({
                     style={{
                       width: '28px',
                       height: '28px',
-                      color: 'var(--colors-gray500)',
-                      padding: '4px'
+                      color: '#9CA3AF',
+                      padding: '4px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      borderRadius: '4px'
                     }}
                   >
                     <Trash2 size={14} />

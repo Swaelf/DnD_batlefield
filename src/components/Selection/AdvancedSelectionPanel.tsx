@@ -24,7 +24,7 @@ import {
   Plus,
   Minus,
   Palette
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import useMapStore from '@/store/mapStore'
 import type { SelectionMode, SelectionFilter } from './SelectionManager'
 

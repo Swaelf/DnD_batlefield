@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 import type { SpellEventData } from '@/types/timeline'
 
 describe('Spell System', () => {
@@ -12,9 +12,9 @@ describe('Spell System', () => {
       selectedObjects: [],
       mapVersion: 0
     })
-    useRoundStore.setState({
+    useTimelineStore.setState({
       timeline: null,
-      currentRound: 0,
+      currentEvent: 1,
       isInCombat: false,
       animationSpeed: 1
     })
@@ -22,7 +22,7 @@ describe('Spell System', () => {
 
   it('should create a spell event when adding spell to timeline', () => {
     const { result: mapResult } = renderHook(() => useMapStore())
-    const { result: roundResult } = renderHook(() => useRoundStore())
+    const { result: roundResult } = renderHook(() => useTimelineStore())
 
     // Create a map
     act(() => {
@@ -50,23 +50,23 @@ describe('Spell System', () => {
     }
 
     act(() => {
-      roundResult.current.addEvent(
+      roundResult.current.addAction(
         'void-token', // Using environment token
         'spell',
         spellData,
-        2 // Schedule for round 2
+        2 // Schedule for event 2
       )
     })
 
     // Check event was added
     const timeline = roundResult.current.timeline
     expect(timeline).toBeDefined()
-    expect(timeline?.rounds.length).toBeGreaterThan(0)
+    expect(timeline?.events.length).toBeGreaterThan(0)
 
-    const round2 = timeline?.rounds.find(r => r.number === 2)
-    expect(round2).toBeDefined()
-    expect(round2?.events.length).toBe(1)
-    expect(round2?.events[0].type).toBe('spell')
+    const event2 = timeline?.events.find(e => e.number === 2)
+    expect(event2).toBeDefined()
+    expect(event2?.actions.length).toBe(1)
+    expect(event2?.actions[0].type).toBe('spell')
   })
 
   it('should add spell object to map when spell event is processed', () => {

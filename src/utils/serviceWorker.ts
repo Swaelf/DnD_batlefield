@@ -17,10 +17,24 @@ class ServiceWorkerManager {
   private swRegistration: ServiceWorkerRegistration | null = null
   private config: ServiceWorkerConfig
   private isOnline = navigator.onLine
+  private eventListeners: Array<{ target: any; event: string; handler: Function }> = []
 
   constructor(config: ServiceWorkerConfig = {}) {
     this.config = config
     this.setupOnlineListeners()
+  }
+
+  // Helper methods for managing event listeners
+  private addEventListenerWithCleanup(target: any, event: string, handler: Function): void {
+    target.addEventListener(event, handler)
+    this.eventListeners.push({ target, event, handler })
+  }
+
+  private removeAllEventListeners(): void {
+    for (const { target, event, handler } of this.eventListeners) {
+      target.removeEventListener(event, handler)
+    }
+    this.eventListeners = []
   }
 
   // Register service worker
@@ -38,33 +52,32 @@ class ServiceWorkerManager {
       this.swRegistration = registration
 
       // Handle updates
-      registration.addEventListener('updatefound', () => {
+      const updateHandler = () => {
         const installingWorker = registration.installing
 
         if (installingWorker) {
-          installingWorker.addEventListener('statechange', () => {
+          const stateChangeHandler = () => {
             if (installingWorker.state === 'installed') {
               if (navigator.serviceWorker.controller) {
                 // New version available
-                console.log('[SW] New version available')
                 this.config.onUpdate?.(registration)
               } else {
                 // First time install
-                console.log('[SW] Service Worker installed')
                 this.config.onSuccess?.(registration)
               }
             }
-          })
+          }
+          this.addEventListenerWithCleanup(installingWorker, 'statechange', stateChangeHandler)
         }
-      })
+      }
+      this.addEventListenerWithCleanup(registration, 'updatefound', updateHandler)
 
       // Handle controller changes
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('[SW] Service Worker controller changed')
+      const controllerChangeHandler = () => {
         window.location.reload()
-      })
+      }
+      this.addEventListenerWithCleanup(navigator.serviceWorker, 'controllerchange', controllerChangeHandler)
 
-      console.log('[SW] Service Worker registered successfully')
       return registration
 
     } catch (error) {
@@ -82,12 +95,19 @@ class ServiceWorkerManager {
 
     try {
       const result = await this.swRegistration.unregister()
-      console.log('[SW] Service Worker unregistered:', result)
+      this.cleanup()
       return result
     } catch (error) {
       console.error('[SW] Service Worker unregistration failed:', error)
       return false
     }
+  }
+
+  // Public cleanup method
+  cleanup(): void {
+    this.removeAllEventListeners()
+    this.swRegistration = null
+    this.deferredPrompt = null
   }
 
   // Update service worker
@@ -98,7 +118,6 @@ class ServiceWorkerManager {
 
     try {
       await this.swRegistration.update()
-      console.log('[SW] Service Worker update check initiated')
     } catch (error) {
       console.error('[SW] Service Worker update failed:', error)
     }
@@ -111,13 +130,40 @@ class ServiceWorkerManager {
     }
   }
 
-  // Cache management
+  // Advanced Cache management
   async cacheMapData(mapData: any): Promise<void> {
     if (!navigator.serviceWorker.controller) return
 
     navigator.serviceWorker.controller.postMessage({
       type: 'CACHE_MAP_DATA',
       payload: mapData
+    })
+  }
+
+  async cacheAsset(url: string, data: Blob, strategy: 'immediate' | 'background' = 'background'): Promise<void> {
+    if (!navigator.serviceWorker.controller) return
+
+    navigator.serviceWorker.controller.postMessage({
+      type: 'CACHE_ASSET',
+      payload: { url, data, strategy }
+    })
+  }
+
+  async preloadCriticalAssets(urls: string[]): Promise<void> {
+    if (!navigator.serviceWorker.controller) return
+
+    navigator.serviceWorker.controller.postMessage({
+      type: 'PRELOAD_ASSETS',
+      payload: { urls, priority: 'high' }
+    })
+  }
+
+  async setCacheStrategy(pattern: string, strategy: 'networkFirst' | 'cacheFirst' | 'staleWhileRevalidate'): Promise<void> {
+    if (!navigator.serviceWorker.controller) return
+
+    navigator.serviceWorker.controller.postMessage({
+      type: 'SET_CACHE_STRATEGY',
+      payload: { pattern, strategy }
     })
   }
 
@@ -155,7 +201,6 @@ class ServiceWorkerManager {
 
     try {
       await (this.swRegistration.sync as any).register(tag)
-      console.log(`[SW] Background sync registered: ${tag}`)
     } catch (error) {
       console.error(`[SW] Background sync registration failed: ${tag}`, error)
     }
@@ -173,7 +218,6 @@ class ServiceWorkerManager {
     }
 
     const permission = await Notification.requestPermission()
-    console.log(`[SW] Notification permission: ${permission}`)
     return permission
   }
 
@@ -189,7 +233,6 @@ class ServiceWorkerManager {
         )
       })
 
-      console.log('[SW] Push subscription created')
       return subscription
 
     } catch (error) {
@@ -200,17 +243,18 @@ class ServiceWorkerManager {
 
   // Offline handling
   private setupOnlineListeners(): void {
-    window.addEventListener('online', () => {
+    const onlineHandler = () => {
       this.isOnline = true
-      console.log('[SW] Back online')
       this.handleOnline()
-    })
+    }
 
-    window.addEventListener('offline', () => {
+    const offlineHandler = () => {
       this.isOnline = false
-      console.log('[SW] Gone offline')
       this.handleOffline()
-    })
+    }
+
+    this.addEventListenerWithCleanup(window, 'online', onlineHandler)
+    this.addEventListenerWithCleanup(window, 'offline', offlineHandler)
   }
 
   private handleOnline(): void {
@@ -249,16 +293,17 @@ class ServiceWorkerManager {
   private deferredPrompt: any = null
 
   setupInstallPrompt(): void {
-    window.addEventListener('beforeinstallprompt', (e) => {
+    const beforeInstallHandler = (e: any) => {
       e.preventDefault()
       this.deferredPrompt = e
-      console.log('[SW] Install prompt available')
-    })
+    }
 
-    window.addEventListener('appinstalled', () => {
-      console.log('[SW] App installed')
+    const appInstalledHandler = () => {
       this.deferredPrompt = null
-    })
+    }
+
+    this.addEventListenerWithCleanup(window, 'beforeinstallprompt', beforeInstallHandler)
+    this.addEventListenerWithCleanup(window, 'appinstalled', appInstalledHandler)
   }
 
   async showInstallPrompt(): Promise<boolean> {
@@ -269,7 +314,6 @@ class ServiceWorkerManager {
     this.deferredPrompt.prompt()
     const { outcome } = await this.deferredPrompt.userChoice
 
-    console.log(`[SW] Install prompt outcome: ${outcome}`)
     this.deferredPrompt = null
 
     return outcome === 'accepted'
@@ -304,7 +348,6 @@ const swManager = new ServiceWorkerManager()
 if (process.env.NODE_ENV === 'production') {
   swManager.register().then((registration) => {
     if (registration) {
-      console.log('[SW] MapMaker is now available offline!')
     }
   })
 }

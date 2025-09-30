@@ -55,7 +55,7 @@ export function createStore<T extends object>(
       getState: () => {
         const currentState = get()
          
-        const { reset, getState, ...state } = currentState
+        const { reset: _reset, getState: _getState, ...state } = currentState
         return state as T
       }
     } as StoreWithActions<T>
@@ -95,10 +95,12 @@ export function createStoreHook<T extends object>(
   function useStore(): T
   function useStore<R>(selector: (state: T) => R): R
   function useStore<R>(selector?: (state: T) => R) {
-    // Use the non-conditional approach - always call the same hook
-    return selector
-      ? useStoreWithSelector(selector)
-      : useStoreWithoutSelector()
+    // Always call hooks in the same order - React rules compliance
+    const selectorResult = useStoreWithSelector(selector || ((state) => state as unknown as R))
+    const fullState = useStoreWithoutSelector()
+
+    // Return the appropriate result based on whether selector was provided
+    return selector ? selectorResult : fullState
   }
 
   return useStore

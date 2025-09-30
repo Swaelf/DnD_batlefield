@@ -258,17 +258,19 @@ interface HistoryEntry {
 
 **State Properties**:
 - `isCreatingEvent`: Whether event creation is active
-- `isPicking`: Current picking mode ('from' | 'to' | 'token' | null)
+- `isPicking`: Current picking mode ('from' | 'to' | 'token' | 'targetToken' | null)
 - `selectedTokenId`: Token being configured for event
 - `fromPosition`: Source position for movement events
 - `toPosition`: Target position for movement events
 - `pathPreview`: Visual path preview for movement
+- `savedToolMode`: Stores the tool mode before event creation for restoration
 
 **Key Actions**:
 - `startEventCreation(tokenId)`: Begin event creation for token
-- `cancelEventCreation()`: Abort event creation and reset
-- `startPickingPosition(type)`: Enter position selection mode
-- `startPickingToken()`: Enter token selection mode
+- `cancelEventCreation()`: Abort event creation and reset, restore tool mode
+- `startPickingPosition(type)`: Enter position selection mode (auto-initializes event creation)
+- `startPickingToken()`: Enter token selection mode (auto-initializes event creation)
+- `setPickingMode(mode)`: Set picking mode with automatic tool management
 - `setSelectedToken(id)`: Set active token
 - `setPosition(type, position)`: Set from/to position
 - `setPathPreview(path)`: Update movement path preview
@@ -276,16 +278,29 @@ interface HistoryEntry {
 
 **Workflow States**:
 1. **Token Selection** - Choose token to animate
-2. **Position Picking** - Interactive position selection
+2. **Position Picking** - Interactive position selection with crosshair cursor
 3. **Event Configuration** - Set timing and properties
 4. **Preview** - Test before committing
 5. **Creation** - Add to timeline
 
+**Tool Management**:
+- Automatically switches to 'select' tool when entering picking mode
+- Saves previous tool mode for restoration
+- Clears drawing state to hide tool previews
+- Restores original tool when exiting picking mode
+
+**Canvas Integration**:
+- Crosshair cursor displayed during position/token picking
+- All tool previews hidden during event creation (`isCreatingEvent = true`)
+- Token clicks prioritize event selection over HP tooltip display
+- Grid snapping respected during position picking
+
 **Rules**:
 - Only one event creation session at a time
 - Must clear state between event types
-- Position picking is modal - blocks other interactions
+- Position picking is modal - blocks other tool interactions
 - Path preview updates in real-time during selection
+- Tool mode automatically managed - no manual switching needed
 
 ### animationStore
 **Purpose**: Coordinates token movement animations and state

@@ -30,6 +30,20 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
+        // Improved file naming for better caching
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name?.split('.') ?? []
+          const extType = info[info.length - 1]
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
+            return `assets/images/[name]-[hash][extname]`
+          }
+          if (/woff2?|eot|ttf|otf/i.test(extType)) {
+            return `assets/fonts/[name]-[hash][extname]`
+          }
+          return `assets/[name]-[hash][extname]`
+        },
         manualChunks: (id) => {
           // Core React ecosystem
           if (id.includes('node_modules/react') ||
@@ -55,7 +69,7 @@ export default defineConfig({
             return 'state-vendor'
           }
 
-          // Icon library
+          // Icon library (optimized)
           if (id.includes('node_modules/lucide-react')) {
             return 'icons-vendor'
           }
@@ -66,10 +80,37 @@ export default defineConfig({
               id.includes('node_modules/file-saver')) {
             return 'utils-vendor'
           }
+
+          // Feature-based chunking for app code
+          if (id.includes('/src/components/Timeline/')) {
+            return 'timeline-feature'
+          }
+          if (id.includes('/src/components/Collaboration/')) {
+            return 'collaboration-feature'
+          }
+          if (id.includes('/src/components/Tools/')) {
+            return 'tools-feature'
+          }
+          if (id.includes('/src/components/Export/') ||
+              id.includes('/src/components/Import/')) {
+            return 'file-operations-feature'
+          }
         },
       },
     },
-    // Optimize for production
+    // Enhanced production optimization
     minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.logs in production
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info'], // Remove specific console methods
+      },
+      mangle: {
+        safari10: true, // Fix Safari 10 issues
+      },
+    },
+    // Enable modern browser optimizations
+    target: 'es2020',
   },
 })

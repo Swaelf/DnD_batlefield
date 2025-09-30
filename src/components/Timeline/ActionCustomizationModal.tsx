@@ -4,15 +4,18 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { Save, X, Wand2, Sword, Palette, Settings } from 'lucide-react'
+import { Save, X, Wand2, Sword, Palette, Settings } from '@/utils/optimizedIcons'
+import useAnimationStore from '@/store/animationStore'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
 import { Input } from '@/components/ui/Input'
 import { FieldLabel } from '@/components/ui/FieldLabel'
 import { Modal } from '@/components/ui/Modal'
-import type { UnifiedAction, ActionMetadata } from '@/types/unifiedAction'
-import type { ActionId, ActionCategory } from '@/modules/timeline/types'
+import type { UnifiedAction, ActionMetadata, ActionCategory } from '@/types/unifiedAction'
+
+// ActionId is just a string identifier
+type ActionId = string
 
 // Extended metadata type for spell and attack customization
 type ExtendedMetadata = ActionMetadata & {
@@ -51,8 +54,25 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
   onSave,
   baseAction
 }) => {
+  const pauseAnimations = useAnimationStore(state => state.pauseAnimations)
+  const resumeAnimations = useAnimationStore(state => state.resumeAnimations)
+
   const [customAction, setCustomAction] = useState<UnifiedAction | null>(null)
   const [isModified, setIsModified] = useState(false)
+
+  // Performance optimization: Pause animations when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      pauseAnimations()
+    } else {
+      resumeAnimations()
+    }
+
+    // Cleanup: Resume animations when component unmounts
+    return () => {
+      resumeAnimations()
+    }
+  }, [isOpen, pauseAnimations, resumeAnimations])
 
   // Initialize customAction when baseAction changes
   useEffect(() => {
@@ -115,7 +135,16 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
   const isAttack = customAction.type === 'attack'
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      size="lg"
+      padding="none"
+      style={{
+        backgroundColor: '#1A1A1A',
+        border: '1px solid #374151'
+      }}
+    >
       <Box
         style={{
           width: '600px',

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 import type { SpellMapObject } from '@/types/map'
 
 describe('Spell Persistence - Fireball Burn Area', () => {
@@ -12,9 +12,9 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       mapVersion: 0
     })
 
-    useRoundStore.setState({
+    useTimelineStore.setState({
       timeline: null,
-      currentRound: 1,
+      currentEvent: 1,
       isInCombat: false,
       animationSpeed: 1
     })
@@ -24,7 +24,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
     mapStore.createNewMap('Test Map')
 
     // Start combat with the created map
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const currentMapId = useMapStore.getState().currentMap?.id
     if (currentMapId && !roundStore.isInCombat) {
       roundStore.startCombat(currentMapId)
@@ -43,10 +43,10 @@ describe('Spell Persistence - Fireball Burn Area', () => {
   describe('Fireball Burn Area Duration', () => {
     it('should create a burn area that lasts exactly 1 round', async () => {
       const mapStore = useMapStore.getState()
-      const roundStore = useRoundStore.getState()
+      const roundStore = useTimelineStore.getState()
 
-      // Start at round 1
-      expect(roundStore.currentRound).toBe(1)
+      // Start at event 1
+      expect(roundStore.currentEvent).toBe(1)
 
       // Create a Fireball burn area (simulating what happens after projectile burst)
       const burnArea: SpellMapObject = {
@@ -56,7 +56,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
         rotation: 0,
         layer: 0,
         isSpellEffect: true,
-        roundCreated: roundStore.currentRound,
+        roundCreated: roundStore.currentEvent,
         spellDuration: 1, // Should last 1 round
         persistentAreaData: {
           position: { x: 500, y: 300 },
@@ -64,7 +64,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
           color: '#ff4500',
           opacity: 0.3,
           spellName: 'Fireball',
-          roundCreated: roundStore.currentRound
+          roundCreated: roundStore.currentEvent
         }
       }
 
@@ -85,11 +85,11 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       expect(storedArea?.spellDuration).toBe(1)
 
       // Advance to round 2
-      await roundStore.nextRound()
+      await roundStore.nextEvent()
       await new Promise(resolve => setTimeout(resolve, 100))
 
       // Get fresh state after async operation
-      const currentRound = useRoundStore.getState().currentRound
+      const currentRound = useTimelineStore.getState().currentEvent
       expect(currentRound).toBe(2)
 
       // Burn area should be removed after 1 round
@@ -100,7 +100,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
 
     it('should remove burn area at exactly the expiration round', async () => {
       const mapStore = useMapStore.getState()
-      const roundStore = useRoundStore.getState()
+      const roundStore = useTimelineStore.getState()
 
       const burnArea: SpellMapObject = {
         id: 'test-burn-expiration',
@@ -129,7 +129,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       expect(exists).toBe(true)
 
       // At round 2 - should NOT exist (expires at round 1 + 1 = 2)
-      await roundStore.nextRound()
+      await roundStore.nextEvent()
       await new Promise(resolve => setTimeout(resolve, 100))
 
       state = useMapStore.getState()
@@ -141,13 +141,13 @@ describe('Spell Persistence - Fireball Burn Area', () => {
   describe('Cleanup Function', () => {
     it('should call cleanupExpiredSpells when advancing rounds', async () => {
       const mapStore = useMapStore.getState()
-      const roundStore = useRoundStore.getState()
+      const roundStore = useTimelineStore.getState()
 
       // Spy on the cleanup function
       const cleanupSpy = vi.spyOn(mapStore, 'cleanupExpiredSpells')
 
       // Advance round
-      await roundStore.nextRound()
+      await roundStore.nextEvent()
 
       // Verify cleanup was called
       expect(cleanupSpy).toHaveBeenCalled()
@@ -159,10 +159,10 @@ describe('Spell Persistence - Fireball Burn Area', () => {
 
     it('should correctly identify expired spell effects', () => {
       const mapStore = useMapStore.getState()
-      const roundStore = useRoundStore.getState()
+      const roundStore = useTimelineStore.getState()
 
       // Go to round 5 for testing
-      roundStore.goToRound(5)
+      roundStore.goToEvent(5)
 
       // Create test areas with different expiration times
       const testAreas = [
@@ -216,7 +216,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
   describe('Multiple Spell Persistence', () => {
     it('should handle multiple spells with different durations', async () => {
       const mapStore = useMapStore.getState()
-      const roundStore = useRoundStore.getState()
+      const roundStore = useTimelineStore.getState()
 
       // Create spells with different durations
       const spells = [
@@ -252,7 +252,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       expect(currentState.currentMap?.objects.filter(obj => obj.id.startsWith('spell-')).length).toBe(3)
 
       // Round 2: 1-round spell should be gone
-      await roundStore.nextRound()
+      await roundStore.nextEvent()
       await new Promise(resolve => setTimeout(resolve, 100))
 
       currentState = useMapStore.getState()
@@ -261,7 +261,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       expect(currentState.currentMap?.objects.some(obj => obj.id === 'spell-3r')).toBe(true)
 
       // Round 3: 2-round spell should be gone
-      await roundStore.nextRound()
+      await roundStore.nextEvent()
       await new Promise(resolve => setTimeout(resolve, 100))
 
       currentState = useMapStore.getState()
@@ -270,7 +270,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       expect(currentState.currentMap?.objects.some(obj => obj.id === 'spell-3r')).toBe(true)
 
       // Round 4: 3-round spell should be gone
-      await roundStore.nextRound()
+      await roundStore.nextEvent()
       await new Promise(resolve => setTimeout(resolve, 100))
 
       currentState = useMapStore.getState()
@@ -346,7 +346,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
 
     it('should handle round jumps correctly', async () => {
       const mapStore = useMapStore.getState()
-      const roundStore = useRoundStore.getState()
+      const roundStore = useTimelineStore.getState()
 
       const burnArea: SpellMapObject = {
         id: 'test-round-jump',
@@ -370,21 +370,21 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       mapStore.addSpellEffect(burnArea)
 
       // Jump directly to round 3 (should still exist)
-      roundStore.goToRound(3)
+      roundStore.goToEvent(3)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       let state = useMapStore.getState()
       expect(state.currentMap?.objects.some(obj => obj.id === 'test-round-jump')).toBe(true)
 
       // Jump to round 4 (should be removed)
-      roundStore.goToRound(4)
+      roundStore.goToEvent(4)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       state = useMapStore.getState()
       expect(state.currentMap?.objects.some(obj => obj.id === 'test-round-jump')).toBe(false)
 
       // Jump back to round 2 (should not reappear)
-      roundStore.goToRound(2)
+      roundStore.goToEvent(2)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       state = useMapStore.getState()

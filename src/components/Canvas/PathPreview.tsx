@@ -3,7 +3,7 @@ import { Line, Circle, Arrow, Text } from 'react-konva'
 import useEventCreationStore from '@/store/eventCreationStore'
 import useAnimationStore from '@/store/animationStore'
 import useMapStore from '@/store/mapStore'
-// Removed unused useRoundStore import
+// Removed unused useTimelineStore import
 
 type PathPreviewProps = {
   gridSize: number
@@ -14,7 +14,7 @@ const PathPreviewComponent: React.FC<PathPreviewProps> = ({ gridSize }) => {
   const isPicking = useEventCreationStore(state => state.isPicking)
   const fromPosition = useEventCreationStore(state => state.fromPosition)
   const toPosition = useEventCreationStore(state => state.toPosition)
-  const selectedSpell = useEventCreationStore(state => state.selectedSpell)
+  // selectedSpell removed - using unified action system now
   const selectedTokenId = useEventCreationStore(state => state.selectedTokenId)
   const getTokenExpectedPosition = useEventCreationStore(state => state.getTokenExpectedPosition)
   const activePaths = useAnimationStore(state => state.activePaths)
@@ -42,7 +42,7 @@ const PathPreviewComponent: React.FC<PathPreviewProps> = ({ gridSize }) => {
   const movementRangeInPixels = (MOVEMENT_SPEED_FEET / 5) * gridSize
 
   // Check if we have a valid spell (not just a truthy object)
-  const hasValidSpell = selectedSpell && (selectedSpell.spellName || selectedSpell.name || selectedSpell.range)
+  const hasValidSpell = false // Disabled - using unified action system now
 
   // For movement preview, we need either explicit from/to positions OR we're picking 'to' with a selected token
   // AND preview must be enabled
@@ -59,23 +59,6 @@ const PathPreviewComponent: React.FC<PathPreviewProps> = ({ gridSize }) => {
 
   const actualFromPosition = fromPosition || expectedPosition || (selectedToken ? selectedToken.position : null)
 
-  // DEBUG: Let's see what's actually happening with the positions
-  if (isMovementPreview && selectedTokenId) {
-    console.log('🐛 PathPreview Position Debug:', {
-      selectedTokenId,
-      fromPosition,
-      expectedPosition,
-      tokenCurrentPosition: selectedToken?.position,
-      actualFromPosition,
-      actualToPosition: toPosition,
-      calculation: {
-        step1_fromPosition: fromPosition,
-        step2_expectedPosition: expectedPosition,
-        step3_tokenPosition: selectedToken?.position,
-        final_actualFromPosition: actualFromPosition
-      }
-    })
-  }
   const actualToPosition = toPosition
 
   // Check if movement is within range

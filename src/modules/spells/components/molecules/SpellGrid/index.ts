@@ -1,1 +1,0 @@
-export { SpellGrid } from './SpellGrid'

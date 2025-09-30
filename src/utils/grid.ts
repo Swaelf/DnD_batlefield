@@ -1,7 +1,7 @@
 import type { Position } from '@/types/map'
 
 /**
- * Snap a position to the nearest grid point
+ * Snap a position to the nearest grid cell center
  */
 export const snapToGrid = (position: Position, gridSize: number, enabled: boolean = true): Position => {
   // Validate inputs to prevent NaN
@@ -11,9 +11,11 @@ export const snapToGrid = (position: Position, gridSize: number, enabled: boolea
 
   if (!enabled) return { x: safeX, y: safeY }
 
+  // Snap to cell center instead of grid intersection
+  const halfGrid = safeGridSize / 2
   return {
-    x: Math.round(safeX / safeGridSize) * safeGridSize,
-    y: Math.round(safeY / safeGridSize) * safeGridSize,
+    x: Math.floor(safeX / safeGridSize) * safeGridSize + halfGrid,
+    y: Math.floor(safeY / safeGridSize) * safeGridSize + halfGrid,
   }
 }
 

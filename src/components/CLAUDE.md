@@ -10,13 +10,55 @@ components/
 ├── primitives/       # Level 1: Base components (BoxVE, TextVE, ButtonVE)
 ├── ui/              # Level 2-3: UI components (Input, Modal, Panel, FieldLabel)
 ├── Actions/         # Level 5: Advanced action sequencing and coordination
-├── Canvas/          # Level 4: Core canvas rendering components
+├── Canvas/          # Level 4: Core canvas rendering (MapCanvas.tsx - consolidated)
 ├── ContextMenu/     # Level 3: Right-click context menus
 ├── Properties/      # Level 4: Property editing panels
 ├── Timeline/        # Level 5: Timeline and event management
 ├── Token/           # Level 4: Token-specific components
 └── [other features] # Level 4-5: Domain-specific components
 ```
+
+## Recent Architecture Changes (September 2025)
+
+### Canvas Consolidation
+The Canvas directory underwent a major refactoring to eliminate legacy adapter code and optimize Konva layer usage:
+
+**Removed Components:**
+- `LegacyMapCanvasAdapter.tsx` (790 lines) - Deprecated Phase 8/9 compatibility layer
+- `LegacyTokenAdapter.tsx` (89 lines) - Token rendering adapter
+- `DrawingLayer.tsx` (260 lines) - Old drawing implementation
+- `AdvancedDrawingLayer.tsx` (113 lines) - Redundant drawing layer
+- `EnhancedDrawingToolsManager.tsx` (240 lines) - Superseded by consolidated system
+
+**Consolidation Results:**
+- **Code reduction**: 1,492 lines → 965 lines (35% reduction)
+- **Layer optimization**: 6 Konva layers → 3 layers (50% reduction)
+- **Single source**: All canvas logic in `MapCanvas.tsx`
+- **Performance**: Resolved Konva performance warning about excessive layers
+- **Maintainability**: Single file easier to understand and modify
+
+**New 3-Layer Architecture:**
+1. **Background Layer** (`BackgroundLayer`): Grid rendering, static, non-interactive
+2. **Content Layer** (`ObjectsLayer`): All game objects (tokens, shapes, spell effects)
+3. **Interactive Layer**: Three Konva Groups for user interactions:
+   - **Selection Group**: Selected object indicators
+   - **Drawing Group**: Active drawing operations (hidden during event creation)
+   - **Preview Group**: Object placement previews (hidden during event creation)
+
+**Event Creation Integration:**
+- Canvas automatically switches to event creation mode when position/token picking starts
+- **Crosshair Cursor**: Displayed during `isPicking` mode for precise selection
+- **Preview Hiding**: All tool previews (token, static object, static effect) hidden when `isCreatingEvent = true`
+- **Tool Management**: Automatically switches to 'select' tool, saves previous tool for restoration
+- **Token Click Priority**: Event token selection takes priority over HP tooltip display
+- **Grid Snapping**: Position picking respects grid snap settings
+
+**Migration Notes:**
+- All functionality preserved from previous multi-file system
+- Drawing tools now use Groups within Interactive Layer instead of separate layers
+- Token rendering integrated into ObjectsLayer
+- No external API changes - component props remain compatible
+- Event creation workflow fully integrated with automatic state management
 
 ## Component Hierarchy Levels
 
@@ -89,10 +131,16 @@ components/
 
 ### 5. Canvas Components (Canvas/)
 - **Konva integration** - Use React-Konva components
+- **3-Layer Architecture** - Optimized structure for performance:
+  - **Background Layer**: Grid rendering only (static, non-interactive)
+  - **Content Layer**: ObjectsLayer containing all game objects (tokens, shapes, effects)
+  - **Interactive Layer**: Groups for Selection, Drawing, Preview (user interactions)
+- **Group-Based Organization** - Use Konva Groups within layers to reduce layer count
 - **Performance critical** - Always memoize and optimize re-renders
 - **Stage reference** - Pass stageRef for external control
 - **Event delegation** - Handle events at Stage level when possible
 - **Coordinate systems** - Always document whether using canvas or screen coordinates
+- **Consolidated architecture** - Single MapCanvas.tsx file (965 lines) replaces previous adapter-based system
 
 ### 6. Context Menus (ContextMenu/)
 - **Position calculation** - Account for viewport boundaries

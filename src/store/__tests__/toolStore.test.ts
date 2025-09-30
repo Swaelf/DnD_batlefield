@@ -21,7 +21,7 @@ describe('toolStore', () => {
       opacity: 1,
       tokenTemplate: null,
       staticObjectTemplate: null,
-      spellEffectTemplate: null
+      staticEffectTemplate: null
     })
   })
 
@@ -249,8 +249,6 @@ describe('toolStore', () => {
         name: 'Wall',
         category: 'structures' as const,
         icon: React.createElement('div'),
-        width: 100,
-        height: 20,
         fillColor: '#666666',
         strokeColor: '#333333',
         strokeWidth: 2,
@@ -258,7 +256,7 @@ describe('toolStore', () => {
       }
 
       act(() => {
-        result.current.setStaticObjectTemplate(staticTemplate)
+        result.current.setStaticObjectTemplate(staticTemplate as any)
       })
 
       expect(result.current.staticObjectTemplate).toEqual(staticTemplate)
@@ -267,25 +265,25 @@ describe('toolStore', () => {
     it('should set spell effect template', () => {
       const { result } = renderHook(() => useToolStore())
 
-      const spellTemplate = {
-        id: 'fireball-1',
-        name: 'Fireball',
+      const effectTemplate = {
+        id: 'circle-1',
+        name: 'Circle Area',
+        type: 'circle' as const,
         category: 'area' as const,
-        shape: 'sphere' as const,
         icon: React.createElement('div'),
-        color: '#FF4500',
-        opacity: 0.7,
-        size: {
+        defaultColor: '#FF4500',
+        defaultOpacity: 0.7,
+        sizeProperties: {
           radius: 20
         },
-        description: 'A burst of fire'
+        description: 'A circular area'
       }
 
       act(() => {
-        result.current.setSpellEffectTemplate(spellTemplate)
+        result.current.setStaticEffectTemplate(effectTemplate)
       })
 
-      expect(result.current.spellEffectTemplate).toEqual(spellTemplate)
+      expect(result.current.staticEffectTemplate).toEqual(effectTemplate)
     })
 
     it('should clear templates by setting to null', () => {
@@ -299,23 +297,21 @@ describe('toolStore', () => {
           name: 'Test Wall',
           category: 'structures',
           icon: React.createElement('div'),
-          width: 100,
-          height: 20,
           fillColor: '#666',
           strokeColor: '#333',
           strokeWidth: 2,
           shape: 'rectangle'
-        })
-        result.current.setSpellEffectTemplate({
-          id: 'test-spell',
+        } as any)
+        result.current.setStaticEffectTemplate({
+          id: 'test-effect',
           name: 'Test',
+          type: 'circle',
           category: 'area',
-          shape: 'sphere',
           icon: React.createElement('div'),
-          color: '#fff',
-          opacity: 0.5,
-          size: { radius: 10 },
-          description: 'Test spell effect'
+          defaultColor: '#fff',
+          defaultOpacity: 0.5,
+          sizeProperties: { radius: 10 },
+          description: 'Test static effect'
         })
       })
 
@@ -323,12 +319,12 @@ describe('toolStore', () => {
       act(() => {
         result.current.setTokenTemplate(null)
         result.current.setStaticObjectTemplate(null)
-        result.current.setSpellEffectTemplate(null)
+        result.current.setStaticEffectTemplate(null)
       })
 
       expect(result.current.tokenTemplate).toBeNull()
       expect(result.current.staticObjectTemplate).toBeNull()
-      expect(result.current.spellEffectTemplate).toBeNull()
+      expect(result.current.staticEffectTemplate).toBeNull()
     })
   })
 

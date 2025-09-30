@@ -213,13 +213,12 @@ export const useCollaborationStore = create<CollaborationStore>()(
   rolePermissions: DEFAULT_ROLE_PERMISSIONS,
 
   // Connection Management
-  connect: async (sessionId: string, userId: string) => {
+  connect: async (_sessionId: string, userId: string) => {
     set({ connectionStatus: 'connecting' })
 
     try {
       // Mock WebSocket connection for now
       // In production, this would establish WebSocket connection
-      console.log(`Connecting to session ${sessionId} as user ${userId}`)
 
       // Simulate connection delay
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -347,9 +346,9 @@ export const useCollaborationStore = create<CollaborationStore>()(
     })
   },
 
-  inviteUser: async (email: string, role: UserRole) => {
-    console.log(`Inviting ${email} with role ${role}`)
+  inviteUser: async () => {
     // Mock implementation - would send email invitation
+    // In production: await sendInvitationEmail(email, role)
   },
 
   removeUser: (userId: string) => {
@@ -416,9 +415,9 @@ export const useCollaborationStore = create<CollaborationStore>()(
     })
   },
 
-  applyOperation: (operation: CollaborationOperation) => {
+  applyOperation: () => {
     // This would integrate with mapStore to apply the operation
-    console.log('Applying operation:', operation)
+    // In production: apply operation to map based on operation.type and operation.data
   },
 
   // User Interactions
@@ -448,9 +447,9 @@ export const useCollaborationStore = create<CollaborationStore>()(
     })
   },
 
-  broadcastUserAction: (action: string, data?: any) => {
-    console.log('Broadcasting user action:', action, data)
+  broadcastUserAction: () => {
     // Mock broadcast - would send via WebSocket
+    // In production: websocket.send({ action, data })
   },
 
   // Chat System

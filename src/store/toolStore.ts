@@ -18,7 +18,7 @@ const useToolStore = create<ToolStore>()(
     opacity: 1,
     tokenTemplate: null,
     staticObjectTemplate: null,
-    spellEffectTemplate: null,
+    staticEffectTemplate: null,
     measurementPoints: [],
 
     setTool: (tool) => set((state) => {
@@ -82,8 +82,8 @@ const useToolStore = create<ToolStore>()(
       state.staticObjectTemplate = template
     }),
 
-    setSpellEffectTemplate: (template) => set((state) => {
-      state.spellEffectTemplate = template
+    setStaticEffectTemplate: (template) => set((state) => {
+      state.staticEffectTemplate = template
     }),
 
     addMeasurementPoint: (point) => set((state) => {

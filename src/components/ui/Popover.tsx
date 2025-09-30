@@ -1,6 +1,6 @@
 import React, { useState, useCallback, forwardRef } from 'react'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import { X } from 'lucide-react'
+import { X } from '@/utils/optimizedIcons'
 
 // Popover event handlers
 type PopoverEventHandlers = {

@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { Move, Eye, EyeOff, Zap, Sword, Settings, Cloud, Play } from 'lucide-react'
+import { Move, Eye, EyeOff, Zap, Sword, Settings, Cloud, Play } from '@/utils/optimizedIcons'
 import type { EventType } from '@/types/timeline'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'

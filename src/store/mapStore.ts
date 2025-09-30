@@ -44,12 +44,12 @@ const useMapStore = create<MapStore>()(
     createNewMap: (name) => set((state) => {
       const mapId = crypto.randomUUID()
 
-      // Create void token for environmental spells
+      // Create void token for environmental spells (invisible, used only for event system)
       const voidToken = {
         id: 'void-token',
         type: 'token' as const,
         name: 'Environment',
-        position: { x: 960, y: 540 }, // Center of default map
+        position: { x: -10000, y: -10000 }, // Off-screen, will be calculated dynamically from viewport
         rotation: 0,
         layer: -999, // Always below everything
         size: 'medium' as const,
@@ -57,7 +57,7 @@ const useMapStore = create<MapStore>()(
         shape: 'circle' as const,
         opacity: 0,
         isVoid: true,
-        visible: false,
+        visible: false, // Never render on canvas
         locked: true,
         allowedEvents: ['spell'] as const,
         showLabel: false
@@ -87,7 +87,7 @@ const useMapStore = create<MapStore>()(
           id: 'void-token',
           type: 'token' as const,
           name: 'Environment',
-          position: { x: map.width / 2, y: map.height / 2 }, // Center of map
+          position: { x: -10000, y: -10000 }, // Off-screen, calculated dynamically
           rotation: 0,
           layer: -999,
           size: 'medium' as const,
@@ -101,7 +101,24 @@ const useMapStore = create<MapStore>()(
           showLabel: false
         }
         map.objects.unshift(voidToken) // Add at beginning of array
+      } else {
+        // Update existing void token to be off-screen (position calculated dynamically)
+        const voidTokenIndex = map.objects.findIndex(obj => obj.id === 'void-token')
+        if (voidTokenIndex !== -1) {
+          map.objects[voidTokenIndex].position = { x: -10000, y: -10000 }
+          map.objects[voidTokenIndex].visible = false
+        }
       }
+
+      // Migration: Add labelColor to existing tokens that don't have it
+      map.objects.forEach((obj) => {
+        if (obj.type === 'token') {
+          const token = obj as any // Token type
+          if (!token.labelColor) {
+            token.labelColor = '#E0E0E0'
+          }
+        }
+      })
 
       state.currentMap = map
       state.selectedObjects = []
@@ -307,5 +324,31 @@ const useMapStore = create<MapStore>()(
     }),
   }))
 )
+
+// Migration function to fix existing tokens without labelColor
+export const migrateTokenLabels = () => {
+  useMapStore.setState((state) => {
+    if (!state.currentMap) return state
+
+    const updatedObjects = state.currentMap.objects.map((obj) => {
+      if (obj.type === 'token') {
+        const token = obj as any // Token type
+        if (!token.labelColor) {
+          return { ...obj, labelColor: '#E0E0E0' }
+        }
+      }
+      return obj
+    })
+
+    return {
+      ...state,
+      currentMap: {
+        ...state.currentMap,
+        objects: updatedObjects
+      },
+      mapVersion: state.mapVersion + 1
+    }
+  })
+}
 
 export default useMapStore

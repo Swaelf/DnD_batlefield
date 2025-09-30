@@ -67,10 +67,13 @@ const TargetHighlighterComponent = ({
   useEffect(() => {
     if (!pulseAnimation || tokens.length === 0) return
 
-    // Create pulse animation
+    // Create pulse animation - optimized with reduced frequency for better performance
     const interval = setInterval(() => {
-      setAnimationPhase(prev => (prev + 0.1) % (Math.PI * 2))
-    }, 50)
+      // Pause animation when page is hidden for performance
+      if (!document.hidden) {
+        setAnimationPhase(prev => (prev + 0.08) % (Math.PI * 2))
+      }
+    }, 100) // Reduced from 50ms to 100ms to improve performance
 
     // Clean up after duration if specified
     let timeout: NodeJS.Timeout | undefined

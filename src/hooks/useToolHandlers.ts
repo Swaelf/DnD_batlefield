@@ -119,7 +119,7 @@ type ToolHandlersProps = {
   opacity: number
   tokenTemplate: any
   staticObjectTemplate: any
-  spellEffectTemplate: any
+  staticEffectTemplate: any
   isPicking: 'from' | 'to' | 'token' | null
   selectedSpell?: any  // Spell template data for range limits
   selectedTokenId?: string | null  // Token ID for movement range
@@ -153,7 +153,7 @@ export const useToolHandlers = ({
   opacity,
   tokenTemplate,
   staticObjectTemplate,
-  spellEffectTemplate,
+  staticEffectTemplate,
   isPicking,
   selectedSpell,
   selectedTokenId,
@@ -370,35 +370,40 @@ export const useToolHandlers = ({
           addObject(newObject)
         }
         break
-      case 'spellEffect':
-        // Place spell effect using template
-        if (spellEffectTemplate) {
+      case 'staticEffect':
+        // Place static effect using template
+        if (staticEffectTemplate) {
           const newObject: Partial<Shape> = {
             id: crypto.randomUUID(),
             type: 'shape' as const,
             position: snappedPos,
             rotation: 0,
-            layer: 10, // Spell effects on top
-            fillColor: spellEffectTemplate.color,
-            fill: spellEffectTemplate.color,
-            strokeColor: spellEffectTemplate.color,
-            stroke: spellEffectTemplate.color,
+            layer: 10, // Static effects on top
+            fillColor: staticEffectTemplate.defaultColor,
+            fill: staticEffectTemplate.defaultColor,
+            strokeColor: staticEffectTemplate.defaultColor,
+            stroke: staticEffectTemplate.defaultColor,
             strokeWidth: 2,
-            opacity: spellEffectTemplate.opacity,
-            name: spellEffectTemplate.name,
+            opacity: staticEffectTemplate.defaultOpacity,
+            name: staticEffectTemplate.name,
             locked: false
           }
 
-          // Configure based on shape
-          switch (spellEffectTemplate.shape) {
-            case 'sphere':
+          // Configure based on type
+          switch (staticEffectTemplate.type) {
+            case 'circle':
               newObject.shapeType = 'circle'
-              newObject.radius = spellEffectTemplate.size.radius
+              newObject.radius = staticEffectTemplate.sizeProperties.radius
+              break
+            case 'rectangle':
+              newObject.shapeType = 'rectangle'
+              newObject.width = staticEffectTemplate.sizeProperties.width
+              newObject.height = staticEffectTemplate.sizeProperties.height
               break
             case 'cone':
               // Cone will be rendered as a triangle/polygon
-              const length = spellEffectTemplate.size.length || 75
-              const angle = (spellEffectTemplate.size.angle || 60) * Math.PI / 180
+              const length = staticEffectTemplate.sizeProperties.length || 80
+              const angle = (staticEffectTemplate.sizeProperties.angle || 60) * Math.PI / 180
               const halfAngle = angle / 2
               newObject.shapeType = 'polygon'
               newObject.points = [
@@ -407,20 +412,10 @@ export const useToolHandlers = ({
                 length * Math.cos(halfAngle), length * Math.sin(halfAngle)
               ]
               break
-            case 'cube':
-              newObject.shapeType = 'rectangle'
-              newObject.width = spellEffectTemplate.size.width
-              newObject.height = spellEffectTemplate.size.height
-              break
             case 'line':
               newObject.shapeType = 'rectangle'
-              newObject.width = spellEffectTemplate.size.length
-              newObject.height = spellEffectTemplate.size.width
-              break
-            case 'wall':
-              newObject.shapeType = 'rectangle'
-              newObject.width = spellEffectTemplate.size.length
-              newObject.height = spellEffectTemplate.size.width
+              newObject.width = staticEffectTemplate.sizeProperties.length
+              newObject.height = staticEffectTemplate.sizeProperties.width
               break
           }
 
@@ -428,7 +423,7 @@ export const useToolHandlers = ({
         }
         break
     }
-  }, [currentTool, currentMap, handleMouseDown, setDrawingState, fillColor, addObject, addMeasurementPoint, tokenTemplate, staticObjectTemplate, spellEffectTemplate, isPicking, selectedSpell, selectedTokenId, getTokenExpectedPosition, setPosition, completePositionPicking, stageRef])
+  }, [currentTool, currentMap, handleMouseDown, setDrawingState, fillColor, addObject, addMeasurementPoint, tokenTemplate, staticObjectTemplate, staticEffectTemplate, isPicking, selectedSpell, selectedTokenId, getTokenExpectedPosition, setPosition, completePositionPicking, stageRef])
 
   const handleStageMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
     // Get mouse position and report it

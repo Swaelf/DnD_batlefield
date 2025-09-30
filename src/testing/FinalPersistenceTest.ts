@@ -1,5 +1,5 @@
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 
 /**
  * Final comprehensive test for spell persistence cleanup
@@ -10,7 +10,7 @@ export async function runFinalPersistenceTest() {
   console.log('='.repeat(60))
 
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   // Ensure we have a map
   if (!mapStore.currentMap) {
@@ -31,9 +31,9 @@ export async function runFinalPersistenceTest() {
   if (!roundStore.isInCombat) {
     roundStore.startCombat(mapStore.currentMap!.id)
   }
-  roundStore.goToRound(1)
+  roundStore.goToEvent(1)
 
-  const startRound = roundStore.currentRound
+  const startRound = roundStore.currentEvent
   console.log('\n  Starting at round:', startRound)
 
   // Create test spells
@@ -110,7 +110,7 @@ export async function runFinalPersistenceTest() {
 
   for (const test of roundTests) {
     // Go to the round
-    roundStore.goToRound(test.round)
+    roundStore.goToEvent(test.round)
     await new Promise(resolve => setTimeout(resolve, 100))
 
     const actual = verifyExistence(test.round)
@@ -175,7 +175,7 @@ export async function runFinalPersistenceTest() {
 // Quick test for a single spell
 export async function quickSpellTest(spellName: string, duration: number) {
   const mapStore = useMapStore.getState()
-  const roundStore = useRoundStore.getState()
+  const roundStore = useTimelineStore.getState()
 
   console.log(`\n🧪 Quick test: ${spellName} (${duration} rounds)`)
 
@@ -184,7 +184,7 @@ export async function quickSpellTest(spellName: string, duration: number) {
     roundStore.startCombat(mapStore.currentMap!.id)
   }
 
-  const startRound = roundStore.currentRound
+  const startRound = roundStore.currentEvent
   const testId = `quick-test-${Date.now()}`
 
   // Create spell
@@ -212,7 +212,7 @@ export async function quickSpellTest(spellName: string, duration: number) {
 
   // Test at expiration round
   const expirationRound = startRound + duration
-  roundStore.goToRound(expirationRound)
+  roundStore.goToEvent(expirationRound)
   await new Promise(resolve => setTimeout(resolve, 100))
 
   const stillExists = mapStore.currentMap?.objects.some(obj => obj.id === testId)

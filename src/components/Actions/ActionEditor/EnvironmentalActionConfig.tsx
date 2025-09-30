@@ -14,7 +14,7 @@ import {
   Sparkles,
   Eye,
   Shield
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import {
   ENVIRONMENTAL_TYPES,
   WEATHER_TYPES,

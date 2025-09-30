@@ -1,23 +1,30 @@
 import type Konva from 'konva'
 import type { Position } from './map'
 
-// Timeline and round management types
+// Timeline and event management types
 export type Timeline = {
   id: string
   mapId: string
-  rounds: Round[]
-  currentRound: number
+  events: Event[]
+  currentEvent: number
   isActive: boolean
-  history: Round[] // Completed rounds
+  history: Event[] // Completed events
 }
 
-export type Round = {
+export type Event = {
   id: string
   number: number
   name?: string // Optional name like "Ambush!" or "Dragon arrives"
   timestamp: number
-  events: RoundEvent[]
+  actions: TimelineAction[]
   executed: boolean
+  snapshot?: MapSnapshot // State snapshot before execution for undo
+}
+
+// Snapshot of map state for undo functionality
+export type MapSnapshot = {
+  tokenPositions: Record<string, Position> // tokenId -> position
+  spellEffects: string[] // IDs of active spell effects
 }
 
 // Event types
@@ -32,14 +39,14 @@ export type SpellCategory =
   | 'burst'            // Explosion at target location
   | 'cone'            // Cone area
 
-export type RoundEvent = {
+export type TimelineAction = {
   id: string
-  roundNumber: number
+  eventNumber: number
   tokenId: string
   type: EventType
   data: EventData
   executed: boolean
-  order?: number // For ordering events within a round
+  order?: number // For ordering actions within an event
 }
 
 // Event data types
@@ -270,7 +277,7 @@ export type ActionResult = {
 export type AnimationState = {
   isAnimating: boolean
   currentAnimations: Map<string, Konva.Animation> // tokenId -> Konva.Animation
-  queue: RoundEvent[]
+  queue: TimelineAction[]
 }
 
 // Helper type guards

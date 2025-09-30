@@ -15,13 +15,11 @@ interface AdvancedCanvasInteractionLayerProps {
 }
 
 export const AdvancedCanvasInteractionLayer: React.FC<AdvancedCanvasInteractionLayerProps> = ({
-  width: _width,
-  height: _height,
-  stageRef: _stageRef
+  // Width, height, and stageRef passed but not used currently
 }) => {
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('pointer')
   const [isTransforming, setIsTransforming] = useState(false)
-  const [showAlignment, _setShowAlignment] = useState(true)
+  const [showAlignment] = useState(true)
 
   const layerRef = useRef<Konva.Layer>(null)
 
@@ -31,8 +29,8 @@ export const AdvancedCanvasInteractionLayer: React.FC<AdvancedCanvasInteractionL
   const isSelectToolActive = currentTool === 'select'
 
 // Handle multi-selection complete
-  const handleSelectionComplete = useCallback((selectedIds: string[]) => {
-    console.log('Multi-selection completed:', selectedIds)
+  const handleSelectionComplete = useCallback(() => {
+    // Selection handled by store
   }, [])
 
   // Handle transform events
@@ -80,14 +78,12 @@ export const AdvancedCanvasInteractionLayer: React.FC<AdvancedCanvasInteractionL
           if (e.ctrlKey || e.metaKey && selectedObjects.length > 1) {
             e.preventDefault()
             // Group selected objects
-            console.log('Group shortcut triggered')
           }
           break
         case 'u':
           if (e.ctrlKey || e.metaKey) {
             e.preventDefault()
             // Ungroup selected objects
-            console.log('Ungroup shortcut triggered')
           }
           break
       }

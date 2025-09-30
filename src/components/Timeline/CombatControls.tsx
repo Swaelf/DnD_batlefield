@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { Pause, Plus, Sparkles, ChevronUp, ChevronDown } from 'lucide-react'
+import { Pause, Plus, Sparkles, ChevronUp, ChevronDown } from '@/utils/optimizedIcons'
 import { Text, Box } from '@/components/primitives'
 import {
   StatusSection,
@@ -11,7 +11,7 @@ import {
   SpeedLabel,
   SpeedInput,
   SpeedValue
-} from './CombatTracker.styled'
+} from './CombatTracker.styled.tsx'
 
 type CombatControlsProps = {
   eventCount: number
@@ -42,18 +42,18 @@ const CombatControlsComponent: React.FC<CombatControlsProps> = ({
           onClick={onShowEventEditor}
           title="Add Action"
         >
-          <Plus size={14} />
-          <span>Add Action</span>
+          <Plus size={16} />
+          Add Action
         </EventsButton>
 
         {eventCount > 0 && (
-          <StatusIndicator type="events">
+          <StatusIndicator data-type="events">
             <Sparkles size={12} />
             <Text size="sm">{eventCount}</Text>
           </StatusIndicator>
         )}
         {activeSpells > 0 && (
-          <StatusIndicator type="spells">
+          <StatusIndicator data-type="spells">
             <Sparkles size={12} />
             <Text size="sm">{activeSpells}</Text>
           </StatusIndicator>

@@ -19,7 +19,7 @@ export interface Screenshot {
 export interface StateSnapshot {
   map: BattleMap
   timeline?: Timeline
-  currentRound?: number
+  currentEvent?: number
   selectedObjects: string[]
   tool: string
   timestamp: number
@@ -75,7 +75,7 @@ export class CanvasCapture {
     return {
       map: JSON.parse(JSON.stringify(map)), // Deep clone
       timeline: timeline ? JSON.parse(JSON.stringify(timeline)) : undefined,
-      currentRound: timeline?.currentRound,
+      currentEvent: timeline?.currentEvent,
       selectedObjects: selectedObjects || [],
       tool: tool || 'select',
       timestamp: Date.now()

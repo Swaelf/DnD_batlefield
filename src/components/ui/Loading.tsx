@@ -13,45 +13,7 @@ import React from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { sprinkles } from '@/styles/sprinkles.css'
-import { keyframes, style } from '@vanilla-extract/css'
-
-// Animations
-const spin = keyframes({
-  '0%': { transform: 'rotate(0deg)' },
-  '100%': { transform: 'rotate(360deg)' }
-})
-
-const pulse = keyframes({
-  '0%, 100%': { opacity: 1 },
-  '50%': { opacity: 0.5 }
-})
-
-const bounce = keyframes({
-  '0%, 100%': { transform: 'translateY(0)' },
-  '50%': { transform: 'translateY(-10px)' }
-})
-
-const fadeIn = keyframes({
-  '0%': { opacity: 0 },
-  '100%': { opacity: 1 }
-})
-
-// Styles
-const spinnerStyles = style({
-  animation: `${spin} 1s linear infinite`
-})
-
-const pulseStyles = style({
-  animation: `${pulse} 2s cubic-bezier(0.4, 0, 0.6, 1) infinite`
-})
-
-const dotStyles = style({
-  animation: `${bounce} 1.4s ease-in-out infinite`
-})
-
-const fadeInStyles = style({
-  animation: `${fadeIn} 0.3s ease-in`
-})
+import { spinnerStyles, pulseStyles, dotStyles, fadeInStyles } from './Loading.css'
 
 // Loading Spinner Component
 export interface SpinnerProps {

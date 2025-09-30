@@ -12,7 +12,7 @@ import {
   Palette,
   Move3D,
   Grid3X3
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import useToolStore from '@store/toolStore'
 
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
-import { Pipette } from 'lucide-react';
+import { Pipette } from '@/utils/optimizedIcons';
 
 type ColorPickerProps = {
   color: string

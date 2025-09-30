@@ -1,5 +1,5 @@
 import React, { useState, forwardRef } from 'react'
-import { Check } from 'lucide-react'
+import { Check } from '@/utils/optimizedIcons'
 
 // Exact checkbox event handlers
 type CheckboxEventHandlers = {

@@ -11,7 +11,7 @@ import {
   X,
   Edit3,
   Trash2
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -130,12 +130,11 @@ export const UserManagementPanel = ({
     setNewUserName(currentName)
   }, [])
 
-  const handleNameSave = useCallback((userId: string) => {
+  const handleNameSave = useCallback(() => {
     // In a real implementation, this would update the user's name
-    console.log(`Update user ${userId} name to: ${newUserName}`)
     setEditingUser(null)
     setNewUserName('')
-  }, [newUserName])
+  }, [])
 
   // Get user status
   const getUserStatus = useCallback((user: CollaborativeUser) => {
@@ -378,7 +377,7 @@ export const UserManagementPanel = ({
                                 />
                                 <Button
                                   size="xs"
-                                  onClick={() => handleNameSave(user.id)}
+                                  onClick={() => handleNameSave()}
                                 >
                                   <Check size={12} />
                                 </Button>

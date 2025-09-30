@@ -3,14 +3,13 @@ import useMapStore from '@/store/mapStore'
 import useToolStore from '@/store/toolStore'
 import { useHistoryStore } from '@/store/historyStore'
 import {
-  MousePointer2,
-  Grid3x3,
+  Pointer as MousePointer2,
+  Grid3X3 as Grid3x3,
   Layers,
-  ZoomIn,
-  Undo2,
-  Redo2,
-  Package
-} from 'lucide-react'
+  Undo as Undo2,
+  Redo as Redo2,
+  Square as Package
+} from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -21,7 +20,7 @@ type StatusBarProps = {
 }
 
 
-const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
+const StatusBar: React.FC<StatusBarProps> = ({ mousePosition }) => {
   // Use specific selectors to prevent unnecessary re-renders
   const currentMap = useMapStore(state => state.currentMap)
   const loadMap = useMapStore(state => state.loadMap)
@@ -34,27 +33,40 @@ const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
   const redoWithCurrentState = useHistoryStore(state => state.redoWithCurrentState)
   const [fps, setFps] = useState(60)
 
-  // FPS counter
+  // FPS counter - optimized to reduce performance impact
   useEffect(() => {
     let frameCount = 0
     let lastTime = performance.now()
     let animationId: number
+    let isVisible = true
+
+    // Detect if page is hidden to pause FPS monitoring
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     const measureFPS = () => {
-      frameCount++
-      const currentTime = performance.now()
+      // Only measure FPS when page is visible
+      if (isVisible) {
+        frameCount++
+        const currentTime = performance.now()
 
-      if (currentTime >= lastTime + 1000) {
-        setFps(Math.round((frameCount * 1000) / (currentTime - lastTime)))
-        frameCount = 0
-        lastTime = currentTime
+        if (currentTime >= lastTime + 1000) {
+          setFps(Math.round((frameCount * 1000) / (currentTime - lastTime)))
+          frameCount = 0
+          lastTime = currentTime
+        }
       }
 
       animationId = requestAnimationFrame(measureFPS)
     }
 
     measureFPS()
-    return () => cancelAnimationFrame(animationId)
+    return () => {
+      cancelAnimationFrame(animationId)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   // Memoize formatting functions to prevent recreating them
@@ -62,8 +74,6 @@ const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
     if (!pos) return 'X: -- Y: --'
     return `X: ${Math.round(pos.x)} Y: ${Math.round(pos.y)}`
   }, [])
-
-  const formatZoom = useCallback((z: number) => `${Math.round(z * 100)}%`, [])
 
   // Undo/Redo click handlers
   const handleUndo = useCallback(() => {
@@ -339,28 +349,6 @@ const StatusBar: React.FC<StatusBarProps> = ({ mousePosition, zoom = 1 }) => {
               {historyInfo.redoCount}
             </Text>
           </Button>
-        </Box>
-
-        {/* Zoom level */}
-        <Box
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            color: 'var(--colors-gray400)'
-          }}
-        >
-          <ZoomIn size={12} />
-          <Text
-            variant="code"
-            size="xs"
-            style={{
-              color: 'inherit',
-              minWidth: '50px'
-            }}
-          >
-            {formatZoom(zoom)}
-          </Text>
         </Box>
 
         {/* Grid size */}

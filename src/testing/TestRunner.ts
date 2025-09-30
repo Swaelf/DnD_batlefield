@@ -1,7 +1,7 @@
 import type { TestScenario, TestStep, TestAction, TestAssertion } from './TestScenarios'
 import type { CanvasCapture, Screenshot, StateSnapshot } from './CanvasCapture'
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 import useToolStore from '@/store/toolStore'
 import type { Token } from '@/types/token'
 import type { SpellEventData } from '@/types/timeline'
@@ -47,7 +47,7 @@ export class TestRunner {
 
     // Capture initial state
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const startState = this.canvasCapture.captureState(
       mapStore.currentMap!,
       roundStore.timeline || undefined,
@@ -155,7 +155,7 @@ export class TestRunner {
 
   private async executeAction(action: TestAction): Promise<void> {
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const toolStore = useToolStore.getState()
 
     switch (action.type) {
@@ -211,7 +211,7 @@ export class TestRunner {
         break
 
       case 'nextRound':
-        await roundStore.nextRound()
+        await roundStore.nextEvent()
         break
 
       case 'selectTool':
@@ -229,7 +229,7 @@ export class TestRunner {
 
   private async executeAssertion(assertion: TestAssertion): Promise<{ success: boolean; error?: string }> {
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const toolStore = useToolStore.getState()
 
     try {
@@ -274,10 +274,10 @@ export class TestRunner {
           break
 
         case 'roundNumber':
-          if (roundStore.currentRound !== assertion.expected) {
+          if (roundStore.currentEvent !== assertion.expected) {
             return {
               success: false,
-              error: `Expected round ${assertion.expected}, got ${roundStore.currentRound}`
+              error: `Expected round ${assertion.expected}, got ${roundStore.currentEvent}`
             }
           }
           break

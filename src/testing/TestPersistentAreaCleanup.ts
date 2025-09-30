@@ -1,7 +1,7 @@
 import type { TestScenario } from './TestScenarios'
 import type { SpellMapObject } from '@/types'
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 
 /**
  * Test scenario to verify persistent area cleanup after spell duration expires
@@ -30,9 +30,9 @@ export const persistentAreaCleanupTest: TestScenario = {
         params: {
           execute: () => {
             const mapStore = useMapStore.getState()
-            const roundStore = useRoundStore.getState()
+            const roundStore = useTimelineStore.getState()
             console.log('=== INITIAL STATE ===')
-            console.log('Current Round:', roundStore.currentRound)
+            console.log('Current Round:', roundStore.currentEvent)
             console.log('Map objects:', mapStore.currentMap?.objects.length || 0)
             console.log('Spell effects:', mapStore.currentMap?.objects.filter(obj =>
               obj.type === 'spell' || obj.type === 'persistent-area'
@@ -51,7 +51,7 @@ export const persistentAreaCleanupTest: TestScenario = {
         params: {
           execute: () => {
             const mapStore = useMapStore.getState()
-            const roundStore = useRoundStore.getState()
+            const roundStore = useTimelineStore.getState()
 
             // Create the spell effect
             const spellObject = {
@@ -72,14 +72,14 @@ export const persistentAreaCleanupTest: TestScenario = {
                 duration: 500, // Short duration for testing
                 persistDuration: 1, // 1 round
                 burstRadius: 40,
-                roundCreated: roundStore.currentRound
+                roundCreated: roundStore.currentEvent
               },
-              roundCreated: roundStore.currentRound,
+              roundCreated: roundStore.currentEvent,
               spellDuration: 0 // Initial spell object doesn't persist
             }
 
             mapStore.addSpellEffect(spellObject)
-            console.log('Fireball spell added at round', roundStore.currentRound)
+            console.log('Fireball spell added at round', roundStore.currentEvent)
 
             // Simulate the creation of persistent area after animation
             setTimeout(() => {
@@ -96,14 +96,14 @@ export const persistentAreaCleanupTest: TestScenario = {
                   color: '#ff4500',
                   opacity: 0.3,
                   spellName: 'Fireball',
-                  roundCreated: roundStore.currentRound
+                  roundCreated: roundStore.currentEvent
                 },
-                roundCreated: roundStore.currentRound,
+                roundCreated: roundStore.currentEvent,
                 spellDuration: 1 // Persists for 1 round
               }
 
               mapStore.addSpellEffect(persistentArea)
-              console.log('Fireball persistent area added at round', roundStore.currentRound)
+              console.log('Fireball persistent area added at round', roundStore.currentEvent)
             }, 600)
           }
         }
@@ -126,12 +126,12 @@ export const persistentAreaCleanupTest: TestScenario = {
         params: {
           execute: () => {
             const mapStore = useMapStore.getState()
-            const roundStore = useRoundStore.getState()
+            const roundStore = useTimelineStore.getState()
             const persistentAreas = mapStore.currentMap?.objects.filter(obj =>
               obj.type === 'persistent-area'
             ) || []
 
-            console.log('=== AFTER FIREBALL (Round', roundStore.currentRound, ') ===')
+            console.log('=== AFTER FIREBALL (Round', roundStore.currentEvent, ') ===')
             console.log('Persistent areas:', persistentAreas.length)
             persistentAreas.forEach(area => {
               console.log('  - Area:', {
@@ -189,30 +189,30 @@ export const persistentAreaCleanupTest: TestScenario = {
         params: {
           execute: () => {
             const mapStore = useMapStore.getState()
-            const roundStore = useRoundStore.getState()
+            const roundStore = useTimelineStore.getState()
             const persistentAreas = mapStore.currentMap?.objects.filter(obj =>
               obj.type === 'persistent-area'
             ) || []
 
-            console.log('=== AFTER ROUND 2 (Round', roundStore.currentRound, ') ===')
+            console.log('=== AFTER ROUND 2 (Round', roundStore.currentEvent, ') ===')
             console.log('Persistent areas remaining:', persistentAreas.length)
             persistentAreas.forEach(area => {
               const shouldBeRemoved = area.spellDuration !== undefined &&
                                      area.roundCreated !== undefined &&
                                      area.spellDuration > 0 &&
-                                     roundStore.currentRound >= (area.roundCreated + area.spellDuration)
+                                     roundStore.currentEvent >= (area.roundCreated + area.spellDuration)
               console.log('  - Area:', {
                 id: area.id,
                 roundCreated: area.roundCreated,
                 spellDuration: area.spellDuration,
-                currentRound: roundStore.currentRound,
+                currentEvent: roundStore.currentEvent,
                 shouldBeRemoved
               })
             })
 
             // Manually call cleanup to test the function
             console.log('Manually calling cleanupExpiredSpells...')
-            mapStore.cleanupExpiredSpells(roundStore.currentRound)
+            mapStore.cleanupExpiredSpells(roundStore.currentEvent)
 
             const areasAfterCleanup = mapStore.currentMap?.objects.filter(obj =>
               obj.type === 'persistent-area'
@@ -252,7 +252,7 @@ export const persistentAreaCleanupTest: TestScenario = {
         params: {
           execute: () => {
             const mapStore = useMapStore.getState()
-            const roundStore = useRoundStore.getState()
+            const roundStore = useTimelineStore.getState()
 
             const darknessArea = {
               id: `persistent-darkness-${Date.now()}`,
@@ -267,14 +267,14 @@ export const persistentAreaCleanupTest: TestScenario = {
                 color: '#000000',
                 opacity: 0.8,
                 spellName: 'Darkness',
-                roundCreated: roundStore.currentRound
+                roundCreated: roundStore.currentEvent
               },
-              roundCreated: roundStore.currentRound,
+              roundCreated: roundStore.currentEvent,
               spellDuration: 3 // Persists for 3 rounds
             }
 
             mapStore.addSpellEffect(darknessArea)
-            console.log('Darkness added at round', roundStore.currentRound, 'expires at', roundStore.currentRound + 3)
+            console.log('Darkness added at round', roundStore.currentEvent, 'expires at', roundStore.currentEvent + 3)
           }
         }
       },
@@ -325,12 +325,12 @@ export const persistentAreaCleanupTest: TestScenario = {
         params: {
           check: () => {
             const mapStore = useMapStore.getState()
-            const roundStore = useRoundStore.getState()
+            const roundStore = useTimelineStore.getState()
             const darknessAreas = mapStore.currentMap?.objects.filter(obj =>
               obj.type === 'persistent-area' &&
               (obj as SpellMapObject).persistentAreaData?.spellName === 'Darkness'
             ) || []
-            console.log('Round', roundStore.currentRound, '- Darkness areas:', darknessAreas.length)
+            console.log('Round', roundStore.currentEvent, '- Darkness areas:', darknessAreas.length)
             return darknessAreas.length === 1
           }
         },
@@ -378,12 +378,12 @@ export const persistentAreaCleanupTest: TestScenario = {
         params: {
           check: () => {
             const mapStore = useMapStore.getState()
-            const roundStore = useRoundStore.getState()
+            const roundStore = useTimelineStore.getState()
             const darknessAreas = mapStore.currentMap?.objects.filter(obj =>
               obj.type === 'persistent-area' &&
               (obj as SpellMapObject).persistentAreaData?.spellName === 'Darkness'
             ) || []
-            console.log('Round', roundStore.currentRound, '- Darkness areas after cleanup:', darknessAreas.length)
+            console.log('Round', roundStore.currentEvent, '- Darkness areas after cleanup:', darknessAreas.length)
             return darknessAreas.length === 0
           }
         },

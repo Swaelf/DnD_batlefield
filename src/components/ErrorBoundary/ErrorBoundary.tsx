@@ -3,7 +3,7 @@ import React, { Component } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
-import { AlertTriangle, RefreshCw, Copy, Bug, Home } from 'lucide-react'
+import { AlertTriangle, RefreshCw, Copy, Bug, Home } from '@/utils/optimizedIcons'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -321,8 +321,6 @@ ${error?.stack}
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  console.log('Error State:', this.state)
-                  console.log('Error Props:', this.props)
                 }}
               >
                 <Bug size={14} />

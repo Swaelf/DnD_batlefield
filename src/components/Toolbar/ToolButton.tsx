@@ -1,33 +1,19 @@
 import React from 'react'
-import * as Icons from 'lucide-react'
+import * as LucideIcons from '@/utils/optimizedIcons'
 import type { Tool } from '@/types/tools'
 import { ToolButton as StyledToolButton } from '@/components/primitives'
-import { styled } from '@/styles/theme.config'
+import { shortcutLabel, relativeToolButton } from './ToolButton.css'
 
 type ToolButtonProps = {
   tool: Tool
   isActive: boolean
   onClick: () => void
+  disabled?: boolean
 }
 
-const ShortcutLabel = styled('span', {
-  position: 'absolute',
-  bottom: '2px',
-  right: '2px',
-  fontSize: '9px',
-  color: '$gray500',
-  fontFamily: '$mono',
-  pointerEvents: 'none',
-  userSelect: 'none',
-})
-
-const RelativeToolButton = styled(StyledToolButton, {
-  position: 'relative'
-})
-
-const ToolButton: React.FC<ToolButtonProps> = ({ tool, isActive, onClick }) => {
-  // Dynamically get the icon component
-  const IconComponent = Icons[tool.icon as keyof typeof Icons] as React.FC<{ size?: number; className?: string }>
+const ToolButton: React.FC<ToolButtonProps> = ({ tool, isActive, onClick, disabled = false }) => {
+  // Dynamically get the icon component from lucide-react
+  const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<{ size?: number; className?: string }>>)[tool.icon]
 
   if (!IconComponent) {
     console.warn(`Icon ${tool.icon} not found`)
@@ -35,18 +21,20 @@ const ToolButton: React.FC<ToolButtonProps> = ({ tool, isActive, onClick }) => {
   }
 
   return (
-    <RelativeToolButton
+    <StyledToolButton
       onClick={onClick}
       title={tool.tooltip}
       active={isActive}
+      disabled={disabled}
+      className={relativeToolButton}
     >
       <IconComponent size={20} />
       {tool.shortcut && (
-        <ShortcutLabel>
+        <span className={shortcutLabel}>
           {tool.shortcut}
-        </ShortcutLabel>
+        </span>
       )}
-    </RelativeToolButton>
+    </StyledToolButton>
   )
 }
 

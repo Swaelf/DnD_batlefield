@@ -1,8 +1,8 @@
 import type { BattleMap, MapObject, SpellMapObject, Position, StaticObjectTemplate } from './map'
-import type { Timeline, RoundEvent, EventType, EventData, AttackEventData } from './timeline'
+import type { Timeline, TimelineAction, EventType, EventData, AttackEventData } from './timeline'
 import type { ToolType, DrawingState } from './tools'
 import type { TokenTemplate } from './token'
-import type { SpellEffectTemplate } from './spells'
+import type { StaticEffectTemplate } from '@/components/StaticEffect/types'
 
 // Layer Store Types
 export type LayerDefinition = {
@@ -49,59 +49,60 @@ export type AnimationPath = {
 
 export type AnimationStore = {
   activePaths: AnimationPath[]
+  isPaused: boolean
 
   // Actions
   startAnimation: (tokenId: string, from: Position, to: Position) => void
   updateProgress: (tokenId: string, progress: number) => void
   endAnimation: (tokenId: string) => void
   clearAllPaths: () => void
+  pauseAnimations: () => void
+  resumeAnimations: () => void
 }
 
 // Event Creation Store Types
 export type EventCreationState = {
   isCreatingEvent: boolean
-  isPicking: 'from' | 'to' | 'token' | null
+  isPicking: 'from' | 'to' | 'token' | 'targetToken' | null
   selectedTokenId: string | null
   fromPosition: Position | null
   toPosition: Position | null
   pathPreview: Position[]
-  selectedSpell?: any // Spell configuration data
-
+  savedToolMode: string | null  // Stores the tool mode before event creation
   // Actions
   startEventCreation: (tokenId: string) => void
   cancelEventCreation: () => void
   startPickingPosition: (type: 'from' | 'to') => void
   startPickingToken: () => void
+  setPickingMode: (mode: 'from' | 'to' | 'token' | 'targetToken' | null) => void
   setSelectedToken: (tokenId: string) => void
   setPosition: (type: 'from' | 'to', position: Position) => void
   setPathPreview: (path: Position[]) => void
   completePositionPicking: () => void
-  setSelectedSpell: (spell: any) => void
-  clearSpellSelection: () => void
   getTokenExpectedPosition: (tokenId?: string | null) => Position | null
 }
 
-// Round Store Types
-export type RoundStore = {
+// Timeline Store Types
+export type TimelineStore = {
   // State
   timeline: Timeline | null
-  currentRound: number
+  currentEvent: number
   isInCombat: boolean
   animationSpeed: number // Multiplier for animation speed
 
   // Actions
   startCombat: (mapId: string) => void
   endCombat: () => void
-  nextRound: () => Promise<void>
-  previousRound: () => void
-  goToRound: (roundNumber: number) => void
+  nextEvent: () => Promise<void>
+  previousEvent: () => void
+  goToEvent: (eventNumber: number) => void
 
-  // Event management
-  addEvent: (tokenId: string, type: EventType, data: EventData, roundNumber?: number) => void
-  updateEvent: (id: string, updates: Partial<RoundEvent>) => void
-  removeEvent: (id: string) => void
-  executeRoundEvents: (roundNumber: number) => Promise<void>
-  previewEvent: (event: RoundEvent) => void
+  // Action management
+  addAction: (tokenId: string, type: EventType, data: EventData, eventNumber?: number) => void
+  updateAction: (id: string, updates: Partial<TimelineAction>) => void
+  removeAction: (id: string) => void
+  executeEventActions: (eventNumber: number) => Promise<void>
+  previewAction: (action: TimelineAction) => void
 
   // Configuration
   setAnimationSpeed: (speed: number) => void
@@ -119,7 +120,7 @@ export type ToolStore = {
   opacity: number
   tokenTemplate: TokenTemplate | null
   staticObjectTemplate: StaticObjectTemplate | null
-  spellEffectTemplate: SpellEffectTemplate | null
+  staticEffectTemplate: StaticEffectTemplate | null
   measurementPoints: Position[]
 
   // Actions
@@ -133,7 +134,7 @@ export type ToolStore = {
   resetDrawingState: () => void
   setTokenTemplate: (template: TokenTemplate | null) => void
   setStaticObjectTemplate: (template: StaticObjectTemplate | null) => void
-  setSpellEffectTemplate: (template: SpellEffectTemplate | null) => void
+  setStaticEffectTemplate: (template: StaticEffectTemplate | null) => void
   addMeasurementPoint: (point: Position) => void
   clearMeasurementPoints: () => void
 }

@@ -19,7 +19,7 @@ import {
   AlignVerticalJustifyEnd,
   Move3D,
   RotateCw
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
 import type { MapObject } from '@/types'

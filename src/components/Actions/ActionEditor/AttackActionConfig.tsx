@@ -1,5 +1,5 @@
 import React, { memo, useState, useCallback } from 'react'
-import { Sword, Target, Dices, Zap } from 'lucide-react'
+import { Sword, Target, Dices, Zap } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'

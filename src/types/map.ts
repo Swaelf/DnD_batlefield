@@ -98,14 +98,17 @@ export type MapObjectRuntimeState = {
 export type StaticObjectTemplate = {
   id: string
   name: string
+  type: 'circle' | 'rectangle' | 'line' | 'polygon'
   category: 'structures' | 'nature' | 'furniture' | 'dungeon'
   icon: React.ReactNode
-  width: number
-  height: number
-  fillColor: string
-  strokeColor: string
-  strokeWidth: number
-  shape: 'rectangle' | 'circle' | 'polygon'
-  points?: number[] // For polygon shapes
-  metadata?: any
+  defaultColor: string
+  defaultOpacity: number
+  rotation?: number
+  sizeProperties: {
+    radius?: number
+    width?: number
+    height?: number
+    length?: number
+  }
+  description: string
 }

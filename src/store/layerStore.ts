@@ -137,7 +137,7 @@ const DEFAULT_LAYERS: LayerDefinition[] = [
     opacity: 1,
     zIndex: 50,
     color: '#EA580C',
-    defaultForType: ['spell', 'attack', 'persistent-area', 'spellEffect'],
+    defaultForType: ['spell', 'attack', 'persistent-area', 'staticEffect'],
     isDeletable: false
   },
   {

@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import useMapStore from '@/store/mapStore'
-import useRoundStore from '@/store/roundStore'
+import useTimelineStore from '@/store/timelineStore'
 import type { SpellMapObject } from '@/types'
 
 describe('Isolated Fireball Test', () => {
   beforeEach(() => {
     // Reset stores completely - use getState and setState properly
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
 
     // Clear map store
     useMapStore.setState({
@@ -20,9 +20,9 @@ describe('Isolated Fireball Test', () => {
     mapStore.createNewMap('Test Map')
 
     // Clear round store
-    useRoundStore.setState({
+    useTimelineStore.setState({
       timeline: null,
-      currentRound: 1,
+      currentEvent: 1,
       isInCombat: false,
       animationSpeed: 1
     })
@@ -36,9 +36,9 @@ describe('Isolated Fireball Test', () => {
 
   it('should add persistent area and remove after 1 round', async () => {
     const mapStore = useMapStore.getState()
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
 
-    console.log('Initial round:', roundStore.currentRound)
+    console.log('Initial round:', roundStore.currentEvent)
     console.log('Initial objects:', mapStore.currentMap?.objects.length)
 
     // Create a simple persistent area
@@ -138,7 +138,7 @@ describe('Isolated Fireball Test', () => {
 
   it('should call cleanup when advancing rounds', async () => {
     // Get fresh references
-    const roundStore = useRoundStore.getState()
+    const roundStore = useTimelineStore.getState()
     const mapStore = useMapStore.getState()
 
     // Add a test spell effect using the store action
@@ -162,21 +162,21 @@ describe('Isolated Fireball Test', () => {
     })
 
     // Check initial state
-    const initialRound = useRoundStore.getState().currentRound
+    const initialEvent = useTimelineStore.getState().currentEvent
     const initialObjects = useMapStore.getState().currentMap?.objects.length
-    console.log('Before nextRound, current round:', initialRound)
+    console.log('Before nextEvent, current event:', initialEvent)
     console.log('Objects before:', initialObjects)
 
     // Advance round - it's async so we need to await it
-    await roundStore.nextRound()
+    await roundStore.nextEvent()
     // Give time for state to update
     await new Promise(resolve => setTimeout(resolve, 100))
 
     // Get fresh state after the async operation
-    const updatedRoundStore = useRoundStore.getState()
+    const updatedRoundStore = useTimelineStore.getState()
     const updatedMapStore = useMapStore.getState()
 
-    console.log('After nextRound, current round:', updatedRoundStore.currentRound)
+    console.log('After nextEvent, current event:', updatedRoundStore.currentEvent)
     console.log('Objects after:', updatedMapStore.currentMap?.objects.length)
 
     const stillExists = updatedMapStore.currentMap?.objects.some(obj => obj.id === 'test-cleanup-call')

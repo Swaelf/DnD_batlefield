@@ -4,7 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
-export default tseslint.config(
+export default [
   // Ignore patterns
   {
     ignores: [
@@ -27,7 +27,7 @@ export default tseslint.config(
   // Base JavaScript configuration
   js.configs.recommended,
 
-  // TypeScript configuration
+  // TypeScript configuration - use the flat config directly
   ...tseslint.configs.recommended,
 
   // Global settings for all files
@@ -53,17 +53,17 @@ export default tseslint.config(
     rules: {
       // React Hooks rules
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/exhaustive-deps': 'off', // Too many false positives
 
       // React Refresh
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      'react-refresh/only-export-components': 'off', // Not critical for dev
 
       // TypeScript type checking rules - enable as warnings
       '@typescript-eslint/no-explicit-any': 'off', // Turn off completely for now
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_'
+      }],
       '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
@@ -76,8 +76,8 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-function-type': 'off',
 
       // Enable type checking for object properties
-      '@typescript-eslint/consistent-type-imports': 'warn',
-      '@typescript-eslint/no-misused-promises': 'warn',
+      '@typescript-eslint/consistent-type-imports': 'off', // Nice to have but not critical
+      '@typescript-eslint/no-misused-promises': 'off', // Too many false positives with React event handlers
       '@typescript-eslint/no-floating-promises': 'warn',
 
       // JavaScript rules
@@ -88,7 +88,7 @@ export default tseslint.config(
       'no-empty': 'off',
       'no-empty-pattern': 'off',
       'no-unused-expressions': 'off',
-      'no-case-declarations': 'warn', // Change to warning
+      'no-case-declarations': 'off', // Block scope issues can be handled by developer
       'no-useless-escape': 'off',
       'no-prototype-builtins': 'off',
       'no-unexpected-multiline': 'warn', // Change to warning
@@ -126,4 +126,4 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
-)
+]

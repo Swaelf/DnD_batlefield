@@ -10,7 +10,7 @@ import {
   Unlock,
   Eye,
   EyeOff
-} from 'lucide-react'
+} from '@/utils/optimizedIcons'
 import useMapStore from '@/store/mapStore'
 import type { Token } from '@/types/token'
 import { nanoid } from 'nanoid'

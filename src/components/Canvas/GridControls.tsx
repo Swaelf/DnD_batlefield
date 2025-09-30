@@ -1,5 +1,5 @@
 import React, { memo, forwardRef } from 'react'
-import { Grid3x3, Magnet, Eye, EyeOff, Sparkles } from 'lucide-react'
+import { Grid3x3, Magnet, Eye, EyeOff, Sparkles } from '@/utils/optimizedIcons'
 import useMapStore from '@/store/mapStore'
 import { Text } from '@/components/primitives/TextVE'
 

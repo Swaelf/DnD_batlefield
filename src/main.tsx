@@ -30,8 +30,7 @@ createRoot(document.getElementById('root')!).render(
 
 // Register service worker and PWA functionality
 if (process.env.NODE_ENV === 'production') {
-  swManager.register('/sw.js').then(() => {
-    console.log('✅ MapMaker is ready for offline use!')
+  void swManager.register('/sw.js').then(() => {
   })
 }
 

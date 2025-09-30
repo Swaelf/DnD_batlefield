@@ -338,6 +338,7 @@ const TokenLibrary = () => {
       ...template,
       showLabel: true,
       labelPosition: 'bottom',
+      labelColor: '#E0E0E0', // Light gray - readable on dark background
       opacity: 1,
       borderColor: '#000000',
       borderWidth: 2,
@@ -359,6 +360,7 @@ const TokenLibrary = () => {
       category: 'player' as const,
       showLabel: true,
       labelPosition: 'bottom' as const,
+      labelColor: '#E0E0E0',
       opacity: 1,
       borderColor: '#000000',
       borderWidth: 2,

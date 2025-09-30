@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { Eye, EyeOff, Copy, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Copy, Trash2 } from '@/utils/optimizedIcons'
 import {
   PanelSection,
   Button,

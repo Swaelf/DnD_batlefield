@@ -9,45 +9,45 @@ import {
   StatCard,
   StatLabel,
   StatValue
-} from './CombatTracker.styled'
+} from './CombatTracker.styled.tsx'
 
 type RoundTimelineProps = {
   timeline: Timeline | null
-  currentRound: number
+  currentGroup: number
   activeSpells: number
 }
 
 const RoundTimelineComponent: React.FC<RoundTimelineProps> = ({
   timeline,
-  currentRound,
+  currentGroup,
   activeSpells
 }) => {
-  const totalEvents = timeline?.rounds.reduce((sum, r) => sum + r.events.length, 0) || 0
+  const totalActions = timeline?.events.reduce((sum, e) => sum + e.actions.length, 0) || 0
 
   return (
     <>
-      {/* Round Timeline */}
+      {/* Event Timeline */}
       <TimelineContainer>
-        {Array.from({ length: Math.max(10, currentRound + 2) }, (_, i) => i + 1).map((roundNum) => {
-          const round = timeline?.rounds.find(r => r.number === roundNum)
-          const hasEvents = round && round.events.length > 0
-          const isExecuted = round?.executed
+        {Array.from({ length: Math.max(10, currentGroup + 2) }, (_, i) => i + 1).map((eventNum) => {
+          const event = timeline?.events.find(e => e.number === eventNum)
+          const hasActions = event && event.actions.length > 0
+          const isExecuted = event?.executed
 
           const getState = () => {
-            if (roundNum === currentRound) return 'current'
+            if (eventNum === currentGroup) return 'current'
             if (isExecuted) return 'executed'
             return 'pending'
           }
 
           return (
-            <Box key={roundNum} display="flex" flexDirection="column">
+            <Box key={eventNum} display="flex" flexDirection="column">
               <RoundButton
-                state={getState()}
-                onClick={() => {/* goToRound(roundNum) */}}
+                data-state={getState()}
+                onClick={() => {/* goToEvent(eventNum) */}}
               >
-                <Box>{roundNum}</Box>
+                <Box>{eventNum}</Box>
               </RoundButton>
-              {hasEvents && <EventIndicator />}
+              {hasActions && <EventIndicator />}
             </Box>
           )
         })}
@@ -56,12 +56,12 @@ const RoundTimelineComponent: React.FC<RoundTimelineProps> = ({
       {/* Quick Stats */}
       <StatsGrid>
         <StatCard>
-          <StatLabel>Total Rounds</StatLabel>
-          <StatValue>{currentRound}</StatValue>
+          <StatLabel>Total Events</StatLabel>
+          <StatValue>{currentGroup}</StatValue>
         </StatCard>
         <StatCard>
-          <StatLabel>Events</StatLabel>
-          <StatValue>{totalEvents}</StatValue>
+          <StatLabel>Actions</StatLabel>
+          <StatValue>{totalActions}</StatValue>
         </StatCard>
         <StatCard>
           <StatLabel>Active Spells</StatLabel>
@@ -72,5 +72,5 @@ const RoundTimelineComponent: React.FC<RoundTimelineProps> = ({
   )
 }
 
-export const RoundTimeline = memo(RoundTimelineComponent)
-RoundTimeline.displayName = 'RoundTimeline'
+export const EventGroupTimeline = memo(RoundTimelineComponent)
+EventGroupTimeline.displayName = 'EventGroupTimeline'
