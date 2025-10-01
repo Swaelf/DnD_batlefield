@@ -1,4 +1,4 @@
-import React, { memo, useState, useMemo, useRef, useEffect } from 'react'
+import { memo, useState, useMemo, useRef, useEffect, type FC, type ChangeEvent } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -24,7 +24,7 @@ type ActionLogSidebarProps = {
   maxHeight?: string
 }
 
-const ActionLogSidebarComponent: React.FC<ActionLogSidebarProps> = ({
+const ActionLogSidebarComponent: FC<ActionLogSidebarProps> = ({
   isOpen = false,
   onClose,
   maxHeight = '100vh'
@@ -106,12 +106,12 @@ const ActionLogSidebarComponent: React.FC<ActionLogSidebarProps> = ({
   }, [actionHistory.length, sortOrder])
 
   // Handle search input
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
   }
 
   // Handle filter change
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleFilterChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setFilterType(e.target.value)
   }
 
