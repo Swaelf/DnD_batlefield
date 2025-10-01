@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, type FC } from 'react'
 import { Group, Line, Circle } from 'react-konva'
 import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
@@ -22,7 +22,7 @@ interface PolygonState {
   dragVertexIndex: number | null
 }
 
-export const AdvancedPolygonTool: React.FC<AdvancedPolygonToolProps> = ({
+export const AdvancedPolygonTool: FC<AdvancedPolygonToolProps> = ({
   isActive,
   gridSize,
   gridSnap,

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, type FC } from 'react'
 import { Group, Ellipse, Circle } from 'react-konva'
 import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
@@ -18,7 +18,7 @@ interface AdvancedCircleToolProps {
   onCancel?: () => void
 }
 
-export const AdvancedCircleTool: React.FC<AdvancedCircleToolProps> = ({
+export const AdvancedCircleTool: FC<AdvancedCircleToolProps> = ({
   isActive,
   gridSize,
   gridSnap,
@@ -309,4 +309,3 @@ export const AdvancedCircleTool: React.FC<AdvancedCircleToolProps> = ({
   )
 }
 
-export default AdvancedCircleTool

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState, type FC } from 'react'
 import { Group, Line, Circle } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
@@ -20,7 +20,7 @@ interface AdvancedPenToolProps {
   onCancel?: () => void
 }
 
-export const AdvancedPenTool: React.FC<AdvancedPenToolProps> = ({
+export const AdvancedPenTool: FC<AdvancedPenToolProps> = ({
   isActive,
   gridSize,
   gridSnap,
@@ -493,4 +493,3 @@ export const AdvancedPenTool: React.FC<AdvancedPenToolProps> = ({
   )
 }
 
-export default AdvancedPenTool

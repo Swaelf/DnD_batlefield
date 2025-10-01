@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, type FC } from 'react'
 import { Group, Text, Rect } from 'react-konva'
 import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
@@ -36,7 +36,7 @@ const FONT_FAMILIES = [
 
 const FONT_SIZES = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72]
 
-export const AdvancedTextTool: React.FC<AdvancedTextToolProps> = ({
+export const AdvancedTextTool: FC<AdvancedTextToolProps> = ({
   isActive,
   gridSize,
   gridSnap,
@@ -355,4 +355,3 @@ Esc: Cancel`}
   )
 }
 
-export default AdvancedTextTool

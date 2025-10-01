@@ -710,5 +710,3 @@ export const ActionCustomizationModal: FC<ActionCustomizationModalProps> = ({
     </Modal>
   )
 }
-
-export default ActionCustomizationModal

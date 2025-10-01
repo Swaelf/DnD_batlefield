@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, type FC } from 'react'
 import { Group, Line, Circle, Arrow } from 'react-konva'
 import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
@@ -16,7 +16,7 @@ interface AdvancedLineToolProps {
   onCancel?: () => void
 }
 
-export const AdvancedLineTool: React.FC<AdvancedLineToolProps> = ({
+export const AdvancedLineTool: FC<AdvancedLineToolProps> = ({
   isActive,
   gridSize,
   gridSnap,
@@ -296,4 +296,3 @@ export const AdvancedLineTool: React.FC<AdvancedLineToolProps> = ({
   )
 }
 
-export default AdvancedLineTool
