@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, type FC, type ReactNode, type ChangeEvent } from 'react'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
 import type { Point, Shape } from '@/types'
@@ -10,7 +10,7 @@ import { Shapes, ArrowRight, MessageSquare, Star, Hexagon, Triangle, Square, Cir
 interface ShapeTemplate {
   id: string
   name: string
-  icon: React.ReactNode
+  icon: ReactNode
   category: 'basic' | 'arrows' | 'callouts' | 'borders' | 'frames' | 'symbols'
   generator: (position: Point, size: number) => ShapeData
 }
@@ -28,7 +28,7 @@ interface ProfessionalShapeLibraryProps {
   onClose: () => void
 }
 
-export const ProfessionalShapeLibrary: React.FC<ProfessionalShapeLibraryProps> = ({
+export const ProfessionalShapeLibrary: FC<ProfessionalShapeLibraryProps> = ({
   isOpen,
   onClose
 }) => {
@@ -438,7 +438,7 @@ export const ProfessionalShapeLibrary: React.FC<ProfessionalShapeLibraryProps> =
             min="50"
             max="300"
             value={previewSize}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPreviewSize(Number(e.target.value))}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setPreviewSize(Number(e.target.value))}
             style={{
               width: '120px',
               accentColor: 'var(--colors-secondary)'
