@@ -4,7 +4,9 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 import path from 'path'
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // Configure base URL for GitHub Pages
+  base: mode === 'production' ? '/DnD_batlefield/' : '/',
   plugins: [
     react(),
     vanillaExtractPlugin()
@@ -113,4 +115,4 @@ export default defineConfig({
     // Enable modern browser optimizations
     target: 'es2020',
   },
-})
+}))
