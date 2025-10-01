@@ -10,3 +10,10 @@ export { ActionButtons } from './ActionButtons'
 export { LayerControls } from './LayerControls'
 export { LayerManagementPanel } from './LayerManagementPanel'
 export { ShapeStylePanel } from './ShapeStylePanel'
+
+// Token properties sub-components
+export { TokenInfoSection } from './TokenInfoSection'
+export { TokenLabelSettings } from './TokenLabelSettings'
+export { TokenHPIndicator } from './TokenHPIndicator'
+export { TokenHPControls } from './TokenHPControls'
+export { TokenQuickActions } from './TokenQuickActions'
