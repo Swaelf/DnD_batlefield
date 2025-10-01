@@ -30,7 +30,9 @@ createRoot(document.getElementById('root')!).render(
 
 // Register service worker and PWA functionality
 if (process.env.NODE_ENV === 'production') {
-  void swManager.register('/sw.js').then(() => {
+  // Use base path for GitHub Pages
+  const swPath = import.meta.env.BASE_URL + 'sw.js'
+  void swManager.register(swPath).then(() => {
   })
 }
 

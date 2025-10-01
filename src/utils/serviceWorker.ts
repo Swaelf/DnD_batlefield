@@ -45,8 +45,10 @@ class ServiceWorkerManager {
     }
 
     try {
+      // Use the same base path as the service worker URL
+      const scope = swUrl.substring(0, swUrl.lastIndexOf('/') + 1) || '/'
       const registration = await navigator.serviceWorker.register(swUrl, {
-        scope: '/'
+        scope: scope
       })
 
       this.swRegistration = registration
@@ -343,14 +345,6 @@ class ServiceWorkerManager {
 
 // Create singleton instance
 const swManager = new ServiceWorkerManager()
-
-// Auto-register service worker in production
-if (process.env.NODE_ENV === 'production') {
-  swManager.register().then((registration) => {
-    if (registration) {
-    }
-  })
-}
 
 // Setup install prompt
 swManager.setupInstallPrompt()
