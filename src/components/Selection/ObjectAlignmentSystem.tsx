@@ -21,7 +21,7 @@ interface AlignmentGuide {
   endY?: number
 }
 
-export const ObjectAlignmentSystem: React.FC<ObjectAlignmentSystemProps> = ({
+export const ObjectAlignmentSystem: FC<ObjectAlignmentSystemProps> = ({
   isActive,
   // selectedObjects, // Unused parameter
   // snapTolerance = 5, // Unused parameter

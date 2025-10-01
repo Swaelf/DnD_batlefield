@@ -13,7 +13,7 @@ type ActionButtonsProps = {
   onDelete: () => void
 }
 
-const ActionButtonsComponent: React.FC<ActionButtonsProps> = ({
+const ActionButtonsComponent: FC<ActionButtonsProps> = ({
   isVisible,
   onVisibilityToggle,
   onDuplicate,

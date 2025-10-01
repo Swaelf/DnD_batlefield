@@ -12,7 +12,7 @@ type PersistentAreaProps = {
   roundCreated: number
 }
 
-export const PersistentArea: React.FC<PersistentAreaProps> = ({
+export const PersistentArea: FC<PersistentAreaProps> = ({
   position,
   radius,
   color,

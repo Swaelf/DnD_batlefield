@@ -1,4 +1,4 @@
-import React from 'react'
+import { type FC } from 'react'
 import { Group, Path, Rect, Circle, Ellipse, Line as KonvaLine } from 'react-konva'
 import type { Shape } from '@/types/map'
 
@@ -13,7 +13,7 @@ type StaticObjectRendererProps = {
   onMouseLeave: (e: any) => void
 }
 
-export const StaticObjectRenderer: React.FC<StaticObjectRendererProps> = ({
+export const StaticObjectRenderer: FC<StaticObjectRendererProps> = ({
   shape,
   isSelected,
   isDraggable,

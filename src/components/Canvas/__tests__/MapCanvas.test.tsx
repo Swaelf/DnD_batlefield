@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import type { MutableRefObject } from 'react'
 import { MapCanvas } from '../MapCanvas'
 import type Konva from 'konva'
 
@@ -125,7 +126,7 @@ describe('MapCanvas', () => {
 
   describe('Stage Reference', () => {
     it('should handle stage ref when provided', () => {
-      const stageRef = { current: null } as React.MutableRefObject<Konva.Stage | null>
+      const stageRef = { current: null } as MutableRefObject<Konva.Stage | null>
       render(<MapCanvas {...defaultProps} stageRef={stageRef} />)
 
       // Stage ref should be set (after Konva initializes)

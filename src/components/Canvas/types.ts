@@ -3,13 +3,14 @@
  * Extracted from MapCanvas.tsx for better organization
  */
 
+import type { MutableRefObject } from 'react'
 import type { Token } from '@/types/token'
 import type { MapObject } from '@/types/map'
 
 export interface MapCanvasProps {
   readonly width: number
   readonly height: number
-  readonly stageRef?: React.MutableRefObject<import('konva').default.Stage | null>
+  readonly stageRef?: MutableRefObject<import('konva').default.Stage | null>
   readonly onMouseMove?: (position: { x: number; y: number }) => void
   readonly onZoomChange?: (zoom: number) => void
 }

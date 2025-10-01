@@ -11,7 +11,7 @@ interface MultiSelectToolProps {
   onSelectionComplete?: (selectedIds: string[]) => void
 }
 
-export const MultiSelectTool: React.FC<MultiSelectToolProps> = ({
+export const MultiSelectTool: FC<MultiSelectToolProps> = ({
   isActive,
   selectionMode,
   onSelectionComplete

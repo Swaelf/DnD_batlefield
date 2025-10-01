@@ -3,7 +3,7 @@
  * Top-screen navigation controls for zoom, grid snap, and map movement
  */
 
-import React from 'react'
+import { type FC } from 'react'
 import { ZoomIn, ZoomOut, Grid3x3, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2 } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -21,7 +21,7 @@ export type NavigationPanelProps = {
   onPanRight: () => void
 }
 
-export const NavigationPanel: React.FC<NavigationPanelProps> = ({
+export const NavigationPanel: FC<NavigationPanelProps> = ({
   zoom,
   onZoomIn,
   onZoomOut,

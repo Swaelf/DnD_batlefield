@@ -1,4 +1,4 @@
-import React from 'react'
+import { type FC } from 'react'
 import { Group, Circle, Rect, Line as KonvaLine, Shape } from 'react-konva'
 import type { StaticEffectTemplate } from './types'
 
@@ -8,7 +8,7 @@ type StaticEffectPreviewProps = {
   visible: boolean
 }
 
-export const StaticEffectPreview: React.FC<StaticEffectPreviewProps> = ({
+export const StaticEffectPreview: FC<StaticEffectPreviewProps> = ({
   template,
   position,
   visible

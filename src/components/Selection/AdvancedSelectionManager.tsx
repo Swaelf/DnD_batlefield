@@ -37,7 +37,7 @@ interface AdvancedSelectionManagerProps {
   onSelectionModeChange?: (mode: SelectionMode) => void
 }
 
-export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> = ({
+export const AdvancedSelectionManager: FC<AdvancedSelectionManagerProps> = ({
   onSelectionModeChange
 }) => {
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('pointer')

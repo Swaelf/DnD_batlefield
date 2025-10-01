@@ -22,7 +22,7 @@ export interface AdvancedSelectionToolProps {
   onCancel?: () => void
 }
 
-export const AdvancedSelectionTool: React.FC<AdvancedSelectionToolProps> = ({
+export const AdvancedSelectionTool: FC<AdvancedSelectionToolProps> = ({
   isActive,
   gridSize,
   gridSnap,

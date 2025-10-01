@@ -24,7 +24,7 @@ interface TransformControlsProps {
   onCancel?: () => void
 }
 
-export const TransformControls: React.FC<TransformControlsProps> = ({
+export const TransformControls: FC<TransformControlsProps> = ({
   isActive,
   selectedIds,
   gridSize,

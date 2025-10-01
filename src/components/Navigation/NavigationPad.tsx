@@ -3,7 +3,7 @@
  * Circular navigation control in bottom-left corner for map panning
  */
 
-import React from 'react'
+import { type FC } from 'react'
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -15,7 +15,7 @@ export type NavigationPadProps = {
   onPanRight: () => void
 }
 
-export const NavigationPad: React.FC<NavigationPadProps> = ({
+export const NavigationPad: FC<NavigationPadProps> = ({
   onPanUp,
   onPanDown,
   onPanLeft,

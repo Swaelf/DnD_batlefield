@@ -42,7 +42,7 @@ export interface AdvancedSelectionPanelProps {
   onRedoSelection?: () => void
 }
 
-export const AdvancedSelectionPanel: React.FC<AdvancedSelectionPanelProps> = ({
+export const AdvancedSelectionPanel: FC<AdvancedSelectionPanelProps> = ({
   selectionMode,
   selectionFilter,
   onSelectionModeChange,

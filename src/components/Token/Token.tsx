@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo, type FC } from 'react';
 import { Circle, Text, Group, Rect, Arc, Image } from 'react-konva';
 import type Konva from 'konva';
 import useImage from 'use-image';
@@ -26,7 +26,7 @@ type TokenProps = {
   isDraggable?: boolean;
 }
 
-const TokenComponent: React.FC<TokenProps> = ({
+const TokenComponent: FC<TokenProps> = ({
   token,
   gridSize,
   isSelected = false,

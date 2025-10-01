@@ -86,7 +86,7 @@ type SpeedControlsProps = {
   onSetAnimationSpeed: (speed: number) => void
 }
 
-const SpeedControlsComponent: React.FC<SpeedControlsProps> = ({
+const SpeedControlsComponent: FC<SpeedControlsProps> = ({
   animationSpeed,
   onSetAnimationSpeed
 }) => {

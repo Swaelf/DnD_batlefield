@@ -14,7 +14,7 @@ interface SelectionManagerProps {
   onSelectionChange?: (selectedIds: string[]) => void
 }
 
-export const AdvancedSelectionManager: React.FC<SelectionManagerProps> = ({
+export const AdvancedSelectionManager: FC<SelectionManagerProps> = ({
   isActive,
   gridSize,
   onSelectionChange

@@ -26,7 +26,7 @@ interface StoneBurst {
 /**
  * Simplified spell component that uses React state for animation
  */
-export const SimpleSpellComponent: React.FC<SimpleSpellComponentProps> = ({
+export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
   spell,
   isAnimating,
   onAnimationComplete
