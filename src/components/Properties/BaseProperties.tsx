@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC, type ChangeEvent } from 'react'
 import type { MapObject } from '@/types'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
@@ -14,7 +14,7 @@ type BasePropertiesProps = {
   onOpacityChange: (value: number) => void
 }
 
-const BasePropertiesComponent: React.FC<BasePropertiesProps> = ({
+const BasePropertiesComponent: FC<BasePropertiesProps> = ({
   selectedObject,
   localPosition,
   localRotation,
@@ -96,7 +96,7 @@ const BasePropertiesComponent: React.FC<BasePropertiesProps> = ({
             <Input
               type="number"
               value={Math.round(localPosition.x)}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onPositionChange('x', Number(e.target.value))}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onPositionChange('x', Number(e.target.value))}
               style={{ width: '100%' }}
             />
           </Box>
@@ -116,7 +116,7 @@ const BasePropertiesComponent: React.FC<BasePropertiesProps> = ({
             <Input
               type="number"
               value={Math.round(localPosition.y)}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onPositionChange('y', Number(e.target.value))}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onPositionChange('y', Number(e.target.value))}
               style={{ width: '100%' }}
             />
           </Box>
@@ -140,7 +140,7 @@ const BasePropertiesComponent: React.FC<BasePropertiesProps> = ({
             <input
               type="range"
               value={localRotation}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onRotationChange(Number(e.target.value))}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onRotationChange(Number(e.target.value))}
               min="0"
               max="360"
               style={{
@@ -186,7 +186,7 @@ const BasePropertiesComponent: React.FC<BasePropertiesProps> = ({
             <input
               type="range"
               value={localOpacity}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onOpacityChange(Number(e.target.value))}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onOpacityChange(Number(e.target.value))}
               min="0"
               max="1"
               step="0.1"

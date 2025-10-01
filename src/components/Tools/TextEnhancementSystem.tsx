@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from 'react'
+import { useCallback, useState, useRef, type FC, type ChangeEvent } from 'react'
 import { Group, Text as KonvaText, Rect } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
@@ -44,7 +44,7 @@ interface TextEnhancementSystemProps {
   onTextComplete?: (textObject: EnhancedTextObject) => void
 }
 
-export const TextEnhancementSystem: React.FC<TextEnhancementSystemProps> = ({
+export const TextEnhancementSystem: FC<TextEnhancementSystemProps> = ({
   isActive,
   onTextComplete
 }) => {
@@ -325,7 +325,7 @@ export const TextEnhancementSystem: React.FC<TextEnhancementSystemProps> = ({
             </Box>
             <textarea
               value={currentText}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCurrentText(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setCurrentText(e.target.value)}
               placeholder="Enter your text..."
               style={{
                 width: '100%',
@@ -413,7 +413,7 @@ export const TextEnhancementSystem: React.FC<TextEnhancementSystemProps> = ({
             </Box>
             <select
               value={textStyle.fontFamily}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateTextStyle({ fontFamily: e.target.value })}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => updateTextStyle({ fontFamily: e.target.value })}
               style={{
                 width: '100%',
                 padding: '6px 8px',
@@ -464,7 +464,7 @@ export const TextEnhancementSystem: React.FC<TextEnhancementSystemProps> = ({
               <input
                 type="number"
                 value={textStyle.fontSize}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTextStyle({ fontSize: Number(e.target.value) })}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updateTextStyle({ fontSize: Number(e.target.value) })}
                 min="8"
                 max="72"
                 style={{
@@ -502,7 +502,7 @@ export const TextEnhancementSystem: React.FC<TextEnhancementSystemProps> = ({
               <input
                 type="color"
                 value={textStyle.fill}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTextStyle({ fill: e.target.value })}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updateTextStyle({ fill: e.target.value })}
                 style={{
                   width: '100%',
                   height: '32px',
