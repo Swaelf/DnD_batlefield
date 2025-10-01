@@ -4,17 +4,17 @@
  * Only renders visible items for optimal performance
  */
 
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState, memo, type ReactNode, type CSSProperties, type UIEvent } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 
 interface VirtualScrollListProps<T> {
   items: T[]
   itemHeight: number
   containerHeight: number
-  renderItem: (item: T, index: number, isVisible: boolean) => React.ReactNode
+  renderItem: (item: T, index: number, isVisible: boolean) => ReactNode
   getItemKey: (item: T, index: number) => string | number
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   overscan?: number // Number of items to render outside visible area
   onScroll?: (scrollTop: number, visibleRange: { start: number; end: number }) => void
 }
@@ -53,7 +53,7 @@ export function VirtualScrollList<T>({
   }, [items, visibleRange.start, visibleRange.end])
 
   // Handle scroll events
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+  const handleScroll = useCallback((e: UIEvent<HTMLDivElement>) => {
     const newScrollTop = e.currentTarget.scrollTop
     setScrollTop(newScrollTop)
     onScroll?.(newScrollTop, visibleRange)
@@ -146,9 +146,9 @@ export function useVirtualScroll<T>(
 }
 
 // Optimized list item component with memoization
-export const VirtualListItem = React.memo<{
-  children: React.ReactNode
-  style?: React.CSSProperties
+export const VirtualListItem = memo<{
+  children: ReactNode
+  style?: CSSProperties
   className?: string
 }>(({ children, style, className }) => {
   return (

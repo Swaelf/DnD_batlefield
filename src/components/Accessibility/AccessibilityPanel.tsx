@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, type FC, type ChangeEvent } from 'react'
 import { useAccessibility } from '@/hooks/useAccessibility'
 import { Box, Text, Button } from '@/components/ui'
 import { Modal, Select } from '@/components/ui'
@@ -19,7 +19,7 @@ interface AccessibilityPanelProps {
   onClose: () => void
 }
 
-export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
+export const AccessibilityPanel: FC<AccessibilityPanelProps> = ({
   isOpen,
   onClose
 }) => {
@@ -183,7 +183,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
               <input
                 type="checkbox"
                 checked={preferences.highContrast}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePreference('highContrast', e.target.checked)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updatePreference('highContrast', e.target.checked)}
               />
             </Box>
 
@@ -223,7 +223,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
               <input
                 type="checkbox"
                 checked={preferences.reducedMotion}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePreference('reducedMotion', e.target.checked)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updatePreference('reducedMotion', e.target.checked)}
               />
             </Box>
           </Box>
@@ -256,7 +256,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
               <input
                 type="checkbox"
                 checked={preferences.keyboardNavigation}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePreference('keyboardNavigation', e.target.checked)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updatePreference('keyboardNavigation', e.target.checked)}
               />
             </Box>
           </Box>
@@ -289,7 +289,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
               <input
                 type="checkbox"
                 checked={preferences.screenReaderMode}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePreference('screenReaderMode', e.target.checked)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updatePreference('screenReaderMode', e.target.checked)}
               />
             </Box>
 
@@ -307,7 +307,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
               <input
                 type="checkbox"
                 checked={preferences.announcements}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePreference('announcements', e.target.checked)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updatePreference('announcements', e.target.checked)}
               />
             </Box>
 
@@ -320,7 +320,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
                 <input
                   type="text"
                   value={testMessage}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTestMessage(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setTestMessage(e.target.value)}
                   placeholder="Enter test message..."
                   style={{
                     flex: 1,
