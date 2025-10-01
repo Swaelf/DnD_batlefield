@@ -18,6 +18,11 @@ export { TokenHPIndicator } from './TokenHPIndicator'
 export { TokenHPControls } from './TokenHPControls'
 export { TokenQuickActions } from './TokenQuickActions'
 
+// Rotation control sub-components
+export { RotationDial } from './RotationDial'
+export { RotationInputControls } from './RotationInputControls'
+export { RotationSnapButtons } from './RotationSnapButtons'
+
 // Layer management sub-components
 export { LayerManagementHeader } from './LayerManagementHeader'
 export { LayerCreateForm } from './LayerCreateForm'
