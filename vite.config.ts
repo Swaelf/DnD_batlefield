@@ -4,9 +4,10 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 import path from 'path'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode, command }) => ({
   // Configure base URL for GitHub Pages
-  base: mode === 'production' ? '/DnD_batlefield/' : '/',
+  // Use the base path for both build and preview in production mode
+  base: command === 'serve' ? '/' : '/DnD_batlefield/',
   plugins: [
     react(),
     vanillaExtractPlugin()
