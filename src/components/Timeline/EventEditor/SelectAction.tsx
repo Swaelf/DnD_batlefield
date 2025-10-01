@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC } from 'react'
 import { Plus, Target, Move, Sparkles } from '@/utils/optimizedIcons'
 import { Box, Text, Button } from '@/components/primitives'
 import type { UnifiedAction } from '@/types/unifiedAction'
@@ -8,7 +8,7 @@ type SelectActionProps = {
   onSelectAction: () => void
 }
 
-const SelectActionComponent: React.FC<SelectActionProps> = ({
+const SelectActionComponent: FC<SelectActionProps> = ({
   selectedAction,
   onSelectAction
 }) => {
