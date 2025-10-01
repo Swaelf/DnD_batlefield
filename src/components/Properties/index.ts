@@ -23,6 +23,11 @@ export { RotationDial } from './RotationDial'
 export { RotationInputControls } from './RotationInputControls'
 export { RotationSnapButtons } from './RotationSnapButtons'
 
+// Shape style panel sub-components
+export { ColorPaletteSelector } from './ColorPaletteSelector'
+export { StyleSliderControl } from './StyleSliderControl'
+export { StylePresetButtons } from './StylePresetButtons'
+
 // Layer management sub-components
 export { LayerManagementHeader } from './LayerManagementHeader'
 export { LayerCreateForm } from './LayerCreateForm'
