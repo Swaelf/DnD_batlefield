@@ -3,7 +3,7 @@
  * Professional layer management system with drag-and-drop reordering
  */
 
-import React, { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, type FC, type ChangeEvent, type DragEvent, type KeyboardEvent } from 'react'
 import {
   Eye,
   EyeOff,
@@ -29,7 +29,7 @@ export type AdvancedLayerPanelProps = {
   onLayerChange?: (layerId: string) => void
 }
 
-export const AdvancedLayerPanel: React.FC<AdvancedLayerPanelProps> = ({ onLayerChange }) => {
+export const AdvancedLayerPanel: FC<AdvancedLayerPanelProps> = ({ onLayerChange }) => {
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null)
   const [expandedLayers, setExpandedLayers] = useState<Set<string>>(new Set())
   const [draggedLayer, setDraggedLayer] = useState<string | null>(null)
@@ -154,7 +154,7 @@ export const AdvancedLayerPanel: React.FC<AdvancedLayerPanelProps> = ({ onLayerC
     setDropTarget(null)
   }, [draggedLayer, dropTarget, layers, reorderLayers])
 
-  const handleDragOver = useCallback((e: React.DragEvent, layerId: string) => {
+  const handleDragOver = useCallback((e: DragEvent, layerId: string) => {
     e.preventDefault()
     setDropTarget(layerId)
   }, [])
@@ -300,9 +300,9 @@ export const AdvancedLayerPanel: React.FC<AdvancedLayerPanelProps> = ({ onLayerC
                   {isEditing ? (
                     <Input
                       value={editingName}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingName(e.target.value)}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setEditingName(e.target.value)}
                       onBlur={handleSaveLayerName}
-                      onKeyDown={(e: React.KeyboardEvent) => {
+                      onKeyDown={(e: KeyboardEvent) => {
                         if (e.key === 'Enter') {
                           handleSaveLayerName()
                         } else if (e.key === 'Escape') {

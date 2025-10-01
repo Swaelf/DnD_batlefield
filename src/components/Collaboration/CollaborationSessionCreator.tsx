@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import { useState, useCallback, type FC, type ChangeEvent } from 'react'
 import { Users, Crown } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
@@ -64,19 +64,19 @@ export const CollaborationSessionCreator = ({
     onClose()
   }, [resetForm, onClose])
 
-  const handleSessionNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSessionNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSessionName(e.target.value)
   }, [])
 
-  const handleMaxUsersChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleMaxUsersChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
     setMaxUsers(parseInt(e.target.value, 10))
   }, [])
 
-  const handleAllowAnonymousChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAllowAnonymousChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setAllowAnonymous(e.target.checked)
   }, [])
 
-  const handleRequireApprovalChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRequireApprovalChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setRequireApproval(e.target.checked)
   }, [])
 
