@@ -32,6 +32,7 @@ const TestingPanel = lazy(() => import('./testing/TestingPanel').then(m => ({ de
 import { Save, HelpCircle, Bug, Users, UserPlus, Activity, Accessibility, ZoomIn, ZoomOut, Maximize2, Grid3x3 } from '@/utils/optimizedIcons'
 import { Box, Text } from '@/components/ui'
 import { Button } from '@/components/primitives'
+import { vars } from '@/styles/theme.css'
 import { ContextMenuManager } from '@/components/ContextMenu/ContextMenuManager'
 import { initializePerformanceOptimizations } from '@/utils/performanceOptimizations'
 import { NavigationPad, EnvironmentToken } from '@/components/Navigation'
@@ -341,8 +342,8 @@ function App() {
             size="icon"
             title="Performance Dashboard (Ctrl+Shift+P)"
             style={{
-              color: performanceScore < 70 ? 'var(--colors-error)' :
-                     warnings.length > 0 ? 'var(--colors-warning)' : 'var(--colors-gray400)'
+              color: performanceScore < 70 ? vars.colors.error :
+                     warnings.length > 0 ? vars.colors.warning : vars.colors.gray400
             }}
           >
             <Activity size={16} />
@@ -355,7 +356,7 @@ function App() {
             size="icon"
             title="Accessibility Settings (Alt+A)"
             style={{
-              color: preferences.screenReaderMode ? 'var(--colors-primary)' : 'var(--colors-gray400)'
+              color: preferences.screenReaderMode ? vars.colors.primary : vars.colors.gray400
             }}
           >
             <Accessibility size={16} />
@@ -368,7 +369,7 @@ function App() {
             size="icon"
             title="Visual Testing (Ctrl+Shift+T)"
             style={{
-              color: showTesting ? 'var(--colors-primary)' : 'var(--colors-gray400)'
+              color: showTesting ? vars.colors.primary : vars.colors.gray400
             }}
           >
             <Bug size={16} />
@@ -434,23 +435,32 @@ function App() {
         </div>
 
         {/* Sidebar - Show appropriate panel based on current tool */}
-        <FeatureErrorBoundary name="Sidebar">
-          <Suspense fallback={<Box style={{ width: 320, backgroundColor: 'var(--colors-dndBlack)', borderLeft: '1px solid var(--colors-gray700)' }} />}>
-            {currentTool === 'token' ? (
-              <TokenLibrary />
-            ) : currentTool === 'staticObject' ? (
-              <StaticObjectLibrary />
-            ) : currentTool === 'staticEffect' ? (
-              <StaticEffectsPanel />
-            ) : currentTool === 'layers' ? (
-              <AdvancedLayerPanel />
-            ) : currentTool === 'select' ? (
-              <AdvancedSelectionManager />
-            ) : (
-              <PropertiesPanel />
-            )}
-          </Suspense>
-        </FeatureErrorBoundary>
+        <div style={{ width: 320, flexShrink: 0, display: 'flex', flexDirection: 'column', backgroundColor: vars.colors.dndBlack, borderLeft: `1px solid ${vars.colors.gray700}` }}>
+          <FeatureErrorBoundary
+            name="Sidebar"
+            onError={(error, errorInfo, errorId) => {
+              console.error('Sidebar error:', error)
+              console.error('Error info:', errorInfo)
+              console.error('Error ID:', errorId)
+            }}
+          >
+            <Suspense fallback={<Box style={{ width: '100%', height: '100%', backgroundColor: vars.colors.dndBlack }} />}>
+              {currentTool === 'token' ? (
+                <TokenLibrary />
+              ) : currentTool === 'staticObject' ? (
+                <StaticObjectLibrary />
+              ) : currentTool === 'staticEffect' ? (
+                <StaticEffectsPanel />
+              ) : currentTool === 'layers' ? (
+                <AdvancedLayerPanel />
+              ) : currentTool === 'select' ? (
+                <AdvancedSelectionManager />
+              ) : (
+                <PropertiesPanel />
+              )}
+            </Suspense>
+          </FeatureErrorBoundary>
+        </div>
       </div>
 
       {/* Status Bar */}

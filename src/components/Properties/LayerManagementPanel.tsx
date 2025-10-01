@@ -8,32 +8,43 @@ import { Button } from '@/components/primitives/ButtonVE'
 import { Input } from '@/components/ui/Input'
 
 export const LayerManagementPanel: FC = () => {
-  const {
-    layers,
-    activeLayerId,
-    setActiveLayer,
-    toggleLayerVisibility,
-    toggleLayerLock,
-    createLayer,
-    deleteLayer,
-    moveLayer
-  } = useLayerStore()
+  try {
+    const {
+      layers,
+      activeLayerId,
+      setActiveLayer,
+      toggleLayerVisibility,
+      toggleLayerLock,
+      createLayer,
+      deleteLayer,
+      moveLayer
+    } = useLayerStore()
 
-  const selectedObjects = useMapStore(state => state.selectedObjects)
-  const updateObject = useMapStore(state => state.updateObject)
+    const selectedObjects = useMapStore(state => state.selectedObjects)
+    const updateObject = useMapStore(state => state.updateObject)
 
-  const [showCreateLayer, setShowCreateLayer] = useState(false)
-  const [newLayerName, setNewLayerName] = useState('')
+    const [showCreateLayer, setShowCreateLayer] = useState(false)
+    const [newLayerName, setNewLayerName] = useState('')
 
-  // Get object count per layer
-  const currentMap = useMapStore(state => state.currentMap)
-  const getLayerObjectCount = (layerId: string) => {
-    if (!currentMap) return 0
-    return currentMap.objects.filter(obj => obj.layerId === layerId).length
-  }
+    // Get object count per layer
+    const currentMap = useMapStore(state => state.currentMap)
+    const getLayerObjectCount = (layerId: string) => {
+      if (!currentMap) return 0
+      return currentMap.objects.filter(obj => obj.layerId === layerId).length
+    }
 
-  // Sort layers by zIndex for display
-  const sortedLayers = [...layers].sort((a, b) => b.zIndex - a.zIndex)
+    // Ensure layers is an array before sorting
+    if (!Array.isArray(layers)) {
+      console.error('LayerManagementPanel: layers is not an array', layers)
+      return (
+        <Box padding={3}>
+          <Text size="sm" color="gray400">Layer system unavailable</Text>
+        </Box>
+      )
+    }
+
+    // Sort layers by zIndex for display
+    const sortedLayers = [...layers].sort((a, b) => b.zIndex - a.zIndex)
 
   const handleCreateLayer = () => {
     if (newLayerName.trim()) {
@@ -408,4 +419,12 @@ export const LayerManagementPanel: FC = () => {
       )}
     </Box>
   )
+  } catch (error) {
+    console.error('LayerManagementPanel error:', error)
+    return (
+      <Box padding={3}>
+        <Text size="sm" color="gray400">Layer panel error</Text>
+      </Box>
+    )
+  }
 }

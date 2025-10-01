@@ -79,6 +79,7 @@ export type EventCreationState = {
   setPosition: (type: 'from' | 'to', position: Position) => void
   setPathPreview: (path: Position[]) => void
   completePositionPicking: () => void
+  exitPickingMode: () => void  // Exit picking mode but keep modal open
   getTokenExpectedPosition: (tokenId?: string | null) => Position | null
 }
 

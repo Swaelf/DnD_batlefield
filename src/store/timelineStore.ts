@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer'
 import type { TimelineStore } from '../types'
 import type { TimelineAction } from '../types'
 import useMapStore from './mapStore'
+import useEventCreationStore from './eventCreationStore'
 
 const useTimelineStore = create<TimelineStore>()(
   immer((set, get) => ({
@@ -11,9 +12,16 @@ const useTimelineStore = create<TimelineStore>()(
     isInCombat: false,
     animationSpeed: 1,
 
-    startCombat: (mapId) => set((state) => {
-      state.isInCombat = true
-      state.currentEvent = 1
+    startCombat: (mapId) => {
+      // Clean up any event creation state when starting combat
+      const eventCreationStore = useEventCreationStore.getState()
+      if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
+        eventCreationStore.cancelEventCreation()
+      }
+
+      set((state) => {
+        state.isInCombat = true
+        state.currentEvent = 1
 
       if (!state.timeline) {
         state.timeline = {
@@ -33,21 +41,36 @@ const useTimelineStore = create<TimelineStore>()(
       } else {
         state.timeline.isActive = true
       }
-    }),
+    })
+    },
 
-    endCombat: () => set((state) => {
-      state.isInCombat = false
-      if (state.timeline) {
-        state.timeline.isActive = false
-        // Move all events to history
-        state.timeline.history.push(...state.timeline.events)
-        state.timeline.events = []
+    endCombat: () => {
+      // Clean up any event creation state when ending combat
+      const eventCreationStore = useEventCreationStore.getState()
+      if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
+        eventCreationStore.cancelEventCreation()
       }
-    }),
+
+      set((state) => {
+        state.isInCombat = false
+        if (state.timeline) {
+          state.timeline.isActive = false
+          // Move all events to history
+          state.timeline.history.push(...state.timeline.events)
+          state.timeline.events = []
+        }
+      })
+    },
 
     nextEvent: async () => {
       const { timeline, currentEvent } = get()
       if (!timeline || !timeline.isActive) return
+
+      // Clean up any lingering event creation state before advancing
+      const eventCreationStore = useEventCreationStore.getState()
+      if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
+        eventCreationStore.cancelEventCreation()
+      }
 
       // Create snapshot before executing actions
       const mapStore = useMapStore.getState()
@@ -104,6 +127,12 @@ const useTimelineStore = create<TimelineStore>()(
       const { timeline, currentEvent } = get()
       if (!timeline || currentEvent <= 1) return
 
+      // Clean up any lingering event creation state before navigating
+      const eventCreationStore = useEventCreationStore.getState()
+      if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
+        eventCreationStore.cancelEventCreation()
+      }
+
       // Get the snapshot from the current event (which was stored before execution)
       const currentEventData = timeline.events.find(e => e.number === currentEvent)
       const snapshot = currentEventData?.snapshot
@@ -152,6 +181,12 @@ const useTimelineStore = create<TimelineStore>()(
     },
 
     goToEvent: (eventNumber) => {
+      // Clean up any lingering event creation state before jumping
+      const eventCreationStore = useEventCreationStore.getState()
+      if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
+        eventCreationStore.cancelEventCreation()
+      }
+
       set((state) => {
         state.currentEvent = eventNumber
         if (state.timeline) {

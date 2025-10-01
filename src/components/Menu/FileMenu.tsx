@@ -37,6 +37,7 @@ import {
   MenuStatus,
   MenuGroup,
 } from '@/components/ui/Menu'
+import { vars } from '@/styles/theme.css'
 
 type FileMenuProps = {
   stageRef?: RefObject<Konva.Stage>
@@ -173,7 +174,7 @@ export const FileMenu: FC<FileMenuProps> = ({ stageRef }) => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
-                color: isSaving ? 'var(--colors-warning)' : 'var(--colors-success)'
+                color: isSaving ? vars.colors.warning : vars.colors.success
               }}
             >
               <Clock size={12} />
@@ -284,7 +285,7 @@ export const FileMenu: FC<FileMenuProps> = ({ stageRef }) => {
             size="sm"
             style={{
               marginBottom: '8px',
-              color: 'var(--colors-gray400)'
+              color: vars.colors.gray400
             }}
           >
             Map Name

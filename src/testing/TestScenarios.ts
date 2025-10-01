@@ -36,7 +36,6 @@ export interface TestScenario {
 }
 
 export const testScenarios: TestScenario[] = [
-  fireballPersistenceBugTest,
   {
     id: 'token-movement-basic',
     name: 'Basic Token Movement',

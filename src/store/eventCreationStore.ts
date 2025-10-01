@@ -58,7 +58,13 @@ const useEventCreationStore = create<EventCreationState>()(
 
     startEventCreation: (tokenId: string) => set((state) => {
       // Save current tool mode before switching to 'select'
-      state.savedToolMode = useToolStore.getState().currentTool
+      const currentTool = useToolStore.getState().currentTool
+      // Don't save certain transient tools - default to select for better UX
+      if (currentTool === 'measure' || currentTool === 'eraser' || currentTool === 'pan') {
+        state.savedToolMode = 'select'
+      } else {
+        state.savedToolMode = currentTool
+      }
 
       // Switch to select tool to avoid interference
       useToolStore.getState().setTool('select' as ToolType)
@@ -84,22 +90,40 @@ const useEventCreationStore = create<EventCreationState>()(
     cancelEventCreation: () => set((state) => {
       // Restore saved tool mode
       if (state.savedToolMode) {
-        useToolStore.getState().setTool(state.savedToolMode as ToolType)
+        // Ensure we restore a valid tool, defaulting to select if needed
+        const toolToRestore = state.savedToolMode
+        useToolStore.getState().setTool(toolToRestore as ToolType)
+        state.savedToolMode = null
+      } else {
+        // If no saved tool mode, default to select
+        useToolStore.getState().setTool('select' as ToolType)
       }
 
+      // Clear all event creation state
       state.isCreatingEvent = false
       state.isPicking = null
       state.selectedTokenId = null
       state.fromPosition = null
       state.toPosition = null
       state.pathPreview = []
-      state.savedToolMode = null
+
+      // Also ensure measurement tool state is cleared if it was active
+      const toolState = useToolStore.getState()
+      if (toolState.measurementPoints.length > 0) {
+        toolState.clearMeasurementPoints()
+      }
     }),
 
     startPickingPosition: (type: 'from' | 'to') => set((state) => {
       // If not already in event creation mode, initialize it
       if (!state.isCreatingEvent) {
-        state.savedToolMode = useToolStore.getState().currentTool
+        const currentTool = useToolStore.getState().currentTool
+        // Don't save certain transient tools - default to select for better UX
+        if (currentTool === 'measure' || currentTool === 'eraser' || currentTool === 'pan') {
+          state.savedToolMode = 'select'
+        } else {
+          state.savedToolMode = currentTool
+        }
         useToolStore.getState().setTool('select' as ToolType)
         useToolStore.getState().resetDrawingState()
         state.isCreatingEvent = true
@@ -111,7 +135,13 @@ const useEventCreationStore = create<EventCreationState>()(
     startPickingToken: () => set((state) => {
       // If not already in event creation mode, initialize it
       if (!state.isCreatingEvent) {
-        state.savedToolMode = useToolStore.getState().currentTool
+        const currentTool = useToolStore.getState().currentTool
+        // Don't save certain transient tools - default to select for better UX
+        if (currentTool === 'measure' || currentTool === 'eraser' || currentTool === 'pan') {
+          state.savedToolMode = 'select'
+        } else {
+          state.savedToolMode = currentTool
+        }
         useToolStore.getState().setTool('select' as ToolType)
         useToolStore.getState().resetDrawingState()
         state.isCreatingEvent = true
@@ -123,19 +153,26 @@ const useEventCreationStore = create<EventCreationState>()(
     setPickingMode: (mode: 'from' | 'to' | 'token' | 'targetToken' | null) => set((state) => {
       // If entering picking mode (not null) and not already in event creation, initialize it
       if (mode !== null && !state.isCreatingEvent) {
-        state.savedToolMode = useToolStore.getState().currentTool
+        const currentTool = useToolStore.getState().currentTool
+        // Don't save certain transient tools - default to select for better UX
+        if (currentTool === 'measure' || currentTool === 'eraser' || currentTool === 'pan') {
+          state.savedToolMode = 'select'
+        } else {
+          state.savedToolMode = currentTool
+        }
         useToolStore.getState().setTool('select' as ToolType)
         useToolStore.getState().resetDrawingState()
         state.isCreatingEvent = true
       }
 
-      // If exiting picking mode (null) and in event creation, restore tool
-      if (mode === null && state.isCreatingEvent) {
+      // If exiting picking mode (null), always restore tool and clean up
+      // This ensures preview modes are restored even if modal is still open
+      if (mode === null) {
         if (state.savedToolMode) {
           useToolStore.getState().setTool(state.savedToolMode as ToolType)
+          state.savedToolMode = null
         }
         state.isCreatingEvent = false
-        state.savedToolMode = null
       }
 
       state.isPicking = mode
@@ -165,6 +202,24 @@ const useEventCreationStore = create<EventCreationState>()(
 
     completePositionPicking: () => set((state) => {
       state.isPicking = null
+
+      // If we're done picking and not in the middle of creating an event,
+      // restore the previous tool mode and clean up
+      if (!state.selectedTokenId && !state.fromPosition && !state.toPosition) {
+        if (state.savedToolMode) {
+          useToolStore.getState().setTool(state.savedToolMode as ToolType)
+        }
+        state.isCreatingEvent = false
+        state.savedToolMode = null
+      }
+    }),
+
+    exitPickingMode: () => set((state) => {
+      // Only exit picking mode, keep event creation active
+      // This is used when user presses Escape to return to modal
+      state.isPicking = null
+      // Don't clear isCreatingEvent so modal stays active
+      // Don't restore tool mode yet - we're still in event creation
     }),
 
 

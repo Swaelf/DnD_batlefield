@@ -3,11 +3,13 @@ import { useHotkeys } from 'react-hotkeys-hook'
 import useToolStore from '@store/toolStore'
 import useMapStore from '@store/mapStore'
 import { useHistoryStore } from '@store/historyStore'
+import useEventCreationStore from '@store/eventCreationStore'
 
 export const useKeyboardShortcuts = () => {
   const { setTool, currentTool, clearMeasurementPoints } = useToolStore()
   const { deleteSelected, duplicateSelected, clearSelection, selectedObjects, currentMap, loadMap, toggleGridSnap, toggleGridVisibility, selectMultiple } = useMapStore()
   const historyStore = useHistoryStore()
+  const { isPicking, exitPickingMode } = useEventCreationStore()
 
   // Tool shortcuts
   useHotkeys('v', () => setTool('select'), [setTool])
@@ -30,14 +32,21 @@ export const useKeyboardShortcuts = () => {
     }
   }, [selectedObjects, deleteSelected])
 
-  // Clear selection or measurement points
+  // Clear selection, measurement points, or exit event picking mode
   useHotkeys('escape', () => {
+    // If we're in event creation picking mode, exit it but keep modal open
+    if (isPicking) {
+      exitPickingMode()
+      return
+    }
+
+    // Otherwise handle normal escape behavior
     if (currentTool === 'measure') {
       clearMeasurementPoints()
     } else {
       clearSelection()
     }
-  }, [clearSelection, clearMeasurementPoints, currentTool])
+  }, [clearSelection, clearMeasurementPoints, currentTool, isPicking, exitPickingMode])
 
   // Select all objects
   useHotkeys('ctrl+a, cmd+a', () => {

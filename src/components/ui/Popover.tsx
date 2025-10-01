@@ -1,6 +1,7 @@
 import { useState, useCallback, forwardRef, createElement, type ReactNode, type CSSProperties, type MouseEvent, type UIEvent } from 'react'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { X } from '@/utils/optimizedIcons'
+import { vars } from '@/styles/theme.css'
 
 // Popover event handlers
 type PopoverEventHandlers = {
@@ -106,8 +107,8 @@ export const Popover = ({
   // Content styles
   const contentStyles: CSSProperties = {
     borderRadius: '12px',
-    backgroundColor: 'var(--surface)',
-    border: '1px solid var(--gray700)',
+    backgroundColor: vars.colors.surface,
+    border: `1px solid ${vars.colors.gray700}`,
     animationDuration: '200ms',
     animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
     willChange: 'transform, opacity',
@@ -120,8 +121,8 @@ export const Popover = ({
 
   // Arrow styles
   const arrowStyles: CSSProperties = {
-    fill: 'var(--surface)',
-    stroke: 'var(--gray700)',
+    fill: vars.colors.surface,
+    stroke: vars.colors.gray700,
     strokeWidth: 1,
   }
 
@@ -230,7 +231,7 @@ export const PopoverHeader = forwardRef<HTMLDivElement, PopoverHeaderProps>(
       justifyContent: 'space-between',
       marginBottom: '16px',
       paddingBottom: '12px',
-      borderBottom: '1px solid var(--gray700)',
+      borderBottom: `1px solid ${vars.colors.gray700}`,
       ...style,
     }
 
@@ -259,7 +260,7 @@ export const PopoverTitle = forwardRef<HTMLHeadingElement, PopoverTitleProps>(
       margin: 0,
       fontSize: '18px',
       fontWeight: '600',
-      color: 'var(--gray100)',
+      color: vars.colors.gray100,
       fontFamily: 'system-ui, sans-serif',
       lineHeight: 1.2,
       ...style,
@@ -292,7 +293,7 @@ export type PopoverBodyProps = {
 export const PopoverBody = forwardRef<HTMLDivElement, PopoverBodyProps>(
   ({ children, scrollable = false, className, style, onScroll }, ref) => {
     const bodyStyles: CSSProperties = {
-      color: 'var(--gray200)',
+      color: vars.colors.gray200,
       fontSize: '14px',
       lineHeight: 1.5,
       ...(scrollable && {
@@ -343,7 +344,7 @@ export const PopoverFooter = forwardRef<HTMLDivElement, PopoverFooterProps>(
       gap: '12px',
       marginTop: '16px',
       paddingTop: '12px',
-      borderTop: '1px solid var(--gray700)',
+      borderTop: `1px solid ${vars.colors.gray700}`,
       ...style,
     }
 
@@ -375,7 +376,7 @@ export const PopoverCloseButton = forwardRef<HTMLButtonElement, PopoverCloseButt
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: 'transparent',
-      color: 'var(--gray400)',
+      color: vars.colors.gray400,
       border: 'none',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
@@ -392,20 +393,20 @@ export const PopoverCloseButton = forwardRef<HTMLButtonElement, PopoverCloseButt
         className={className}
         aria-label={ariaLabel}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--gray800)'
-          e.currentTarget.style.color = 'var(--gray200)'
+          e.currentTarget.style.backgroundColor = vars.colors.gray800
+          e.currentTarget.style.color = vars.colors.gray200
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent'
-          e.currentTarget.style.color = 'var(--gray400)'
+          e.currentTarget.style.color = vars.colors.gray400
         }}
         onFocus={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--gray700)'
-          e.currentTarget.style.color = 'var(--gray100)'
+          e.currentTarget.style.backgroundColor = vars.colors.gray700
+          e.currentTarget.style.color = vars.colors.gray100
         }}
         onBlur={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent'
-          e.currentTarget.style.color = 'var(--gray400)'
+          e.currentTarget.style.color = vars.colors.gray400
         }}
       >
         <X size={14} />
@@ -446,8 +447,8 @@ export const Dropdown = ({
     display: 'flex',
     flexDirection: 'column',
     borderRadius: '12px',
-    backgroundColor: 'var(--surface)',
-    border: '1px solid var(--gray700)',
+    backgroundColor: vars.colors.surface,
+    border: `1px solid ${vars.colors.gray700}`,
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     zIndex: 1000,
     outline: 'none',
@@ -503,13 +504,13 @@ export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
   ) => {
     const variantStyles = {
       default: {
-        color: 'var(--gray200)',
-        hoverBackgroundColor: 'var(--gray700)',
-        hoverColor: 'var(--gray100)',
+        color: vars.colors.gray200,
+        hoverBackgroundColor: vars.colors.gray700,
+        hoverColor: vars.colors.gray100,
       },
       destructive: {
-        color: 'var(--error)',
-        hoverBackgroundColor: 'var(--error)',
+        color: vars.colors.error,
+        hoverBackgroundColor: vars.colors.error,
         hoverColor: 'white',
       },
     }
@@ -579,7 +580,7 @@ export const MenuSeparator = forwardRef<HTMLDivElement, MenuSeparatorProps>(
   ({ className, style }, ref) => {
     const separatorStyles: CSSProperties = {
       height: '1px',
-      backgroundColor: 'var(--gray700)',
+      backgroundColor: vars.colors.gray700,
       margin: '4px 0',
       ...style,
     }

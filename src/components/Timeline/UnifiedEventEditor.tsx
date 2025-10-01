@@ -50,6 +50,7 @@ const UnifiedEventEditorComponent = ({
   const executeAction = useUnifiedActionStore(state => state.executeAction)
   const pauseAnimations = useAnimationStore(state => state.pauseAnimations)
   const resumeAnimations = useAnimationStore(state => state.resumeAnimations)
+  const cancelEventCreation = useEventCreationStore(state => state.cancelEventCreation)
 
   const [selectedToken, setSelectedToken] = useState<string>(initialTokenId || '')
   const [selectedAction, setSelectedAction] = useState<UnifiedAction | null>(null)
@@ -61,6 +62,14 @@ const UnifiedEventEditorComponent = ({
   const [isTemporarilyHidden, setIsTemporarilyHidden] = useState(false)
   const [targetingMode, setTargetingMode] = useState<'position' | 'token' | null>(null) // Track user's explicit targeting choice
   const [useEnvironmentToken, setUseEnvironmentToken] = useState(false)
+
+  // Handle modal close with proper cleanup
+  const handleClose = () => {
+    // Clean up event creation state to restore preview modes
+    cancelEventCreation()
+    // Call the original onClose
+    onClose()
+  }
 
   // Fixed values
   const targetEvent = currentEvent // Events execute in current event, not next
@@ -154,6 +163,15 @@ const UnifiedEventEditorComponent = ({
     }
   }, [pickedTokenId, isPicking, isTemporarilyHidden, tokens])
 
+  // Handle when picking is cancelled (e.g., by pressing Escape)
+  useEffect(() => {
+    // If modal was temporarily hidden for picking, but picking is now null (cancelled)
+    // then show the modal again
+    if (isTemporarilyHidden && !isPicking) {
+      setIsTemporarilyHidden(false)
+    }
+  }, [isPicking, isTemporarilyHidden])
+
   const handleActionSelect = (action: UnifiedAction) => {
     setSelectedAction(action)
 
@@ -240,6 +258,9 @@ const UnifiedEventEditorComponent = ({
     // Reset form
     setSelectedAction(null)
     setTargetingMode(null) // Reset targeting mode for next event
+
+    // Clean up event creation state to restore preview modes
+    cancelEventCreation()
   }
 
   // Helper to map unified action types to legacy event types
@@ -368,7 +389,7 @@ const UnifiedEventEditorComponent = ({
     <>
       <Modal
         isOpen={isOpen && !isTemporarilyHidden}
-        onClose={onClose}
+        onClose={handleClose}
         size="xl"
         padding="none"
         style={{
@@ -536,7 +557,7 @@ const UnifiedEventEditorComponent = ({
 
           {/* Close Button */}
           <Button
-            onClick={onClose}
+            onClick={handleClose}
             variant="secondary"
             style={{
               backgroundColor: '#374151',

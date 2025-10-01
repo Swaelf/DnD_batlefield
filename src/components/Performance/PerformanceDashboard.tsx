@@ -4,6 +4,7 @@ import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
 import { Modal } from '@/components/ui/Modal'
+import { vars } from '@/styles/theme.css'
 import {
   Activity,
   Cpu,
@@ -104,9 +105,9 @@ export const PerformanceDashboard = ({
   }, [history.samples])
 
   const getScoreColor = useCallback((score: number): string => {
-    if (score >= 80) return 'var(--colors-success)'
-    if (score >= 60) return 'var(--colors-warning)'
-    return 'var(--colors-error)'
+    if (score >= 80) return vars.colors.success
+    if (score >= 60) return vars.colors.warning
+    return vars.colors.error
   }, [])
 
   const getScoreLabel = useCallback((score: number): string => {
@@ -143,7 +144,7 @@ export const PerformanceDashboard = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: 'var(--colors-gray800)',
+            backgroundColor: vars.colors.gray800,
             borderRadius: '8px',
             border: `2px solid ${getScoreColor(score)}`
           }}
@@ -163,7 +164,7 @@ export const PerformanceDashboard = ({
             <Text
               variant="body"
               size="sm"
-              style={{ color: 'var(--colors-gray400)' }}
+              style={{ color: vars.colors.gray400 }}
             >
               Performance Score - {getScoreLabel(score)}
             </Text>
@@ -176,7 +177,7 @@ export const PerformanceDashboard = ({
             <Box
               padding={3}
               style={{
-                backgroundColor: 'var(--colors-gray900)',
+                backgroundColor: vars.colors.gray900,
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
@@ -188,7 +189,7 @@ export const PerformanceDashboard = ({
                 <Text variant="body" size="lg" style={{ fontWeight: '600' }}>
                   {metrics.fps}
                 </Text>
-                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
+                <Text variant="body" size="xs" style={{ color: vars.colors.gray400 }}>
                   FPS
                 </Text>
               </Box>
@@ -197,7 +198,7 @@ export const PerformanceDashboard = ({
             <Box
               padding={3}
               style={{
-                backgroundColor: 'var(--colors-gray900)',
+                backgroundColor: vars.colors.gray900,
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
@@ -209,7 +210,7 @@ export const PerformanceDashboard = ({
                 <Text variant="body" size="lg" style={{ fontWeight: '600' }}>
                   {metrics.memoryUsage}MB
                 </Text>
-                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
+                <Text variant="body" size="xs" style={{ color: vars.colors.gray400 }}>
                   Memory
                 </Text>
               </Box>
@@ -218,7 +219,7 @@ export const PerformanceDashboard = ({
             <Box
               padding={3}
               style={{
-                backgroundColor: 'var(--colors-gray900)',
+                backgroundColor: vars.colors.gray900,
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
@@ -230,7 +231,7 @@ export const PerformanceDashboard = ({
                 <Text variant="body" size="lg" style={{ fontWeight: '600' }}>
                   {metrics.renderTime.toFixed(2)}ms
                 </Text>
-                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
+                <Text variant="body" size="xs" style={{ color: vars.colors.gray400 }}>
                   Render Time
                 </Text>
               </Box>
@@ -239,7 +240,7 @@ export const PerformanceDashboard = ({
             <Box
               padding={3}
               style={{
-                backgroundColor: 'var(--colors-gray900)',
+                backgroundColor: vars.colors.gray900,
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
@@ -251,7 +252,7 @@ export const PerformanceDashboard = ({
                 <Text variant="body" size="lg" style={{ fontWeight: '600' }}>
                   {metrics.canvasObjects}
                 </Text>
-                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>
+                <Text variant="body" size="xs" style={{ color: vars.colors.gray400 }}>
                   Objects
                 </Text>
               </Box>
@@ -263,7 +264,7 @@ export const PerformanceDashboard = ({
         <Box
           padding={3}
           style={{
-            backgroundColor: 'var(--colors-gray900)',
+            backgroundColor: vars.colors.gray900,
             borderRadius: '8px'
           }}
         >
@@ -288,13 +289,13 @@ export const PerformanceDashboard = ({
                   style={{
                     width: '12px',
                     height: '2px',
-                    backgroundColor: 'var(--colors-success)'
+                    backgroundColor: vars.colors.success
                   }}
                 />
                 <Text
                   variant="body"
                   size="xs"
-                  style={{ color: 'var(--colors-gray400)' }}
+                  style={{ color: vars.colors.gray400 }}
                 >
                   FPS
                 </Text>
@@ -304,13 +305,13 @@ export const PerformanceDashboard = ({
                   style={{
                     width: '12px',
                     height: '2px',
-                    backgroundColor: 'var(--colors-warning)'
+                    backgroundColor: vars.colors.warning
                   }}
                 />
                 <Text
                   variant="body"
                   size="xs"
-                  style={{ color: 'var(--colors-gray400)' }}
+                  style={{ color: vars.colors.gray400 }}
                 >
                   Memory
                 </Text>
@@ -333,7 +334,7 @@ export const PerformanceDashboard = ({
               padding={2}
               style={{
                 textAlign: 'center',
-                backgroundColor: 'var(--colors-gray800)',
+                backgroundColor: vars.colors.gray800,
                 borderRadius: '4px'
               }}
             >
@@ -342,7 +343,7 @@ export const PerformanceDashboard = ({
                 size="lg"
                 style={{
                   fontWeight: '600',
-                  color: 'var(--colors-success)'
+                  color: vars.colors.success
                 }}
               >
                 {history.averageFPS}
@@ -350,7 +351,7 @@ export const PerformanceDashboard = ({
               <Text
                 variant="body"
                 size="xs"
-                style={{ color: 'var(--colors-gray400)' }}
+                style={{ color: vars.colors.gray400 }}
               >
                 Avg FPS
               </Text>
@@ -360,7 +361,7 @@ export const PerformanceDashboard = ({
               padding={2}
               style={{
                 textAlign: 'center',
-                backgroundColor: 'var(--colors-gray800)',
+                backgroundColor: vars.colors.gray800,
                 borderRadius: '4px'
               }}
             >
@@ -369,7 +370,7 @@ export const PerformanceDashboard = ({
                 size="lg"
                 style={{
                   fontWeight: '600',
-                  color: 'var(--colors-warning)'
+                  color: vars.colors.warning
                 }}
               >
                 {history.peakMemory}MB
@@ -377,7 +378,7 @@ export const PerformanceDashboard = ({
               <Text
                 variant="body"
                 size="xs"
-                style={{ color: 'var(--colors-gray400)' }}
+                style={{ color: vars.colors.gray400 }}
               >
                 Peak Memory
               </Text>
@@ -387,7 +388,7 @@ export const PerformanceDashboard = ({
               padding={2}
               style={{
                 textAlign: 'center',
-                backgroundColor: 'var(--colors-gray800)',
+                backgroundColor: vars.colors.gray800,
                 borderRadius: '4px'
               }}
             >
@@ -396,7 +397,7 @@ export const PerformanceDashboard = ({
                 size="lg"
                 style={{
                   fontWeight: '600',
-                  color: 'var(--colors-primary)'
+                  color: vars.colors.primary
                 }}
               >
                 {history.averageRenderTime}ms
@@ -404,7 +405,7 @@ export const PerformanceDashboard = ({
               <Text
                 variant="body"
                 size="xs"
-                style={{ color: 'var(--colors-gray400)' }}
+                style={{ color: vars.colors.gray400 }}
               >
                 Avg Render
               </Text>
@@ -417,8 +418,8 @@ export const PerformanceDashboard = ({
           <Box
             padding={3}
             style={{
-              backgroundColor: 'var(--colors-gray900)',
-              border: '1px solid var(--colors-warning)',
+              backgroundColor: vars.colors.gray900,
+              border: `1px solid ${vars.colors.warning}`,
               borderRadius: '8px'
             }}
           >
@@ -436,7 +437,7 @@ export const PerformanceDashboard = ({
                 size="sm"
                 style={{
                   fontWeight: '500',
-                  color: 'var(--colors-warning)'
+                  color: vars.colors.warning
                 }}
               >
                 Performance Warnings
@@ -448,7 +449,7 @@ export const PerformanceDashboard = ({
                 variant="body"
                 size="xs"
                 style={{
-                  color: 'var(--colors-gray400)',
+                  color: vars.colors.gray400,
                   display: 'block',
                   marginBottom: '4px'
                 }}
@@ -502,7 +503,7 @@ export const PerformanceDashboard = ({
           <Text
             variant="body"
             size="xs"
-            style={{ color: 'var(--colors-gray500)' }}
+            style={{ color: vars.colors.gray500 }}
           >
             {history.samples.length} samples recorded
           </Text>
@@ -512,9 +513,9 @@ export const PerformanceDashboard = ({
         <Box
           padding={3}
           style={{
-            backgroundColor: 'var(--colors-gray800)',
+            backgroundColor: vars.colors.gray800,
             borderRadius: '8px',
-            border: '1px solid var(--colors-gray700)'
+            border: `1px solid ${vars.colors.gray700}`
           }}
         >
           <Text
@@ -537,28 +538,28 @@ export const PerformanceDashboard = ({
             <Text
               variant="body"
               size="xs"
-              style={{ color: 'var(--colors-gray400)' }}
+              style={{ color: vars.colors.gray400 }}
             >
               • Target 60 FPS for smooth interactions
             </Text>
             <Text
               variant="body"
               size="xs"
-              style={{ color: 'var(--colors-gray400)' }}
+              style={{ color: vars.colors.gray400 }}
             >
               • Keep memory usage under 300MB for best performance
             </Text>
             <Text
               variant="body"
               size="xs"
-              style={{ color: 'var(--colors-gray400)' }}
+              style={{ color: vars.colors.gray400 }}
             >
               • Limit canvas objects to under 1000 for optimal rendering
             </Text>
             <Text
               variant="body"
               size="xs"
-              style={{ color: 'var(--colors-gray400)' }}
+              style={{ color: vars.colors.gray400 }}
             >
               • Use layers to organize and hide complex objects when not needed
             </Text>
