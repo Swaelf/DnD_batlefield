@@ -71,7 +71,7 @@ export const EffectPropertiesPanel: FC<EffectPropertiesPanelProps> = ({
             />
             <Input
               value={properties.color}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 updateProperty('color', e.target.value)
               }
               size="sm"
@@ -89,7 +89,7 @@ export const EffectPropertiesPanel: FC<EffectPropertiesPanelProps> = ({
             min="10"
             max="100"
             value={Math.round(properties.opacity * 100)}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
               const val = Number(e.target.value)
               if (val >= 10 && val <= 100) {
                 updateProperty('opacity', val / 100)
@@ -124,7 +124,7 @@ export const EffectPropertiesPanel: FC<EffectPropertiesPanelProps> = ({
                 min="10"
                 max="500"
                 value={properties.dimensions.radius || 50}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const val = Number(e.target.value)
                   if (val >= 10 && val <= 500) updateDimension('radius', val)
                 }}
@@ -213,7 +213,7 @@ export const EffectPropertiesPanel: FC<EffectPropertiesPanelProps> = ({
                 min="30"
                 max="1000"
                 value={properties.dimensions.length || 100}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const val = Number(e.target.value)
                   if (val >= 30 && val <= 1000) updateDimension('length', val)
                 }}

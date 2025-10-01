@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, type FC, type ChangeEvent } from 'react'
 import ReactDOM from 'react-dom'
 import type { Token } from '@/types'
 import { Heart, Shield } from '@/utils/optimizedIcons'
@@ -168,7 +168,7 @@ const TokenHPTooltip = ({
             <input
               type="number"
               value={currentHP}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleHPChange(parseInt(e.target.value) || 0)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleHPChange(parseInt(e.target.value) || 0)}
               title="Current HP"
               style={{
                 width: '60px',
@@ -185,7 +185,7 @@ const TokenHPTooltip = ({
             <input
               type="number"
               value={maxHP}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleMaxHPChange(parseInt(e.target.value) || 1)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleMaxHPChange(parseInt(e.target.value) || 1)}
               title="Max HP"
               style={{
                 width: '60px',
@@ -324,7 +324,7 @@ const TokenHPTooltip = ({
           <input
             type="number"
             value={tempHP}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTempHPChange(parseInt(e.target.value) || 0)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => handleTempHPChange(parseInt(e.target.value) || 0)}
             style={{
               width: '100%',
               padding: '4px',
@@ -369,7 +369,7 @@ const TokenHPTooltip = ({
                 <input
                   type="text"
                   value={imageUrl}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setImageUrl(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setImageUrl(e.target.value)}
                   placeholder="Enter image URL (e.g., imgur.com/abc.png)"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleImageUrlSubmit()
