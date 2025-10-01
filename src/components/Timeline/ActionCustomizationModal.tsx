@@ -3,7 +3,7 @@
  * Advanced spell and attack customization interface
  */
 
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, type FC, type ChangeEvent } from 'react'
 import { Save, X, Wand2, Sword, Palette, Settings } from '@/utils/optimizedIcons'
 import useAnimationStore from '@/store/animationStore'
 import { Box } from '@/components/primitives/BoxVE'
@@ -48,7 +48,7 @@ export type ActionCustomizationModalProps = {
   baseAction: UnifiedAction | null
 }
 
-export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> = ({
+export const ActionCustomizationModal: FC<ActionCustomizationModalProps> = ({
   isOpen,
   onClose,
   onSave,
@@ -232,7 +232,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
               <Input
                 id="actionName"
                 value={customAction.metadata?.name || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleActionChange({ metadata: { ...customAction.metadata, name: e.target.value } })
                 }
                 placeholder="Enter custom name..."
@@ -247,7 +247,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
               <Input
                 id="description"
                 value={customAction.metadata?.description || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleMetadataChange({ description: e.target.value })
                 }
                 placeholder="Enter description..."
@@ -262,7 +262,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
               <Input
                 id="category"
                 value={customAction.category}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleActionChange({ category: e.target.value as ActionCategory })
                 }
                 placeholder="Enter category..."
@@ -304,7 +304,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                   id="color"
                   type="color"
                   value={customAction.animation?.color || '#ffffff'}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     handleAnimationChange({ color: e.target.value })
                   }
                   size="sm"
@@ -319,7 +319,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                   id="size"
                   type="number"
                   value={customAction.animation?.size || 50}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     handleAnimationChange({ size: parseFloat(e.target.value) || 50 })
                   }
                   min="1"
@@ -336,7 +336,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                   id="duration"
                   type="number"
                   value={customAction.animation?.duration || 1000}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     handleAnimationChange({ duration: parseInt(e.target.value) || 1000 })
                   }
                   min="100"
@@ -353,7 +353,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                   id="opacity"
                   type="number"
                   value={customAction.animation?.customParams?.opacity || 1}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     handleAnimationChange({ customParams: { ...customAction.animation?.customParams, opacity: parseFloat(e.target.value) || 1 } })
                   }
                   min="0"
@@ -437,7 +437,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                         id="level"
                         type="number"
                         value={(customAction.metadata as ExtendedMetadata)?.level || 1}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleMetadataChange({ level: parseInt(e.target.value) || 1 })
                         }
                         min="0"
@@ -453,7 +453,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                       <Input
                         id="school"
                         value={(customAction.metadata as ExtendedMetadata)?.school || ''}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleMetadataChange({ school: e.target.value })
                         }
                         placeholder="e.g., Evocation"
@@ -468,7 +468,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                       <Input
                         id="range"
                         value={(customAction.metadata as ExtendedMetadata)?.range || ''}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleMetadataChange({ range: e.target.value })
                         }
                         placeholder="e.g., 120 feet"
@@ -483,7 +483,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                       <Input
                         id="components"
                         value={(customAction.metadata as ExtendedMetadata)?.components || ''}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleMetadataChange({ components: e.target.value })
                         }
                         placeholder="e.g., V, S, M"
@@ -502,7 +502,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                       <Input
                         id="damage"
                         value={customAction.metadata?.damage || ''}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleMetadataChange({ damage: e.target.value })
                         }
                         placeholder="e.g., 1d8+3"
@@ -517,7 +517,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                       <Input
                         id="damageType"
                         value={(customAction.metadata as ExtendedMetadata)?.damageType || ''}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleMetadataChange({ damageType: e.target.value })
                         }
                         placeholder="e.g., slashing"
@@ -532,7 +532,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                       <Input
                         id="weaponType"
                         value={(customAction.metadata as ExtendedMetadata)?.weaponType || ''}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleMetadataChange({ weaponType: e.target.value })
                         }
                         placeholder="e.g., longsword"
@@ -548,7 +548,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                         id="attackBonus"
                         type="number"
                         value={(customAction.metadata as ExtendedMetadata)?.attackBonus || 0}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleMetadataChange({ attackBonus: parseInt(e.target.value) || 0 })
                         }
                         size="sm"
@@ -622,7 +622,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                   id="persistDuration"
                   type="number"
                   value={(customAction.metadata as ExtendedMetadata)?.persistDuration || 0}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     handleMetadataChange({ persistDuration: parseInt(e.target.value) || 0 })
                   }
                   min="0"
@@ -639,7 +639,7 @@ export const ActionCustomizationModal: React.FC<ActionCustomizationModalProps> =
                   id="areaSize"
                   type="number"
                   value={(customAction.metadata as ExtendedMetadata)?.areaSize || 0}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     handleMetadataChange({ areaSize: parseFloat(e.target.value) || 0 })
                   }
                   min="0"

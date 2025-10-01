@@ -25,7 +25,7 @@ import useCollaborationStore from '@store/collaborationStore'
 // Lazy load heavy components for better initial load performance
 const StaticEffectsPanel = lazy(() => import('./components/StaticEffect/StaticEffectsPanel').then(m => ({ default: m.StaticEffectsPanel })))
 const FileMenu = lazy(() => import('./components/Menu/FileMenu').then(m => ({ default: m.FileMenu })))
-import StatusBar from './components/StatusBar/StatusBar'
+import { StatusBar } from './components/StatusBar/StatusBar'
 const HelpDialog = lazy(() => import('./components/HelpDialog/HelpDialog').then(m => ({ default: m.HelpDialog })))
 const CombatTracker = lazy(() => import('./components/Timeline/CombatTracker').then(m => ({ default: m.CombatTracker })))
 const TestingPanel = lazy(() => import('./testing/TestingPanel').then(m => ({ default: m.TestingPanel })))

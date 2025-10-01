@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo, type FC } from 'react'
 import useMapStore from '@/store/mapStore'
 import useToolStore from '@/store/toolStore'
 import { useHistoryStore } from '@/store/historyStore'
@@ -20,7 +20,7 @@ type StatusBarProps = {
 }
 
 
-const StatusBar: React.FC<StatusBarProps> = ({ mousePosition }) => {
+const StatusBar: FC<StatusBarProps> = ({ mousePosition }) => {
   // Use specific selectors to prevent unnecessary re-renders
   const currentMap = useMapStore(state => state.currentMap)
   const loadMap = useMapStore(state => state.loadMap)
@@ -408,4 +408,5 @@ const arePropsEqual = (prevProps: StatusBarProps, nextProps: StatusBarProps): bo
   return !mouseChanged && !zoomChanged
 }
 
-export default React.memo(StatusBar, arePropsEqual)
+const MemoizedStatusBar = memo(StatusBar, arePropsEqual)
+export { MemoizedStatusBar as StatusBar }

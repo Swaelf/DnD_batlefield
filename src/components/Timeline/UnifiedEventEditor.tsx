@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import { useState, useEffect, memo, useMemo } from 'react'
 import { Plus, X, Sparkles } from '@/utils/optimizedIcons'
 import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
@@ -73,7 +73,7 @@ const UnifiedEventEditorComponent = ({
   const pickedTokenId = useEventCreationStore(state => state.selectedTokenId)
 
   // Get all tokens from the current map
-  const tokens = React.useMemo(() => {
+  const tokens = useMemo(() => {
     if (!isOpen) return []
 
     const filteredTokens = (currentMap?.objects.filter(obj =>
