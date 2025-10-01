@@ -3,20 +3,21 @@
  * Advanced export functionality with multiple formats and options
  */
 
-import React, { useCallback, useState } from 'react'
+import { useCallback, useState, type FC, type ReactNode, type RefObject, type ChangeEvent } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
 import { Download, FileText, Image, Printer, X } from '@/utils/optimizedIcons'
 import useMapStore from '@/store/mapStore'
 import type Konva from 'konva'
+import type { Shape } from '@/types'
 
 export interface ExportFormat {
   id: string
   name: string
   extension: string
   description: string
-  icon: React.ReactNode
+  icon: ReactNode
   supportsOptions: string[]
 }
 
@@ -55,10 +56,10 @@ export interface ExportOptions {
 export interface EnhancedExportSystemProps {
   isOpen: boolean
   onClose: () => void
-  stageRef?: React.RefObject<Konva.Stage>
+  stageRef?: RefObject<Konva.Stage>
 }
 
-export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
+export const EnhancedExportSystem: FC<EnhancedExportSystemProps> = ({
   isOpen,
   onClose,
   stageRef
@@ -213,7 +214,7 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')!
-      const img = new (window as any).Image() as HTMLImageElement
+      const img = document.createElement('img') as HTMLImageElement
 
       img.onload = () => {
         canvas.width = img.width
@@ -294,7 +295,7 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
     // Convert map objects to SVG
     currentMap.objects.forEach(obj => {
       if (obj.type === 'shape') {
-        const shapeObj = obj as any // Simplified for this implementation
+        const shapeObj = obj as Shape
         if (shapeObj.shapeType === 'rectangle') {
           svgContent += `
   <rect x="${obj.position.x}" y="${obj.position.y}"
@@ -515,7 +516,7 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
             </Text>
             <select
               value={selectedFormat}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedFormat(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedFormat(e.target.value)}
               style={{
                 width: '100%',
                 padding: '8px 12px',
@@ -572,7 +573,7 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
                   <input
                     type="number"
                     value={exportOptions.resolution}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOptions({ resolution: Number(e.target.value) })}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => updateOptions({ resolution: Number(e.target.value) })}
                     min="72"
                     max="600"
                     style={{
@@ -615,7 +616,7 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
                       max="4"
                       step="0.1"
                       value={exportOptions.scale}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOptions({ scale: Number(e.target.value) })}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => updateOptions({ scale: Number(e.target.value) })}
                       style={{
                         width: '200px',
                         accentColor: 'var(--colors-dndGold)'
@@ -654,7 +655,7 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
                       min="10"
                       max="100"
                       value={exportOptions.quality}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOptions({ quality: Number(e.target.value) })}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => updateOptions({ quality: Number(e.target.value) })}
                       style={{
                         width: '200px',
                         accentColor: 'var(--colors-dndGold)'
@@ -790,7 +791,7 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
                   </Text>
                   <select
                     value={exportOptions.paperSize}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateOptions({ paperSize: e.target.value as any })}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => updateOptions({ paperSize: e.target.value as ExportOptions['paperSize'] })}
                     style={{
                       width: '200px',
                       padding: '4px 8px',
@@ -975,5 +976,3 @@ export const EnhancedExportSystem: React.FC<EnhancedExportSystemProps> = ({
     </>
   )
 }
-
-export default EnhancedExportSystem
