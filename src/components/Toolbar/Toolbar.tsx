@@ -3,7 +3,7 @@
  * Main tool selection interface with drawing tools and grid controls
  */
 
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, memo, type FC } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import useToolStore from '@store/toolStore'
@@ -12,7 +12,7 @@ import { TOOLS } from '@/types/tools'
 import ToolButton from './ToolButton'
 
 
-const Toolbar: React.FC = () => {
+const Toolbar: FC = () => {
   // Use specific selectors to prevent unnecessary re-renders
   const currentTool = useToolStore(state => state.currentTool)
   const setTool = useToolStore(state => state.setTool)
@@ -123,7 +123,7 @@ const Toolbar: React.FC = () => {
 }
 
 // Memoize the color indicator to prevent unnecessary re-renders
-const ColorIndicatorComponent: React.FC<{ type: 'fill' | 'stroke' }> = React.memo(({ type }) => {
+const ColorIndicatorComponent: FC<{ type: 'fill' | 'stroke' }> = memo(({ type }) => {
   // Use specific selectors for better performance
   const fillColor = useToolStore(state => state.fillColor)
   const strokeColor = useToolStore(state => state.strokeColor)
@@ -182,4 +182,4 @@ const ColorIndicatorComponent: React.FC<{ type: 'fill' | 'stroke' }> = React.mem
 // Add display name for debugging
 ColorIndicatorComponent.displayName = 'ColorIndicatorComponent'
 
-export default React.memo(Toolbar)
+export default memo(Toolbar)
