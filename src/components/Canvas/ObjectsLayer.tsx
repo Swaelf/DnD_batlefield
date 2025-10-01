@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
 import { Group, Rect, Circle, Line, Text as KonvaText } from 'react-konva'
 import type Konva from 'konva'
 import type { MapObject, Shape, Text } from '@/types/map'
@@ -31,7 +31,7 @@ type ObjectsLayerProps = {
 /**
  * ObjectsLayer that uses the new spell effect architecture
  */
-export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
+export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   onObjectClick,
   onObjectDragEnd,
   onTokenSelect,
@@ -155,7 +155,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
         clientY: screenY,
         preventDefault: () => e.evt.preventDefault(),
         stopPropagation: () => e.evt.stopPropagation()
-      } as React.MouseEvent,
+      } as ReactMouseEvent,
       'object',
       { objectId: objId }
     )
@@ -715,4 +715,4 @@ const arePropsEqual = (
   )
 }
 
-export default React.memo(ObjectsLayer, arePropsEqual)
+export default memo(ObjectsLayer, arePropsEqual)
