@@ -1,4 +1,4 @@
-import React from 'react'
+import { type FC, type MouseEvent as ReactMouseEvent } from 'react'
 import { Box, Text } from '@/components/primitives'
 
 type AngleIndicatorProps = {
@@ -10,7 +10,7 @@ type AngleIndicatorProps = {
   size?: number
 }
 
-export const AngleIndicator: React.FC<AngleIndicatorProps> = ({
+export const AngleIndicator: FC<AngleIndicatorProps> = ({
   value,
   onChange,
   label = 'Angle',
@@ -18,7 +18,7 @@ export const AngleIndicator: React.FC<AngleIndicatorProps> = ({
   max = 180,
   size = 60
 }) => {
-  const handleMouseDown = (e: React.MouseEvent<SVGElement>) => {
+  const handleMouseDown = (e: ReactMouseEvent<SVGElement>) => {
     const svg = e.currentTarget
     const rect = svg.getBoundingClientRect()
     const centerX = rect.width / 2

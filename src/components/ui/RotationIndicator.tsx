@@ -1,4 +1,4 @@
-import React from 'react'
+import { type FC, type MouseEvent as ReactMouseEvent } from 'react'
 import { Box, Text } from '@/components/primitives'
 
 type RotationIndicatorProps = {
@@ -8,13 +8,13 @@ type RotationIndicatorProps = {
   size?: number
 }
 
-export const RotationIndicator: React.FC<RotationIndicatorProps> = ({
+export const RotationIndicator: FC<RotationIndicatorProps> = ({
   value,
   onChange,
   label = 'Rotation',
   size = 60
 }) => {
-  const handleMouseDown = (e: React.MouseEvent<SVGElement>) => {
+  const handleMouseDown = (e: ReactMouseEvent<SVGElement>) => {
     const svg = e.currentTarget
     const rect = svg.getBoundingClientRect()
     const centerX = rect.width / 2
