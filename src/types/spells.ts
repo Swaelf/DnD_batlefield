@@ -1,4 +1,4 @@
-import type React from 'react'
+import type { ReactNode } from 'react'
 import type { Position } from './map'
 
 // Spell effect types
@@ -279,7 +279,7 @@ export type SpellEffectTemplate = {
   name: string
   category: 'area' | 'line' | 'wall' | 'emanation'
   shape: 'sphere' | 'cone' | 'cube' | 'line' | 'wall'
-  icon: React.ReactNode
+  icon: ReactNode
   color: string
   opacity: number
   size: {

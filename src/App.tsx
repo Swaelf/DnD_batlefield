@@ -508,7 +508,7 @@ function App() {
   )
 }
 
-const AppWithContextMenu: React.FC = () => {
+const AppWithContextMenu = () => {
   return (
     <ContextMenuManager>
       <App />

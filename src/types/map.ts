@@ -1,4 +1,4 @@
-import type React from 'react'
+import type { ReactNode } from 'react'
 import type Konva from 'konva'
 import type { Point } from './geometry'
 
@@ -100,7 +100,7 @@ export type StaticObjectTemplate = {
   name: string
   type: 'circle' | 'rectangle' | 'line' | 'polygon'
   category: 'structures' | 'nature' | 'furniture' | 'dungeon'
-  icon: React.ReactNode
+  icon: ReactNode
   defaultColor: string
   defaultOpacity: number
   rotation?: number

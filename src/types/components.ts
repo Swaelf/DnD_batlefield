@@ -1,4 +1,4 @@
-import type React from 'react'
+import type { ReactNode, MutableRefObject } from 'react'
 import type Konva from 'konva'
 import type { Position } from '@/types/map'
 import type { SpellEventData } from '@/types/timeline'
@@ -8,7 +8,7 @@ import type { SpellEffect } from '@/types/spells'
 // Common Component Props
 export type BaseComponentProps = {
   className?: string
-  children?: React.ReactNode
+  children?: ReactNode
 }
 
 // Component props type alias for consistency
@@ -18,7 +18,7 @@ export type ComponentProps = BaseComponentProps
 export type MapCanvasProps = {
   width: number
   height: number
-  stageRef?: React.MutableRefObject<Konva.Stage | null>
+  stageRef?: MutableRefObject<Konva.Stage | null>
   onMouseMove?: (position: Position) => void
   onZoomChange?: (zoom: number) => void
 }
@@ -47,7 +47,7 @@ export type PathPreviewProps = {
 // Tool Component Types
 export type ToolButtonProps = {
   tool: string
-  icon: React.ReactNode
+  icon: ReactNode
   label: string
   shortcut?: string
   isActive: boolean
@@ -97,7 +97,7 @@ export type EventEditorProps = {
 
 // Menu & UI Component Types
 export type FileMenuProps = {
-  stageRef: React.MutableRefObject<Konva.Stage | null>
+  stageRef: MutableRefObject<Konva.Stage | null>
 }
 
 export type HelpDialogProps = {
@@ -116,7 +116,7 @@ export type ContextMenuProps = {
   y: number
   isOpen: boolean
   onClose: () => void
-  children?: React.ReactNode
+  children?: ReactNode
 }
 
 export type MapContextMenuProps = ContextMenuProps & {
