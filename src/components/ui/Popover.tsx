@@ -1,4 +1,4 @@
-import React, { useState, useCallback, forwardRef } from 'react'
+import { useState, useCallback, forwardRef, createElement, type ReactNode, type CSSProperties, type MouseEvent, type UIEvent } from 'react'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { X } from '@/utils/optimizedIcons'
 
@@ -10,8 +10,8 @@ type PopoverEventHandlers = {
 
 // Popover component props with exact typing
 export type PopoverProps = {
-  children: React.ReactNode
-  content: React.ReactNode
+  children: ReactNode
+  content: ReactNode
   open?: boolean
   defaultOpen?: boolean
   side?: 'top' | 'right' | 'bottom' | 'left'
@@ -25,7 +25,7 @@ export type PopoverProps = {
   title?: string
   showCloseButton?: boolean
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 
   // HTML attributes
   id?: string
@@ -104,7 +104,7 @@ export const Popover = ({
   }
 
   // Content styles
-  const contentStyles: React.CSSProperties = {
+  const contentStyles: CSSProperties = {
     borderRadius: '12px',
     backgroundColor: 'var(--surface)',
     border: '1px solid var(--gray700)',
@@ -119,7 +119,7 @@ export const Popover = ({
   }
 
   // Arrow styles
-  const arrowStyles: React.CSSProperties = {
+  const arrowStyles: CSSProperties = {
     fill: 'var(--surface)',
     stroke: 'var(--gray700)',
     strokeWidth: 1,
@@ -217,14 +217,14 @@ Popover.displayName = 'Popover'
 
 // Popover Header component
 export type PopoverHeaderProps = {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const PopoverHeader = forwardRef<HTMLDivElement, PopoverHeaderProps>(
   ({ children, className, style }, ref) => {
-    const headerStyles: React.CSSProperties = {
+    const headerStyles: CSSProperties = {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -246,16 +246,16 @@ PopoverHeader.displayName = 'PopoverHeader'
 
 // Popover Title component
 export type PopoverTitleProps = {
-  children: React.ReactNode
+  children: ReactNode
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   id?: string
 }
 
 export const PopoverTitle = forwardRef<HTMLHeadingElement, PopoverTitleProps>(
   ({ children, as: Component = 'h3', className, style, id }, ref) => {
-    const titleStyles: React.CSSProperties = {
+    const titleStyles: CSSProperties = {
       margin: 0,
       fontSize: '18px',
       fontWeight: '600',
@@ -265,7 +265,7 @@ export const PopoverTitle = forwardRef<HTMLHeadingElement, PopoverTitleProps>(
       ...style,
     }
 
-    return React.createElement(
+    return createElement(
       Component,
       {
         ref,
@@ -282,16 +282,16 @@ PopoverTitle.displayName = 'PopoverTitle'
 
 // Popover Body component
 export type PopoverBodyProps = {
-  children: React.ReactNode
+  children: ReactNode
   scrollable?: boolean
   className?: string
-  style?: React.CSSProperties
-  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void
+  style?: CSSProperties
+  onScroll?: (event: UIEvent<HTMLDivElement>) => void
 }
 
 export const PopoverBody = forwardRef<HTMLDivElement, PopoverBodyProps>(
   ({ children, scrollable = false, className, style, onScroll }, ref) => {
-    const bodyStyles: React.CSSProperties = {
+    const bodyStyles: CSSProperties = {
       color: 'var(--gray200)',
       fontSize: '14px',
       lineHeight: 1.5,
@@ -321,10 +321,10 @@ PopoverBody.displayName = 'PopoverBody'
 
 // Popover Footer component
 export type PopoverFooterProps = {
-  children: React.ReactNode
+  children: ReactNode
   justify?: 'start' | 'center' | 'end' | 'between'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const PopoverFooter = forwardRef<HTMLDivElement, PopoverFooterProps>(
@@ -336,7 +336,7 @@ export const PopoverFooter = forwardRef<HTMLDivElement, PopoverFooterProps>(
       between: 'space-between',
     }
 
-    const footerStyles: React.CSSProperties = {
+    const footerStyles: CSSProperties = {
       display: 'flex',
       alignItems: 'center',
       justifyContent: justifyContentValues[justify],
@@ -359,15 +359,15 @@ PopoverFooter.displayName = 'PopoverFooter'
 
 // Popover Close Button component
 export type PopoverCloseButtonProps = {
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   'aria-label'?: string
 }
 
 export const PopoverCloseButton = forwardRef<HTMLButtonElement, PopoverCloseButtonProps>(
   ({ onClick, className, style, 'aria-label': ariaLabel = 'Close' }, ref) => {
-    const buttonStyles: React.CSSProperties = {
+    const buttonStyles: CSSProperties = {
       width: '24px',
       height: '24px',
       borderRadius: '6px',
@@ -418,15 +418,15 @@ PopoverCloseButton.displayName = 'PopoverCloseButton'
 
 // Dropdown variant (menu-style popover)
 export type DropdownProps = {
-  trigger: React.ReactNode
-  children: React.ReactNode
+  trigger: ReactNode
+  children: ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
   side?: 'top' | 'right' | 'bottom' | 'left'
   align?: 'start' | 'center' | 'end'
   sideOffset?: number
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const Dropdown = ({
@@ -440,7 +440,7 @@ export const Dropdown = ({
   className,
   style,
 }: DropdownProps) => {
-  const dropdownStyles: React.CSSProperties = {
+  const dropdownStyles: CSSProperties = {
     minWidth: '160px',
     padding: '4px',
     display: 'flex',
@@ -479,12 +479,12 @@ Dropdown.displayName = 'Dropdown'
 
 // Menu Item component
 export type MenuItemProps = {
-  children: React.ReactNode
-  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  children: ReactNode
+  onClick?: (event: MouseEvent<HTMLDivElement>) => void
   disabled?: boolean
   variant?: 'default' | 'destructive'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   'aria-label'?: string
 }
 
@@ -514,7 +514,7 @@ export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
       },
     }
 
-    const itemStyles: React.CSSProperties = {
+    const itemStyles: CSSProperties = {
       display: 'flex',
       alignItems: 'center',
       gap: '8px',
@@ -531,7 +531,7 @@ export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
       ...style,
     }
 
-    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleClick = (event: MouseEvent<HTMLDivElement>) => {
       if (!disabled) {
         onClick?.(event)
       }
@@ -572,12 +572,12 @@ MenuItem.displayName = 'MenuItem'
 // Menu Separator component
 export type MenuSeparatorProps = {
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const MenuSeparator = forwardRef<HTMLDivElement, MenuSeparatorProps>(
   ({ className, style }, ref) => {
-    const separatorStyles: React.CSSProperties = {
+    const separatorStyles: CSSProperties = {
       height: '1px',
       backgroundColor: 'var(--gray700)',
       margin: '4px 0',

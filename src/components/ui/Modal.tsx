@@ -1,4 +1,4 @@
-import React, { useEffect, forwardRef } from 'react'
+import { useEffect, forwardRef, createElement, type ReactNode, type CSSProperties, type MouseEvent, type UIEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Button } from '@/components/primitives/ButtonVE'
 
@@ -6,15 +6,15 @@ import { Button } from '@/components/primitives/ButtonVE'
 type ModalEventHandlers = {
   onClose: () => void
   onOpen?: () => void
-  onOverlayClick?: (event: React.MouseEvent<HTMLDivElement>) => void
-  onContentClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  onOverlayClick?: (event: MouseEvent<HTMLDivElement>) => void
+  onContentClick?: (event: MouseEvent<HTMLDivElement>) => void
   onEscapeKeyDown?: (event: KeyboardEvent) => void
 }
 
 // Modal component props with exact typing
 export type ModalProps = {
   isOpen: boolean
-  children: React.ReactNode
+  children: ReactNode
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto'
   padding?: 'none' | 'sm' | 'md' | 'lg'
   centered?: boolean
@@ -24,7 +24,7 @@ export type ModalProps = {
   title?: string
   showCloseButton?: boolean
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 
   // HTML attributes
   id?: string
@@ -120,7 +120,7 @@ export const Modal = ({
 
   if (!isOpen) return null
 
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleOverlayClick = (e: MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget && closeOnOverlayClick) {
       onOverlayClick?.(e)
       onClose()
@@ -135,7 +135,7 @@ export const Modal = ({
     lg: { backdropFilter: 'blur(8px)' },
   }
 
-  const overlayStyles: React.CSSProperties = {
+  const overlayStyles: CSSProperties = {
     position: 'fixed',
     top: 0,
     left: 0,
@@ -164,7 +164,7 @@ export const Modal = ({
     lg: { padding: '32px' },
   }
 
-  const contentStyles: React.CSSProperties = {
+  const contentStyles: CSSProperties = {
     position: 'fixed',
     top: '50%',
     left: '50%',
@@ -251,14 +251,14 @@ Modal.displayName = 'Modal'
 
 // Modal Header component
 export type ModalHeaderProps = {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const ModalHeader = forwardRef<HTMLDivElement, ModalHeaderProps>(
   ({ children, className, style }, ref) => {
-    const headerStyles: React.CSSProperties = {
+    const headerStyles: CSSProperties = {
       borderBottom: '1px solid var(--gray700)',
       marginBottom: '24px',
       paddingBottom: '16px',
@@ -280,16 +280,16 @@ ModalHeader.displayName = 'ModalHeader'
 
 // Modal Title component
 export type ModalTitleProps = {
-  children: React.ReactNode
+  children: ReactNode
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   id?: string
 }
 
 export const ModalTitle = forwardRef<HTMLHeadingElement, ModalTitleProps>(
   ({ children, as: Component = 'h2', className, style, id }, ref) => {
-    const titleStyles: React.CSSProperties = {
+    const titleStyles: CSSProperties = {
       margin: 0,
       fontSize: '20px',
       fontWeight: '600',
@@ -299,7 +299,7 @@ export const ModalTitle = forwardRef<HTMLHeadingElement, ModalTitleProps>(
       ...style,
     }
 
-    return React.createElement(
+    return createElement(
       Component,
       {
         ref,
@@ -316,15 +316,15 @@ ModalTitle.displayName = 'ModalTitle'
 
 // Modal Close Button component
 export type ModalCloseButtonProps = {
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   'aria-label'?: string
 }
 
 export const ModalCloseButton = forwardRef<HTMLButtonElement, ModalCloseButtonProps>(
   ({ onClick, className, style, 'aria-label': ariaLabel = 'Close' }, ref) => {
-    const buttonStyles: React.CSSProperties = {
+    const buttonStyles: CSSProperties = {
       width: '32px',
       height: '32px',
       borderRadius: '8px',
@@ -377,16 +377,16 @@ ModalCloseButton.displayName = 'ModalCloseButton'
 
 // Modal Body component
 export type ModalBodyProps = {
-  children: React.ReactNode
+  children: ReactNode
   scrollable?: boolean
   className?: string
-  style?: React.CSSProperties
-  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void
+  style?: CSSProperties
+  onScroll?: (event: UIEvent<HTMLDivElement>) => void
 }
 
 export const ModalBody = forwardRef<HTMLDivElement, ModalBodyProps>(
   ({ children, scrollable = false, className, style, onScroll }, ref) => {
-    const bodyStyles: React.CSSProperties = {
+    const bodyStyles: CSSProperties = {
       flex: 1,
       ...(scrollable && {
         maxHeight: '60vh',
@@ -414,10 +414,10 @@ ModalBody.displayName = 'ModalBody'
 
 // Modal Footer component
 export type ModalFooterProps = {
-  children: React.ReactNode
+  children: ReactNode
   justify?: 'start' | 'center' | 'end' | 'between'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const ModalFooter = forwardRef<HTMLDivElement, ModalFooterProps>(
@@ -429,7 +429,7 @@ export const ModalFooter = forwardRef<HTMLDivElement, ModalFooterProps>(
       between: 'space-between',
     }
 
-    const footerStyles: React.CSSProperties = {
+    const footerStyles: CSSProperties = {
       borderTop: '1px solid var(--gray700)',
       marginTop: '24px',
       paddingTop: '16px',
@@ -470,7 +470,7 @@ export type ConfirmDialogProps = {
   cancelLabel?: string
   variant?: 'default' | 'danger'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const ConfirmDialog = ({
