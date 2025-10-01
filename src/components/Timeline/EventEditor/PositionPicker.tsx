@@ -3,7 +3,7 @@
  * Interactive position selection for timeline events
  */
 
-import React, { memo } from 'react'
+import { memo, type FC, type ChangeEvent } from 'react'
 import { MapPin } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
@@ -21,7 +21,7 @@ export type PositionPickerProps = {
   isDisabled?: boolean
 }
 
-const PositionPickerComponent: React.FC<PositionPickerProps> = ({
+const PositionPickerComponent: FC<PositionPickerProps> = ({
   targetPosition,
   onPositionPick,
   isPicking,
@@ -238,7 +238,7 @@ const PositionPickerComponent: React.FC<PositionPickerProps> = ({
           <input
             type="checkbox"
             checked={fadeEffect}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFadeEffect(e.target.checked)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setFadeEffect(e.target.checked)}
             style={{
               accentColor: 'var(--colors-dndGold)',
               width: '16px',

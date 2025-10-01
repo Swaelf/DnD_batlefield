@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC, type ChangeEvent, type MouseEvent } from 'react'
 import { Wand2 } from '@/utils/optimizedIcons'
 import type { SpellEventData } from '@/types/timeline'
 import { Box, Text, Button } from '@/components/primitives'
@@ -12,7 +12,7 @@ type SpellConfigurationProps = {
   onOpenSpellModal: () => void
 }
 
-const SpellConfigurationComponent: React.FC<SpellConfigurationProps> = ({
+const SpellConfigurationComponent: FC<SpellConfigurationProps> = ({
   selectedSpell,
   useEnvironmentCaster,
   setUseEnvironmentCaster,
@@ -51,7 +51,7 @@ const SpellConfigurationComponent: React.FC<SpellConfigurationProps> = ({
         <input
           type="checkbox"
           checked={useEnvironmentCaster}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUseEnvironmentCaster(e.target.checked)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setUseEnvironmentCaster(e.target.checked)}
           style={{ accentColor: 'var(--colors-purple500)' }}
         />
         <Text style={{ fontSize: '12px', color: 'var(--gray-300)' }}>
@@ -130,10 +130,10 @@ const SpellConfigurationComponent: React.FC<SpellConfigurationProps> = ({
           justifyContent: 'center',
           transition: 'background-color 0.2s'
         }}
-        onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+        onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
           e.currentTarget.style.backgroundColor = 'var(--purple-700)'
         }}
-        onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+        onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
           e.currentTarget.style.backgroundColor = 'var(--purple-600)'
         }}
       >
