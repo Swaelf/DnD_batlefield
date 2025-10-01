@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, type ReactNode, type MouseEvent, type ChangeEvent } from 'react'
 import { Search, Zap, Sword, Users, X, Move, Edit } from '@/utils/optimizedIcons'
 import useAnimationStore from '@/store/animationStore'
 import { Box } from '@/components/primitives/BoxVE'
@@ -90,7 +90,7 @@ export const ActionSelectionModal = ({
     handleClose()
   }, [onSelect, handleClose])
 
-  const handleEdit = useCallback((action: UnifiedAction, e: React.MouseEvent) => {
+  const handleEdit = useCallback((action: UnifiedAction, e: MouseEvent) => {
     e.stopPropagation()
     if (onEdit) {
       onEdit(action)
@@ -117,7 +117,7 @@ export const ActionSelectionModal = ({
     }
   }
 
-  const categories: { key: ActionCategory; label: string; icon: React.ReactNode }[] = [
+  const categories: { key: ActionCategory; label: string; icon: ReactNode }[] = [
     { key: 'all', label: 'All Actions', icon: <Users size={16} /> },
     { key: 'spell', label: 'Spells', icon: <Zap size={16} /> },
     { key: 'attack', label: 'Attacks', icon: <Sword size={16} /> },
@@ -200,7 +200,7 @@ export const ActionSelectionModal = ({
             />
             <Input
               value={searchTerm}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
               placeholder="Search actions..."
               style={{
                 paddingLeft: '40px',
