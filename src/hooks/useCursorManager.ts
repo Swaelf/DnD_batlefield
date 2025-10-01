@@ -1,8 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, type RefObject } from 'react'
 import type Konva from 'konva'
 
 type CursorManagerProps = {
-  stageRef: React.RefObject<Konva.Stage>
+  stageRef: RefObject<Konva.Stage>
   currentTool: string
   isPicking: 'from' | 'to' | 'token' | null
 }
