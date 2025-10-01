@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react'
 import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 import path from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => ({
   // Configure base URL for GitHub Pages
   // Use the base path for both build and preview in production mode
