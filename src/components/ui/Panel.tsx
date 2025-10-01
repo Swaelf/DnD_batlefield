@@ -139,7 +139,8 @@ export const Panel = forwardRef<HTMLDivElement, PanelProps>(
 
     // Base styles
     const baseStyles: CSSProperties = {
-      display: 'block',
+      display: 'flex',
+      flexDirection: 'column',
       borderRadius: '8px',
       position: 'relative',
       overflow: 'hidden',

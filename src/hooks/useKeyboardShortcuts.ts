@@ -7,7 +7,7 @@ import useEventCreationStore from '@store/eventCreationStore'
 
 export const useKeyboardShortcuts = () => {
   const { setTool, currentTool, clearMeasurementPoints } = useToolStore()
-  const { deleteSelected, duplicateSelected, clearSelection, selectedObjects, currentMap, loadMap, toggleGridSnap, toggleGridVisibility, selectMultiple } = useMapStore()
+  const { deleteSelected, duplicateSelected, clearSelection, selectedObjects, currentMap, loadMap, toggleGridSnap, toggleGridVisibility, selectMultiple, updateObject } = useMapStore()
   const historyStore = useHistoryStore()
   const { isPicking, exitPickingMode } = useEventCreationStore()
 
@@ -97,6 +97,63 @@ export const useKeyboardShortcuts = () => {
   useHotkeys('shift+g', () => {
     toggleGridSnap()
   }, [toggleGridSnap])
+
+  // Rotation shortcuts for selected objects
+  useHotkeys('[', () => {
+    // Rotate selected objects counter-clockwise by 15 degrees
+    if (selectedObjects.length > 0 && currentMap) {
+      selectedObjects.forEach(objId => {
+        const obj = currentMap.objects.find(o => o.id === objId)
+        if (obj) {
+          const currentRotation = obj.rotation || 0
+          const newRotation = (currentRotation - 15 + 360) % 360
+          updateObject(objId, { rotation: newRotation })
+        }
+      })
+    }
+  }, [selectedObjects, currentMap, updateObject])
+
+  useHotkeys(']', () => {
+    // Rotate selected objects clockwise by 15 degrees
+    if (selectedObjects.length > 0 && currentMap) {
+      selectedObjects.forEach(objId => {
+        const obj = currentMap.objects.find(o => o.id === objId)
+        if (obj) {
+          const currentRotation = obj.rotation || 0
+          const newRotation = (currentRotation + 15) % 360
+          updateObject(objId, { rotation: newRotation })
+        }
+      })
+    }
+  }, [selectedObjects, currentMap, updateObject])
+
+  useHotkeys('shift+[', () => {
+    // Rotate selected objects counter-clockwise by 45 degrees
+    if (selectedObjects.length > 0 && currentMap) {
+      selectedObjects.forEach(objId => {
+        const obj = currentMap.objects.find(o => o.id === objId)
+        if (obj) {
+          const currentRotation = obj.rotation || 0
+          const newRotation = (currentRotation - 45 + 360) % 360
+          updateObject(objId, { rotation: newRotation })
+        }
+      })
+    }
+  }, [selectedObjects, currentMap, updateObject])
+
+  useHotkeys('shift+]', () => {
+    // Rotate selected objects clockwise by 45 degrees
+    if (selectedObjects.length > 0 && currentMap) {
+      selectedObjects.forEach(objId => {
+        const obj = currentMap.objects.find(o => o.id === objId)
+        if (obj) {
+          const currentRotation = obj.rotation || 0
+          const newRotation = (currentRotation + 45) % 360
+          updateObject(objId, { rotation: newRotation })
+        }
+      })
+    }
+  }, [selectedObjects, currentMap, updateObject])
 
   // Space for temporary pan tool
   useEffect(() => {

@@ -54,6 +54,7 @@ function App() {
   // Use specific selectors to prevent unnecessary re-renders
   const createNewMap = useMapStore(state => state.createNewMap)
   const currentMap = useMapStore(state => state.currentMap)
+  const selectedObjects = useMapStore(state => state.selectedObjects)
   const currentTool = useToolStore(state => state.currentTool)
   const { containerRef, canvasSize } = useCanvas()
   const stageRef = useRef<any>(null)
@@ -454,7 +455,8 @@ function App() {
               ) : currentTool === 'layers' ? (
                 <AdvancedLayerPanel />
               ) : currentTool === 'select' ? (
-                <AdvancedSelectionManager />
+                // For select tool, show PropertiesPanel if something is selected, otherwise AdvancedSelectionManager
+                selectedObjects.length > 0 ? <PropertiesPanel /> : <AdvancedSelectionManager />
               ) : (
                 <PropertiesPanel />
               )}

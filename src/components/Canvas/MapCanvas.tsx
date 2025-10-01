@@ -14,13 +14,11 @@ import useEventCreationStore from '@store/eventCreationStore'
 import { ObjectsLayer } from './ObjectsLayer'
 import { BackgroundLayer } from './BackgroundLayer'
 import { InteractiveLayer } from './InteractiveLayer'
-import TokenHPTooltip from '../Token/TokenHPTooltip'
 import { useContextMenu } from '@hooks/useContextMenu'
 import { snapToGrid } from '@/utils/grid'
 import { registerStage } from '@/utils/stageRegistry'
 import { findTokenAtPosition, objectIntersectsRect } from './utils'
 import type { Point } from '@/types/geometry'
-import type { Token as TokenType } from '@/types/token'
 import type { MapCanvasProps } from './types'
 
 export const MapCanvas: FC<MapCanvasProps> = memo(({
@@ -33,12 +31,6 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
   const currentTool = useToolStore(state => state.currentTool)
   const gridSettings = useMapStore(state => state.currentMap?.grid)
   const updateObject = useMapStore(state => state.updateObject)
-
-  // HP Tooltip state
-  const [hpTooltip, setHpTooltip] = useState<{
-    tokenId: string | null
-    position: { x: number; y: number }
-  }>({ tokenId: null, position: { x: 0, y: 0 } })
 
   // Event creation store integration
   const isPicking = useEventCreationStore(state => state.isPicking)
@@ -183,7 +175,8 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         strokeWidth: 2,
         opacity: template.defaultOpacity,
         visible: true,
-        locked: false
+        locked: false,
+        metadata: { isStatic: true, templateId: template.id, templateName: template.name }
       }
       mapState.addObject(staticObject)
       return
@@ -604,10 +597,6 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
     }
   }, [selectionRect, currentTool, currentMap])
 
-  const selectedToken = hpTooltip.tokenId
-    ? currentMap?.objects.find(o => o.id === hpTooltip.tokenId && o.type === 'token') as TokenType | undefined
-    : undefined
-
   // Determine cursor style based on mode
   const cursorStyle = isPicking ? 'crosshair' : 'default'
 
@@ -659,12 +648,6 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           <Group name="objects">
             <ObjectsLayer
               onObjectClick={handleObjectClick}
-              onTokenSelect={(tokenId, position) => {
-                setHpTooltip({ tokenId, position })
-              }}
-              onTokenDeselect={() => {
-                setHpTooltip({ tokenId: null, position: { x: 0, y: 0 } })
-              }}
             />
           </Group>
         </Layer>
@@ -690,18 +673,6 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         </Stage>
       </div>
 
-      {selectedToken && hpTooltip.tokenId && (
-        <TokenHPTooltip
-          token={selectedToken}
-          position={hpTooltip.position}
-          onUpdate={(updates) => {
-            updateObject(hpTooltip.tokenId!, updates)
-          }}
-          onClose={() => {
-            setHpTooltip({ tokenId: null, position: { x: 0, y: 0 } })
-          }}
-        />
-      )}
     </>
   )
 })

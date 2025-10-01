@@ -3,6 +3,7 @@ import type { MapObject } from '@/types'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Input } from '@/components/ui/Input'
+import { RotationIndicator } from '@/components/ui/RotationIndicator'
 
 type BasePropertiesProps = {
   selectedObject: MapObject
@@ -122,49 +123,37 @@ const BasePropertiesComponent: FC<BasePropertiesProps> = ({
           </Box>
         </Box>
 
-        {/* Rotation */}
-        <Box style={{ marginBottom: '16px' }}>
-          <Text
-            variant="label"
-            size="sm"
-            style={{
-              display: 'block',
-              marginBottom: '8px',
-              color: 'var(--colors-gray300)',
-              fontWeight: '500'
-            }}
-          >
-            Rotation
-          </Text>
-          <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <input
-              type="range"
+        {/* Rotation with existing control */}
+        <Box style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <RotationIndicator
+            value={localRotation}
+            onChange={onRotationChange}
+            label="Rotation"
+            size={70}
+          />
+
+          {/* Manual rotation input */}
+          <Box style={{ flex: 1 }}>
+            <Text
+              variant="label"
+              size="sm"
+              style={{
+                display: 'block',
+                marginBottom: '4px',
+                color: 'var(--colors-gray300)',
+                fontWeight: '500'
+              }}
+            >
+              Angle (degrees)
+            </Text>
+            <Input
+              type="number"
               value={localRotation}
               onChange={(e: ChangeEvent<HTMLInputElement>) => onRotationChange(Number(e.target.value))}
               min="0"
-              max="360"
-              style={{
-                flex: 1,
-                height: '6px',
-                backgroundColor: 'var(--colors-gray700)',
-                borderRadius: '3px',
-                outline: 'none',
-                appearance: 'none'
-              }}
+              max="359"
+              style={{ width: '100%' }}
             />
-            <Text
-              variant="body"
-              size="sm"
-              style={{
-                margin: 0,
-                minWidth: '40px',
-                textAlign: 'right',
-                color: 'var(--colors-gray200)',
-                fontFamily: 'monospace'
-              }}
-            >
-              {localRotation}°
-            </Text>
           </Box>
         </Box>
 

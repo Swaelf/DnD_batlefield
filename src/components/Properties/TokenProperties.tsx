@@ -1,19 +1,10 @@
 import { memo, type FC, type ChangeEvent } from 'react'
 import type { Token } from '@/types'
-import { ColorPicker } from './ColorPicker'
 import { Heart, Shield, Plus, Minus } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
-import {
-  PanelSection,
-  Field,
-  FieldLabel,
-  Input,
-  Select,
-  SelectOption
-} from '@/components/ui'
-
+import { Input } from '@/components/ui/Input'
 
 type TokenPropertiesProps = {
   token: Token
@@ -25,348 +16,380 @@ const TokenPropertiesComponent: FC<TokenPropertiesProps> = ({
   onUpdate
 }) => {
   return (
-    <>
-    <PanelSection>
-      <Field>
-        <FieldLabel>Name</FieldLabel>
-        <Input
-          value={token.name || ''}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ name: e.target.value })}
-          placeholder="Token name"
-          fullWidth
-        />
-      </Field>
+    <Box display="flex" flexDirection="column" gap={3} padding={3} data-testid="token-properties">
+      {/* Token Information */}
+      <Box display="flex" flexDirection="column" gap={2}>
+        <Text size="xs" weight="semibold" color="gray300">Token Information</Text>
 
-      <Field>
-        <FieldLabel>Size</FieldLabel>
-        <Select
-          value={token.size}
-          onValueChange={(value) => onUpdate({ size: value as Token['size'] })}
-          fullWidth
-        >
-          <SelectOption value="tiny">Tiny (2.5ft)</SelectOption>
-          <SelectOption value="small">Small (5ft)</SelectOption>
-          <SelectOption value="medium">Medium (5ft)</SelectOption>
-          <SelectOption value="large">Large (10ft)</SelectOption>
-          <SelectOption value="huge">Huge (15ft)</SelectOption>
-          <SelectOption value="gargantuan">Gargantuan (20ft+)</SelectOption>
-        </Select>
-      </Field>
-
-      <Field>
-        <FieldLabel>Color</FieldLabel>
-        <ColorPicker
-          color={token.color}
-          onChange={(color) => onUpdate({ color })}
-        />
-      </Field>
-
-      <Field>
-        <FieldLabel>Shape</FieldLabel>
-        <Box
-          style={{
-            display: 'flex',
-            gap: '8px'
-          }}
-        >
-          <Button
-            onClick={() => onUpdate({ shape: 'circle' })}
-            variant={token.shape === 'circle' ? 'primary' : 'outline'}
-              style={{
-              flex: 1,
-              backgroundColor: token.shape === 'circle' ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
-              borderColor: token.shape === 'circle' ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
-              color: token.shape === 'circle' ? 'white' : 'var(--colors-gray300)'
-            }}
-          >
-            Circle
-          </Button>
-          <Button
-            onClick={() => onUpdate({ shape: 'square' })}
-            variant={token.shape === 'square' ? 'primary' : 'outline'}
-              style={{
-              flex: 1,
-              backgroundColor: token.shape === 'square' ? 'var(--colors-dndRed)' : 'var(--colors-gray800)',
-              borderColor: token.shape === 'square' ? 'var(--colors-dndRed)' : 'var(--colors-gray600)',
-              color: token.shape === 'square' ? 'white' : 'var(--colors-gray300)'
-            }}
-          >
-            Square
-          </Button>
-        </Box>
-      </Field>
-
-      <Field>
-        <Box
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <input
-            type="checkbox"
-            id="showLabel"
-            checked={token.showLabel || false}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ showLabel: e.target.checked })}
-            style={{
-              width: '16px',
-              height: '16px',
-              backgroundColor: 'var(--colors-gray800)',
-              borderColor: 'var(--colors-gray600)',
-              borderRadius: '4px'
-            }}
-          />
-          <FieldLabel
-            htmlFor="showLabel"
-            style={{
-              margin: 0,
-              cursor: 'pointer'
-            }}
-          >
-            Show Label
-          </FieldLabel>
-        </Box>
-      </Field>
-
-      {token.showLabel && (
-        <Field>
-          <FieldLabel>Label Position</FieldLabel>
-          <Select
-            value={token.labelPosition || 'bottom'}
-            onValueChange={(value) => onUpdate({ labelPosition: value as Token['labelPosition'] })}
+        <Box display="flex" flexDirection="column" gap={2}>
+          {/* Name */}
+          <Box>
+            <Box marginBottom={1}>
+              <Text size="xs" color="gray400">Name</Text>
+            </Box>
+            <Input
+              value={token.name || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ name: e.target.value })}
+              placeholder="Token name"
+              size="sm"
               fullWidth
-          >
-            <SelectOption value="top">Top</SelectOption>
-            <SelectOption value="bottom">Bottom</SelectOption>
-          </Select>
-        </Field>
-      )}
-    </PanelSection>
+              style={{ border: '1px solid #525252' }}
+            />
+          </Box>
 
-    {/* HP Management Section */}
-    <PanelSection>
-      <Box
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          marginBottom: '12px'
-        }}
-      >
-        <Heart size={16} color="#DC2626" />
-        <Text
-          variant="label"
-          style={{
-            fontWeight: '600',
-            color: 'var(--colors-gray100)'
-          }}
-        >
-          Hit Points
-        </Text>
+          {/* Size and Shape Row */}
+          <Box display="flex" gap={2}>
+            <Box flexGrow={1}>
+              <Box marginBottom={1}>
+                <Text size="xs" color="gray400">Size</Text>
+              </Box>
+              <Box display="flex" gap={1}>
+                <select
+                  value={token.size}
+                  onChange={(e) => onUpdate({ size: e.target.value as Token['size'] })}
+                  style={{
+                    width: '100%',
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    backgroundColor: '#262626',
+                    border: '1px solid #525252',
+                    borderRadius: '4px',
+                    color: '#F5F5F5',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="tiny">Tiny</option>
+                  <option value="small">Small</option>
+                  <option value="medium">Medium</option>
+                  <option value="large">Large</option>
+                  <option value="huge">Huge</option>
+                  <option value="gargantuan">Gargantuan</option>
+                </select>
+              </Box>
+            </Box>
+
+            <Box style={{ width: '80px' }}>
+              <Box marginBottom={1}>
+                <Text size="xs" color="gray400">Shape</Text>
+              </Box>
+              <Box display="flex" gap={1}>
+                <Button
+                  onClick={() => onUpdate({ shape: 'circle' })}
+                  size="sm"
+                  variant={token.shape === 'circle' ? 'primary' : 'outline'}
+                  style={{
+                    flex: 1,
+                    padding: '4px',
+                    minWidth: '0',
+                    backgroundColor: token.shape === 'circle' ? '#C9AD6A' : 'transparent',
+                    borderColor: token.shape === 'circle' ? '#C9AD6A' : '#525252',
+                    color: token.shape === 'circle' ? '#1A1A1A' : '#D4D4D4'
+                  }}
+                >
+                  ○
+                </Button>
+                <Button
+                  onClick={() => onUpdate({ shape: 'square' })}
+                  size="sm"
+                  variant={token.shape === 'square' ? 'primary' : 'outline'}
+                  style={{
+                    flex: 1,
+                    padding: '4px',
+                    minWidth: '0',
+                    backgroundColor: token.shape === 'square' ? '#C9AD6A' : 'transparent',
+                    borderColor: token.shape === 'square' ? '#C9AD6A' : '#525252',
+                    color: token.shape === 'square' ? '#1A1A1A' : '#D4D4D4'
+                  }}
+                >
+                  □
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Color */}
+          <Box>
+            <Box marginBottom={1}>
+              <Text size="xs" color="gray400">Color</Text>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1}>
+              <input
+                type="color"
+                value={token.color}
+                onChange={(e) => onUpdate({ color: e.target.value })}
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                  border: '1px solid #525252'
+                }}
+              />
+              <Input
+                value={token.color}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ color: e.target.value })}
+                size="sm"
+                fullWidth
+                style={{ border: '1px solid #525252' }}
+              />
+            </Box>
+          </Box>
+
+          {/* Show Label Checkbox */}
+          <Box display="flex" alignItems="center" gap={2}>
+            <input
+              type="checkbox"
+              id="showLabel"
+              checked={token.showLabel || false}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ showLabel: e.target.checked })}
+              style={{
+                width: '14px',
+                height: '14px',
+                cursor: 'pointer'
+              }}
+            />
+            <label
+              htmlFor="showLabel"
+              style={{
+                cursor: 'pointer',
+                fontSize: '12px',
+                color: '#D4D4D4'
+              }}
+            >
+              Show Label
+            </label>
+          </Box>
+
+          {/* Label Position - only show if showLabel is true */}
+          {token.showLabel && (
+            <Box>
+              <Box marginBottom={1}>
+                <Text size="xs" color="gray400">Label Position</Text>
+              </Box>
+              <select
+                value={token.labelPosition || 'bottom'}
+                onChange={(e) => onUpdate({ labelPosition: e.target.value as Token['labelPosition'] })}
+                style={{
+                  width: '100%',
+                  padding: '4px 8px',
+                  fontSize: '12px',
+                  backgroundColor: '#262626',
+                  border: '1px solid #525252',
+                  borderRadius: '4px',
+                  color: '#F5F5F5',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="top">Top</option>
+                <option value="bottom">Bottom</option>
+              </select>
+            </Box>
+          )}
+        </Box>
       </Box>
 
-      <Field>
-        <Box
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
+      {/* Divider */}
+      <Box style={{
+        height: '1px',
+        backgroundColor: '#404040',
+        margin: '8px 0'
+      }} />
+
+      {/* HP Management */}
+      <Box display="flex" flexDirection="column" gap={2}>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Heart size={14} color="#EF4444" />
+          <Text size="xs" weight="semibold" color="gray300">Hit Points</Text>
+        </Box>
+
+        {/* Visual HP Indicator - Linear Progress Bar */}
+        {token.maxHP && token.maxHP > 0 && (
+          <Box display="flex" flexDirection="column" gap={1} data-testid="hp-indicator">
+            <Box
+              style={{
+                height: '8px',
+                backgroundColor: '#404040',
+                borderRadius: '4px',
+                overflow: 'hidden',
+                border: '1px solid #525252'
+              }}
+            >
+              <Box
+                style={{
+                  height: '100%',
+                  width: `${Math.min(100, Math.max(0, ((token.currentHP || 0) / token.maxHP) * 100))}%`,
+                  backgroundColor: !token.currentHP || token.currentHP <= 0
+                    ? '#737373'
+                    : token.currentHP <= (token.maxHP / 4)
+                      ? '#EF4444'
+                      : token.currentHP <= (token.maxHP / 2)
+                        ? '#F59E0B'
+                        : '#10B981',
+                  transition: 'width 0.3s ease'
+                }}
+              />
+            </Box>
+            <Text
+              size="xs"
+              weight="semibold"
+              style={{
+                color: !token.currentHP || token.currentHP <= 0
+                  ? '#737373'
+                  : token.currentHP <= (token.maxHP / 4)
+                    ? '#EF4444'
+                    : token.currentHP <= (token.maxHP / 2)
+                      ? '#F59E0B'
+                      : '#10B981'
+              }}
+            >
+              {token.currentHP || 0} / {token.maxHP}{token.tempHP ? ` (+${token.tempHP})` : ''}
+            </Text>
+          </Box>
+        )}
+
+        {/* Show HP Ring Checkbox */}
+        <Box display="flex" alignItems="center" gap={2}>
           <input
             type="checkbox"
             id="showHP"
             checked={token.showHP || false}
             onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ showHP: e.target.checked })}
             style={{
-              width: '16px',
-              height: '16px',
-              backgroundColor: 'var(--colors-gray800)',
-              borderColor: 'var(--colors-gray600)',
-              borderRadius: '4px'
+              width: '14px',
+              height: '14px',
+              cursor: 'pointer'
             }}
           />
-          <FieldLabel
+          <label
             htmlFor="showHP"
             style={{
-              margin: 0,
-              cursor: 'pointer'
+              cursor: 'pointer',
+              fontSize: '12px',
+              color: '#D4D4D4'
             }}
           >
             Show HP Ring
-          </FieldLabel>
+          </label>
         </Box>
-      </Field>
 
-      <Field>
-        <FieldLabel>Current HP</FieldLabel>
-        <Box
-          style={{
-            display: 'flex',
-            gap: '8px'
-          }}
-        >
+        {/* Current and Max HP */}
+        <Box display="flex" gap={2}>
+          <Box flexGrow={1}>
+            <Box marginBottom={1}>
+              <Text size="xs" color="gray400">Current HP</Text>
+            </Box>
+            <Box display="flex" gap={1}>
+              <Input
+                type="number"
+                value={token.currentHP || 0}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  onUpdate({ currentHP: parseInt(e.target.value) || 0 })}
+                size="sm"
+                fullWidth
+                style={{ border: '1px solid #525252' }}
+              />
+              <Button
+                onClick={() => onUpdate({ currentHP: Math.max(0, (token.currentHP || 0) - 1) })}
+                size="sm"
+                variant="outline"
+                title="Decrease by 1"
+                style={{ padding: '4px 6px' }}
+              >
+                <Minus size={12} />
+              </Button>
+              <Button
+                onClick={() => onUpdate({ currentHP: (token.currentHP || 0) + 1 })}
+                size="sm"
+                variant="outline"
+                title="Increase by 1"
+                style={{ padding: '4px 6px' }}
+              >
+                <Plus size={12} />
+              </Button>
+            </Box>
+          </Box>
+
+          <Box style={{ width: '80px' }}>
+            <Box marginBottom={1}>
+              <Text size="xs" color="gray400">Max HP</Text>
+            </Box>
+            <Input
+              type="number"
+              value={token.maxHP || 0}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                onUpdate({ maxHP: parseInt(e.target.value) || 0 })}
+              size="sm"
+              fullWidth
+              style={{ border: '1px solid #525252' }}
+            />
+          </Box>
+        </Box>
+
+        {/* Temp HP */}
+        <Box>
+          <Box marginBottom={1} display="flex" alignItems="center" gap={1}>
+            <Shield size={12} color="#3B82F6" />
+            <Text size="xs" color="gray400">Temporary HP</Text>
+          </Box>
           <Input
             type="number"
-            value={token.currentHP || 0}
+            value={token.tempHP || 0}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              onUpdate({ currentHP: parseInt(e.target.value) || 0 })}
-              style={{
-              flex: 1
-            }}
+              onUpdate({ tempHP: parseInt(e.target.value) || 0 })}
+            size="sm"
+            fullWidth
+            style={{ border: '1px solid #525252' }}
           />
-          <Button
-            onClick={() => onUpdate({ currentHP: (token.currentHP || 0) - 1 })}
-            variant="outline"
-              title="Decrease by 1"
-            style={{
-              backgroundColor: 'var(--colors-gray800)',
-              borderColor: 'var(--colors-gray600)',
-              color: 'var(--colors-gray300)'
-            }}
-          >
-            <Minus size={14} />
-          </Button>
-          <Button
-            onClick={() => onUpdate({ currentHP: (token.currentHP || 0) + 1 })}
-            variant="outline"
-              title="Increase by 1"
-            style={{
-              backgroundColor: 'var(--colors-gray800)',
-              borderColor: 'var(--colors-gray600)',
-              color: 'var(--colors-gray300)'
-            }}
-          >
-            <Plus size={14} />
-          </Button>
         </Box>
-      </Field>
 
-      <Field>
-        <FieldLabel>Max HP</FieldLabel>
-        <Input
-          type="number"
-          value={token.maxHP || 0}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            onUpdate({ maxHP: parseInt(e.target.value) || 0 })}
-          fullWidth
-        />
-      </Field>
-
-      <Field>
-        <FieldLabel>
-          <Box
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-          >
-            <Shield size={14} color="#3B82F6" />
-            <span>Temp HP</span>
+        {/* Quick Actions */}
+        <Box>
+          <Box marginBottom={1}>
+            <Text size="xs" color="gray400">Quick Actions</Text>
           </Box>
-        </FieldLabel>
-        <Input
-          type="number"
-          value={token.tempHP || 0}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            onUpdate({ tempHP: parseInt(e.target.value) || 0 })}
-          fullWidth
-        />
-      </Field>
-
-      {/* Quick Actions */}
-      <Box
-        style={{
-          display: 'flex',
-          gap: '8px',
-          marginTop: '12px'
-        }}
-      >
-        <Button
-          onClick={() => onUpdate({ currentHP: (token.currentHP || 0) - 5 })}
-          variant="outline"
-          title="Damage 5"
-          style={{
-            flex: 1,
-            backgroundColor: 'var(--colors-gray800)',
-            borderColor: 'var(--colors-gray600)',
-            color: 'var(--colors-gray300)'
-          }}
-        >
-          -5
-        </Button>
-        <Button
-          onClick={() => onUpdate({ currentHP: (token.currentHP || 0) + 5 })}
-          variant="outline"
-          title="Heal 5"
-          style={{
-            flex: 1,
-            backgroundColor: 'var(--colors-gray800)',
-            borderColor: 'var(--colors-gray600)',
-            color: 'var(--colors-gray300)'
-          }}
-        >
-          +5
-        </Button>
-        <Button
-          onClick={() => onUpdate({ currentHP: token.maxHP || 0 })}
-          variant="outline"
-          title="Heal to full"
-          style={{
-            flex: 1,
-            backgroundColor: 'var(--colors-gray800)',
-            borderColor: 'var(--colors-gray600)',
-            color: 'var(--colors-gray300)'
-          }}
-        >
-          Full
-        </Button>
-        <Button
-          onClick={() => onUpdate({ currentHP: 0 })}
-          variant="outline"
-          title="Knock out"
-          style={{
-            flex: 1,
-            backgroundColor: 'var(--colors-gray800)',
-            borderColor: 'var(--colors-gray600)',
-            color: 'var(--colors-gray300)'
-          }}
-        >
-          KO
-        </Button>
-      </Box>
-
-      {/* HP Display */}
-      {token.maxHP && (
-        <Box
-          style={{
-            marginTop: '12px',
-            padding: '8px',
-            backgroundColor: 'var(--colors-gray800)',
-            borderRadius: '4px',
-            border: '1px solid var(--colors-gray700)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}
-        >
-          <Text
-            variant="body"
-            size="lg"
-            style={{
-              fontWeight: 'bold',
-              color: 'var(--colors-secondary)'
-            }}
-          >
-            {token.currentHP || 0} / {token.maxHP}
-            {token.tempHP ? ` (+${token.tempHP})` : ''}
-          </Text>
+          <Box display="flex" gap={1}>
+            <Button
+              onClick={() => onUpdate({ currentHP: Math.max(0, (token.currentHP || 0) - 5) })}
+              size="sm"
+              variant="outline"
+              title="Damage 5"
+              style={{ flex: 1, fontSize: '11px', padding: '4px' }}
+            >
+              -5
+            </Button>
+            <Button
+              onClick={() => onUpdate({ currentHP: (token.currentHP || 0) + 5 })}
+              size="sm"
+              variant="outline"
+              title="Heal 5"
+              style={{ flex: 1, fontSize: '11px', padding: '4px' }}
+            >
+              +5
+            </Button>
+            <Button
+              onClick={() => onUpdate({ currentHP: token.maxHP || 0 })}
+              size="sm"
+              variant="outline"
+              title="Heal to full"
+              style={{ flex: 1, fontSize: '11px', padding: '4px' }}
+            >
+              Full
+            </Button>
+            <Button
+              onClick={() => onUpdate({ currentHP: 0 })}
+              size="sm"
+              variant="outline"
+              title="Knock out"
+              style={{ flex: 1, fontSize: '11px', padding: '4px' }}
+            >
+              KO
+            </Button>
+          </Box>
         </Box>
-      )}
-    </PanelSection>
-    </>
+
+      </Box>
+    </Box>
   )
 }
 
