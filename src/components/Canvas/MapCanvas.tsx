@@ -5,7 +5,7 @@
  * Implements Layer 1 (Grid), Layer 2 (Objects + Effects), Layer 3 (Selection + Drawing + Preview).
  */
 
-import React, { useCallback, useState, useRef } from 'react'
+import { useCallback, useState, useRef, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
 import { Stage, Layer, Group } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
@@ -23,7 +23,7 @@ import type { Point } from '@/types/geometry'
 import type { Token as TokenType } from '@/types/token'
 import type { MapCanvasProps } from './types'
 
-export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
+export const MapCanvas: FC<MapCanvasProps> = memo(({
   width,
   height,
   stageRef,
@@ -351,7 +351,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
           clientY: e.evt.clientY,
           preventDefault: () => e.evt.preventDefault(),
           stopPropagation: () => e.evt.stopPropagation()
-        } as React.MouseEvent,
+        } as ReactMouseEvent,
         'canvas'
       )
     }

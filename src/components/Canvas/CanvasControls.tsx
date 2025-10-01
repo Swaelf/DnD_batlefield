@@ -77,7 +77,7 @@ const CanvasControlsComponent = ({
   className,
   style
 }: CanvasControlsProps) => {
-  const panelStyles: React.CSSProperties = {
+  const panelStyles: CSSProperties = {
     position: 'absolute',
     top: '16px',
     right: '16px',
@@ -91,7 +91,7 @@ const CanvasControlsComponent = ({
     ...style,
   }
 
-  const containerStyles: React.CSSProperties = {
+  const containerStyles: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',

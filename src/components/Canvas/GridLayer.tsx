@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo, memo, type FC } from 'react'
 import { Line, Group } from 'react-konva'
 
 type GridLayerProps = {
@@ -13,7 +13,7 @@ type GridLayerProps = {
   viewportHeight: number
 }
 
-const GridLayer: React.FC<GridLayerProps> = ({
+const GridLayer: FC<GridLayerProps> = ({
   width,
   height,
   gridSize,
@@ -156,4 +156,4 @@ const arePropsEqual = (prevProps: GridLayerProps, nextProps: GridLayerProps): bo
   return scaleDiff < prevProps.scale * 0.05 && positionDiff < prevProps.gridSize
 }
 
-export default React.memo(GridLayer, arePropsEqual)
+export default memo(GridLayer, arePropsEqual)
