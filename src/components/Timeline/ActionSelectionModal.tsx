@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { Search, Zap, Sword, Users, X, Move, Edit } from '@/utils/optimizedIcons'
 import useAnimationStore from '@/store/animationStore'
 import { Box } from '@/components/primitives/BoxVE'

@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC } from 'react'
 import type { Timeline } from '@/types'
 import { Box } from '@/components/primitives'
 import {
@@ -17,7 +17,7 @@ type RoundTimelineProps = {
   activeSpells: number
 }
 
-const RoundTimelineComponent: React.FC<RoundTimelineProps> = ({
+const RoundTimelineComponent: FC<RoundTimelineProps> = ({
   timeline,
   currentGroup,
   activeSpells

@@ -1,4 +1,4 @@
-import { memo, type ChangeEvent } from 'react'
+import { memo, type ChangeEvent, type FC } from 'react'
 import { Pause, Plus, Sparkles, ChevronUp, ChevronDown } from '@/utils/optimizedIcons'
 import { Text, Box } from '@/components/primitives'
 import {
@@ -24,7 +24,7 @@ type CombatControlsProps = {
   onSetAnimationSpeed: (speed: number) => void
 }
 
-const CombatControlsComponent: React.FC<CombatControlsProps> = ({
+const CombatControlsComponent: FC<CombatControlsProps> = ({
   eventCount,
   activeSpells,
   animationSpeed: _animationSpeed,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, type FC } from 'react'
 import { Play, Pause, SkipForward, SkipBack, Clock, Zap, Eye, EyeOff, Move } from '@/utils/optimizedIcons'
 import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
@@ -11,7 +11,7 @@ type TimelineProps = {
   onEditEvents?: () => void
 }
 
-export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
+export const Timeline: FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
   const [isExpanded] = useState(false)
   // Use specific selectors to prevent unnecessary re-renders
   const timeline = useTimelineStore(state => state.timeline)

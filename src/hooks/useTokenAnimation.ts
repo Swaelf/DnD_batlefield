@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, type MutableRefObject } from 'react'
 import type Konva from 'konva'
 import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
@@ -6,7 +6,7 @@ import useAnimationStore from '@/store/animationStore'
 import type { TimelineAction } from '@/types/timeline';
 import { isMoveEvent, isAppearEvent, isDisappearEvent, isSpellEvent } from '@/types/timeline'
 
-export function useTokenAnimation(stageRef: React.MutableRefObject<Konva.Stage | null>) {
+export function useTokenAnimation(stageRef: MutableRefObject<Konva.Stage | null>) {
   const activeSpellAnimations = useRef<Set<string>>(new Set())
   const rafIdsRef = useRef<Set<number>>(new Set())
   const timeoutIdsRef = useRef<Set<NodeJS.Timeout>>(new Set())

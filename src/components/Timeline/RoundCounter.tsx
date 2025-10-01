@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC } from 'react'
 import { SkipForward } from '@/utils/optimizedIcons'
 import { Text } from '@/components/primitives'
 import {
@@ -14,7 +14,7 @@ type RoundCounterProps = {
   onPreviousGroup: () => void
 }
 
-const RoundCounterComponent: React.FC<RoundCounterProps> = ({
+const RoundCounterComponent: FC<RoundCounterProps> = ({
   currentGroup,
   onNextGroup,
   onPreviousGroup
