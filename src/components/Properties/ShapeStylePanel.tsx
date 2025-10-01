@@ -1,4 +1,4 @@
-import React from 'react'
+import { type FC, type ChangeEvent } from 'react'
 import { Palette, Square, Circle, Triangle } from '@/utils/optimizedIcons'
 import useToolStore from '@store/toolStore'
 import { Box } from '@/components/primitives/BoxVE'
@@ -28,7 +28,7 @@ const STROKE_COLORS = [
   { name: 'Silver', color: '#6B7280' },
 ]
 
-export const ShapeStylePanel: React.FC = () => {
+export const ShapeStylePanel: FC = () => {
   const currentTool = useToolStore(state => state.currentTool)
   const fillColor = useToolStore(state => state.fillColor)
   const strokeColor = useToolStore(state => state.strokeColor)
@@ -203,7 +203,7 @@ export const ShapeStylePanel: React.FC = () => {
           max="10"
           step="1"
           value={strokeWidth}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStrokeWidth(Number(e.target.value))}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setStrokeWidth(Number(e.target.value))}
           style={{
             flex: 1,
             appearance: 'none',
@@ -241,7 +241,7 @@ export const ShapeStylePanel: React.FC = () => {
           max="1"
           step="0.1"
           value={opacity}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOpacity(Number(e.target.value))}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setOpacity(Number(e.target.value))}
           style={{
             flex: 1,
             appearance: 'none',
