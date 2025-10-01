@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import { type FC, useRef, useState } from 'react'
 import { Group, Line, Rect } from 'react-konva'
 import type Konva from 'konva'
 // import useMapStore from '@store/mapStore' // Unused

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import { type FC, useRef, useEffect, useState, useCallback } from 'react'
 import { Group, Rect, Circle, Line, Arc } from 'react-konva'
 import type Konva from 'konva'
 import type { Point } from '@/types/geometry'

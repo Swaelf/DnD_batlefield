@@ -1,4 +1,4 @@
-import { useState, useCallback, type FC, type ChangeEvent } from 'react'
+import { useState, useCallback, type ChangeEvent } from 'react'
 import { Users, Crown } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'

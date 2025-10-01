@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FC, type ChangeEvent } from 'react'
+import { useState, useEffect, useRef, type ChangeEvent } from 'react'
 import ReactDOM from 'react-dom'
 import type { Token } from '@/types'
 import { Heart, Shield } from '@/utils/optimizedIcons'

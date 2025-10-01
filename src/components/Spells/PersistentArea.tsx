@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import { type FC, useRef, useEffect } from 'react'
 import { Circle, Group } from 'react-konva'
 import Konva from 'konva'
 import type { Position } from '@/types/map'

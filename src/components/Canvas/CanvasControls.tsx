@@ -1,4 +1,4 @@
-import { memo, forwardRef, type FC, type ReactNode, type CSSProperties } from 'react'
+import { memo, forwardRef, type ReactNode, type CSSProperties } from 'react'
 import { Text } from '@/components/primitives/TextVE'
 
 export type CanvasControlsProps = {

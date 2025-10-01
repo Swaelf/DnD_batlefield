@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, type FC, type ChangeEvent } from 'react'
+import { useState, useCallback, useMemo, type ChangeEvent } from 'react'
 import {
   Save,
   Download,

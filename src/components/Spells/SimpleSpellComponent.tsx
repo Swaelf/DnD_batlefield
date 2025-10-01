@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { type FC, useEffect, useRef, useState } from 'react'
 import { Group, Circle, Ring, RegularPolygon, Line, Star } from 'react-konva'
 import type { SpellEventData } from '@/types/timeline'
 import type { Position } from '@/types/map'

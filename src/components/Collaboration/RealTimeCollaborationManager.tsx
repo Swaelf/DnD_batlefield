@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef, type FC, type RefObject, type ChangeEvent, type KeyboardEvent, type FormEvent } from 'react'
+import { useCallback, useEffect, useState, useRef, type FC, type RefObject, type ChangeEvent, type FormEvent } from 'react'
 import { Group, Text as KonvaText, Rect } from 'react-konva'
 import type Konva from 'konva'
 import { Users, MessageSquare, Settings, UserPlus, Crown, Eye } from '@/utils/optimizedIcons'
