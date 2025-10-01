@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, Fragment, type FC, type ReactNode, type MouseEvent as ReactMouseEvent } from 'react'
 import {
   Copy,
   Trash2,
@@ -22,7 +22,7 @@ import { Button } from '@/components/primitives/ButtonVE'
 export interface ContextMenuItem {
   id: string
   label: string
-  icon?: React.ReactNode
+  icon?: ReactNode
   shortcut?: string
   onClick: () => void
   disabled?: boolean
@@ -36,7 +36,7 @@ export interface ContextMenuProps {
   onClose: () => void
 }
 
-export const ContextMenu: React.FC<ContextMenuProps> = ({
+export const ContextMenu: FC<ContextMenuProps> = ({
   isOpen,
   position,
   items,
@@ -172,7 +172,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         }}
       >
         {items.map((item) => (
-          <React.Fragment key={item.id}>
+          <Fragment key={item.id}>
             {item.divider && (
               <Box
                 style={{
@@ -185,7 +185,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             <Button
               variant="ghost"
               disabled={item.disabled}
-              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+              onClick={(e: ReactMouseEvent<HTMLButtonElement>) => {
                 e.preventDefault()
                 e.stopPropagation()
                 item.onClick()
@@ -206,13 +206,13 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 transition: 'background-color 0.1s ease',
                 justifyContent: 'flex-start'
               }}
-              onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+              onMouseEnter={(e: ReactMouseEvent<HTMLButtonElement>) => {
                 if (!item.disabled) {
                   e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
                   e.currentTarget.style.color = 'var(--colors-gray100)'
                 }
               }}
-              onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+              onMouseLeave={(e: ReactMouseEvent<HTMLButtonElement>) => {
                 if (!item.disabled) {
                   e.currentTarget.style.backgroundColor = 'transparent'
                   e.currentTarget.style.color = 'var(--colors-gray200)'
@@ -256,7 +256,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 </Text>
               )}
             </Button>
-          </React.Fragment>
+          </Fragment>
         ))}
       </Box>
     </>

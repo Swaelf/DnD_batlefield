@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC, type ChangeEvent } from 'react'
 import type { Token } from '@/types'
 import { ColorPicker } from './ColorPicker'
 import { Heart, Shield, Plus, Minus } from '@/utils/optimizedIcons'
@@ -20,7 +20,7 @@ type TokenPropertiesProps = {
   onUpdate: (updates: Partial<Token>) => void
 }
 
-const TokenPropertiesComponent: React.FC<TokenPropertiesProps> = ({
+const TokenPropertiesComponent: FC<TokenPropertiesProps> = ({
   token,
   onUpdate
 }) => {
@@ -31,7 +31,7 @@ const TokenPropertiesComponent: React.FC<TokenPropertiesProps> = ({
         <FieldLabel>Name</FieldLabel>
         <Input
           value={token.name || ''}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ name: e.target.value })}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ name: e.target.value })}
           placeholder="Token name"
           fullWidth
         />
@@ -108,7 +108,7 @@ const TokenPropertiesComponent: React.FC<TokenPropertiesProps> = ({
             type="checkbox"
             id="showLabel"
             checked={token.showLabel || false}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ showLabel: e.target.checked })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ showLabel: e.target.checked })}
             style={{
               width: '16px',
               height: '16px',
@@ -178,7 +178,7 @@ const TokenPropertiesComponent: React.FC<TokenPropertiesProps> = ({
             type="checkbox"
             id="showHP"
             checked={token.showHP || false}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ showHP: e.target.checked })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ showHP: e.target.checked })}
             style={{
               width: '16px',
               height: '16px',
@@ -210,7 +210,7 @@ const TokenPropertiesComponent: React.FC<TokenPropertiesProps> = ({
           <Input
             type="number"
             value={token.currentHP || 0}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onUpdate({ currentHP: parseInt(e.target.value) || 0 })}
               style={{
               flex: 1
@@ -248,7 +248,7 @@ const TokenPropertiesComponent: React.FC<TokenPropertiesProps> = ({
         <Input
           type="number"
           value={token.maxHP || 0}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
             onUpdate({ maxHP: parseInt(e.target.value) || 0 })}
           fullWidth
         />
@@ -270,7 +270,7 @@ const TokenPropertiesComponent: React.FC<TokenPropertiesProps> = ({
         <Input
           type="number"
           value={token.tempHP || 0}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
             onUpdate({ tempHP: parseInt(e.target.value) || 0 })}
           fullWidth
         />
