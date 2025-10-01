@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import { useCallback, useState, type ChangeEvent } from 'react'
 import {
   Users,
   UserPlus,
@@ -150,15 +150,15 @@ export const UserManagementPanel = ({
     return '#F39C12'
   }, [])
 
-  const handleInviteEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInviteEmailChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setInviteEmail(e.target.value)
   }, [])
 
-  const handleInviteRoleChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleInviteRoleChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
     setInviteRole(e.target.value as UserRole)
   }, [])
 
-  const handleNewUserNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNewUserNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setNewUserName(e.target.value)
   }, [])
 
