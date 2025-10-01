@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, type FC, type ChangeEvent } from 'react'
 import {
   Save,
   Download,
@@ -207,7 +207,7 @@ export const CustomActionBuilder = ({
           <Input
             id="sequenceName"
             value={action.sequenceName || ''}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
               handleActionChange({ sequenceName: e.target.value })
             }
             placeholder="Enter sequence name..."
@@ -242,7 +242,7 @@ export const CustomActionBuilder = ({
             id="priority"
             type="number"
             value={action.priority || 50}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
               handleActionChange({ priority: parseInt(e.target.value) || 50 })
             }
             min="0"
@@ -343,7 +343,7 @@ export const CustomActionBuilder = ({
                     <Input
                       type="number"
                       value={sequenceAction.priority || 50}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleActionUpdate(index, { priority: parseInt(e.target.value) || 0 })
                       }
                       min="0"
@@ -357,7 +357,7 @@ export const CustomActionBuilder = ({
                       <Input
                         type="number"
                         value={sequenceAction.delay || 0}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleActionUpdate(index, { delay: parseInt(e.target.value) || 0 })
                         }
                         min="0"
@@ -413,7 +413,7 @@ export const CustomActionBuilder = ({
                 id="maxDuration"
                 type="number"
                 value={action.maxDuration || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleActionChange({ maxDuration: parseInt(e.target.value) || undefined })
                 }
                 placeholder="No limit"
@@ -428,7 +428,7 @@ export const CustomActionBuilder = ({
               <Input
                 id="templateId"
                 value={action.templateId || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleActionChange({ templateId: e.target.value })
                 }
                 placeholder="Optional template reference"
@@ -476,7 +476,7 @@ export const CustomActionBuilder = ({
         <Input
           id="description"
           value={action.description || ''}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
             handleActionChange({ description: e.target.value })
           }
           placeholder="Describe what this action does..."

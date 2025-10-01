@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback } from 'react'
+import { memo, useState, useCallback, type FC, type ChangeEvent } from 'react'
 import { Play, Pause, Plus, Trash2, Copy, Settings } from '@/utils/optimizedIcons'
 import {
   SEQUENCE_TYPES,
@@ -45,7 +45,7 @@ type ActionSequencerProps = {
   executionResult?: SequenceResult | null
 }
 
-const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
+const ActionSequencerComponent: FC<ActionSequencerProps> = ({
   selectedSequence,
   onSequenceChange,
   onExecuteSequence,
@@ -234,7 +234,7 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
             <FieldLabel style={{ marginBottom: '8px' }}>Sequence Name</FieldLabel>
             <Input
               value={sequence.sequenceName || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSequenceChange({ ...sequence, sequenceName: e.target.value })}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onSequenceChange({ ...sequence, sequenceName: e.target.value })}
               placeholder="Enter sequence name..."
             />
           </Box>
@@ -369,7 +369,7 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
                           <Input
                             type="number"
                             value={action.priority}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleActionUpdate(index, { priority: parseInt(e.target.value) || 0 })}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => handleActionUpdate(index, { priority: parseInt(e.target.value) || 0 })}
                             min="0"
                             max="100"
                           />
@@ -382,7 +382,7 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
                           <Input
                             type="number"
                             value={action.delay || 0}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleActionUpdate(index, { delay: parseInt(e.target.value) || 0 })}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => handleActionUpdate(index, { delay: parseInt(e.target.value) || 0 })}
                             min="0"
                           />
                         </Box>
@@ -393,7 +393,7 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
                           <input
                             type="checkbox"
                             checked={action.optional || false}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleActionUpdate(index, { optional: e.target.checked })}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => handleActionUpdate(index, { optional: e.target.checked })}
                           />
                           <Text size="sm">Optional (sequence continues on failure)</Text>
                         </Box>
@@ -467,7 +467,7 @@ const ActionSequencerComponent: React.FC<ActionSequencerProps> = ({
             <FieldLabel style={{ marginBottom: '8px' }}>Description</FieldLabel>
             <Input
               value={sequence.description || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSequenceChange({ ...sequence, description: e.target.value })}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onSequenceChange({ ...sequence, description: e.target.value })}
               placeholder="Describe the sequence..."
             />
           </Box>
