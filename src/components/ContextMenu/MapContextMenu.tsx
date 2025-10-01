@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, type FC, type MouseEvent as ReactMouseEvent } from 'react'
 import {
   Square,
   Circle,
@@ -24,7 +24,7 @@ type MapContextMenuProps = {
   onClose: () => void
 }
 
-export const MapContextMenu: React.FC<MapContextMenuProps> = ({
+export const MapContextMenu: FC<MapContextMenuProps> = ({
   position,
   canvasPosition,
   onClose
@@ -169,7 +169,7 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
           zIndex: 999
         }}
         onClick={onClose}
-        onContextMenu={(e: React.MouseEvent) => {
+        onContextMenu={(e: ReactMouseEvent) => {
           e.preventDefault()
           onClose()
         }}
@@ -224,10 +224,10 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
               backgroundColor: 'transparent',
               border: 'none'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseEnter={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseLeave={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'transparent'
             }}
           >
@@ -250,10 +250,10 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
               backgroundColor: 'transparent',
               border: 'none'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseEnter={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseLeave={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'transparent'
             }}
           >
@@ -276,10 +276,10 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
               backgroundColor: 'transparent',
               border: 'none'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseEnter={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseLeave={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'transparent'
             }}
           >
@@ -302,10 +302,10 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
               backgroundColor: 'transparent',
               border: 'none'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseEnter={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseLeave={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'transparent'
             }}
           >
@@ -348,10 +348,10 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
               backgroundColor: 'transparent',
               border: 'none'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseEnter={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseLeave={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'transparent'
             }}
           >
@@ -375,10 +375,10 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
               backgroundColor: 'transparent',
               border: 'none'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseEnter={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseLeave={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'transparent'
             }}
           >
@@ -402,10 +402,10 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
               backgroundColor: 'transparent',
               border: 'none'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseEnter={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseLeave={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'transparent'
             }}
           >
@@ -434,10 +434,10 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
               backgroundColor: 'transparent',
               border: 'none'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseEnter={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseLeave={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'transparent'
             }}
           >
@@ -467,10 +467,10 @@ export const MapContextMenu: React.FC<MapContextMenuProps> = ({
               backgroundColor: 'transparent',
               border: 'none'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseEnter={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseLeave={(e: ReactMouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'transparent'
             }}
           >
