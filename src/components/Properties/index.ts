@@ -28,6 +28,10 @@ export { ColorPaletteSelector } from './ColorPaletteSelector'
 export { StyleSliderControl } from './StyleSliderControl'
 export { StylePresetButtons } from './StylePresetButtons'
 
+// Static object properties sub-components
+export { DimensionControls } from './DimensionControls'
+export { AppearanceControls } from './AppearanceControls'
+
 // Layer management sub-components
 export { LayerManagementHeader } from './LayerManagementHeader'
 export { LayerCreateForm } from './LayerCreateForm'
