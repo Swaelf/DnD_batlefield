@@ -118,7 +118,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       },
     }
 
-    const combinedStyles: React.CSSProperties = {
+    const combinedStyles: CSSProperties = {
       ...baseStyles,
       ...sizeStyles[size],
       ...variantStyles[variant],
@@ -221,7 +221,7 @@ export type DotBadgeProps = Omit<BadgeProps, 'children' | 'size'> & {
 
 export const DotBadge = forwardRef<HTMLSpanElement, DotBadgeProps>(
   ({ size: dotSize = 8, style, ...props }, ref) => {
-    const dotStyles: React.CSSProperties = {
+    const dotStyles: CSSProperties = {
       width: `${dotSize}px`,
       height: `${dotSize}px`,
       minWidth: `${dotSize}px`,
