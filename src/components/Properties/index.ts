@@ -17,3 +17,10 @@ export { TokenLabelSettings } from './TokenLabelSettings'
 export { TokenHPIndicator } from './TokenHPIndicator'
 export { TokenHPControls } from './TokenHPControls'
 export { TokenQuickActions } from './TokenQuickActions'
+
+// Layer management sub-components
+export { LayerManagementHeader } from './LayerManagementHeader'
+export { LayerCreateForm } from './LayerCreateForm'
+export { LayerList } from './LayerList'
+export { LayerListItem } from './LayerListItem'
+export { MoveToLayerControl } from './MoveToLayerControl'
