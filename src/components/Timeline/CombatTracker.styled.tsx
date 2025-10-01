@@ -1,126 +1,124 @@
 // Converted to Vanilla Extract CSS
 import * as styles from './CombatTracker.css'
-import React from 'react'
+import { forwardRef, type HTMLAttributes, type ButtonHTMLAttributes, type InputHTMLAttributes } from 'react'
 
-export const TrackerContainer = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const TrackerContainer = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.trackerContainer} {...props} />
 ))
+TrackerContainer.displayName = 'TrackerContainer'
 
-export const StartCombatButton = React.forwardRef<HTMLButtonElement, any>((props, ref) => (
+export const StartCombatButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>((props, ref) => (
   <button ref={ref} className={styles.startCombatButton} {...props} />
 ))
+StartCombatButton.displayName = 'StartCombatButton'
 
-export const CombatPanel = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const CombatPanel = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.combatPanel} {...props} />
 ))
+CombatPanel.displayName = 'CombatPanel'
 
-export const CombatBar = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const CombatBar = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.combatBar} {...props} />
 ))
+CombatBar.displayName = 'CombatBar'
 
-export const ExpandedSection = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const ExpandedSection = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.expandedSection} {...props} />
 ))
+ExpandedSection.displayName = 'ExpandedSection'
 
 // Additional styled components that other files need
-export const RoundCounter = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const RoundCounter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.roundCounter} {...props} />
 ))
+RoundCounter.displayName = 'RoundCounter'
 
-export const NavControls = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const NavControls = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.navControls} {...props} />
 ))
+NavControls.displayName = 'NavControls'
 
-export const NavButton = React.forwardRef<HTMLButtonElement, any>((props, ref) => (
+export const NavButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>((props, ref) => (
   <button ref={ref} className={styles.navButton} {...props} />
 ))
+NavButton.displayName = 'NavButton'
 
-export const NextRoundButton = React.forwardRef<HTMLButtonElement, any>((props, ref) => (
+export const NextRoundButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>((props, ref) => (
   <button ref={ref} className={styles.nextRoundButton} {...props} />
 ))
+NextRoundButton.displayName = 'NextRoundButton'
 
-export const StatusSection = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const StatusSection = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.statusSection} {...props} />
 ))
+StatusSection.displayName = 'StatusSection'
 
-export const EventsButton = React.forwardRef<HTMLButtonElement, any>((props, ref) => (
+export const EventsButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>((props, ref) => (
   <button ref={ref} className={styles.eventsButton} {...props} />
 ))
+EventsButton.displayName = 'EventsButton'
 
-export const StatusIndicator = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const StatusIndicator = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.statusIndicator} {...props} />
 ))
+StatusIndicator.displayName = 'StatusIndicator'
 
-export const ControlButton = React.forwardRef<HTMLButtonElement, any>((props, ref) => (
+export const ControlButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>((props, ref) => (
   <button ref={ref} className={styles.controlButton} {...props} />
 ))
+ControlButton.displayName = 'ControlButton'
 
-export const TimelineContainer = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const TimelineContainer = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.timelineContainer} {...props} />
 ))
+TimelineContainer.displayName = 'TimelineContainer'
 
-export const RoundButton = React.forwardRef<HTMLButtonElement, any>((props, ref) => (
+export const RoundButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>((props, ref) => (
   <button ref={ref} className={styles.roundButton} {...props} />
 ))
+RoundButton.displayName = 'RoundButton'
 
-export const EventIndicator = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const EventIndicator = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.eventIndicator} {...props} />
 ))
+EventIndicator.displayName = 'EventIndicator'
 
-export const SpeedControl = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const SpeedControl = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.speedControl} {...props} />
 ))
+SpeedControl.displayName = 'SpeedControl'
 
-export const SpeedLabel = React.forwardRef<HTMLSpanElement, any>((props, ref) => (
+export const SpeedLabel = forwardRef<HTMLSpanElement, HTMLAttributes<HTMLSpanElement>>((props, ref) => (
   <span ref={ref} className={styles.speedLabel} {...props} />
 ))
+SpeedLabel.displayName = 'SpeedLabel'
 
-export const SpeedInput = React.forwardRef<HTMLInputElement, any>((props, ref) => (
+export const SpeedInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>((props, ref) => (
   <input ref={ref} className={styles.speedInput} {...props} />
 ))
+SpeedInput.displayName = 'SpeedInput'
 
-export const SpeedValue = React.forwardRef<HTMLSpanElement, any>((props, ref) => (
+export const SpeedValue = forwardRef<HTMLSpanElement, HTMLAttributes<HTMLSpanElement>>((props, ref) => (
   <span ref={ref} className={styles.speedValue} {...props} />
 ))
+SpeedValue.displayName = 'SpeedValue'
 
-export const StatsGrid = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const StatsGrid = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.statsGrid} {...props} />
 ))
+StatsGrid.displayName = 'StatsGrid'
 
-export const StatCard = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const StatCard = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.statCard} {...props} />
 ))
+StatCard.displayName = 'StatCard'
 
-export const StatLabel = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const StatLabel = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.statLabel} {...props} />
 ))
+StatLabel.displayName = 'StatLabel'
 
-export const StatValue = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+export const StatValue = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div ref={ref} className={styles.statValue} {...props} />
 ))
-
-// Add displayName to all components to avoid React warnings
-TrackerContainer.displayName = 'TrackerContainer'
-StartCombatButton.displayName = 'StartCombatButton'
-CombatPanel.displayName = 'CombatPanel'
-CombatBar.displayName = 'CombatBar'
-ExpandedSection.displayName = 'ExpandedSection'
-RoundCounter.displayName = 'RoundCounter'
-NavControls.displayName = 'NavControls'
-NavButton.displayName = 'NavButton'
-NextRoundButton.displayName = 'NextRoundButton'
-StatusSection.displayName = 'StatusSection'
-EventsButton.displayName = 'EventsButton'
-StatusIndicator.displayName = 'StatusIndicator'
-ControlButton.displayName = 'ControlButton'
-TimelineContainer.displayName = 'TimelineContainer'
-RoundButton.displayName = 'RoundButton'
-EventIndicator.displayName = 'EventIndicator'
-SpeedControl.displayName = 'SpeedControl'
-SpeedLabel.displayName = 'SpeedLabel'
-SpeedInput.displayName = 'SpeedInput'
-SpeedValue.displayName = 'SpeedValue'
-StatsGrid.displayName = 'StatsGrid'
-StatCard.displayName = 'StatCard'
-StatLabel.displayName = 'StatLabel'
 StatValue.displayName = 'StatValue'

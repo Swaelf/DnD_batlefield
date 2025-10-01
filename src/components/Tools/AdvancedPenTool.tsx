@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type FC } from 'react'
+import { useCallback, useRef, useState, useEffect, type FC } from 'react'
 import { Group, Line, Circle } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
@@ -302,7 +302,7 @@ export const AdvancedPenTool: FC<AdvancedPenToolProps> = ({
   }, [isActive, mode, currentPath, pathToSVG, bezierToPoints, fillColor, strokeColor, strokeWidth, addObject, onPathComplete])
 
   // Handle keyboard shortcuts
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isActive) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
