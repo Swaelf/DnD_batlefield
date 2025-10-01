@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, type DragEvent } from 'react'
 
 interface DragItem {
   id: string
@@ -21,20 +21,20 @@ interface UseDragAndDropOptions {
 }
 
 export interface DragHandlers {
-  onDragStart: (e: React.DragEvent) => void
-  onDragEnd: (e: React.DragEvent) => void
-  onDragOver: (e: React.DragEvent) => void
-  onDragEnter: (e: React.DragEvent) => void
-  onDragLeave: (e: React.DragEvent) => void
-  onDrop: (e: React.DragEvent) => void
+  onDragStart: (e: DragEvent) => void
+  onDragEnd: (e: DragEvent) => void
+  onDragOver: (e: DragEvent) => void
+  onDragEnter: (e: DragEvent) => void
+  onDragLeave: (e: DragEvent) => void
+  onDrop: (e: DragEvent) => void
   draggable: true
 }
 
 export interface DropHandlers {
-  onDragOver: (e: React.DragEvent) => void
-  onDragEnter: (e: React.DragEvent) => void
-  onDragLeave: (e: React.DragEvent) => void
-  onDrop: (e: React.DragEvent) => void
+  onDragOver: (e: DragEvent) => void
+  onDragEnter: (e: DragEvent) => void
+  onDragLeave: (e: DragEvent) => void
+  onDrop: (e: DragEvent) => void
 }
 
 export function useDragAndDrop(options: UseDragAndDropOptions = {}) {
@@ -51,7 +51,7 @@ export function useDragAndDrop(options: UseDragAndDropOptions = {}) {
   const createDragHandlers = useCallback((item: DragItem): DragHandlers => {
     return {
       draggable: true,
-      onDragStart: (e: React.DragEvent) => {
+      onDragStart: (e: DragEvent) => {
         draggedItemRef.current = item
         setDragState(prev => ({
           ...prev,
@@ -67,7 +67,7 @@ export function useDragAndDrop(options: UseDragAndDropOptions = {}) {
         options.onDragStart?.(item)
       },
 
-      onDragEnd: (_e: React.DragEvent) => {
+      onDragEnd: (_e: DragEvent) => {
         const item = draggedItemRef.current
         if (item) {
           options.onDragEnd?.(item)
@@ -83,23 +83,23 @@ export function useDragAndDrop(options: UseDragAndDropOptions = {}) {
         dragCounterRef.current = 0
       },
 
-      onDragOver: (e: React.DragEvent) => {
+      onDragOver: (e: DragEvent) => {
         e.preventDefault()
         e.dataTransfer.dropEffect = 'move'
       },
 
-      onDragEnter: (e: React.DragEvent) => {
+      onDragEnter: (e: DragEvent) => {
         e.preventDefault()
       },
 
-      onDragLeave: (e: React.DragEvent) => {
+      onDragLeave: (e: DragEvent) => {
         // Ignore drag leave events from child elements
         if (e.currentTarget.contains(e.relatedTarget as Node)) {
           return
         }
       },
 
-      onDrop: (e: React.DragEvent) => {
+      onDrop: (e: DragEvent) => {
         e.preventDefault()
       }
     }
@@ -108,7 +108,7 @@ export function useDragAndDrop(options: UseDragAndDropOptions = {}) {
   // Create drop handlers for drop targets
   const createDropHandlers = useCallback((targetId: string): DropHandlers => {
     return {
-      onDragOver: (e: React.DragEvent) => {
+      onDragOver: (e: DragEvent) => {
         e.preventDefault()
         e.dataTransfer.dropEffect = 'move'
 
@@ -121,12 +121,12 @@ export function useDragAndDrop(options: UseDragAndDropOptions = {}) {
         }
       },
 
-      onDragEnter: (e: React.DragEvent) => {
+      onDragEnter: (e: DragEvent) => {
         e.preventDefault()
         dragCounterRef.current += 1
       },
 
-      onDragLeave: (_e: React.DragEvent) => {
+      onDragLeave: (_e: DragEvent) => {
         dragCounterRef.current -= 1
 
         if (dragCounterRef.current === 0) {
@@ -138,7 +138,7 @@ export function useDragAndDrop(options: UseDragAndDropOptions = {}) {
         }
       },
 
-      onDrop: (e: React.DragEvent) => {
+      onDrop: (e: DragEvent) => {
         e.preventDefault()
         dragCounterRef.current = 0
 
