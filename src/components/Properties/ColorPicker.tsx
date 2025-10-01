@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type FC, type ChangeEvent } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { Pipette } from '@/utils/optimizedIcons';
 
@@ -24,7 +24,7 @@ const PRESET_COLORS = [
   '#6B7280', // Gray
 ];
 
-export const ColorPicker: React.FC<ColorPickerProps> = ({ color, onChange, label }) => {
+export const ColorPicker: FC<ColorPickerProps> = ({ color, onChange, label }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [tempColor, setTempColor] = useState(color);
 
@@ -99,7 +99,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ color, onChange, label
               <input
                 type="text"
                 value={tempColor}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const value = e.target.value;
                   if (/^#[0-9A-Fa-f]{0,6}$/.test(value)) {
                     setTempColor(value);

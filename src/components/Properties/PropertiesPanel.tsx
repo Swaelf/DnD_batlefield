@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, memo } from 'react'
+import { useState, useEffect, useMemo, memo, type CSSProperties } from 'react'
 import useMapStore from '@/store/mapStore'
 import type { Shape, Token, MapObject } from '@/types'
 import { nanoid } from 'nanoid'
@@ -22,7 +22,7 @@ import { Text } from '@/components/primitives/TextVE'
 
 export type PropertiesPanelProps = {
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) => {
@@ -98,7 +98,7 @@ const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) =>
     updateObject(selectedObject.id, updates)
   }
 
-  const panelStyles: React.CSSProperties = {
+  const panelStyles: CSSProperties = {
     borderLeft: '1px solid var(--gray800)',
     ...style,
   }
