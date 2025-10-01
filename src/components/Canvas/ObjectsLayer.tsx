@@ -2,7 +2,6 @@ import React, { useCallback } from 'react'
 import { Group, Rect, Circle, Line, Text as KonvaText } from 'react-konva'
 import type Konva from 'konva'
 import type { MapObject, Shape, Text } from '@/types/map'
-import type { Token as TokenType } from '@/types/token'
 import type { SpellEventData, AttackEventData } from '@/types/timeline'
 import useMapStore from '@/store/mapStore'
 import useToolStore from '@/store/toolStore'
@@ -17,34 +16,10 @@ import { PersistentArea } from '../Spells'
 import { AttackRenderer } from '../Actions/ActionRenderer/AttackRenderer'
 import { SimpleSpellComponent } from '../Spells/SimpleSpellComponent'
 import { StaticObjectRenderer } from '../StaticObject/StaticObjectRenderer'
+import { isToken, isShape, isText, isSpell, isAttack, isPersistentArea } from './objectUtils'
 
 // Track completed spell animations to prevent duplicate persistent areas
 const completedSpellAnimations = new Set<string>()
-
-// Type guards (same as before)
-function isToken(obj: MapObject): obj is TokenType {
-  return obj.type === 'token'
-}
-
-function isShape(obj: MapObject): obj is Shape {
-  return obj.type === 'shape'
-}
-
-function isText(obj: MapObject): obj is Text {
-  return obj.type === 'text'
-}
-
-function isSpell(obj: MapObject): obj is MapObject & { type: 'spell'; spellData?: SpellEventData } {
-  return obj.type === 'spell'
-}
-
-function isAttack(obj: MapObject): obj is MapObject & { type: 'attack'; attackData?: AttackEventData } {
-  return obj.type === 'attack'
-}
-
-function isPersistentArea(obj: MapObject): obj is MapObject & { type: 'persistent-area'; persistentAreaData?: any } {
-  return obj.type === 'persistent-area'
-}
 
 type ObjectsLayerProps = {
   onObjectClick?: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void
