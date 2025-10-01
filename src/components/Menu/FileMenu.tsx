@@ -164,7 +164,7 @@ export const FileMenu: FC<FileMenuProps> = ({ stageRef }) => {
         onOpenChange={setIsMenuOpen}
       >
         {/* Auto-save Status */}
-        <MenuHeader size="sm">
+        <MenuHeader>
           <MenuStatus>
             <Text size="xs" color="gray400">Auto-save</Text>
             <Box
