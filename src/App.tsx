@@ -516,4 +516,4 @@ const AppWithContextMenu: React.FC = () => {
   )
 }
 
-export default AppWithContextMenu
+export { AppWithContextMenu as App }
