@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC, type ChangeEvent } from 'react'
 import {
   Cloud,
   CloudRain,
@@ -46,7 +46,7 @@ type EnvironmentalActionConfigProps = {
   onEnvironmentalChange: (environmental: Partial<EnvironmentalEventData>) => void
 }
 
-const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProps> = ({
+const EnvironmentalActionConfigComponent: FC<EnvironmentalActionConfigProps> = ({
   selectedEnvironmental,
   onEnvironmentalChange
 }) => {
@@ -303,7 +303,7 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
             <Input
               placeholder="Custom effect name..."
               value={environmental.effectName || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, effectName: e.target.value })}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, effectName: e.target.value })}
             />
           </Box>
 
@@ -344,13 +344,13 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
               <Input
                 type="color"
                 value={environmental.color || '#FFFFFF'}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, color: e.target.value })}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, color: e.target.value })}
                 style={{ width: '60px', height: '32px', padding: '2px' }}
               />
               <Input
                 type="text"
                 value={environmental.color || '#FFFFFF'}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, color: e.target.value })}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, color: e.target.value })}
                 placeholder="#FFFFFF"
                 style={{ flex: 1 }}
               />
@@ -378,7 +378,7 @@ const EnvironmentalActionConfigComponent: React.FC<EnvironmentalActionConfigProp
             <Input
               placeholder="Describe the environmental effect..."
               value={environmental.description || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, description: e.target.value })}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onEnvironmentalChange({ ...environmental, description: e.target.value })}
             />
           </Box>
         </PanelSection>
