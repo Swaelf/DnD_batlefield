@@ -1,23 +1,23 @@
-import React, { forwardRef } from 'react'
+import { forwardRef, type ReactNode, type CSSProperties, type MouseEvent } from 'react'
 import { Text } from '@/components/primitives/TextVE'
 
 // Field label event handlers
 type FieldLabelEventHandlers = {
-  onClick?: (event: React.MouseEvent<HTMLLabelElement>) => void
-  onMouseEnter?: (event: React.MouseEvent<HTMLLabelElement>) => void
-  onMouseLeave?: (event: React.MouseEvent<HTMLLabelElement>) => void
+  onClick?: (event: MouseEvent<HTMLLabelElement>) => void
+  onMouseEnter?: (event: MouseEvent<HTMLLabelElement>) => void
+  onMouseLeave?: (event: MouseEvent<HTMLLabelElement>) => void
 }
 
 // Field label component props with exact typing
 export type FieldLabelProps = {
-  children: React.ReactNode
+  children: ReactNode
   htmlFor?: string
   required?: boolean
   size?: 'xs' | 'sm' | 'md' | 'lg'
   weight?: 'normal' | 'medium' | 'semibold' | 'bold'
   color?: 'inherit' | 'primary' | 'secondary' | 'text' | 'textSecondary' | 'textTertiary' | 'error' | 'warning' | 'success'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 
   // HTML attributes
   id?: string
@@ -67,9 +67,9 @@ export const FieldLabel = forwardRef<HTMLLabelElement, FieldLabelProps>(
         color={color}
         className={className}
         style={style}
-        onClick={onClick as ((event: React.MouseEvent<HTMLElement>) => void) | undefined}
-        onMouseEnter={onMouseEnter as ((event: React.MouseEvent<HTMLElement>) => void) | undefined}
-        onMouseLeave={onMouseLeave as ((event: React.MouseEvent<HTMLElement>) => void) | undefined}
+        onClick={onClick as ((event: MouseEvent<HTMLElement>) => void) | undefined}
+        onMouseEnter={onMouseEnter as ((event: MouseEvent<HTMLElement>) => void) | undefined}
+        onMouseLeave={onMouseLeave as ((event: MouseEvent<HTMLElement>) => void) | undefined}
         id={id}
         title={title}
         aria-label={ariaLabel}
@@ -95,11 +95,11 @@ FieldLabel.displayName = 'FieldLabel'
 
 // Field group for organizing related fields
 export type FieldGroupProps = {
-  children: React.ReactNode
+  children: ReactNode
   orientation?: 'horizontal' | 'vertical'
   spacing?: 'tight' | 'normal' | 'loose'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   'aria-label'?: string
   'aria-labelledby'?: string
 }
@@ -123,7 +123,7 @@ export const FieldGroup = forwardRef<HTMLDivElement, FieldGroupProps>(
       loose: '24px',
     }
 
-    const groupStyles: React.CSSProperties = {
+    const groupStyles: CSSProperties = {
       display: 'flex',
       flexDirection: orientation === 'horizontal' ? 'row' : 'column',
       gap: spacingMap[spacing],
@@ -151,10 +151,10 @@ FieldGroup.displayName = 'FieldGroup'
 
 // Error message component for field validation
 export type FieldErrorProps = {
-  children: React.ReactNode
+  children: ReactNode
   visible?: boolean
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   'aria-live'?: 'off' | 'polite' | 'assertive'
 }
 
@@ -171,7 +171,7 @@ export const FieldError = forwardRef<HTMLDivElement, FieldErrorProps>(
   ) => {
     if (!visible) return null
 
-    const errorStyles: React.CSSProperties = {
+    const errorStyles: CSSProperties = {
       marginTop: '4px',
       ...style,
     }

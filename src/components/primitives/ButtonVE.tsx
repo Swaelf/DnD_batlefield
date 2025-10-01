@@ -1,20 +1,20 @@
-import React, { forwardRef } from 'react'
+import { forwardRef, type ReactNode, type ReactElement, type CSSProperties, type MouseEvent, type FocusEvent, type KeyboardEvent } from 'react'
 import { clsx } from 'clsx'
 import { button } from '@/styles/recipes/button.css'
 
 // Exact button event handlers
 type ButtonEventHandlers = {
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
-  onDoubleClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
-  onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void
-  onMouseUp?: (event: React.MouseEvent<HTMLButtonElement>) => void
-  onMouseEnter?: (event: React.MouseEvent<HTMLButtonElement>) => void
-  onMouseLeave?: (event: React.MouseEvent<HTMLButtonElement>) => void
-  onFocus?: (event: React.FocusEvent<HTMLButtonElement>) => void
-  onBlur?: (event: React.FocusEvent<HTMLButtonElement>) => void
-  onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void
-  onKeyUp?: (event: React.KeyboardEvent<HTMLButtonElement>) => void
-  onKeyPress?: (event: React.KeyboardEvent<HTMLButtonElement>) => void
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void
+  onDoubleClick?: (event: MouseEvent<HTMLButtonElement>) => void
+  onMouseDown?: (event: MouseEvent<HTMLButtonElement>) => void
+  onMouseUp?: (event: MouseEvent<HTMLButtonElement>) => void
+  onMouseEnter?: (event: MouseEvent<HTMLButtonElement>) => void
+  onMouseLeave?: (event: MouseEvent<HTMLButtonElement>) => void
+  onFocus?: (event: FocusEvent<HTMLButtonElement>) => void
+  onBlur?: (event: FocusEvent<HTMLButtonElement>) => void
+  onKeyDown?: (event: KeyboardEvent<HTMLButtonElement>) => void
+  onKeyUp?: (event: KeyboardEvent<HTMLButtonElement>) => void
+  onKeyPress?: (event: KeyboardEvent<HTMLButtonElement>) => void
 }
 
 // ARIA attributes for button
@@ -51,7 +51,7 @@ export type ButtonProps = {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'success'
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon'
   fullWidth?: boolean
-  children?: React.ReactNode
+  children?: ReactNode
   className?: string
   disabled?: boolean
   loading?: boolean
@@ -72,7 +72,7 @@ export type ButtonProps = {
   role?: string
   title?: string
   tabIndex?: number
-  style?: React.CSSProperties
+  style?: CSSProperties
 } & ButtonEventHandlers & ButtonAriaAttributes & ButtonDataAttributes
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -191,7 +191,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button'
 
 // Loading spinner component with proper typing
-const LoadingSpinner = (): React.ReactElement => (
+const LoadingSpinner = (): ReactElement => (
   <svg
     className="animate-spin h-4 w-4"
     viewBox="0 0 24 24"
@@ -245,7 +245,7 @@ ToolButton.displayName = 'ToolButton'
 
 // Icon Button variant for icon-only buttons
 export type IconButtonProps = Omit<ButtonProps, 'children'> & {
-  icon: React.ReactNode
+  icon: ReactNode
   'aria-label': string // Required for accessibility
 }
 

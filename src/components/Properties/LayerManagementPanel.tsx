@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, type FC, type MouseEvent, type ChangeEvent } from 'react'
 import { Eye, EyeOff, Lock, Unlock, Plus, Trash2, ChevronUp, ChevronDown, Layers } from '@/utils/optimizedIcons'
 import { useLayerStore } from '@/store/layerStore'
 import useMapStore from '@/store/mapStore'
@@ -7,7 +7,7 @@ import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
 import { Input } from '@/components/ui/Input'
 
-export const LayerManagementPanel: React.FC = () => {
+export const LayerManagementPanel: FC = () => {
   const {
     layers,
     activeLayerId,
@@ -99,10 +99,10 @@ export const LayerManagementPanel: React.FC = () => {
             backgroundColor: 'transparent',
             border: 'none'
           }}
-          onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+          onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
             e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
           }}
-          onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+          onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
             e.currentTarget.style.backgroundColor = 'transparent'
           }}
         >
@@ -124,7 +124,7 @@ export const LayerManagementPanel: React.FC = () => {
             type="text"
             placeholder="Layer name..."
             value={newLayerName}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewLayerName(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setNewLayerName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleCreateLayer()
               if (e.key === 'Escape') setShowCreateLayer(false)
@@ -189,12 +189,12 @@ export const LayerManagementPanel: React.FC = () => {
               cursor: 'pointer',
               transition: 'all 0.15s ease'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+            onMouseEnter={(e: MouseEvent<HTMLDivElement>) => {
               if (layer.id !== activeLayerId) {
                 e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
               }
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+            onMouseLeave={(e: MouseEvent<HTMLDivElement>) => {
               if (layer.id !== activeLayerId) {
                 e.currentTarget.style.backgroundColor = 'var(--colors-gray900)'
               }
@@ -257,10 +257,10 @@ export const LayerManagementPanel: React.FC = () => {
                   backgroundColor: 'transparent',
                   border: 'none'
                 }}
-                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
                   e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
                 }}
-                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
                 }}
               >
@@ -280,10 +280,10 @@ export const LayerManagementPanel: React.FC = () => {
                   backgroundColor: 'transparent',
                   border: 'none'
                 }}
-                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
                   e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
                 }}
-                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
                 }}
               >
@@ -303,10 +303,10 @@ export const LayerManagementPanel: React.FC = () => {
                   backgroundColor: 'transparent',
                   border: 'none'
                 }}
-                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
                   e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
                 }}
-                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
                 }}
               >
@@ -326,10 +326,10 @@ export const LayerManagementPanel: React.FC = () => {
                   backgroundColor: 'transparent',
                   border: 'none'
                 }}
-                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
                   e.currentTarget.style.backgroundColor = 'var(--colors-gray700)'
                 }}
-                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
                 }}
               >
@@ -351,11 +351,11 @@ export const LayerManagementPanel: React.FC = () => {
                     border: 'none',
                     color: 'var(--colors-error)'
                   }}
-                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
                     e.currentTarget.style.backgroundColor = 'var(--colors-error)'
                     e.currentTarget.style.color = 'white'
                   }}
-                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
                     e.currentTarget.style.backgroundColor = 'transparent'
                     e.currentTarget.style.color = 'var(--colors-error)'
                   }}

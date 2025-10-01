@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, type FC, type ReactNode, type ChangeEvent, type MouseEvent } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -24,7 +24,7 @@ type BlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'soft-light' | '
 interface EffectTemplate {
   id: string
   name: string
-  icon: React.ReactNode
+  icon: ReactNode
   color: string
   defaultSettings: Record<string, any>
 }
@@ -34,7 +34,7 @@ interface LayerEffectsManagerProps {
   onEffectChange?: (layerId: string, effects: LayerEffect[]) => void
 }
 
-export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
+export const LayerEffectsManager: FC<LayerEffectsManagerProps> = ({
   layerId,
   onEffectChange
 }) => {
@@ -247,7 +247,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
             max="1"
             step="0.1"
             value={layer?.opacity ?? 1}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
               updateLayer(layerId, { opacity: Number(e.target.value) })
             }
             style={{
@@ -263,7 +263,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
           </Text>
           <select
             value={layer?.blendMode || 'normal'}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
               updateLayer(layerId, { blendMode: e.target.value as BlendMode })
             }
             style={{
@@ -293,7 +293,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
                 min="-20"
                 max="20"
                 value={effect.settings.offsetX || 4}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   updateEffectSetting(effect.id, 'offsetX', Number(e.target.value))
                 }
                 style={{ width: '100%', accentColor: template.color }}
@@ -306,7 +306,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
                 min="-20"
                 max="20"
                 value={effect.settings.offsetY || 4}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   updateEffectSetting(effect.id, 'offsetY', Number(e.target.value))
                 }
                 style={{ width: '100%', accentColor: template.color }}
@@ -319,7 +319,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
                 min="0"
                 max="50"
                 value={effect.settings.blur || 8}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   updateEffectSetting(effect.id, 'blur', Number(e.target.value))
                 }
                 style={{ width: '100%', accentColor: template.color }}
@@ -337,7 +337,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
                 min="0"
                 max="50"
                 value={effect.settings.blur || 10}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   updateEffectSetting(effect.id, 'blur', Number(e.target.value))
                 }
                 style={{ width: '100%', accentColor: template.color }}
@@ -350,7 +350,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
                 min="0"
                 max="20"
                 value={effect.settings.spread || 2}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   updateEffectSetting(effect.id, 'spread', Number(e.target.value))
                 }
                 style={{ width: '100%', accentColor: template.color }}
@@ -367,7 +367,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
               min="0"
               max="50"
               value={effect.settings.amount || 5}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 updateEffectSetting(effect.id, 'amount', Number(e.target.value))
               }
               style={{ width: '100%', accentColor: template.color }}
@@ -385,7 +385,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
                 max="1"
                 step="0.1"
                 value={effect.settings.amount || 0.2}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   updateEffectSetting(effect.id, 'amount', Number(e.target.value))
                 }
                 style={{ width: '100%', accentColor: template.color }}
@@ -396,7 +396,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
                 <input
                   type="checkbox"
                   checked={effect.settings.monochrome || false}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     updateEffectSetting(effect.id, 'monochrome', e.target.checked)
                   }
                 />
@@ -538,7 +538,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={(e: React.MouseEvent) => {
+                        onClick={(e: MouseEvent) => {
                           e.stopPropagation()
                           toggleEffect(effect.id)
                         }}
@@ -552,7 +552,7 @@ export const LayerEffectsManager: React.FC<LayerEffectsManagerProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={(e: React.MouseEvent) => {
+                        onClick={(e: MouseEvent) => {
                           e.stopPropagation()
                           removeEffect(effect.id)
                         }}

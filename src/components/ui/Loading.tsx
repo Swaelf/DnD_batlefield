@@ -9,7 +9,7 @@
  * - Full Screen: Overlay loading for async operations
  */
 
-import React from 'react'
+import { type FC, type ReactNode, useState, useRef, useEffect } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { sprinkles } from '@/styles/sprinkles.css'
@@ -21,7 +21,7 @@ export interface SpinnerProps {
   color?: 'primary' | 'secondary' | 'white' | 'current'
 }
 
-export const Spinner: React.FC<SpinnerProps> = ({
+export const Spinner: FC<SpinnerProps> = ({
   size = 'md',
   color = 'primary'
 }) => {
@@ -78,7 +78,7 @@ export interface SkeletonProps {
   className?: string
 }
 
-export const Skeleton: React.FC<SkeletonProps> = ({
+export const Skeleton: FC<SkeletonProps> = ({
   width = '100%',
   height = '20px',
   variant = 'rectangular',
@@ -117,7 +117,7 @@ export interface ProgressProps {
   color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error'
 }
 
-export const Progress: React.FC<ProgressProps> = ({
+export const Progress: FC<ProgressProps> = ({
   value,
   label,
   showPercentage = true,
@@ -185,7 +185,7 @@ export interface DotsProps {
   color?: 'primary' | 'secondary' | 'white' | 'current'
 }
 
-export const LoadingDots: React.FC<DotsProps> = ({
+export const LoadingDots: FC<DotsProps> = ({
   size = 'md',
   color = 'primary'
 }) => {
@@ -231,7 +231,7 @@ export interface FullScreenLoadingProps {
   onCancel?: () => void
 }
 
-export const FullScreenLoading: React.FC<FullScreenLoadingProps> = ({
+export const FullScreenLoading: FC<FullScreenLoadingProps> = ({
   message = 'Loading...',
   description,
   progress,
@@ -319,14 +319,14 @@ export const FullScreenLoading: React.FC<FullScreenLoadingProps> = ({
 export interface LoadingStateProps {
   isLoading: boolean
   error?: Error | null
-  children: React.ReactNode
-  loadingComponent?: React.ReactNode
-  errorComponent?: React.ReactNode
+  children: ReactNode
+  loadingComponent?: ReactNode
+  errorComponent?: ReactNode
   showError?: boolean
   minLoadingTime?: number // Minimum time to show loading state (prevents flashing)
 }
 
-export const LoadingState: React.FC<LoadingStateProps> = ({
+export const LoadingState: FC<LoadingStateProps> = ({
   isLoading,
   error,
   children,
@@ -335,10 +335,10 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   showError = true,
   minLoadingTime = 0
 }) => {
-  const [showLoading, setShowLoading] = React.useState(isLoading)
-  const loadingStartTime = React.useRef<number>(0)
+  const [showLoading, setShowLoading] = useState(isLoading)
+  const loadingStartTime = useRef<number>(0)
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isLoading) {
       loadingStartTime.current = Date.now()
       setShowLoading(true)

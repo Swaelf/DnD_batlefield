@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, Fragment, type FC, type ReactNode, type MouseEvent } from 'react'
 import { X, HelpCircle } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
@@ -75,7 +75,7 @@ const shortcutGroups: ShortcutGroup[] = [
   }
 ]
 
-const KeyboardKey: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+const KeyboardKey: FC<{ children: ReactNode }> = ({ children }) => (
   <Box
     style={{
       display: 'inline-flex',
@@ -98,7 +98,7 @@ const KeyboardKey: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </Box>
 )
 
-export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
+export const HelpDialog: FC<HelpDialogProps> = ({ isOpen, onClose }) => {
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') {
       e.preventDefault()
@@ -151,7 +151,7 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
           boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
           overflow: 'hidden'
         }}
-        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        onClick={(e: MouseEvent) => e.stopPropagation()}
       >
         {/* Header */}
         <Box
@@ -187,11 +187,11 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
               backgroundColor: 'transparent',
               border: 'none'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-gray800)'
               e.currentTarget.style.color = 'var(--colors-gray100)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'transparent'
               e.currentTarget.style.color = 'var(--colors-gray400)'
             }}
@@ -237,16 +237,16 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
                         borderRadius: '6px',
                         transition: 'background-color 0.15s ease'
                       }}
-                      onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+                      onMouseEnter={(e: MouseEvent<HTMLDivElement>) => {
                         e.currentTarget.style.backgroundColor = 'rgba(75, 85, 99, 0.5)'
                       }}
-                      onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+                      onMouseLeave={(e: MouseEvent<HTMLDivElement>) => {
                         e.currentTarget.style.backgroundColor = 'transparent'
                       }}
                     >
                       <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {shortcut.keys.map((key, keyIndex) => (
-                          <React.Fragment key={keyIndex}>
+                          <Fragment key={keyIndex}>
                             {keyIndex > 0 && (
                               <Text
                                 variant="body"
@@ -260,7 +260,7 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
                               </Text>
                             )}
                             <KeyboardKey>{key}</KeyboardKey>
-                          </React.Fragment>
+                          </Fragment>
                         ))}
                       </Box>
                       <Text
@@ -316,10 +316,10 @@ export const HelpDialog: React.FC<HelpDialogProps> = ({ isOpen, onClose }) => {
               borderRadius: '6px',
               fontWeight: '500'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-gray300)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.backgroundColor = 'var(--colors-secondary)'
             }}
           >
