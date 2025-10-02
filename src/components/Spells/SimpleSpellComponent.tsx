@@ -964,7 +964,7 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
   }
 
   return (
-    <Group>
+    <Group listening={false}>
       {renderSpell()}
     </Group>
   )

@@ -800,6 +800,14 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       .map(obj => ({ obj, layer: getLayerForObject(obj) }))
       .filter(({ layer }) => layer?.visible !== false) // Show if layer is visible or undefined
       .sort((a, b) => {
+        // Always render animations (spells, attacks, persistent-area) on top
+        const isAnimationA = a.obj.type === 'spell' || a.obj.type === 'attack' || a.obj.type === 'persistent-area'
+        const isAnimationB = b.obj.type === 'spell' || b.obj.type === 'attack' || b.obj.type === 'persistent-area'
+
+        if (isAnimationA && !isAnimationB) return 1  // A is animation, goes after B
+        if (!isAnimationA && isAnimationB) return -1 // B is animation, goes after A
+
+        // Both same type (both animations or both regular), sort by zIndex
         const zIndexA = a.layer?.zIndex || a.obj.layer || 0
         const zIndexB = b.layer?.zIndex || b.obj.layer || 0
         return zIndexA - zIndexB

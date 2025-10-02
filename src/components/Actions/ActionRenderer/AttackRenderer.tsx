@@ -150,6 +150,25 @@ const AttackRendererComponent = ({
       }
     }
 
+    // Create arrow wave trail for thrust animation
+    const arrowTrails: Konva.Line[] = []
+    if (animation === 'melee_thrust') {
+      // Create 4 arrow shapes for fading trail
+      for (let i = 0; i < 4; i++) {
+        const arrowTrail = new Konva.Line({
+          points: [],
+          stroke: color,
+          strokeWidth: 3,
+          lineCap: 'round',
+          lineJoin: 'round',
+          opacity: 0,
+          closed: false,
+        })
+        group.add(arrowTrail)
+        arrowTrails.push(arrowTrail)
+      }
+    }
+
     // Animate the melee attack
     const anim = new Konva.Animation((frame) => {
       if (!frame) return
@@ -159,7 +178,7 @@ const AttackRendererComponent = ({
       if (animation === 'melee_slash') {
         animateSlashEffect(effect as Konva.Line, progress, isCritical, trailLines)
       } else if (animation === 'melee_thrust') {
-        animateThrustEffect(effect as Konva.Line, progress, isCritical)
+        animateThrustEffect(effect as Konva.Line, progress, isCritical, arrowTrails)
       } else {
         animateSwingEffect(effect as Konva.Circle, progress, isCritical)
       }
@@ -194,8 +213,8 @@ const AttackRendererComponent = ({
       const rangeInSquares = (range || 5) / 5 // Convert feet to squares
       const slashLength = rangeInSquares * PIXELS_PER_SQUARE
 
-      // Calculate the initial position (right side of 45-degree cone)
-      const coneRightAngle = angle + (Math.PI / 8) // +22.5 degrees in radians
+      // Calculate the initial position (right side of 60-degree cone)
+      const coneRightAngle = angle + (Math.PI / 6) // +30 degrees in radians
       const endX = fromPos.x + Math.cos(coneRightAngle) * slashLength
       const endY = fromPos.y + Math.sin(coneRightAngle) * slashLength
 
@@ -248,33 +267,38 @@ const AttackRendererComponent = ({
     const rangeInSquares = (range || 5) / 5
     const maxSlashLength = rangeInSquares * PIXELS_PER_SQUARE
 
-    // Sweep from right to left and back within 45-degree cone
+    // Sweep from right to left and back within 60-degree cone
     // Progress 0-0.5: right to left, 0.5-1.0: left to right
     let sweepProgress
     if (progress <= 0.5) {
-      // First half: sweep from right (+22.5°) to left (-22.5°)
+      // First half: sweep from right (+30°) to left (-30°)
       sweepProgress = progress * 2 // 0 to 1
     } else {
-      // Second half: sweep back from left (-22.5°) to right (+22.5°)
+      // Second half: sweep back from left (-30°) to right (+30°)
       sweepProgress = 2 - (progress * 2) // 1 to 0
     }
 
-    // Calculate current angle within the 45-degree cone
-    const coneHalfAngle = Math.PI / 8 // 22.5 degrees in radians
+    // Calculate current angle within the 60-degree cone
+    const coneHalfAngle = Math.PI / 6 // 30 degrees in radians (60° cone)
     const currentAngle = baseAngle + coneHalfAngle - (sweepProgress * coneHalfAngle * 2)
 
-    // Dynamic length: half → full → half → zero
-    // Progress 0-0.25: half to full (right side)
+    // Dynamic length: half → full+bonus → half → zero
+    // Progress 0-0.25: half to full with 0.5 square bonus at center
     // Progress 0.25-0.5: full to half (center to left)
     // Progress 0.5-0.75: half to zero (return sweep)
     // Progress 0.75-1.0: zero (completed)
     let lengthMultiplier
+    let centerBonus = 0
     if (progress <= 0.25) {
       // Start at half, grow to full
       lengthMultiplier = 0.5 + (progress * 2) // 0.5 to 1.0
+      // Add bonus at center (progress = 0.25)
+      centerBonus = (progress / 0.25) * 25 // 0 to 25px (0.5 grid squares)
     } else if (progress <= 0.5) {
       // Shrink from full to half
       lengthMultiplier = 1.5 - (progress * 2) // 1.0 to 0.5
+      // Reduce bonus from center to left
+      centerBonus = ((0.5 - progress) / 0.25) * 25 // 25px to 0
     } else if (progress <= 0.75) {
       // Shrink from half to zero on return
       lengthMultiplier = 1.5 - (progress * 2) // 0.5 to 0
@@ -283,7 +307,7 @@ const AttackRendererComponent = ({
       lengthMultiplier = 0
     }
 
-    const currentLength = maxSlashLength * lengthMultiplier
+    const currentLength = (maxSlashLength * lengthMultiplier) + centerBonus
 
     // Calculate end point of the slash line
     const endX = fromPosition.x + Math.cos(currentAngle) * currentLength
@@ -343,17 +367,102 @@ const AttackRendererComponent = ({
     }
   }
 
-  const animateThrustEffect = (effect: Konva.Line, progress: number, isCritical?: boolean) => {
-    const { fromPosition, toPosition } = attack
-    const currentX = fromPosition.x + (toPosition.x - fromPosition.x) * progress
-    const currentY = fromPosition.y + (toPosition.y - fromPosition.y) * progress
+  const animateThrustEffect = (
+    effect: Konva.Line,
+    progress: number,
+    isCritical?: boolean,
+    arrowTrails?: Konva.Line[]
+  ) => {
+    const { fromPosition, toPosition, color, range } = attack
 
-    const opacity = Math.sin(progress * Math.PI)
-    const width = 6 * (isCritical ? CRITICAL_HIT.EFFECT_SCALE : 1)
+    // Calculate direction angle
+    const angle = Math.atan2(toPosition.y - fromPosition.y, toPosition.x - fromPosition.x)
 
-    effect.points([fromPosition.x, fromPosition.y, currentX, currentY])
-    effect.opacity(opacity * 0.8)
-    effect.strokeWidth(width)
+    // Calculate maximum travel distance based on attack range
+    const PIXELS_PER_SQUARE = 50
+    const rangeInSquares = (range || 5) / 5 // Convert feet to squares
+    const maxDistance = rangeInSquares * PIXELS_PER_SQUARE
+    const rangeBonus = PIXELS_PER_SQUARE * 0.5 // Add 0.5 grid cells (25px)
+
+    // Calculate actual distance to target
+    const fullDistance = Math.sqrt(
+      Math.pow(toPosition.x - fromPosition.x, 2) +
+      Math.pow(toPosition.y - fromPosition.y, 2)
+    )
+
+    // Limit travel distance to attack range + bonus
+    const travelDistance = Math.min(fullDistance, maxDistance + rangeBonus)
+
+    // Arrow wave position along the path (limited by range)
+    const currentX = fromPosition.x + Math.cos(angle) * travelDistance * progress
+    const currentY = fromPosition.y + Math.sin(angle) * travelDistance * progress
+
+    // Arrow wave size (0.3 of grid cell = 15px width)
+    const arrowWidth = PIXELS_PER_SQUARE * 0.3 // 15px
+    const arrowLength = (arrowWidth * 1.5) + (PIXELS_PER_SQUARE * 0.3) // 22.5px + 15px = 37.5px
+
+    // Scale effect: grow in first half, shrink in second half
+    const scale = Math.sin(progress * Math.PI) * (isCritical ? CRITICAL_HIT.EFFECT_SCALE : 1)
+    const scaledWidth = arrowWidth * scale
+    const scaledLength = arrowLength * scale
+
+    // Create chevron/arrow shape pointing in direction of travel
+    // Arrow tip at currentX, currentY
+    const tipX = currentX
+    const tipY = currentY
+
+    // Calculate perpendicular offset for wings
+    const perpAngle = angle + Math.PI / 2
+
+    // Left wing back point
+    const leftX = tipX - Math.cos(angle) * scaledLength + Math.cos(perpAngle) * (scaledWidth / 2)
+    const leftY = tipY - Math.sin(angle) * scaledLength + Math.sin(perpAngle) * (scaledWidth / 2)
+
+    // Right wing back point
+    const rightX = tipX - Math.cos(angle) * scaledLength - Math.cos(perpAngle) * (scaledWidth / 2)
+    const rightY = tipY - Math.sin(angle) * scaledLength - Math.sin(perpAngle) * (scaledWidth / 2)
+
+    // Main arrow shape (chevron): left wing → tip → right wing
+    effect.points([leftX, leftY, tipX, tipY, rightX, rightY])
+    effect.opacity(Math.sin(progress * Math.PI) * 0.9)
+    effect.strokeWidth(3)
+    effect.stroke(color)
+
+    // Animate trail arrows with lag and fade
+    if (arrowTrails) {
+      arrowTrails.forEach((trail, index) => {
+        const trailLag = (index + 1) * 0.08 // 8% lag per trail
+        const trailProgress = Math.max(0, progress - trailLag)
+
+        if (trailProgress > 0) {
+          // Trail position (also limited by range)
+          const trailX = fromPosition.x + Math.cos(angle) * travelDistance * trailProgress
+          const trailY = fromPosition.y + Math.sin(angle) * travelDistance * trailProgress
+
+          // Trail scale (smaller than main arrow)
+          const trailScale = Math.sin(trailProgress * Math.PI) * scale * (1 - index * 0.15)
+          const trailScaledWidth = arrowWidth * trailScale
+          const trailScaledLength = arrowLength * trailScale
+
+          // Trail arrow tip
+          const trailTipX = trailX
+          const trailTipY = trailY
+
+          // Trail arrow wings
+          const trailLeftX = trailTipX - Math.cos(angle) * trailScaledLength + Math.cos(perpAngle) * (trailScaledWidth / 2)
+          const trailLeftY = trailTipY - Math.sin(angle) * trailScaledLength + Math.sin(perpAngle) * (trailScaledWidth / 2)
+
+          const trailRightX = trailTipX - Math.cos(angle) * trailScaledLength - Math.cos(perpAngle) * (trailScaledWidth / 2)
+          const trailRightY = trailTipY - Math.sin(angle) * trailScaledLength - Math.sin(perpAngle) * (trailScaledWidth / 2)
+
+          // Update trail arrow points
+          trail.points([trailLeftX, trailLeftY, trailTipX, trailTipY, trailRightX, trailRightY])
+          trail.opacity(Math.sin(trailProgress * Math.PI) * 0.6 * (1 - index * 0.2))
+          trail.strokeWidth(2)
+          trail.stroke(color)
+        }
+      })
+    }
   }
 
   const animateSwingEffect = (effect: Konva.Circle, progress: number, isCritical?: boolean) => {
@@ -488,6 +597,7 @@ const AttackRendererComponent = ({
     <Group
       ref={groupRef}
       visible={false}
+      listening={false}
     />
   )
 }
