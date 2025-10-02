@@ -306,11 +306,21 @@ const useTimelineStore = create<TimelineStore>()(
               let actualFromPosition = spellData.fromPosition
               let actualToPosition = spellData.toPosition
 
+              console.log('🔮 Spell execution - original positions:', {
+                from: spellData.fromPosition,
+                to: spellData.toPosition,
+                tokenId: spellData.tokenId,
+                targetTokenId: spellData.targetTokenId
+              })
+
               // Look up caster token's current position
               if (spellData.tokenId) {
                 const casterToken = mapStore.currentMap?.objects.find(obj => obj.id === spellData.tokenId)
                 if (casterToken) {
                   actualFromPosition = casterToken.position
+                  console.log(`✅ Caster token ${spellData.tokenId} current position:`, casterToken.position)
+                } else {
+                  console.warn(`⚠️ Caster token ${spellData.tokenId} not found!`)
                 }
               }
 
@@ -319,8 +329,16 @@ const useTimelineStore = create<TimelineStore>()(
                 const targetToken = mapStore.currentMap?.objects.find(obj => obj.id === spellData.targetTokenId)
                 if (targetToken) {
                   actualToPosition = targetToken.position
+                  console.log(`✅ Target token ${spellData.targetTokenId} current position:`, targetToken.position)
+                } else {
+                  console.warn(`⚠️ Target token ${spellData.targetTokenId} not found!`)
                 }
               }
+
+              console.log('🎯 Spell will use positions:', {
+                from: actualFromPosition,
+                to: actualToPosition
+              })
 
               // Create spell with actual current positions
               const updatedSpellData = {

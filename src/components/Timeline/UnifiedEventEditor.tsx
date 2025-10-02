@@ -282,6 +282,7 @@ const UnifiedEventEditorComponent = ({
         const legacyCategory = action.animation.type === 'projectile_burst' ? 'projectile-burst' : action.animation.type
         const result = {
           type: 'spell',
+          tokenId: selectedToken, // ✅ FIX: Include caster token ID for position lookup
           spellName: action.metadata.name || 'Unknown Spell',
           category: legacyCategory || 'projectile',
           fromPosition: action.source,
@@ -313,6 +314,7 @@ const UnifiedEventEditorComponent = ({
       case 'attack':
         return {
           type: 'attack',
+          tokenId: selectedToken, // ✅ FIX: Include attacker token ID for position lookup
           weaponName: action.metadata.name || 'Weapon',
           attackType: action.category === 'sword' ? 'melee' : 'ranged',
           fromPosition: action.source,
@@ -322,7 +324,8 @@ const UnifiedEventEditorComponent = ({
           attackBonus: 0,
           duration: action.animation.duration || 800,
           animation: 'melee_swing',
-          color: action.animation.color || '#FFFFFF'
+          color: action.animation.color || '#FFFFFF',
+          targetTokenId: finalTargetTokenId || ''
         }
 
       case 'interaction':
