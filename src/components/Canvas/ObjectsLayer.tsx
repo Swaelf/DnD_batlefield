@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useEffect, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
+import { useCallback, useMemo, useState, useEffect, useRef, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
 import { Group, Rect, Circle, Line, Text as KonvaText } from 'react-konva'
 import type Konva from 'konva'
 import type { MapObject, Shape, Text } from '@/types/map'
@@ -53,20 +53,23 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   const { layers, getDefaultLayerForObjectType, migrateNumericLayer } = useLayerStore()
   const { handleContextMenu } = useContextMenu()
 
-  // ✅ OPTIMIZED: Track stage transform for viewport culling
-  const [stageTransform, setStageTransform] = useState({ x: 0, y: 0, scaleX: 1, scaleY: 1 })
+  // ✅ OPTIMIZED: Track stage transform for viewport culling (using ref to avoid re-renders)
+  const stageTransformRef = useRef({ x: 0, y: 0, scaleX: 1, scaleY: 1 })
+  const [, forceUpdate] = useState({})
 
   useEffect(() => {
     if (!stageRef?.current) return
 
     const stage = stageRef.current
     const updateTransform = () => {
-      setStageTransform({
+      stageTransformRef.current = {
         x: stage.x(),
         y: stage.y(),
         scaleX: stage.scaleX(),
         scaleY: stage.scaleY()
-      })
+      }
+      // Force a re-render to update visible objects
+      forceUpdate({})
     }
 
     // Update on dragend and wheel (zoom)
@@ -755,7 +758,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         return zIndexA - zIndexB
       })
       .map(({ obj }) => obj)
-  }, [objects, layers, isObjectInViewport, stageTransform]) // Re-compute when objects, layers, or viewport changes
+  }, [objects, layers, isObjectInViewport]) // Re-compute when objects or layers change (viewport updates trigger forceUpdate)
 
   if (!objects || objects.length === 0) {
     return null
