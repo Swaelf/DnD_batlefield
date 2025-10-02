@@ -1,4 +1,4 @@
-import { useCallback, useMemo, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
+import { useCallback, useMemo, useState, useEffect, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
 import { Group, Rect, Circle, Line, Text as KonvaText } from 'react-konva'
 import type Konva from 'konva'
 import type { MapObject, Shape, Text } from '@/types/map'
@@ -26,6 +26,7 @@ type ObjectsLayerProps = {
   onObjectDragEnd?: (id: string, newPosition: { x: number; y: number }) => void
   onTokenSelect?: (tokenId: string, position: { x: number; y: number }) => void
   onTokenDeselect?: () => void
+  stageRef?: React.RefObject<Konva.Stage>
 }
 
 /**
@@ -35,7 +36,8 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   onObjectClick,
   onObjectDragEnd,
   onTokenSelect,
-  onTokenDeselect
+  onTokenDeselect,
+  stageRef
 }) => {
   // ✅ OPTIMIZED: Use granular selectors to prevent unnecessary re-renders
   const objects = useMapStore(state => state.currentMap?.objects || [])
@@ -50,6 +52,32 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   const currentEvent = useTimelineStore(state => state.currentEvent)
   const { layers, getDefaultLayerForObjectType, migrateNumericLayer } = useLayerStore()
   const { handleContextMenu } = useContextMenu()
+
+  // ✅ OPTIMIZED: Track stage transform for viewport culling
+  const [stageTransform, setStageTransform] = useState({ x: 0, y: 0, scaleX: 1, scaleY: 1 })
+
+  useEffect(() => {
+    if (!stageRef?.current) return
+
+    const stage = stageRef.current
+    const updateTransform = () => {
+      setStageTransform({
+        x: stage.x(),
+        y: stage.y(),
+        scaleX: stage.scaleX(),
+        scaleY: stage.scaleY()
+      })
+    }
+
+    // Update on dragend and wheel (zoom)
+    stage.on('dragend', updateTransform)
+    stage.on('wheel', updateTransform)
+
+    return () => {
+      stage.off('dragend', updateTransform)
+      stage.off('wheel', updateTransform)
+    }
+  }, [stageRef])
 
   const handleObjectDragEnd = (objId: string, e: Konva.KonvaEventObject<MouseEvent>) => {
     const node = e.target
@@ -209,11 +237,15 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     return null
   }
 
-  const renderShape = (shape: Shape, isSelected: boolean, isDraggable: boolean) => {
-    // Determine if this is a static object based on its properties
-    // EXCLUDE static effects (they are simple shapes, not complex static objects)
+  // ✅ OPTIMIZED: Memoize static object detection to avoid 30+ color checks per render
+  const checkIsStaticObject = useCallback((shape: Shape): boolean => {
+    // Check metadata cache first
+    if (shape.metadata?._cachedIsStatic !== undefined) {
+      return shape.metadata._cachedIsStatic
+    }
+
     const isStaticEffect = shape.metadata?.isStaticEffect === true
-    const isStaticObject = !isStaticEffect && (
+    const result = !isStaticEffect && (
       shape.metadata?.isStatic ||
       shape.fill?.includes('#6B7280') || // Wall/Stairs
       shape.fill?.includes('#8B4513') || // Door/furniture
@@ -244,6 +276,19 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       shape.fill?.includes('#654321')    // Wood/furniture
     )
 
+    // Cache the result in metadata
+    if (shape.metadata) {
+      shape.metadata._cachedIsStatic = result
+    }
+
+    return result
+  }, [])
+
+  const renderShape = (shape: Shape, isSelected: boolean, isDraggable: boolean) => {
+    // ✅ OPTIMIZED: Use cached static object detection
+    const isStaticEffect = shape.metadata?.isStaticEffect === true
+    const isStaticObject = checkIsStaticObject(shape)
+
     // Use enhanced StaticObjectRenderer for static objects (but NOT static effects)
     if (isStaticObject) {
       return (
@@ -257,8 +302,8 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           onContextMenu={(e: Konva.KonvaEventObject<MouseEvent>) => handleObjectRightClick(shape.id, e)}
           onMouseEnter={(e: Konva.KonvaEventObject<MouseEvent>) => {
             const target = e.target
-            target.scaleX(1.05)
-            target.scaleY(1.05)
+            // ✅ OPTIMIZED: Use Konva's to() for smoother animations
+            target.to({ scaleX: 1.05, scaleY: 1.05, duration: 0.1 })
             const stage = target.getStage()
             if (stage) {
               stage.container().style.cursor = isDraggable ? 'move' : 'pointer'
@@ -266,8 +311,8 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           }}
           onMouseLeave={(e: Konva.KonvaEventObject<MouseEvent>) => {
             const target = e.target
-            target.scaleX(1)
-            target.scaleY(1)
+            // ✅ OPTIMIZED: Use Konva's to() for smoother animations
+            target.to({ scaleX: 1, scaleY: 1, duration: 0.1 })
             const stage = target.getStage()
             if (stage) {
               stage.container().style.cursor = 'default'
@@ -304,17 +349,11 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       onDragEnd: (e: Konva.KonvaEventObject<MouseEvent>) => handleObjectDragEnd(shape.id, e),
       onContextMenu: (e: Konva.KonvaEventObject<MouseEvent>) => handleObjectRightClick(shape.id, e),
       ...shadowConfig,
-      // Add hover effects
+      // ✅ OPTIMIZED: Add hover effects with smooth Konva animations
       onMouseEnter: (e: Konva.KonvaEventObject<MouseEvent>) => {
         const target = e.target
         if (isStaticObject) {
-          //target.shadowBlur(8)
-          //target.shadowOpacity(0.8)
-          target.scaleX(1.05)
-          target.scaleY(1.05)
-        } else {
-          //target.shadowBlur(15)
-          //target.shadowOpacity(0.5)
+          target.to({ scaleX: 1.05, scaleY: 1.05, duration: 0.1 })
         }
         const stage = target.getStage()
         if (stage) {
@@ -324,13 +363,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       onMouseLeave: (e: Konva.KonvaEventObject<MouseEvent>) => {
         const target = e.target
         if (isStaticObject) {
-          //target.shadowBlur(isSelected ? 10 : 4)
-          //target.shadowOpacity(0.6)
-          target.scaleX(1)
-          target.scaleY(1)
-        } else {
-          //target.shadowBlur(isSelected ? 12 : 8)
-          //target.shadowOpacity(0.3)
+          target.to({ scaleX: 1, scaleY: 1, duration: 0.1 })
         }
         const stage = target.getStage()
         if (stage) {
@@ -681,20 +714,49 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     return layers.find(l => l.id === defaultLayerId)
   }
 
-  // ✅ OPTIMIZED: Memoize expensive layer calculations and sorting
+  // ✅ OPTIMIZED: Check if object is in viewport (with buffer for partially visible objects)
+  const isObjectInViewport = useCallback((obj: MapObject): boolean => {
+    if (!stageRef?.current) return true // Show all if no stage reference
+
+    const stage = stageRef.current
+    const viewport = {
+      x: -stage.x() / stage.scaleX(),
+      y: -stage.y() / stage.scaleY(),
+      width: stage.width() / stage.scaleX(),
+      height: stage.height() / stage.scaleY()
+    }
+
+    // Add buffer for objects partially visible
+    const buffer = 100
+
+    // Get object dimensions
+    const objWidth = (obj as any).width || (obj as any).size || 100
+    const objHeight = (obj as any).height || (obj as any).size || 100
+
+    // Check if object intersects viewport (with buffer)
+    return (
+      obj.position.x + objWidth >= viewport.x - buffer &&
+      obj.position.x <= viewport.x + viewport.width + buffer &&
+      obj.position.y + objHeight >= viewport.y - buffer &&
+      obj.position.y <= viewport.y + viewport.height + buffer
+    )
+  }, [stageRef])
+
+  // ✅ OPTIMIZED: Memoize expensive layer calculations, sorting, and viewport culling
   const visibleSortedObjects = useMemo(() => {
     if (!objects || objects.length === 0) return []
 
     return objects
       .map(obj => ({ obj, layer: getLayerForObject(obj) }))
       .filter(({ layer }) => layer?.visible !== false) // Show if layer is visible or undefined
+      .filter(({ obj }) => isObjectInViewport(obj)) // ✅ NEW: Viewport culling
       .sort((a, b) => {
         const zIndexA = a.layer?.zIndex || a.obj.layer || 0
         const zIndexB = b.layer?.zIndex || b.obj.layer || 0
         return zIndexA - zIndexB
       })
       .map(({ obj }) => obj)
-  }, [objects, layers]) // Re-compute only when objects or layers change
+  }, [objects, layers, isObjectInViewport, stageTransform]) // Re-compute when objects, layers, or viewport changes
 
   if (!objects || objects.length === 0) {
     return null
@@ -716,7 +778,8 @@ const arePropsEqual = (
     prevProps.onObjectClick === nextProps.onObjectClick &&
     prevProps.onObjectDragEnd === nextProps.onObjectDragEnd &&
     prevProps.onTokenSelect === nextProps.onTokenSelect &&
-    prevProps.onTokenDeselect === nextProps.onTokenDeselect
+    prevProps.onTokenDeselect === nextProps.onTokenDeselect &&
+    prevProps.stageRef === nextProps.stageRef
   )
 }
 
