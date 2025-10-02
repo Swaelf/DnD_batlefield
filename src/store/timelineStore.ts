@@ -300,27 +300,84 @@ const useTimelineStore = create<TimelineStore>()(
             case 'spell': {
               // Create proper SpellMapObject for spell
               const spellData = action.data as any
+
+              // ✅ FIX: Get actual current positions of caster and target tokens
+              // This ensures spells use the token's current position after any previous movements
+              let actualFromPosition = spellData.fromPosition
+              let actualToPosition = spellData.toPosition
+
+              // Look up caster token's current position
+              if (spellData.tokenId) {
+                const casterToken = mapStore.currentMap?.objects.find(obj => obj.id === spellData.tokenId)
+                if (casterToken) {
+                  actualFromPosition = casterToken.position
+                }
+              }
+
+              // Look up target token's current position (if targeting a token)
+              if (spellData.targetTokenId) {
+                const targetToken = mapStore.currentMap?.objects.find(obj => obj.id === spellData.targetTokenId)
+                if (targetToken) {
+                  actualToPosition = targetToken.position
+                }
+              }
+
+              // Create spell with actual current positions
+              const updatedSpellData = {
+                ...spellData,
+                fromPosition: actualFromPosition,
+                toPosition: actualToPosition
+              }
+
               const spellObject = {
                 id: `spell-${Date.now()}-${Math.random()}`,
                 type: 'spell' as const,
-                position: spellData.toPosition || spellData.fromPosition || { x: 0, y: 0 }, // Use target position for persistent effects
+                position: actualToPosition || actualFromPosition || { x: 0, y: 0 }, // Use target position for persistent effects
                 rotation: 0,
                 layer: 10,
                 isSpellEffect: true,
                 roundCreated: get().currentEvent,
-                spellDuration: spellData.duration || 1,
-                spellData: spellData
+                spellDuration: updatedSpellData.duration || 1,
+                spellData: updatedSpellData
               }
               mapStore.addSpellEffect(spellObject)
               // Wait for spell animation duration
-              setTimeout(resolve, spellData.duration || 1000)
+              setTimeout(resolve, updatedSpellData.duration || 1000)
               break
             }
             case 'attack': {
-              mapStore.addAttackEffect(action.data as any)
               const attackData = action.data as any
+
+              // ✅ FIX: Get actual current positions of attacker and target tokens
+              let actualFromPosition = attackData.fromPosition
+              let actualToPosition = attackData.toPosition
+
+              // Look up attacker token's current position
+              if (action.tokenId) {
+                const attackerToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
+                if (attackerToken) {
+                  actualFromPosition = attackerToken.position
+                }
+              }
+
+              // Look up target token's current position (if targeting a token)
+              if (attackData.targetTokenId) {
+                const targetToken = mapStore.currentMap?.objects.find(obj => obj.id === attackData.targetTokenId)
+                if (targetToken) {
+                  actualToPosition = targetToken.position
+                }
+              }
+
+              // Create attack with actual current positions
+              const updatedAttackData = {
+                ...attackData,
+                fromPosition: actualFromPosition,
+                toPosition: actualToPosition
+              }
+
+              mapStore.addAttackEffect(updatedAttackData)
               // Wait for attack animation duration
-              setTimeout(resolve, attackData.duration || 1000)
+              setTimeout(resolve, updatedAttackData.duration || 1000)
               break
             }
             case 'move': {
