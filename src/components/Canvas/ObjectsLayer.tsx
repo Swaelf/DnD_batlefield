@@ -583,6 +583,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
       // For spells with persist duration, create a persistent area
       const persistDuration = spell.spellData?.persistDuration || 0
+      console.log('[ObjectsLayer] Animation complete for spell:', spell.spellData?.spellName, 'persistDuration:', persistDuration, 'category:', spell.spellData?.category)
 
       // Area spells, projectile-burst spells, and cone spells can create persistent areas
       if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst' || spell.spellData?.category === 'cone')) {
@@ -628,10 +629,12 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
         // Add persistent area to map using addSpellEffect to ensure it's tracked properly
         const addSpellEffect = useMapStore.getState().addSpellEffect
+        console.log('[ObjectsLayer] Creating persistent area:', persistentAreaObject)
         addSpellEffect(persistentAreaObject)
 
         // Remove the spell animation object
         setTimeout(() => {
+          console.log('[ObjectsLayer] Removing spell animation object:', spell.id)
           deleteObject(spell.id)
         }, 100)
       } else {
