@@ -22,14 +22,14 @@ import { isToken, isShape, isText, isSpell, isAttack, isPersistentArea } from '.
 const completedSpellAnimations = new Set<string>()
 
 // ✅ STABLE SELECTORS: Define selectors outside component to avoid re-creating on every render
-const selectObjects = (state: any) => state.currentMap?.objects || []
-const selectGridSettings = (state: any) => state.currentMap?.grid
-const selectSelectedObjects = (state: any) => state.selectedObjects
-const selectDeleteObject = (state: any) => state.deleteObject
-const selectUpdateObjectPosition = (state: any) => state.updateObjectPosition
-const selectBatchUpdatePosition = (state: any) => state.batchUpdatePosition
-const selectCurrentTool = (state: any) => state.currentTool
-const selectCurrentEvent = (state: any) => state.currentEvent
+const selectObjects = (state: { currentMap: { objects: any[] } | null }) => state.currentMap?.objects || []
+const selectGridSettings = (state: { currentMap: { grid: any } | null }) => state.currentMap?.grid
+const selectSelectedObjects = (state: { selectedObjects: string[] }) => state.selectedObjects
+const selectDeleteObject = (state: { deleteObject: (id: string) => void }) => state.deleteObject
+const selectUpdateObjectPosition = (state: { updateObjectPosition: (id: string, position: { x: number; y: number }) => void }) => state.updateObjectPosition
+const selectBatchUpdatePosition = (state: { batchUpdatePosition: (objectIds: string[], deltaPosition: { x: number; y: number }) => void }) => state.batchUpdatePosition
+const selectCurrentTool = (state: { currentTool: string }) => state.currentTool
+const selectCurrentEvent = (state: { currentEvent: number }) => state.currentEvent
 
 type ObjectsLayerProps = {
   onObjectClick?: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void
