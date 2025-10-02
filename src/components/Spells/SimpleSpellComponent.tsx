@@ -730,8 +730,7 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         )
 
       case 'cone':
-        // Cone spell effect - expanding arc animation similar to fireball
-        // D&D scale: Increased multiplier for longer range visual
+        // Cone spell effect - expanding arc animation with fire particles
         const PIXELS_PER_FOOT = 8
         const coneLength = (spell.size || 30) * PIXELS_PER_FOOT
         const coneAngle = (spell.coneAngle || 60) * (Math.PI / 180)
@@ -746,25 +745,47 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         const leftAngle = coneDirection - coneAngle / 2
         const rightAngle = coneDirection + coneAngle / 2
 
+        // Full cone area points for persistent effect
+        const fullConePoints = [
+          spell.fromPosition.x, spell.fromPosition.y,
+          spell.fromPosition.x + Math.cos(leftAngle) * coneLength,
+          spell.fromPosition.y + Math.sin(leftAngle) * coneLength,
+          spell.fromPosition.x + Math.cos(coneDirection) * coneLength,
+          spell.fromPosition.y + Math.sin(coneDirection) * coneLength,
+          spell.fromPosition.x + Math.cos(rightAngle) * coneLength,
+          spell.fromPosition.y + Math.sin(rightAngle) * coneLength
+        ]
+
         const coneOpacity = progress < 0.8 ? 0.7 : (1 - progress) * 3.5
 
         return (
           <>
-            {/* Expanding arc waves - similar to fireball expanding circles */}
-            {[0, 0.12, 0.24, 0.36].map((waveOffset, index) => {
+            {/* Persistent fire cone area - shows where fire has spread */}
+            {spell.persistDuration && progress > 0.3 && (
+              <Line
+                points={fullConePoints}
+                closed={true}
+                fill={spell.persistColor || spell.color}
+                opacity={Math.min(progress * 2, 1) * (spell.persistOpacity || 0.3)}
+                shadowColor={spell.persistColor || spell.color}
+                shadowBlur={25}
+                shadowOpacity={0.5}
+              />
+            )}
+
+            {/* Expanding fire arc waves */}
+            {[0, 0.1, 0.2, 0.3].map((waveOffset, index) => {
               const wavePos = expansionProgress - waveOffset
               if (wavePos <= 0 || wavePos > 1) return null
 
               const currentRadius = coneLength * wavePos
-              const trailLength = 0.15 // Short fading tail
+              const trailLength = 0.2 // Longer fading tail for fire effect
               const trailStart = Math.max(0, wavePos - trailLength)
-              const trailRadius = coneLength * trailStart
 
-              // Create arc segment for cone area
-              const arcSegments = 20
+              // Create arc segment
+              const arcSegments = 25
               const arcPoints: number[] = []
 
-              // Add arc points from left to right edge
               for (let i = 0; i <= arcSegments; i++) {
                 const angle = leftAngle + (coneAngle * i / arcSegments)
                 arcPoints.push(
@@ -773,69 +794,89 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
                 )
               }
 
-              // Wave intensity (stronger at leading edge, fading tail)
-              const waveIntensity = Math.pow(1 - waveOffset / 0.36, 1.5)
-              const fadeOpacity = (1 - waveOffset / 0.36) * waveIntensity
+              const waveIntensity = Math.pow(1 - waveOffset / 0.3, 1.8)
+              const fadeOpacity = (1 - waveOffset / 0.3) * waveIntensity
 
               return (
                 <Group key={index}>
-                  {/* Main expanding arc */}
+                  {/* Main fire arc - bright orange/yellow */}
                   <Line
                     points={arcPoints}
-                    stroke={spell.secondaryColor || '#FFD700'}
-                    strokeWidth={6 * waveIntensity}
-                    opacity={fadeOpacity * coneOpacity}
+                    stroke={index === 0 ? '#FFD700' : spell.secondaryColor || '#FF6B00'}
+                    strokeWidth={8 * waveIntensity}
+                    opacity={fadeOpacity * coneOpacity * 0.9}
                     lineCap="round"
                     lineJoin="round"
-                    shadowColor={spell.secondaryColor || '#FFD700'}
-                    shadowBlur={20 * waveIntensity}
+                    shadowColor={'#FFD700'}
+                    shadowBlur={25 * waveIntensity}
                   />
 
-                  {/* Fading trail behind the arc */}
+                  {/* Fire trail - darker red */}
                   {trailStart > 0 && (
                     <Line
                       points={arcPoints.map((val, i) => {
                         const isX = i % 2 === 0
-                        const angle = leftAngle + (coneAngle * Math.floor(i / 2) / arcSegments)
+                        const segmentIndex = Math.floor(i / 2)
+                        const angle = leftAngle + (coneAngle * segmentIndex / arcSegments)
+                        const trailDist = coneLength * trailStart
                         return isX
-                          ? spell.fromPosition.x + Math.cos(angle) * trailRadius
-                          : spell.fromPosition.y + Math.sin(angle) * trailRadius
+                          ? spell.fromPosition.x + Math.cos(angle) * trailDist
+                          : spell.fromPosition.y + Math.sin(angle) * trailDist
                       })}
                       stroke={spell.color}
-                      strokeWidth={4 * waveIntensity}
-                      opacity={fadeOpacity * coneOpacity * 0.4}
+                      strokeWidth={5 * waveIntensity}
+                      opacity={fadeOpacity * coneOpacity * 0.5}
                       lineCap="round"
                       lineJoin="round"
+                      shadowColor={spell.color}
+                      shadowBlur={15 * waveIntensity}
                     />
                   )}
                 </Group>
               )
             })}
 
-            {/* Fire particles for dragon breath */}
-            {spell.spellName?.toLowerCase().includes('dragon') && spell.particleEffect && (
+            {/* Fire particles - ember-like particles throughout cone */}
+            {spell.particleEffect && (
               <>
-                {[...Array(20)].map((_, i) => {
-                  // Random position within cone
+                {[...Array(30)].map((_, i) => {
+                  // Random position within cone, following expansion
                   const angleVariation = (Math.random() - 0.5) * coneAngle
                   const particleAngle = coneDirection + angleVariation
-                  const distanceVariation = 0.5 + Math.random() * 0.5
-                  const particleDistance = coneLength * waveProgress * distanceVariation
+                  const baseDistance = Math.random()
+                  const particleDistance = coneLength * expansionProgress * baseDistance
 
                   const particleX = spell.fromPosition.x + Math.cos(particleAngle) * particleDistance
                   const particleY = spell.fromPosition.y + Math.sin(particleAngle) * particleDistance
 
-                  // Particles fade as they travel
-                  const particleOpacity = Math.max(0, (1 - progress) * (1 - distanceVariation * 0.3))
+                  // Particles flicker and fade based on distance and time
+                  const flickerOffset = (i * 0.1) % 1
+                  const flickerValue = Math.sin((progress + flickerOffset) * Math.PI * 4) * 0.3 + 0.7
+                  const distanceFade = 1 - (baseDistance * 0.4)
+                  const particleOpacity = Math.max(0, (1 - progress) * distanceFade * flickerValue)
+
+                  // Fire colors: yellow core, orange mid, red outer
+                  const particleColor = i % 4 === 0
+                    ? '#FFFF00'  // Bright yellow
+                    : i % 4 === 1
+                    ? '#FFD700'  // Gold
+                    : i % 4 === 2
+                    ? '#FF8C00'  // Dark orange
+                    : '#FF4500'  // Red-orange
+
+                  const particleSize = (3 + Math.random() * 5) * (1 - baseDistance * 0.3)
 
                   return (
                     <Circle
                       key={i}
                       x={particleX}
                       y={particleY}
-                      radius={4 + Math.random() * 4}
-                      fill={i % 3 === 0 ? '#FFD700' : i % 3 === 1 ? '#FF6B00' : spell.color}
-                      opacity={particleOpacity * 0.8}
+                      radius={particleSize}
+                      fill={particleColor}
+                      opacity={particleOpacity * 0.9}
+                      shadowColor={particleColor}
+                      shadowBlur={8}
+                      shadowOpacity={0.8}
                     />
                   )
                 })}
