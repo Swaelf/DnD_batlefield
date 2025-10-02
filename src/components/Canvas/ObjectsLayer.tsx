@@ -1,4 +1,4 @@
-import { useCallback, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
+import { useCallback, useMemo, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
 import { Group, Rect, Circle, Line, Text as KonvaText } from 'react-konva'
 import type Konva from 'konva'
 import type { MapObject, Shape, Text } from '@/types/map'
@@ -37,13 +37,14 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   onTokenSelect,
   onTokenDeselect
 }) => {
-  const currentMap = useMapStore(state => state.currentMap)
+  // ✅ OPTIMIZED: Use granular selectors to prevent unnecessary re-renders
+  const objects = useMapStore(state => state.currentMap?.objects || [])
+  const gridSettings = useMapStore(state => state.currentMap?.grid)
   const selectedObjects = useMapStore(state => state.selectedObjects)
   const deleteObject = useMapStore(state => state.deleteObject)
   const updateObjectPosition = useMapStore(state => state.updateObjectPosition)
   const batchUpdatePosition = useMapStore(state => state.batchUpdatePosition)
   const currentTool = useToolStore(state => state.currentTool)
-  const gridSettings = currentMap?.grid
   const { isPicking, setSelectedToken } = useEventCreationStore()
   const { activePaths } = useAnimationStore()
   const currentEvent = useTimelineStore(state => state.currentEvent)
@@ -68,7 +69,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
     if (isPartOfMultiSelection) {
       // Calculate delta from original position
-      const draggedObject = currentMap?.objects.find(obj => obj.id === objId)
+      const draggedObject = objects.find(obj => obj.id === objId)
       if (draggedObject) {
         const deltaX = newPosition.x - draggedObject.position.x
         const deltaY = newPosition.y - draggedObject.position.y
@@ -88,7 +89,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   const handleObjectClick = (objId: string, e: Konva.KonvaEventObject<MouseEvent> | null) => {
     // If we're picking a token (either main token or target token), handle that first
     if (isPicking === 'token' || isPicking === 'targetToken') {
-      const obj = currentMap?.objects.find(o => o.id === objId)
+      const obj = objects.find(o => o.id === objId)
       if (obj && isToken(obj)) {
         setSelectedToken(objId)
         return
@@ -96,7 +97,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     }
 
     // Check if this is a token
-    const obj = currentMap?.objects.find(o => o.id === objId)
+    const obj = objects.find(o => o.id === objId)
 
     // Priority 1: If in token picking mode for events, select the token for the event
     if (obj && isToken(obj) && (isPicking === 'token' || isPicking === 'targetToken')) {
@@ -554,7 +555,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         let persistentPosition = spell.spellData.toPosition
         if (spell.spellData.trackTarget && spell.spellData.targetTokenId) {
           // Get current token position for tracking spells
-          const targetToken = currentMap?.objects.find(obj =>
+          const targetToken = objects.find(obj =>
             obj.id === spell.spellData?.targetTokenId && obj.type === 'token'
           )
           if (targetToken) {
@@ -641,7 +642,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     // Determine current position - track token if enabled
     let currentPosition = area.persistentAreaData.position
     if (area.persistentAreaData.trackTarget && area.persistentAreaData.targetTokenId) {
-      const targetToken = currentMap?.objects.find(obj =>
+      const targetToken = objects.find(obj =>
         obj.id === area.persistentAreaData.targetTokenId && obj.type === 'token'
       )
       if (targetToken) {
@@ -680,20 +681,22 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     return layers.find(l => l.id === defaultLayerId)
   }
 
-  // Filter and sort objects by layer visibility and z-index
-  const visibleSortedObjects = currentMap?.objects
-    ? currentMap.objects
-        .map(obj => ({ obj, layer: getLayerForObject(obj) }))
-        .filter(({ layer }) => layer?.visible !== false) // Show if layer is visible or undefined
-        .sort((a, b) => {
-          const zIndexA = a.layer?.zIndex || a.obj.layer || 0
-          const zIndexB = b.layer?.zIndex || b.obj.layer || 0
-          return zIndexA - zIndexB
-        })
-        .map(({ obj }) => obj)
-    : []
+  // ✅ OPTIMIZED: Memoize expensive layer calculations and sorting
+  const visibleSortedObjects = useMemo(() => {
+    if (!objects || objects.length === 0) return []
 
-  if (!currentMap) {
+    return objects
+      .map(obj => ({ obj, layer: getLayerForObject(obj) }))
+      .filter(({ layer }) => layer?.visible !== false) // Show if layer is visible or undefined
+      .sort((a, b) => {
+        const zIndexA = a.layer?.zIndex || a.obj.layer || 0
+        const zIndexB = b.layer?.zIndex || b.obj.layer || 0
+        return zIndexA - zIndexB
+      })
+      .map(({ obj }) => obj)
+  }, [objects, layers]) // Re-compute only when objects or layers change
+
+  if (!objects || objects.length === 0) {
     return null
   }
 
@@ -704,14 +707,16 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   )
 })
 
-// Custom comparison function to prevent unnecessary re-renders
+// ✅ OPTIMIZED: Custom comparison function to prevent unnecessary re-renders
 const arePropsEqual = (
   prevProps: ObjectsLayerProps,
   nextProps: ObjectsLayerProps
 ): boolean => {
   return (
     prevProps.onObjectClick === nextProps.onObjectClick &&
-    prevProps.onObjectDragEnd === nextProps.onObjectDragEnd
+    prevProps.onObjectDragEnd === nextProps.onObjectDragEnd &&
+    prevProps.onTokenSelect === nextProps.onTokenSelect &&
+    prevProps.onTokenDeselect === nextProps.onTokenDeselect
   )
 }
 
