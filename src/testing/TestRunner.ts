@@ -306,6 +306,32 @@ export class TestRunner {
           }
           break
 
+        case 'spellOriginPosition':
+          // Validate that a spell's fromPosition matches expected value
+          const spell = mapStore.currentMap?.objects.find(
+            obj => obj.type === 'spell' && (obj as any).spellData?.spellName === assertion.params.spellName
+          )
+          if (!spell) {
+            return {
+              success: false,
+              error: `Spell ${assertion.params.spellName} not found`
+            }
+          }
+          const spellFromPos = (spell as any).spellData?.fromPosition
+          if (!spellFromPos) {
+            return {
+              success: false,
+              error: `Spell ${assertion.params.spellName} has no fromPosition`
+            }
+          }
+          if (spellFromPos.x !== assertion.expected.x || spellFromPos.y !== assertion.expected.y) {
+            return {
+              success: false,
+              error: `Spell origin mismatch: expected ${JSON.stringify(assertion.expected)}, got ${JSON.stringify(spellFromPos)}`
+            }
+          }
+          break
+
         case 'roundNumber':
           if (roundStore.currentEvent !== assertion.expected) {
             return {
