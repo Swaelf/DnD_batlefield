@@ -140,7 +140,7 @@ const AttackRendererComponent = ({
       const progress = Math.min(frame.time / duration, 1)
 
       if (animation === 'melee_slash') {
-        animateSlashEffect(effect as Konva.Arc, progress, isCritical)
+        animateSlashEffect(effect as Konva.Line, progress, isCritical)
       } else if (animation === 'melee_thrust') {
         animateThrustEffect(effect as Konva.Line, progress, isCritical)
       } else {
@@ -170,27 +170,27 @@ const AttackRendererComponent = ({
     const midY = (fromPos.y + toPos.y) / 2
 
     if (animation === 'melee_slash') {
-      // Create cone-shaped arc for slash
+      // Create line for slash that sweeps through cone
       // Range is in D&D feet (5ft per square = 50px)
       // Default range is 5ft (1 square = 50px)
       const PIXELS_PER_SQUARE = 50
       const rangeInSquares = (range || 5) / 5 // Convert feet to squares
-      const coneRadius = rangeInSquares * PIXELS_PER_SQUARE
+      const slashLength = rangeInSquares * PIXELS_PER_SQUARE
 
-      return new Konva.Arc({
-        x: fromPos.x,
-        y: fromPos.y,
-        innerRadius: 0,
-        outerRadius: coneRadius,
-        angle: 45, // 45-degree cone arc
-        rotation: (angle * 180) / Math.PI + 22.5, // Center cone on target direction (+22.5 to start right of center)
-        fill: color,
-        opacity: 0,
+      // Calculate the initial position (right side of 45-degree cone)
+      const coneRightAngle = angle + (Math.PI / 8) // +22.5 degrees in radians
+      const endX = fromPos.x + Math.cos(coneRightAngle) * slashLength
+      const endY = fromPos.y + Math.sin(coneRightAngle) * slashLength
+
+      return new Konva.Line({
+        points: [fromPos.x, fromPos.y, endX, endY],
         stroke: color,
-        strokeWidth: 4,
+        strokeWidth: 6,
+        lineCap: 'round',
+        opacity: 0,
         shadowColor: color,
-        shadowBlur: 10,
-        shadowOpacity: 0.5,
+        shadowBlur: 12,
+        shadowOpacity: 0.6,
       })
     } else if (animation === 'melee_thrust') {
       // Create line for thrust
@@ -215,23 +215,47 @@ const AttackRendererComponent = ({
     }
   }
 
-  const animateSlashEffect = (effect: Konva.Arc, progress: number, isCritical?: boolean) => {
-    // Calculate opacity with fade-in and fade-out
-    const opacity = Math.sin(progress * Math.PI) * 0.8
+  const animateSlashEffect = (effect: Konva.Line, progress: number, isCritical?: boolean) => {
+    const { fromPosition, toPosition, range } = attack
 
-    // Sweep from right to left within 45-degree cone centered on target
-    // Arc is 45 degrees wide, starts at +22.5 degrees (right side)
-    // Sweep it by 45 degrees to end at -22.5 degrees (left side)
-    const baseRotation = effect.rotation() - 22.5 // Get base angle (center of target direction)
-    const sweepAngle = -45 * progress // Negative for right-to-left sweep through the 45-degree cone
-    const currentRotation = baseRotation + sweepAngle
+    // Calculate base angle to target
+    const baseAngle = Math.atan2(toPosition.y - fromPosition.y, toPosition.x - fromPosition.x)
 
-    // Scale effect for critical hits
-    const scale = isCritical ? CRITICAL_HIT.EFFECT_SCALE : 1
+    // Calculate slash length based on range
+    const PIXELS_PER_SQUARE = 50
+    const rangeInSquares = (range || 5) / 5
+    const slashLength = rangeInSquares * PIXELS_PER_SQUARE
 
+    // Sweep from right to left and back within 45-degree cone
+    // Progress 0-0.5: right to left, 0.5-1.0: left to right
+    let sweepProgress
+    if (progress <= 0.5) {
+      // First half: sweep from right (+22.5°) to left (-22.5°)
+      sweepProgress = progress * 2 // 0 to 1
+    } else {
+      // Second half: sweep back from left (-22.5°) to right (+22.5°)
+      sweepProgress = 2 - (progress * 2) // 1 to 0
+    }
+
+    // Calculate current angle within the 45-degree cone
+    const coneHalfAngle = Math.PI / 8 // 22.5 degrees in radians
+    const currentAngle = baseAngle + coneHalfAngle - (sweepProgress * coneHalfAngle * 2)
+
+    // Calculate end point of the slash line
+    const endX = fromPosition.x + Math.cos(currentAngle) * slashLength
+    const endY = fromPosition.y + Math.sin(currentAngle) * slashLength
+
+    // Update line points
+    effect.points([fromPosition.x, fromPosition.y, endX, endY])
+
+    // Fade in and out
+    const opacity = Math.sin(progress * Math.PI) * 0.9
     effect.opacity(opacity)
-    effect.rotation(currentRotation)
-    effect.scale({ x: scale, y: scale })
+
+    // Scale for critical hits
+    if (isCritical) {
+      effect.strokeWidth(8)
+    }
   }
 
   const animateThrustEffect = (effect: Konva.Line, progress: number, isCritical?: boolean) => {
