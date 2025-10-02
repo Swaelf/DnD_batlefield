@@ -648,7 +648,6 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           <Group name="objects">
             <ObjectsLayer
               onObjectClick={handleObjectClick}
-              stageRef={stageRef}
             />
           </Group>
         </Layer>
