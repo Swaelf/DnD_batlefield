@@ -584,6 +584,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       // For spells with persist duration, create a persistent area
       const persistDuration = spell.spellData?.persistDuration || 0
       console.log('[ObjectsLayer] Animation complete for spell:', spell.spellData?.spellName, 'persistDuration:', persistDuration, 'category:', spell.spellData?.category)
+      console.log('[ObjectsLayer] ⚠️ SPELL SIZE:', spell.spellData?.size, 'BURST RADIUS:', spell.spellData?.burstRadius)
 
       // Area spells, projectile-burst spells, and cone spells can create persistent areas
       if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst' || spell.spellData?.category === 'cone')) {
@@ -600,6 +601,12 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         }
 
         // Create persistent area object
+        console.log('[ObjectsLayer] Spell data for persistent area:', {
+          burstRadius: spell.spellData.burstRadius,
+          size: spell.spellData.size,
+          spellName: spell.spellData.spellName
+        })
+
         const persistentAreaObject = {
           id: `persistent-area-${Date.now()}-${Math.random()}`,
           type: 'persistent-area' as const,
@@ -608,7 +615,8 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           layer: 9,
           persistentAreaData: {
             position: persistentPosition,
-            radius: spell.spellData.burstRadius || spell.spellData.size || 60, // Use burst radius for area effects
+            // For cone spells, use size (in feet). For burst spells, use burstRadius (in pixels)
+            radius: spell.spellData.category === 'cone' ? spell.spellData.size : (spell.spellData.burstRadius || spell.spellData.size || 60),
             color: spell.spellData.persistColor || spell.spellData.color || '#3D3D2E',
             opacity: spell.spellData.persistOpacity || 0.8,
             spellName: spell.spellData.spellName || 'Area Effect',
