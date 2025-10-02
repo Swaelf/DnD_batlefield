@@ -730,12 +730,12 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         )
 
       case 'cone':
-        // Cone spell effect with wave animation
+        // Cone spell effect - expanding arc animation similar to fireball
         // D&D scale: Increased multiplier for longer range visual
-        const PIXELS_PER_FOOT = 8  // Doubled from 4 to 8 for more dramatic range
+        const PIXELS_PER_FOOT = 8
         const coneLength = (spell.size || 30) * PIXELS_PER_FOOT
-        const coneAngle = (spell.coneAngle || 60) * (Math.PI / 180) // Convert degrees to radians
-        const waveProgress = Math.min(progress * 1.2, 1) // Wave progression
+        const coneAngle = (spell.coneAngle || 60) * (Math.PI / 180)
+        const expansionProgress = Math.min(progress * 1.3, 1)
 
         // Calculate cone direction
         const coneDx = getTargetPosition().x - spell.fromPosition.x
@@ -746,64 +746,69 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         const leftAngle = coneDirection - coneAngle / 2
         const rightAngle = coneDirection + coneAngle / 2
 
-        // Full cone area (for background fill)
-        const fullLeftX = spell.fromPosition.x + Math.cos(leftAngle) * coneLength
-        const fullLeftY = spell.fromPosition.y + Math.sin(leftAngle) * coneLength
-        const fullRightX = spell.fromPosition.x + Math.cos(rightAngle) * coneLength
-        const fullRightY = spell.fromPosition.y + Math.sin(rightAngle) * coneLength
-        const fullCenterX = spell.fromPosition.x + Math.cos(coneDirection) * coneLength
-        const fullCenterY = spell.fromPosition.y + Math.sin(coneDirection) * coneLength
-
-        const fullConePoints = [
-          spell.fromPosition.x, spell.fromPosition.y, // Origin
-          fullLeftX, fullLeftY,                        // Left edge
-          fullCenterX, fullCenterY,                    // Center end
-          fullRightX, fullRightY                       // Right edge
-        ]
-
-        const coneOpacity = progress < 0.8 ? 0.6 : (1 - progress) * 3
+        const coneOpacity = progress < 0.8 ? 0.7 : (1 - progress) * 3.5
 
         return (
           <>
-            {/* Background cone area - full cone with color */}
-            <Line
-              points={fullConePoints}
-              closed={true}
-              fill={spell.color}
-              opacity={coneOpacity * 0.25}
-              shadowColor={spell.color}
-              shadowBlur={30}
-              shadowOpacity={0.4}
-            />
-
-            {/* Traveling wave fronts - realistic wave progression */}
-            {[0, 0.15, 0.3, 0.45, 0.6].map((waveOffset, index) => {
-              const wavePos = waveProgress - waveOffset
+            {/* Expanding arc waves - similar to fireball expanding circles */}
+            {[0, 0.12, 0.24, 0.36].map((waveOffset, index) => {
+              const wavePos = expansionProgress - waveOffset
               if (wavePos <= 0 || wavePos > 1) return null
 
-              const waveDistance = coneLength * wavePos
-              const waveLeftX = spell.fromPosition.x + Math.cos(leftAngle) * waveDistance
-              const waveLeftY = spell.fromPosition.y + Math.sin(leftAngle) * waveDistance
-              const waveRightX = spell.fromPosition.x + Math.cos(rightAngle) * waveDistance
-              const waveRightY = spell.fromPosition.y + Math.sin(rightAngle) * waveDistance
-              const waveCenterX = spell.fromPosition.x + Math.cos(coneDirection) * waveDistance
-              const waveCenterY = spell.fromPosition.y + Math.sin(coneDirection) * waveDistance
+              const currentRadius = coneLength * wavePos
+              const trailLength = 0.15 // Short fading tail
+              const trailStart = Math.max(0, wavePos - trailLength)
+              const trailRadius = coneLength * trailStart
 
-              // Wave intensity based on position (stronger at front)
-              const waveIntensity = Math.pow(1 - waveOffset / 0.6, 2)
+              // Create arc segment for cone area
+              const arcSegments = 20
+              const arcPoints: number[] = []
+
+              // Add arc points from left to right edge
+              for (let i = 0; i <= arcSegments; i++) {
+                const angle = leftAngle + (coneAngle * i / arcSegments)
+                arcPoints.push(
+                  spell.fromPosition.x + Math.cos(angle) * currentRadius,
+                  spell.fromPosition.y + Math.sin(angle) * currentRadius
+                )
+              }
+
+              // Wave intensity (stronger at leading edge, fading tail)
+              const waveIntensity = Math.pow(1 - waveOffset / 0.36, 1.5)
+              const fadeOpacity = (1 - waveOffset / 0.36) * waveIntensity
 
               return (
-                <Line
-                  key={index}
-                  points={[waveLeftX, waveLeftY, waveCenterX, waveCenterY, waveRightX, waveRightY]}
-                  stroke={spell.secondaryColor || '#FFD700'}
-                  strokeWidth={5 * waveIntensity}
-                  opacity={waveIntensity * coneOpacity}
-                  lineCap="round"
-                  lineJoin="round"
-                  shadowColor={spell.secondaryColor || '#FFD700'}
-                  shadowBlur={15 * waveIntensity}
-                />
+                <React.Fragment key={index}>
+                  {/* Main expanding arc */}
+                  <Line
+                    points={arcPoints}
+                    stroke={spell.secondaryColor || '#FFD700'}
+                    strokeWidth={6 * waveIntensity}
+                    opacity={fadeOpacity * coneOpacity}
+                    lineCap="round"
+                    lineJoin="round"
+                    shadowColor={spell.secondaryColor || '#FFD700'}
+                    shadowBlur={20 * waveIntensity}
+                  />
+
+                  {/* Fading trail behind the arc */}
+                  {trailStart > 0 && (
+                    <Line
+                      points={arcPoints.map((val, i) => {
+                        const isX = i % 2 === 0
+                        const angle = leftAngle + (coneAngle * Math.floor(i / 2) / arcSegments)
+                        return isX
+                          ? spell.fromPosition.x + Math.cos(angle) * trailRadius
+                          : spell.fromPosition.y + Math.sin(angle) * trailRadius
+                      })}
+                      stroke={spell.color}
+                      strokeWidth={4 * waveIntensity}
+                      opacity={fadeOpacity * coneOpacity * 0.4}
+                      lineCap="round"
+                      lineJoin="round"
+                    />
+                  )}
+                </React.Fragment>
               )
             })}
 
