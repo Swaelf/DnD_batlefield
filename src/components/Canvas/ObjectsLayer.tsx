@@ -679,8 +679,11 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
   const renderPersistentArea = (area: MapObject & { type: 'persistent-area'; persistentAreaData?: any }) => {
     if (!area.persistentAreaData) {
+      console.warn('[ObjectsLayer] Persistent area has no data:', area.id)
       return null
     }
+
+    console.log('[ObjectsLayer] Rendering persistent area:', area.id, 'shape:', area.persistentAreaData.shape)
 
     // Determine current position - track token if enabled
     let currentPosition = area.persistentAreaData.position
