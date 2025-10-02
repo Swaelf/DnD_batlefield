@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useEffect, useRef, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
+import { useCallback, useMemo, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
 import { Group, Rect, Circle, Line, Text as KonvaText } from 'react-konva'
 import type Konva from 'konva'
 import type { MapObject, Shape, Text } from '@/types/map'
@@ -36,7 +36,6 @@ type ObjectsLayerProps = {
   onObjectDragEnd?: (id: string, newPosition: { x: number; y: number }) => void
   onTokenSelect?: (tokenId: string, position: { x: number; y: number }) => void
   onTokenDeselect?: () => void
-  stageRef?: React.MutableRefObject<Konva.Stage | null>
 }
 
 /**
@@ -46,8 +45,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   onObjectClick,
   onObjectDragEnd,
   onTokenSelect,
-  onTokenDeselect,
-  stageRef
+  onTokenDeselect
 }) => {
   // ✅ OPTIMIZED: Use granular selectors with stable references
   const objects = useMapStore(selectObjects)
@@ -63,34 +61,9 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   const { layers, getDefaultLayerForObjectType, migrateNumericLayer } = useLayerStore()
   const { handleContextMenu } = useContextMenu()
 
-  // ✅ OPTIMIZED: Track stage transform for viewport culling (using ref to avoid re-renders)
-  const stageTransformRef = useRef({ x: 0, y: 0, scaleX: 1, scaleY: 1 })
-  const [, forceUpdate] = useState({})
-
-  useEffect(() => {
-    if (!stageRef?.current) return
-
-    const stage = stageRef.current
-    const updateTransform = () => {
-      stageTransformRef.current = {
-        x: stage.x(),
-        y: stage.y(),
-        scaleX: stage.scaleX(),
-        scaleY: stage.scaleY()
-      }
-      // Force a re-render to update visible objects
-      forceUpdate({})
-    }
-
-    // Update on dragend and wheel (zoom)
-    stage.on('dragend', updateTransform)
-    stage.on('wheel', updateTransform)
-
-    return () => {
-      stage.off('dragend', updateTransform)
-      stage.off('wheel', updateTransform)
-    }
-  }, [stageRef])
+  // NOTE: Viewport culling disabled due to infinite loop issues with forceUpdate
+  // The performance optimization caused state update loops that exceeded React's limit
+  // Future implementation should use a different approach (e.g., Konva's built-in culling)
 
   const handleObjectDragEnd = (objId: string, e: Konva.KonvaEventObject<MouseEvent>) => {
     const node = e.target
@@ -726,49 +699,21 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     return layers.find(l => l.id === defaultLayerId)
   }
 
-  // ✅ OPTIMIZED: Check if object is in viewport (with buffer for partially visible objects)
-  const isObjectInViewport = useCallback((obj: MapObject): boolean => {
-    if (!stageRef?.current) return true // Show all if no stage reference
-
-    const stage = stageRef.current
-    const viewport = {
-      x: -stage.x() / stage.scaleX(),
-      y: -stage.y() / stage.scaleY(),
-      width: stage.width() / stage.scaleX(),
-      height: stage.height() / stage.scaleY()
-    }
-
-    // Add buffer for objects partially visible
-    const buffer = 100
-
-    // Get object dimensions
-    const objWidth = (obj as any).width || (obj as any).size || 100
-    const objHeight = (obj as any).height || (obj as any).size || 100
-
-    // Check if object intersects viewport (with buffer)
-    return (
-      obj.position.x + objWidth >= viewport.x - buffer &&
-      obj.position.x <= viewport.x + viewport.width + buffer &&
-      obj.position.y + objHeight >= viewport.y - buffer &&
-      obj.position.y <= viewport.y + viewport.height + buffer
-    )
-  }, [stageRef])
-
-  // ✅ OPTIMIZED: Memoize expensive layer calculations, sorting, and viewport culling
+  // ✅ OPTIMIZED: Memoize expensive layer calculations and sorting
+  // NOTE: Viewport culling removed - was causing infinite render loops
   const visibleSortedObjects = useMemo(() => {
     if (!objects || objects.length === 0) return []
 
     return objects
       .map(obj => ({ obj, layer: getLayerForObject(obj) }))
       .filter(({ layer }) => layer?.visible !== false) // Show if layer is visible or undefined
-      .filter(({ obj }) => isObjectInViewport(obj)) // ✅ NEW: Viewport culling
       .sort((a, b) => {
         const zIndexA = a.layer?.zIndex || a.obj.layer || 0
         const zIndexB = b.layer?.zIndex || b.obj.layer || 0
         return zIndexA - zIndexB
       })
       .map(({ obj }) => obj)
-  }, [objects, layers, isObjectInViewport]) // Re-compute when objects or layers change (viewport updates trigger forceUpdate)
+  }, [objects, layers]) // Re-compute when objects or layers change
 
   if (!objects || objects.length === 0) {
     return null
@@ -790,8 +735,7 @@ const arePropsEqual = (
     prevProps.onObjectClick === nextProps.onObjectClick &&
     prevProps.onObjectDragEnd === nextProps.onObjectDragEnd &&
     prevProps.onTokenSelect === nextProps.onTokenSelect &&
-    prevProps.onTokenDeselect === nextProps.onTokenDeselect &&
-    prevProps.stageRef === nextProps.stageRef
+    prevProps.onTokenDeselect === nextProps.onTokenDeselect
   )
 }
 
