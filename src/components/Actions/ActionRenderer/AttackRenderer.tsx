@@ -133,6 +133,23 @@ const AttackRendererComponent = ({
     const effect = createMeleeEffect(animation, fromPosition, toPosition, color, range)
     group.add(effect)
 
+    // Create trail array for slash animation
+    const trailLines: Konva.Line[] = []
+    if (animation === 'melee_slash') {
+      // Create 5 trail lines
+      for (let i = 0; i < 5; i++) {
+        const trailLine = new Konva.Line({
+          points: [fromPosition.x, fromPosition.y, fromPosition.x, fromPosition.y],
+          stroke: color,
+          strokeWidth: 4,
+          lineCap: 'round',
+          opacity: 0,
+        })
+        group.add(trailLine)
+        trailLines.push(trailLine)
+      }
+    }
+
     // Animate the melee attack
     const anim = new Konva.Animation((frame) => {
       if (!frame) return
@@ -140,7 +157,7 @@ const AttackRendererComponent = ({
       const progress = Math.min(frame.time / duration, 1)
 
       if (animation === 'melee_slash') {
-        animateSlashEffect(effect as Konva.Line, progress, isCritical)
+        animateSlashEffect(effect as Konva.Line, progress, isCritical, trailLines)
       } else if (animation === 'melee_thrust') {
         animateThrustEffect(effect as Konva.Line, progress, isCritical)
       } else {
@@ -215,16 +232,21 @@ const AttackRendererComponent = ({
     }
   }
 
-  const animateSlashEffect = (effect: Konva.Line, progress: number, isCritical?: boolean) => {
+  const animateSlashEffect = (
+    effect: Konva.Line,
+    progress: number,
+    isCritical?: boolean,
+    trailLines?: Konva.Line[]
+  ) => {
     const { fromPosition, toPosition, range } = attack
 
     // Calculate base angle to target
     const baseAngle = Math.atan2(toPosition.y - fromPosition.y, toPosition.x - fromPosition.x)
 
-    // Calculate slash length based on range
+    // Calculate maximum slash length based on range
     const PIXELS_PER_SQUARE = 50
     const rangeInSquares = (range || 5) / 5
-    const slashLength = rangeInSquares * PIXELS_PER_SQUARE
+    const maxSlashLength = rangeInSquares * PIXELS_PER_SQUARE
 
     // Sweep from right to left and back within 45-degree cone
     // Progress 0-0.5: right to left, 0.5-1.0: left to right
@@ -241,16 +263,79 @@ const AttackRendererComponent = ({
     const coneHalfAngle = Math.PI / 8 // 22.5 degrees in radians
     const currentAngle = baseAngle + coneHalfAngle - (sweepProgress * coneHalfAngle * 2)
 
-    // Calculate end point of the slash line
-    const endX = fromPosition.x + Math.cos(currentAngle) * slashLength
-    const endY = fromPosition.y + Math.sin(currentAngle) * slashLength
+    // Dynamic length: half → full → half → zero
+    // Progress 0-0.25: half to full (right side)
+    // Progress 0.25-0.5: full to half (center to left)
+    // Progress 0.5-0.75: half to zero (return sweep)
+    // Progress 0.75-1.0: zero (completed)
+    let lengthMultiplier
+    if (progress <= 0.25) {
+      // Start at half, grow to full
+      lengthMultiplier = 0.5 + (progress * 2) // 0.5 to 1.0
+    } else if (progress <= 0.5) {
+      // Shrink from full to half
+      lengthMultiplier = 1.5 - (progress * 2) // 1.0 to 0.5
+    } else if (progress <= 0.75) {
+      // Shrink from half to zero on return
+      lengthMultiplier = 1.5 - (progress * 2) // 0.5 to 0
+    } else {
+      // Zero length at end
+      lengthMultiplier = 0
+    }
 
-    // Update line points
+    const currentLength = maxSlashLength * lengthMultiplier
+
+    // Calculate end point of the slash line
+    const endX = fromPosition.x + Math.cos(currentAngle) * currentLength
+    const endY = fromPosition.y + Math.sin(currentAngle) * currentLength
+
+    // Update main line points
     effect.points([fromPosition.x, fromPosition.y, endX, endY])
 
     // Fade in and out
     const opacity = Math.sin(progress * Math.PI) * 0.9
     effect.opacity(opacity)
+
+    // Update trail lines with fading positions
+    if (trailLines) {
+      trailLines.forEach((trailLine, index) => {
+        // Trail lag increases with index
+        const trailLag = (index + 1) * 0.04 // 4% lag per trail line
+        const trailProgress = Math.max(0, progress - trailLag)
+
+        // Calculate trail sweep progress
+        let trailSweepProgress
+        if (trailProgress <= 0.5) {
+          trailSweepProgress = trailProgress * 2
+        } else {
+          trailSweepProgress = 2 - (trailProgress * 2)
+        }
+
+        // Calculate trail length
+        let trailLengthMultiplier
+        if (trailProgress <= 0.25) {
+          trailLengthMultiplier = 0.5 + (trailProgress * 2)
+        } else if (trailProgress <= 0.5) {
+          trailLengthMultiplier = 1.5 - (trailProgress * 2)
+        } else if (trailProgress <= 0.75) {
+          trailLengthMultiplier = 1.5 - (trailProgress * 2)
+        } else {
+          trailLengthMultiplier = 0
+        }
+
+        const trailAngle = baseAngle + coneHalfAngle - (trailSweepProgress * coneHalfAngle * 2)
+        const trailLength = maxSlashLength * trailLengthMultiplier
+
+        const trailEndX = fromPosition.x + Math.cos(trailAngle) * trailLength
+        const trailEndY = fromPosition.y + Math.sin(trailAngle) * trailLength
+
+        trailLine.points([fromPosition.x, fromPosition.y, trailEndX, trailEndY])
+
+        // Fade trail opacity based on lag
+        const trailOpacity = Math.sin(trailProgress * Math.PI) * 0.6 * (1 - index * 0.15)
+        trailLine.opacity(trailOpacity)
+      })
+    }
 
     // Scale for critical hits
     if (isCritical) {
