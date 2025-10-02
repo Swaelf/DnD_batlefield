@@ -584,8 +584,8 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       // For spells with persist duration, create a persistent area
       const persistDuration = spell.spellData?.persistDuration || 0
 
-      // Area spells and projectile-burst spells can create persistent areas
-      if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst')) {
+      // Area spells, projectile-burst spells, and cone spells can create persistent areas
+      if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst' || spell.spellData?.category === 'cone')) {
         // Determine position for persistent area - use current target position if tracking enabled
         let persistentPosition = spell.spellData.toPosition
         if (spell.spellData.trackTarget && spell.spellData.targetTokenId) {
@@ -614,7 +614,12 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
             roundCreated: currentEvent, // Use actual current event number
             // Store token tracking information for persistent areas
             trackTarget: spell.spellData.trackTarget || false,
-            targetTokenId: spell.spellData.targetTokenId || null
+            targetTokenId: spell.spellData.targetTokenId || null,
+            // Cone-specific properties
+            shape: spell.spellData.category === 'cone' ? 'cone' : 'circle',
+            fromPosition: spell.spellData.fromPosition,
+            toPosition: spell.spellData.toPosition,
+            coneAngle: spell.spellData.coneAngle || 60
           },
           roundCreated: currentEvent, // Use actual current event number
           spellDuration: persistDuration,
@@ -685,6 +690,45 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       }
     }
 
+    // Render cone-shaped persistent area
+    if (area.persistentAreaData.shape === 'cone') {
+      const PIXELS_PER_FOOT = 8
+      const coneLength = (area.persistentAreaData.radius || 30) * PIXELS_PER_FOOT
+      const coneAngle = (area.persistentAreaData.coneAngle || 60) * (Math.PI / 180)
+
+      const dx = area.persistentAreaData.toPosition.x - area.persistentAreaData.fromPosition.x
+      const dy = area.persistentAreaData.toPosition.y - area.persistentAreaData.fromPosition.y
+      const direction = Math.atan2(dy, dx)
+
+      const leftAngle = direction - coneAngle / 2
+      const rightAngle = direction + coneAngle / 2
+
+      const conePoints = [
+        area.persistentAreaData.fromPosition.x,
+        area.persistentAreaData.fromPosition.y,
+        area.persistentAreaData.fromPosition.x + Math.cos(leftAngle) * coneLength,
+        area.persistentAreaData.fromPosition.y + Math.sin(leftAngle) * coneLength,
+        area.persistentAreaData.fromPosition.x + Math.cos(direction) * coneLength,
+        area.persistentAreaData.fromPosition.y + Math.sin(direction) * coneLength,
+        area.persistentAreaData.fromPosition.x + Math.cos(rightAngle) * coneLength,
+        area.persistentAreaData.fromPosition.y + Math.sin(rightAngle) * coneLength
+      ]
+
+      return (
+        <Line
+          key={area.id}
+          points={conePoints}
+          closed={true}
+          fill={area.persistentAreaData.color}
+          opacity={area.persistentAreaData.opacity}
+          shadowColor={area.persistentAreaData.color}
+          shadowBlur={20}
+          shadowOpacity={0.4}
+        />
+      )
+    }
+
+    // Default circular persistent area
     return (
       <PersistentArea
         key={area.id}
