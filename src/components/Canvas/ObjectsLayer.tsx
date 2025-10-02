@@ -30,6 +30,7 @@ const EMPTY_ARRAY: any[] = []
 // ✅ STABLE SELECTORS: Define selectors outside component to avoid re-creating on every render
 // CRITICAL: Never use || [] - it creates new array every time! Use shared EMPTY_ARRAY constant
 const selectObjects = (state: { currentMap: { objects: any[] } | null }) => state.currentMap?.objects ?? EMPTY_ARRAY
+const selectMapVersion = (state: { mapVersion: number }) => state.mapVersion
 const selectGridSettings = (state: { currentMap: { grid: any } | null }) => state.currentMap?.grid
 const selectSelectedObjects = (state: { selectedObjects: string[] }) => state.selectedObjects
 const selectDeleteObject = (state: { deleteObject: (id: string) => void }) => state.deleteObject
@@ -62,6 +63,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 }) => {
   // ✅ OPTIMIZED: Use granular selectors with stable references
   const objects = useMapStore(selectObjects)
+  const mapVersion = useMapStore(selectMapVersion)
   const gridSettings = useMapStore(selectGridSettings)
   const selectedObjects = useMapStore(selectSelectedObjects)
   const deleteObject = useMapStore(selectDeleteObject)
@@ -728,7 +730,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         return zIndexA - zIndexB
       })
       .map(({ obj }) => obj)
-  }, [objects, layers, migrateNumericLayer, getDefaultLayerForObjectType]) // Only re-compute when actual data changes
+  }, [objects, mapVersion, layers, migrateNumericLayer, getDefaultLayerForObjectType]) // Re-compute when objects change OR mapVersion increments
 
   if (!objects || objects.length === 0) {
     return null
