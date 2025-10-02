@@ -40,8 +40,14 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
     const animationType = spell.animation.type
     const category = getSpellCategory(animationType)
     const color = spell.animation.color
+    const secondaryColor = spell.animation.secondaryColor
     const size = spell.animation.size || 15
-    const duration = spell.duration || 1000
+    const duration = spell.animation.duration || 1000
+    const coneAngle = spell.animation.coneAngle || 60
+    const persistDuration = spell.animation.persistDuration || 0
+    const persistColor = spell.animation.persistColor
+    const persistOpacity = spell.animation.persistOpacity
+    const particles = spell.animation.particles || false
 
     // Token positions
     const token1Initial = { x: 200, y: 200 }
@@ -131,10 +137,15 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
                     fromPosition: token2Position,
                     toPosition: token1Final, // Will track to final position
                     color: color,
+                    secondaryColor: secondaryColor,
                     size: size,
                     duration: duration,
-                    ...(category === 'projectile-burst' && { burstRadius: 30 }),
-                    ...(category === 'cone' && { coneAngle: 60 })
+                    coneAngle: coneAngle,
+                    persistDuration: persistDuration,
+                    persistColor: persistColor,
+                    persistOpacity: persistOpacity,
+                    particleEffect: particles,
+                    ...(category === 'projectile-burst' && { burstRadius: 30 })
                   }, 1)
 
                   // 3. Token 2 casts spell at Token 1's INITIAL position (static)
@@ -146,10 +157,15 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
                     fromPosition: token2Position,
                     toPosition: token1Initial, // Static initial position
                     color: color,
+                    secondaryColor: secondaryColor,
                     size: size,
                     duration: duration,
-                    ...(category === 'projectile-burst' && { burstRadius: 30 }),
-                    ...(category === 'cone' && { coneAngle: 60 })
+                    coneAngle: coneAngle,
+                    persistDuration: persistDuration,
+                    persistColor: persistColor,
+                    persistOpacity: persistOpacity,
+                    particleEffect: particles,
+                    ...(category === 'projectile-burst' && { burstRadius: 30 })
                   }, 1)
                 }
               }

@@ -301,6 +301,9 @@ const UnifiedEventEditorComponent = ({
           persistDuration: action.animation.persistDuration || 0,
           persistColor: action.animation.persistColor || action.animation.color,
           persistOpacity: action.animation.persistOpacity || 0.4,
+          // Cone spell properties
+          coneAngle: action.animation.coneAngle || 60,
+          particleEffect: action.animation.particles || false,
           // Curved projectile path properties
           curved: action.animation.curved || false,
           curveHeight: action.animation.curveHeight || 30,
