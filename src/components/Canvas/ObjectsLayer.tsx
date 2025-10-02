@@ -21,6 +21,9 @@ import { isToken, isShape, isText, isSpell, isAttack, isPersistentArea } from '.
 // Track completed spell animations to prevent duplicate persistent areas
 const completedSpellAnimations = new Set<string>()
 
+// ✅ CACHE: WeakMap for static object detection (prevents object mutation errors)
+const staticObjectCache = new WeakMap<Shape, boolean>()
+
 // ✅ STABLE EMPTY ARRAYS: Shared constants to prevent reference changes
 const EMPTY_ARRAY: any[] = []
 
@@ -238,9 +241,10 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
   // ✅ OPTIMIZED: Memoize static object detection to avoid 30+ color checks per render
   const checkIsStaticObject = useCallback((shape: Shape): boolean => {
-    // Check metadata cache first
-    if (shape.metadata?._cachedIsStatic !== undefined) {
-      return shape.metadata._cachedIsStatic
+    // Check WeakMap cache first
+    const cached = staticObjectCache.get(shape)
+    if (cached !== undefined) {
+      return cached
     }
 
     const isStaticEffect = shape.metadata?.isStaticEffect === true
@@ -275,10 +279,8 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       shape.fill?.includes('#654321')    // Wood/furniture
     )
 
-    // Cache the result in metadata
-    if (shape.metadata) {
-      shape.metadata._cachedIsStatic = result
-    }
+    // ✅ Cache result in WeakMap (no object mutation!)
+    staticObjectCache.set(shape, result)
 
     return result
   }, [])
