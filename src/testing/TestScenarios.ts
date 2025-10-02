@@ -933,16 +933,15 @@ export const testScenarios: TestScenario[] = [
                   burstRadius: 30
                 }, 1)
 
-                // 4. Wizard 2 casts Fireball back at Wizard 1's original position
+                // 4. Wizard 2 casts Fireball back at Wizard 1's INITIAL position (static target)
                 // EXPECTED: From (400,300) to (100,100)
-                // BUG: Likely starts from (500,100)
                 roundStore.addAction('wizard-2', 'spell', {
                   tokenId: 'wizard-2',
-                  targetTokenId: 'wizard-1',
+                  // NO targetTokenId - targets static position, not tracking wizard-1
                   spellName: 'Fireball',
                   category: 'projectile-burst',
                   fromPosition: { x: 400, y: 300 }, // Expected: Wizard 2's final position
-                  toPosition: { x: 100, y: 100 },   // Wizard 1's starting position
+                  toPosition: { x: 100, y: 100 },   // Wizard 1's starting position (static)
                   color: '#00ff00',
                   size: 15,
                   duration: 1000,
@@ -1092,14 +1091,14 @@ export const testScenarios: TestScenario[] = [
                   duration: 800
                 }, 1)
 
-                // 4. Wizard B casts Magic Missile back at Wizard A's initial position
+                // 4. Wizard B casts Magic Missile back at Wizard A's INITIAL position (static target)
                 roundStore.addAction('mm-wizard-2', 'spell', {
                   tokenId: 'mm-wizard-2',
-                  targetTokenId: 'mm-wizard-1',
+                  // NO targetTokenId - targets static position, not tracking wizard A
                   spellName: 'Magic Missile',
                   category: 'projectile',
                   fromPosition: { x: 350, y: 350 },
-                  toPosition: { x: 150, y: 150 },
+                  toPosition: { x: 150, y: 150 }, // Wizard A's starting position (static)
                   color: '#ec4899',
                   size: 10,
                   duration: 800
@@ -1248,14 +1247,14 @@ export const testScenarios: TestScenario[] = [
                   duration: 1000
                 }, 1)
 
-                // 4. Ice Mage B casts Ray of Frost back at Ice Mage A's initial position
+                // 4. Ice Mage B casts Ray of Frost back at Ice Mage A's INITIAL position (static target)
                 roundStore.addAction('rof-wizard-2', 'spell', {
                   tokenId: 'rof-wizard-2',
-                  targetTokenId: 'rof-wizard-1',
+                  // NO targetTokenId - targets static position, not tracking ice mage A
                   spellName: 'Ray of Frost',
                   category: 'beam',
                   fromPosition: { x: 380, y: 400 },
-                  toPosition: { x: 120, y: 200 },
+                  toPosition: { x: 120, y: 200 }, // Ice Mage A's starting position (static)
                   color: '#34d399',
                   size: 8,
                   duration: 1000
