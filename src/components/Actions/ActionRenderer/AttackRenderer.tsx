@@ -127,10 +127,10 @@ const AttackRendererComponent = ({
   }
 
   const animateMeleeAttack = (group: Konva.Group) => {
-    const { fromPosition, toPosition, duration, color, animation, isCritical } = attack
+    const { fromPosition, toPosition, duration, color, animation, isCritical, range } = attack
 
     // Create melee effect based on animation type
-    const effect = createMeleeEffect(animation, fromPosition, toPosition, color)
+    const effect = createMeleeEffect(animation, fromPosition, toPosition, color, range)
     group.add(effect)
 
     // Animate the melee attack
@@ -166,25 +166,35 @@ const AttackRendererComponent = ({
     animation: string,
     fromPos: { x: number; y: number },
     toPos: { x: number; y: number },
-    color: string
+    color: string,
+    range?: number
   ): Konva.Arc | Konva.Line | Konva.Circle => {
     const angle = Math.atan2(toPos.y - fromPos.y, toPos.x - fromPos.x)
     const midX = (fromPos.x + toPos.x) / 2
     const midY = (fromPos.y + toPos.y) / 2
 
     if (animation === 'melee_slash') {
-      // Create arc for slash
+      // Create cone-shaped arc for slash
+      // Range is in D&D feet (5ft per square = 50px)
+      // Default range is 5ft (1 square = 50px)
+      const PIXELS_PER_SQUARE = 50
+      const rangeInSquares = (range || 5) / 5 // Convert feet to squares
+      const coneRadius = rangeInSquares * PIXELS_PER_SQUARE
+
       return new Konva.Arc({
-        x: midX,
-        y: midY,
-        innerRadius: 10,
-        outerRadius: 30,
-        angle: 60,
-        rotation: (angle * 180) / Math.PI - 30,
+        x: fromPos.x,
+        y: fromPos.y,
+        innerRadius: 0,
+        outerRadius: coneRadius,
+        angle: 90, // 90-degree cone arc
+        rotation: (angle * 180) / Math.PI + 45, // Start from right side (45 degrees offset)
         fill: color,
         opacity: 0,
         stroke: color,
-        strokeWidth: 3,
+        strokeWidth: 4,
+        shadowColor: color,
+        shadowBlur: 10,
+        shadowOpacity: 0.5,
       })
     } else if (animation === 'melee_thrust') {
       // Create line for thrust
@@ -210,10 +220,20 @@ const AttackRendererComponent = ({
   }
 
   const animateSlashEffect = (effect: Konva.Arc, progress: number, isCritical?: boolean) => {
-    const opacity = Math.sin(progress * Math.PI)
-    const scale = progress * (isCritical ? CRITICAL_HIT.EFFECT_SCALE : 1)
+    // Calculate opacity with fade-in and fade-out
+    const opacity = Math.sin(progress * Math.PI) * 0.8
 
-    effect.opacity(opacity * 0.8)
+    // Sweep from right to left: start rotation at +45 degrees, end at -45 degrees (90-degree sweep)
+    // The rotation represents the starting edge of the arc
+    const baseRotation = effect.rotation() - 45 // Get base angle to target
+    const sweepAngle = -90 * progress // Negative for right-to-left sweep
+    const currentRotation = baseRotation + sweepAngle
+
+    // Scale effect for critical hits
+    const scale = isCritical ? CRITICAL_HIT.EFFECT_SCALE : 1
+
+    effect.opacity(opacity)
+    effect.rotation(currentRotation)
     effect.scale({ x: scale, y: scale })
   }
 
