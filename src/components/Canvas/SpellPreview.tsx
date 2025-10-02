@@ -1,10 +1,10 @@
-import React, { memo } from 'react'
+import { memo, type FC } from 'react'
 
 type SpellPreviewProps = {
   gridSize: number
 }
 
-const SpellPreviewComponent: React.FC<SpellPreviewProps> = () => {
+const SpellPreviewComponent: FC<SpellPreviewProps> = () => {
   // This component is deprecated - spell preview is now handled by the unified action system
   // in UnifiedEventEditor and the mapStore spell preview system
   return null

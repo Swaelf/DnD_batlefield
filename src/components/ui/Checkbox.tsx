@@ -1,14 +1,14 @@
-import React, { useState, forwardRef } from 'react'
+import { useState, forwardRef, Children, isValidElement, cloneElement, type ReactNode, type ReactElement, type CSSProperties, type ChangeEvent, type FocusEvent, type KeyboardEvent } from 'react'
 import { Check } from '@/utils/optimizedIcons'
 
 // Exact checkbox event handlers
 type CheckboxEventHandlers = {
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void
   onCheckedChange?: (checked: boolean) => void
-  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
-  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void
-  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void
-  onKeyUp?: (event: React.KeyboardEvent<HTMLInputElement>) => void
+  onFocus?: (event: FocusEvent<HTMLInputElement>) => void
+  onBlur?: (event: FocusEvent<HTMLInputElement>) => void
+  onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void
+  onKeyUp?: (event: KeyboardEvent<HTMLInputElement>) => void
 }
 
 // Checkbox component props with exact typing
@@ -17,7 +17,7 @@ export type CheckboxProps = {
   defaultChecked?: boolean
   disabled?: boolean
   label?: string
-  children?: React.ReactNode
+  children?: ReactNode
   indeterminate?: boolean
   size?: 'sm' | 'md' | 'lg'
   variant?: 'default' | 'success' | 'warning' | 'error'
@@ -32,7 +32,7 @@ export type CheckboxProps = {
 
   // Styling
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 
   // ARIA attributes
   'aria-label'?: string
@@ -90,7 +90,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 
     const actualChecked = isControlled ? checked : internalChecked
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
       if (disabled) return
 
       const newChecked = event.target.checked
@@ -170,7 +170,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     }
 
     // Root styles
-    const rootStyles: React.CSSProperties = {
+    const rootStyles: CSSProperties = {
       display: 'inline-flex',
       alignItems: 'center',
       cursor: disabled ? 'not-allowed' : 'pointer',
@@ -181,7 +181,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     }
 
     // Indicator styles
-    const indicatorStyles: React.CSSProperties = {
+    const indicatorStyles: CSSProperties = {
       ...sizeStyles[size].indicator,
       borderRadius: '4px',
       border: '2px solid var(--gray600)',
@@ -200,14 +200,14 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     }
 
     // Label styles
-    const labelStyles: React.CSSProperties = {
+    const labelStyles: CSSProperties = {
       ...sizeStyles[size].label,
       color: disabled ? 'var(--gray500)' : 'var(--gray100)',
       lineHeight: 1.4,
     }
 
     // Hidden input styles
-    const hiddenInputStyles: React.CSSProperties = {
+    const hiddenInputStyles: CSSProperties = {
       position: 'absolute',
       opacity: 0,
       width: '1px',
@@ -300,14 +300,14 @@ Checkbox.displayName = 'Checkbox'
 
 // Checkbox Group for managing multiple checkboxes
 export type CheckboxGroupProps = {
-  children: React.ReactNode
+  children: ReactNode
   value?: string[]
   defaultValue?: string[]
   onValueChange?: (value: string[]) => void
   disabled?: boolean
   orientation?: 'horizontal' | 'vertical'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   'aria-label'?: string
   'aria-labelledby'?: string
 }
@@ -347,7 +347,7 @@ export const CheckboxGroup = forwardRef<HTMLDivElement, CheckboxGroupProps>(
       onValueChange?.(newValue)
     }
 
-    const groupStyles: React.CSSProperties = {
+    const groupStyles: CSSProperties = {
       display: 'flex',
       flexDirection: orientation === 'horizontal' ? 'row' : 'column',
       gap: orientation === 'horizontal' ? '16px' : '8px',
@@ -365,8 +365,8 @@ export const CheckboxGroup = forwardRef<HTMLDivElement, CheckboxGroupProps>(
         data-disabled={disabled}
         data-orientation={orientation}
       >
-        {React.Children.map(children, (child) => {
-          if (React.isValidElement(child) && child.type === Checkbox) {
+        {Children.map(children, (child) => {
+          if (isValidElement(child) && child.type === Checkbox) {
             const childProps = child.props as CheckboxProps & {
               value?: string
               onCheckedChange?: (checked: boolean) => void
@@ -374,7 +374,7 @@ export const CheckboxGroup = forwardRef<HTMLDivElement, CheckboxGroupProps>(
             const childValue = childProps.value
             if (!childValue) return child
 
-            return React.cloneElement(child as React.ReactElement<CheckboxProps>, {
+            return cloneElement(child as ReactElement<CheckboxProps>, {
               checked: actualValue.includes(childValue),
               disabled: disabled || childProps.disabled,
               onCheckedChange: (checked: boolean) => {

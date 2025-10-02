@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import { useState, useEffect, memo, useMemo } from 'react'
 import { Plus, X, Sparkles } from '@/utils/optimizedIcons'
 import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
@@ -50,6 +50,7 @@ const UnifiedEventEditorComponent = ({
   const executeAction = useUnifiedActionStore(state => state.executeAction)
   const pauseAnimations = useAnimationStore(state => state.pauseAnimations)
   const resumeAnimations = useAnimationStore(state => state.resumeAnimations)
+  const cancelEventCreation = useEventCreationStore(state => state.cancelEventCreation)
 
   const [selectedToken, setSelectedToken] = useState<string>(initialTokenId || '')
   const [selectedAction, setSelectedAction] = useState<UnifiedAction | null>(null)
@@ -62,6 +63,14 @@ const UnifiedEventEditorComponent = ({
   const [targetingMode, setTargetingMode] = useState<'position' | 'token' | null>(null) // Track user's explicit targeting choice
   const [useEnvironmentToken, setUseEnvironmentToken] = useState(false)
 
+  // Handle modal close with proper cleanup
+  const handleClose = () => {
+    // Clean up event creation state to restore preview modes
+    cancelEventCreation()
+    // Call the original onClose
+    onClose()
+  }
+
   // Fixed values
   const targetEvent = currentEvent // Events execute in current event, not next
 
@@ -73,7 +82,7 @@ const UnifiedEventEditorComponent = ({
   const pickedTokenId = useEventCreationStore(state => state.selectedTokenId)
 
   // Get all tokens from the current map
-  const tokens = React.useMemo(() => {
+  const tokens = useMemo(() => {
     if (!isOpen) return []
 
     const filteredTokens = (currentMap?.objects.filter(obj =>
@@ -153,6 +162,15 @@ const UnifiedEventEditorComponent = ({
       setIsTemporarilyHidden(false)
     }
   }, [pickedTokenId, isPicking, isTemporarilyHidden, tokens])
+
+  // Handle when picking is cancelled (e.g., by pressing Escape)
+  useEffect(() => {
+    // If modal was temporarily hidden for picking, but picking is now null (cancelled)
+    // then show the modal again
+    if (isTemporarilyHidden && !isPicking) {
+      setIsTemporarilyHidden(false)
+    }
+  }, [isPicking, isTemporarilyHidden])
 
   const handleActionSelect = (action: UnifiedAction) => {
     setSelectedAction(action)
@@ -240,6 +258,9 @@ const UnifiedEventEditorComponent = ({
     // Reset form
     setSelectedAction(null)
     setTargetingMode(null) // Reset targeting mode for next event
+
+    // Clean up event creation state to restore preview modes
+    cancelEventCreation()
   }
 
   // Helper to map unified action types to legacy event types
@@ -261,6 +282,7 @@ const UnifiedEventEditorComponent = ({
         const legacyCategory = action.animation.type === 'projectile_burst' ? 'projectile-burst' : action.animation.type
         const result = {
           type: 'spell',
+          tokenId: selectedToken, // ✅ FIX: Include caster token ID for position lookup
           spellName: action.metadata.name || 'Unknown Spell',
           category: legacyCategory || 'projectile',
           fromPosition: action.source,
@@ -279,6 +301,9 @@ const UnifiedEventEditorComponent = ({
           persistDuration: action.animation.persistDuration || 0,
           persistColor: action.animation.persistColor || action.animation.color,
           persistOpacity: action.animation.persistOpacity || 0.4,
+          // Cone spell properties
+          coneAngle: action.animation.coneAngle || 60,
+          particleEffect: action.animation.particles || false,
           // Curved projectile path properties
           curved: action.animation.curved || false,
           curveHeight: action.animation.curveHeight || 30,
@@ -292,16 +317,20 @@ const UnifiedEventEditorComponent = ({
       case 'attack':
         return {
           type: 'attack',
+          tokenId: selectedToken, // ✅ FIX: Include attacker token ID for position lookup
           weaponName: action.metadata.name || 'Weapon',
-          attackType: action.category === 'sword' ? 'melee' : 'ranged',
+          attackType: action.category, // Use category directly ('melee' or 'ranged')
           fromPosition: action.source,
           toPosition: action.target,
-          damage: '1d8',
-          damageType: 'slashing',
-          attackBonus: 0,
+          damage: action.damage || '1d8',
+          damageType: action.damageType || 'slashing',
+          attackBonus: 5, // Default attack bonus
+          range: action.range || 5,
           duration: action.animation.duration || 800,
-          animation: 'melee_swing',
-          color: action.animation.color || '#FFFFFF'
+          animation: action.animation.type, // Use the animation type from template
+          color: action.animation.color || '#FFFFFF',
+          isCritical: false,
+          targetTokenId: finalTargetTokenId || ''
         }
 
       case 'interaction':
@@ -368,7 +397,7 @@ const UnifiedEventEditorComponent = ({
     <>
       <Modal
         isOpen={isOpen && !isTemporarilyHidden}
-        onClose={onClose}
+        onClose={handleClose}
         size="xl"
         padding="none"
         style={{
@@ -536,7 +565,7 @@ const UnifiedEventEditorComponent = ({
 
           {/* Close Button */}
           <Button
-            onClick={onClose}
+            onClick={handleClose}
             variant="secondary"
             style={{
               backgroundColor: '#374151',

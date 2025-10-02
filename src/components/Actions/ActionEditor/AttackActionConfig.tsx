@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback } from 'react'
+import { memo, useState, useCallback, type FC, type ChangeEvent } from 'react'
 import { Sword, Target, Dices, Zap } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
@@ -19,7 +19,7 @@ export type AttackActionConfigProps = {
   disabled?: boolean
 }
 
-const AttackActionConfigComponent: React.FC<AttackActionConfigProps> = ({
+const AttackActionConfigComponent: FC<AttackActionConfigProps> = ({
   selectedAttack,
   onAttackChange,
   disabled = false
@@ -205,7 +205,7 @@ const AttackActionConfigComponent: React.FC<AttackActionConfigProps> = ({
               </Text>
               <Input
                 value={selectedAttack?.weaponName || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('weaponName', e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleFieldChange('weaponName', e.target.value)}
                 placeholder="Custom weapon name"
                 disabled={disabled}
               />
@@ -257,7 +257,7 @@ const AttackActionConfigComponent: React.FC<AttackActionConfigProps> = ({
             </Box>
             <Input
               value={selectedAttack?.damage || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('damage', e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleFieldChange('damage', e.target.value)}
               placeholder="e.g., 1d8, 2d6+3"
               disabled={disabled || !customWeapon}
             />
@@ -307,7 +307,7 @@ const AttackActionConfigComponent: React.FC<AttackActionConfigProps> = ({
             <Input
               type="number"
               value={selectedAttack?.attackBonus || 0}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('attackBonus', parseInt(e.target.value) || 0)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleFieldChange('attackBonus', parseInt(e.target.value) || 0)}
               placeholder="0"
               disabled={disabled}
             />
@@ -328,7 +328,7 @@ const AttackActionConfigComponent: React.FC<AttackActionConfigProps> = ({
             <Input
               type="number"
               value={selectedAttack?.range || 5}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('range', parseInt(e.target.value) || 5)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleFieldChange('range', parseInt(e.target.value) || 5)}
               placeholder="5"
               disabled={disabled}
             />
@@ -403,7 +403,7 @@ const AttackActionConfigComponent: React.FC<AttackActionConfigProps> = ({
                 <Input
                   type="number"
                   value={selectedAttack?.duration || 800}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('duration', parseInt(e.target.value) || 800)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleFieldChange('duration', parseInt(e.target.value) || 800)}
                   placeholder="800"
                   disabled={disabled}
                 />
@@ -424,7 +424,7 @@ const AttackActionConfigComponent: React.FC<AttackActionConfigProps> = ({
                 <Input
                   type="color"
                   value={selectedAttack?.color || '#FFFFFF'}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange('color', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleFieldChange('color', e.target.value)}
                   disabled={disabled}
                 />
               </Box>

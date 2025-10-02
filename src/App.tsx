@@ -25,13 +25,14 @@ import useCollaborationStore from '@store/collaborationStore'
 // Lazy load heavy components for better initial load performance
 const StaticEffectsPanel = lazy(() => import('./components/StaticEffect/StaticEffectsPanel').then(m => ({ default: m.StaticEffectsPanel })))
 const FileMenu = lazy(() => import('./components/Menu/FileMenu').then(m => ({ default: m.FileMenu })))
-import StatusBar from './components/StatusBar/StatusBar'
+import { StatusBar } from './components/StatusBar/StatusBar'
 const HelpDialog = lazy(() => import('./components/HelpDialog/HelpDialog').then(m => ({ default: m.HelpDialog })))
 const CombatTracker = lazy(() => import('./components/Timeline/CombatTracker').then(m => ({ default: m.CombatTracker })))
 const TestingPanel = lazy(() => import('./testing/TestingPanel').then(m => ({ default: m.TestingPanel })))
 import { Save, HelpCircle, Bug, Users, UserPlus, Activity, Accessibility, ZoomIn, ZoomOut, Maximize2, Grid3x3 } from '@/utils/optimizedIcons'
 import { Box, Text } from '@/components/ui'
 import { Button } from '@/components/primitives'
+import { vars } from '@/styles/theme.css'
 import { ContextMenuManager } from '@/components/ContextMenu/ContextMenuManager'
 import { initializePerformanceOptimizations } from '@/utils/performanceOptimizations'
 import { NavigationPad, EnvironmentToken } from '@/components/Navigation'
@@ -53,6 +54,7 @@ function App() {
   // Use specific selectors to prevent unnecessary re-renders
   const createNewMap = useMapStore(state => state.createNewMap)
   const currentMap = useMapStore(state => state.currentMap)
+  const selectedObjects = useMapStore(state => state.selectedObjects)
   const currentTool = useToolStore(state => state.currentTool)
   const { containerRef, canvasSize } = useCanvas()
   const stageRef = useRef<any>(null)
@@ -341,8 +343,8 @@ function App() {
             size="icon"
             title="Performance Dashboard (Ctrl+Shift+P)"
             style={{
-              color: performanceScore < 70 ? 'var(--colors-error)' :
-                     warnings.length > 0 ? 'var(--colors-warning)' : 'var(--colors-gray400)'
+              color: performanceScore < 70 ? vars.colors.error :
+                     warnings.length > 0 ? vars.colors.warning : vars.colors.gray400
             }}
           >
             <Activity size={16} />
@@ -355,7 +357,7 @@ function App() {
             size="icon"
             title="Accessibility Settings (Alt+A)"
             style={{
-              color: preferences.screenReaderMode ? 'var(--colors-primary)' : 'var(--colors-gray400)'
+              color: preferences.screenReaderMode ? vars.colors.primary : vars.colors.gray400
             }}
           >
             <Accessibility size={16} />
@@ -368,7 +370,7 @@ function App() {
             size="icon"
             title="Visual Testing (Ctrl+Shift+T)"
             style={{
-              color: showTesting ? 'var(--colors-primary)' : 'var(--colors-gray400)'
+              color: showTesting ? vars.colors.primary : vars.colors.gray400
             }}
           >
             <Bug size={16} />
@@ -434,23 +436,33 @@ function App() {
         </div>
 
         {/* Sidebar - Show appropriate panel based on current tool */}
-        <FeatureErrorBoundary name="Sidebar">
-          <Suspense fallback={<Box style={{ width: 320, backgroundColor: 'var(--colors-dndBlack)', borderLeft: '1px solid var(--colors-gray700)' }} />}>
-            {currentTool === 'token' ? (
-              <TokenLibrary />
-            ) : currentTool === 'staticObject' ? (
-              <StaticObjectLibrary />
-            ) : currentTool === 'staticEffect' ? (
-              <StaticEffectsPanel />
-            ) : currentTool === 'layers' ? (
-              <AdvancedLayerPanel />
-            ) : currentTool === 'select' ? (
-              <AdvancedSelectionManager />
-            ) : (
-              <PropertiesPanel />
-            )}
-          </Suspense>
-        </FeatureErrorBoundary>
+        <div style={{ width: 320, flexShrink: 0, display: 'flex', flexDirection: 'column', backgroundColor: vars.colors.dndBlack, borderLeft: `1px solid ${vars.colors.gray700}` }}>
+          <FeatureErrorBoundary
+            name="Sidebar"
+            onError={(error, errorInfo, errorId) => {
+              console.error('Sidebar error:', error)
+              console.error('Error info:', errorInfo)
+              console.error('Error ID:', errorId)
+            }}
+          >
+            <Suspense fallback={<Box style={{ width: '100%', height: '100%', backgroundColor: vars.colors.dndBlack }} />}>
+              {currentTool === 'token' ? (
+                <TokenLibrary />
+              ) : currentTool === 'staticObject' ? (
+                <StaticObjectLibrary />
+              ) : currentTool === 'staticEffect' ? (
+                <StaticEffectsPanel />
+              ) : currentTool === 'layers' ? (
+                <AdvancedLayerPanel />
+              ) : currentTool === 'select' ? (
+                // For select tool, show PropertiesPanel if something is selected, otherwise AdvancedSelectionManager
+                selectedObjects.length > 0 ? <PropertiesPanel /> : <AdvancedSelectionManager />
+              ) : (
+                <PropertiesPanel />
+              )}
+            </Suspense>
+          </FeatureErrorBoundary>
+        </div>
       </div>
 
       {/* Status Bar */}
@@ -508,7 +520,7 @@ function App() {
   )
 }
 
-const AppWithContextMenu: React.FC = () => {
+const AppWithContextMenu = () => {
   return (
     <ContextMenuManager>
       <App />
@@ -516,4 +528,4 @@ const AppWithContextMenu: React.FC = () => {
   )
 }
 
-export default AppWithContextMenu
+export { AppWithContextMenu as App }

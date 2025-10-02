@@ -416,6 +416,8 @@ export class KonvaObjectPools {
 export const konvaPool = KonvaObjectPools.getInstance()
 
 // Utility hook for managing pooled objects in React
+import { useEffect } from 'react'
+
 export function useKonvaPool() {
   const pooledObjects = new Set<Konva.Node>()
 
@@ -440,7 +442,7 @@ export function useKonvaPool() {
   }
 
   // Cleanup on unmount
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       releaseAllShapes()
     }
@@ -453,6 +455,3 @@ export function useKonvaPool() {
     getStats: () => konvaPool.getPoolStats()
   }
 }
-
-// Import React for the hook
-import React from 'react'

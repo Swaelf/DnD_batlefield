@@ -1,5 +1,4 @@
-import React, { useState, useMemo, useCallback, forwardRef } from 'react'
-import type { ChangeEvent } from 'react'
+import { useState, useMemo, useCallback, forwardRef, memo, type ReactNode, type CSSProperties, type ChangeEvent } from 'react'
 import type { TokenSize } from '@/types/token'
 import useToolStore from '@/store/toolStore'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -78,12 +77,12 @@ export type TokenIconProps = {
   color: string
   size?: number
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const TokenIcon = forwardRef<HTMLDivElement, TokenIconProps>(
   ({ shape, color, size = 40, className, style }, ref) => {
-    const iconStyles: React.CSSProperties = {
+    const iconStyles: CSSProperties = {
       width: `${size}px`,
       height: `${size}px`,
       backgroundColor: color,
@@ -106,12 +105,12 @@ export type TokenItemProps = {
   token: TokenTemplate
   onClick: (token: TokenTemplate) => void
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const TokenItem = forwardRef<HTMLButtonElement, TokenItemProps>(
   ({ token, onClick, className, style }, ref) => {
-    const itemStyles: React.CSSProperties = {
+    const itemStyles: CSSProperties = {
       height: 'auto',
       padding: '12px',
       display: 'flex',
@@ -173,14 +172,14 @@ TokenItem.displayName = 'TokenItem'
 
 // Category Button component
 export type CategoryButtonProps = {
-  children: React.ReactNode
+  children: ReactNode
   isSelected: boolean
   onClick: () => void
 }
 
 export const CategoryButton = forwardRef<HTMLButtonElement, CategoryButtonProps>(
   ({ children, isSelected, onClick }, ref) => {
-    const buttonStyles: React.CSSProperties = {
+    const buttonStyles: CSSProperties = {
       textTransform: 'capitalize',
       flex: '1 1 auto',
       minWidth: '60px',
@@ -227,12 +226,12 @@ export type SimpleInputProps = {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void
   placeholder?: string
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const SimpleInput = forwardRef<HTMLInputElement, SimpleInputProps>(
   ({ value, onChange, placeholder, className, style }, ref) => {
-    const inputStyles: React.CSSProperties = {
+    const inputStyles: CSSProperties = {
       width: '100%',
       padding: '8px 12px',
       fontSize: '14px',
@@ -273,14 +272,14 @@ SimpleInput.displayName = 'SimpleInput'
 export type SimpleSelectProps = {
   value: string
   onChange: (value: string) => void
-  children: React.ReactNode
+  children: ReactNode
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const SimpleSelect = forwardRef<HTMLSelectElement, SimpleSelectProps>(
   ({ value, onChange, children, className, style }, ref) => {
-    const selectStyles: React.CSSProperties = {
+    const selectStyles: CSSProperties = {
       width: '100%',
       padding: '8px 12px',
       fontSize: '14px',
@@ -382,7 +381,7 @@ const TokenLibrary = () => {
 
   if (currentTool !== 'token') return null
 
-  const containerStyles: React.CSSProperties = {
+  const containerStyles: CSSProperties = {
     width: '320px',
     height: '100%',
     display: 'flex',
@@ -392,34 +391,34 @@ const TokenLibrary = () => {
     overflow: 'hidden',
   }
 
-  const headerStyles: React.CSSProperties = {
+  const headerStyles: CSSProperties = {
     padding: '16px',
     borderBottom: '1px solid var(--gray700)',
     flexShrink: 0,
   }
 
-  const scrollAreaStyles: React.CSSProperties = {
+  const scrollAreaStyles: CSSProperties = {
     flex: 1,
     overflowY: 'auto',
     overflowX: 'hidden',
     padding: '16px',
   }
 
-  const sectionStyles: React.CSSProperties = {
+  const sectionStyles: CSSProperties = {
     marginBottom: '24px',
   }
 
-  const gridStyles: React.CSSProperties = {
+  const gridStyles: CSSProperties = {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
     gap: '8px',
   }
 
-  const fieldStyles: React.CSSProperties = {
+  const fieldStyles: CSSProperties = {
     marginBottom: '16px',
   }
 
-  const labelStyles: React.CSSProperties = {
+  const labelStyles: CSSProperties = {
     fontSize: '12px',
     fontWeight: '500',
     color: 'var(--gray300)',
@@ -427,7 +426,7 @@ const TokenLibrary = () => {
     display: 'block',
   }
 
-  const flexStyles: React.CSSProperties = {
+  const flexStyles: CSSProperties = {
     display: 'flex',
     gap: '8px',
   }
@@ -561,4 +560,4 @@ const TokenLibrary = () => {
 
 TokenLibrary.displayName = 'TokenLibrary'
 
-export default React.memo(TokenLibrary)
+export default memo(TokenLibrary)

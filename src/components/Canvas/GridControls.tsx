@@ -1,11 +1,11 @@
-import React, { memo, forwardRef } from 'react'
+import { memo, forwardRef, type ReactNode, type CSSProperties } from 'react'
 import { Grid3x3, Magnet, Eye, EyeOff, Sparkles } from '@/utils/optimizedIcons'
 import useMapStore from '@/store/mapStore'
 import { Text } from '@/components/primitives/TextVE'
 
 export type GridControlsProps = {
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 // Grid Button component
@@ -13,14 +13,14 @@ export type GridButtonProps = {
   onClick: () => void
   active: boolean
   title: string
-  children: React.ReactNode
+  children: ReactNode
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const GridButton = forwardRef<HTMLButtonElement, GridButtonProps>(
   ({ onClick, active, title, children, className, style }, ref) => {
-    const buttonStyles: React.CSSProperties = {
+    const buttonStyles: CSSProperties = {
       padding: '8px',
       borderRadius: '12px',
       border: '1px solid var(--gray700)',
@@ -63,14 +63,14 @@ GridButton.displayName = 'GridButton'
 
 // Snap Indicator component
 export type SnapIndicatorProps = {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const SnapIndicator = forwardRef<HTMLDivElement, SnapIndicatorProps>(
   ({ children, className, style }, ref) => {
-    const indicatorStyles: React.CSSProperties = {
+    const indicatorStyles: CSSProperties = {
       marginLeft: '8px',
       paddingLeft: '8px',
       paddingRight: '8px',
@@ -104,7 +104,7 @@ const GridControlsComponent = ({ className, style }: GridControlsProps) => {
 
   const { grid } = currentMap
 
-  const containerStyles: React.CSSProperties = {
+  const containerStyles: CSSProperties = {
     position: 'absolute',
     top: '16px',
     left: '16px',
@@ -118,20 +118,20 @@ const GridControlsComponent = ({ className, style }: GridControlsProps) => {
     ...style,
   }
 
-  const rowStyles: React.CSSProperties = {
+  const rowStyles: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
   }
 
-  const labelContainerStyles: React.CSSProperties = {
+  const labelContainerStyles: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
     marginRight: '8px',
   }
 
-  const dividerStyles: React.CSSProperties = {
+  const dividerStyles: CSSProperties = {
     width: '1px',
     height: '24px',
     backgroundColor: 'var(--gray600)',

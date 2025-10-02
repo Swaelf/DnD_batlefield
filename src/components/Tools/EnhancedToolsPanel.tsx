@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, type FC } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -16,7 +16,7 @@ import {
 import useToolStore from '@store/toolStore'
 
 
-export const EnhancedToolsPanel: React.FC = () => {
+export const EnhancedToolsPanel: FC = () => {
   const currentTool = useToolStore(state => state.currentTool)
   const setTool = useToolStore(state => state.setTool)
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false)
@@ -643,4 +643,3 @@ export const EnhancedToolsPanel: React.FC = () => {
   )
 }
 
-export default EnhancedToolsPanel

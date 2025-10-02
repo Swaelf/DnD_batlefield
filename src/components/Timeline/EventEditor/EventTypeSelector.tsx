@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC } from 'react'
 import { Move, Eye, EyeOff, Zap, Sword, Settings, Cloud, Play } from '@/utils/optimizedIcons'
 import type { EventType } from '@/types/timeline'
 import { Box } from '@/components/primitives/BoxVE'
@@ -10,7 +10,7 @@ type EventTypeSelectorProps = {
   setEventType: (type: EventType) => void
 }
 
-const EventTypeSelectorComponent: React.FC<EventTypeSelectorProps> = ({
+const EventTypeSelectorComponent: FC<EventTypeSelectorProps> = ({
   eventType,
   setEventType
 }) => {

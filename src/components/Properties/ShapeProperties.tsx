@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC, type ChangeEvent } from 'react'
 import type { Shape } from '@/types'
 import { ColorPicker } from './ColorPicker'
 import { Box } from '@/components/primitives/BoxVE'
@@ -10,7 +10,7 @@ type ShapePropertiesProps = {
   onUpdate: (updates: Partial<Shape>) => void
 }
 
-const ShapePropertiesComponent: React.FC<ShapePropertiesProps> = ({
+const ShapePropertiesComponent: FC<ShapePropertiesProps> = ({
   shape,
   onUpdate
 }) => {
@@ -83,7 +83,7 @@ const ShapePropertiesComponent: React.FC<ShapePropertiesProps> = ({
         <Input
           type="number"
           value={shape.strokeWidth}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ strokeWidth: Number(e.target.value) })}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ strokeWidth: Number(e.target.value) })}
           min={0}
           max={20}
           style={{ width: '100%' }}
@@ -115,7 +115,7 @@ const ShapePropertiesComponent: React.FC<ShapePropertiesProps> = ({
             <Input
               type="number"
               value={shape.width}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ width: Number(e.target.value) })}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ width: Number(e.target.value) })}
               style={{ width: '100%' }}
             />
           </Box>
@@ -135,7 +135,7 @@ const ShapePropertiesComponent: React.FC<ShapePropertiesProps> = ({
             <Input
               type="number"
               value={shape.height}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ height: Number(e.target.value) })}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ height: Number(e.target.value) })}
               style={{ width: '100%' }}
             />
           </Box>
@@ -160,7 +160,7 @@ const ShapePropertiesComponent: React.FC<ShapePropertiesProps> = ({
           <Input
             type="number"
             value={shape.radius}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ radius: Number(e.target.value) })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdate({ radius: Number(e.target.value) })}
             style={{ width: '100%' }}
           />
         </Box>

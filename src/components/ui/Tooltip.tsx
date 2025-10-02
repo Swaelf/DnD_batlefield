@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, forwardRef, type FC, type ReactNode, type ReactElement, type CSSProperties } from 'react'
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 
 // TODO: Convert to Vanilla Extract CSS
@@ -6,8 +6,8 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 
 // Tooltip Component Types
 export interface TooltipProps {
-  children: React.ReactNode
-  content: React.ReactNode
+  children: ReactNode
+  content: ReactNode
   side?: 'top' | 'right' | 'bottom' | 'left'
   align?: 'start' | 'center' | 'end'
   delayDuration?: number
@@ -20,14 +20,19 @@ export interface TooltipProps {
 }
 
 export interface SimpleTooltipProps {
-  children: React.ReactElement
-  content: React.ReactNode
+  children: ReactElement
+  content: ReactNode
   side?: 'top' | 'right' | 'bottom' | 'left'
   align?: 'start' | 'center' | 'end'
 }
 
 // Temporary styled components using inline styles
-const TooltipContent = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+interface TooltipContentProps extends TooltipPrimitive.TooltipContentProps {
+  style?: CSSProperties
+  children?: ReactNode
+}
+
+const TooltipContent = forwardRef<HTMLDivElement, TooltipContentProps>((props, ref) => (
   <TooltipPrimitive.Content
     ref={ref}
     style={{
@@ -51,7 +56,11 @@ const TooltipContent = React.forwardRef<HTMLDivElement, any>((props, ref) => (
 ))
 TooltipContent.displayName = 'TooltipContent'
 
-const TooltipArrow = React.forwardRef<SVGSVGElement, any>((props, ref) => (
+interface TooltipArrowProps extends TooltipPrimitive.TooltipArrowProps {
+  style?: CSSProperties
+}
+
+const TooltipArrow = forwardRef<SVGSVGElement, TooltipArrowProps>((props, ref) => (
   <TooltipPrimitive.Arrow
     ref={ref}
     width={11}
@@ -66,7 +75,7 @@ const TooltipArrow = React.forwardRef<SVGSVGElement, any>((props, ref) => (
 TooltipArrow.displayName = 'TooltipArrow'
 
 // Main Tooltip component with full control
-export const Tooltip: React.FC<TooltipProps> = ({
+export const Tooltip: FC<TooltipProps> = ({
   children,
   content,
   side = 'top',
@@ -108,7 +117,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 export const TooltipProvider = TooltipPrimitive.Provider
 
 // Simple tooltip for basic use cases
-export const SimpleTooltip: React.FC<SimpleTooltipProps> = ({
+export const SimpleTooltip: FC<SimpleTooltipProps> = ({
   children,
   content,
   side = 'top',

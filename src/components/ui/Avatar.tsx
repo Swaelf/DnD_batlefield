@@ -1,13 +1,13 @@
-import React, { useState, forwardRef } from 'react'
+import { useState, forwardRef, Children, isValidElement, cloneElement, type ReactNode, type ReactElement, type CSSProperties, type MouseEvent, type SyntheticEvent } from 'react'
 import { Text } from '@/components/primitives/TextVE'
 
 // Avatar event handlers
 type AvatarEventHandlers = {
-  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
-  onMouseEnter?: (event: React.MouseEvent<HTMLDivElement>) => void
-  onMouseLeave?: (event: React.MouseEvent<HTMLDivElement>) => void
-  onLoad?: (event: React.SyntheticEvent<HTMLImageElement>) => void
-  onError?: (event: React.SyntheticEvent<HTMLImageElement>) => void
+  onClick?: (event: MouseEvent<HTMLDivElement>) => void
+  onMouseEnter?: (event: MouseEvent<HTMLDivElement>) => void
+  onMouseLeave?: (event: MouseEvent<HTMLDivElement>) => void
+  onLoad?: (event: SyntheticEvent<HTMLImageElement>) => void
+  onError?: (event: SyntheticEvent<HTMLImageElement>) => void
 }
 
 // Avatar component props with exact typing
@@ -18,7 +18,7 @@ export type AvatarProps = {
   size?: 'sm' | 'md' | 'lg' | 'xl'
   variant?: 'circle' | 'rounded' | 'square'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 
   // Status indicator
   status?: 'online' | 'offline' | 'away' | 'busy'
@@ -85,12 +85,12 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
       return '?'
     }
 
-    const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
       setImageError(true)
       onError?.(event)
     }
 
-    const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    const handleImageLoad = (event: SyntheticEvent<HTMLImageElement>) => {
       setImageError(false)
       onLoad?.(event)
     }
@@ -135,7 +135,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
     }
 
     // Root styles
-    const rootStyles: React.CSSProperties = {
+    const rootStyles: CSSProperties = {
       position: 'relative',
       display: 'inline-flex',
       alignItems: 'center',
@@ -152,7 +152,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
     }
 
     // Image styles
-    const imageStyles: React.CSSProperties = {
+    const imageStyles: CSSProperties = {
       width: '100%',
       height: '100%',
       objectFit: 'cover',
@@ -167,7 +167,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
       xl: '12px',
     }
 
-    const statusIndicatorStyles: React.CSSProperties = {
+    const statusIndicatorStyles: CSSProperties = {
       position: 'absolute',
       bottom: '0px',
       right: '0px',
@@ -237,12 +237,12 @@ Avatar.displayName = 'Avatar'
 
 // Avatar Group for displaying multiple avatars
 export type AvatarGroupProps = {
-  children: React.ReactNode
+  children: ReactNode
   max?: number
   size?: 'sm' | 'md' | 'lg' | 'xl'
   spacing?: 'tight' | 'normal' | 'loose'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   'aria-label'?: string
 }
 
@@ -265,19 +265,19 @@ export const AvatarGroup = forwardRef<HTMLDivElement, AvatarGroupProps>(
       loose: '-2px',
     }
 
-    const groupStyles: React.CSSProperties = {
+    const groupStyles: CSSProperties = {
       display: 'flex',
       alignItems: 'center',
       ...style,
     }
 
-    const avatarStyles: React.CSSProperties = {
+    const avatarStyles: CSSProperties = {
       marginLeft: spacingValues[spacing],
       border: '2px solid var(--background)',
       zIndex: 1,
     }
 
-    const avatarArray = React.Children.toArray(children)
+    const avatarArray = Children.toArray(children)
     const visibleAvatars = avatarArray.slice(0, max)
     const hiddenCount = Math.max(0, avatarArray.length - max)
 
@@ -292,9 +292,9 @@ export const AvatarGroup = forwardRef<HTMLDivElement, AvatarGroupProps>(
         data-spacing={spacing}
       >
         {visibleAvatars.map((child, index) => {
-          if (React.isValidElement(child) && child.type === Avatar) {
+          if (isValidElement(child) && child.type === Avatar) {
             const childProps = child.props as AvatarProps
-            return React.cloneElement(child as React.ReactElement<AvatarProps>, {
+            return cloneElement(child as ReactElement<AvatarProps>, {
               key: index,
               size,
               style: {

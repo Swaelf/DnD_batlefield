@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer'
 import type { TimelineStore } from '../types'
 import type { TimelineAction } from '../types'
 import useMapStore from './mapStore'
+import useEventCreationStore from './eventCreationStore'
 
 const useTimelineStore = create<TimelineStore>()(
   immer((set, get) => ({
@@ -11,9 +12,16 @@ const useTimelineStore = create<TimelineStore>()(
     isInCombat: false,
     animationSpeed: 1,
 
-    startCombat: (mapId) => set((state) => {
-      state.isInCombat = true
-      state.currentEvent = 1
+    startCombat: (mapId) => {
+      // Clean up any event creation state when starting combat
+      const eventCreationStore = useEventCreationStore.getState()
+      if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
+        eventCreationStore.cancelEventCreation()
+      }
+
+      set((state) => {
+        state.isInCombat = true
+        state.currentEvent = 1
 
       if (!state.timeline) {
         state.timeline = {
@@ -33,21 +41,36 @@ const useTimelineStore = create<TimelineStore>()(
       } else {
         state.timeline.isActive = true
       }
-    }),
+    })
+    },
 
-    endCombat: () => set((state) => {
-      state.isInCombat = false
-      if (state.timeline) {
-        state.timeline.isActive = false
-        // Move all events to history
-        state.timeline.history.push(...state.timeline.events)
-        state.timeline.events = []
+    endCombat: () => {
+      // Clean up any event creation state when ending combat
+      const eventCreationStore = useEventCreationStore.getState()
+      if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
+        eventCreationStore.cancelEventCreation()
       }
-    }),
+
+      set((state) => {
+        state.isInCombat = false
+        if (state.timeline) {
+          state.timeline.isActive = false
+          // Move all events to history
+          state.timeline.history.push(...state.timeline.events)
+          state.timeline.events = []
+        }
+      })
+    },
 
     nextEvent: async () => {
       const { timeline, currentEvent } = get()
       if (!timeline || !timeline.isActive) return
+
+      // Clean up any lingering event creation state before advancing
+      const eventCreationStore = useEventCreationStore.getState()
+      if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
+        eventCreationStore.cancelEventCreation()
+      }
 
       // Create snapshot before executing actions
       const mapStore = useMapStore.getState()
@@ -104,6 +127,12 @@ const useTimelineStore = create<TimelineStore>()(
       const { timeline, currentEvent } = get()
       if (!timeline || currentEvent <= 1) return
 
+      // Clean up any lingering event creation state before navigating
+      const eventCreationStore = useEventCreationStore.getState()
+      if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
+        eventCreationStore.cancelEventCreation()
+      }
+
       // Get the snapshot from the current event (which was stored before execution)
       const currentEventData = timeline.events.find(e => e.number === currentEvent)
       const snapshot = currentEventData?.snapshot
@@ -152,6 +181,12 @@ const useTimelineStore = create<TimelineStore>()(
     },
 
     goToEvent: (eventNumber) => {
+      // Clean up any lingering event creation state before jumping
+      const eventCreationStore = useEventCreationStore.getState()
+      if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
+        eventCreationStore.cancelEventCreation()
+      }
+
       set((state) => {
         state.currentEvent = eventNumber
         if (state.timeline) {
@@ -265,27 +300,102 @@ const useTimelineStore = create<TimelineStore>()(
             case 'spell': {
               // Create proper SpellMapObject for spell
               const spellData = action.data as any
+
+              // ✅ FIX: Get actual current positions of caster and target tokens
+              // This ensures spells use the token's current position after any previous movements
+              let actualFromPosition = spellData.fromPosition
+              let actualToPosition = spellData.toPosition
+
+              console.log('🔮 Spell execution - original positions:', {
+                from: spellData.fromPosition,
+                to: spellData.toPosition,
+                tokenId: spellData.tokenId,
+                targetTokenId: spellData.targetTokenId
+              })
+
+              // Look up caster token's current position
+              if (spellData.tokenId) {
+                const casterToken = mapStore.currentMap?.objects.find(obj => obj.id === spellData.tokenId)
+                if (casterToken) {
+                  actualFromPosition = casterToken.position
+                  console.log(`✅ Caster token ${spellData.tokenId} current position:`, casterToken.position)
+                } else {
+                  console.warn(`⚠️ Caster token ${spellData.tokenId} not found!`)
+                }
+              }
+
+              // Look up target token's current position (if targeting a token)
+              if (spellData.targetTokenId) {
+                const targetToken = mapStore.currentMap?.objects.find(obj => obj.id === spellData.targetTokenId)
+                if (targetToken) {
+                  actualToPosition = targetToken.position
+                  console.log(`✅ Target token ${spellData.targetTokenId} current position:`, targetToken.position)
+                } else {
+                  console.warn(`⚠️ Target token ${spellData.targetTokenId} not found!`)
+                }
+              }
+
+              console.log('🎯 Spell will use positions:', {
+                from: actualFromPosition,
+                to: actualToPosition
+              })
+
+              // Create spell with actual current positions
+              const updatedSpellData = {
+                ...spellData,
+                fromPosition: actualFromPosition,
+                toPosition: actualToPosition
+              }
+
               const spellObject = {
                 id: `spell-${Date.now()}-${Math.random()}`,
                 type: 'spell' as const,
-                position: spellData.toPosition || spellData.fromPosition || { x: 0, y: 0 }, // Use target position for persistent effects
+                position: actualToPosition || actualFromPosition || { x: 0, y: 0 }, // Use target position for persistent effects
                 rotation: 0,
                 layer: 10,
                 isSpellEffect: true,
                 roundCreated: get().currentEvent,
-                spellDuration: spellData.duration || 1,
-                spellData: spellData
+                spellDuration: updatedSpellData.duration || 1,
+                spellData: updatedSpellData
               }
               mapStore.addSpellEffect(spellObject)
               // Wait for spell animation duration
-              setTimeout(resolve, spellData.duration || 1000)
+              setTimeout(resolve, updatedSpellData.duration || 1000)
               break
             }
             case 'attack': {
-              mapStore.addAttackEffect(action.data as any)
               const attackData = action.data as any
+
+              // ✅ FIX: Get actual current positions of attacker and target tokens
+              let actualFromPosition = attackData.fromPosition
+              let actualToPosition = attackData.toPosition
+
+              // Look up attacker token's current position
+              if (action.tokenId) {
+                const attackerToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
+                if (attackerToken) {
+                  actualFromPosition = attackerToken.position
+                }
+              }
+
+              // Look up target token's current position (if targeting a token)
+              if (attackData.targetTokenId) {
+                const targetToken = mapStore.currentMap?.objects.find(obj => obj.id === attackData.targetTokenId)
+                if (targetToken) {
+                  actualToPosition = targetToken.position
+                }
+              }
+
+              // Create attack with actual current positions
+              const updatedAttackData = {
+                ...attackData,
+                fromPosition: actualFromPosition,
+                toPosition: actualToPosition
+              }
+
+              mapStore.addAttackEffect(updatedAttackData)
               // Wait for attack animation duration
-              setTimeout(resolve, attackData.duration || 1000)
+              setTimeout(resolve, updatedAttackData.duration || 1000)
               break
             }
             case 'move': {

@@ -3,7 +3,7 @@
  * Displays scheduled timeline events for next round
  */
 
-import React, { memo } from 'react'
+import { memo, type FC } from 'react'
 import { Move, Eye, EyeOff, Zap, Plus, Trash2 } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
@@ -18,7 +18,7 @@ type EventsListProps = {
   onDeleteEvent: (eventId: string) => void
 }
 
-const EventsListComponent: React.FC<EventsListProps> = ({
+const EventsListComponent: FC<EventsListProps> = ({
   roundEvents,
   tokens,
   nextRound,

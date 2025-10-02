@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC, type ChangeEvent } from 'react'
 import {
   DoorOpen,
   AlertTriangle,
@@ -28,7 +28,7 @@ export type InteractionActionConfigProps = {
   onInteractionChange: (interaction: Partial<InteractionEventData>) => void
 }
 
-const InteractionActionConfigComponent: React.FC<InteractionActionConfigProps> = ({
+const InteractionActionConfigComponent: FC<InteractionActionConfigProps> = ({
   selectedInteraction,
   onInteractionChange
 }) => {
@@ -293,7 +293,7 @@ const InteractionActionConfigComponent: React.FC<InteractionActionConfigProps> =
               <Input
                 placeholder="Skill (e.g., lockpicking)"
                 value={interaction.skill || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onInteractionChange({ ...interaction, skill: e.target.value })}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => onInteractionChange({ ...interaction, skill: e.target.value })}
               />
             </Box>
             <Box style={{ width: '80px' }}>
@@ -380,7 +380,7 @@ const InteractionActionConfigComponent: React.FC<InteractionActionConfigProps> =
           <Input
             placeholder="Describe what happens..."
             value={interaction.result || ''}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onInteractionChange({ ...interaction, result: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => onInteractionChange({ ...interaction, result: e.target.value })}
           />
         </Box>
       </Box>

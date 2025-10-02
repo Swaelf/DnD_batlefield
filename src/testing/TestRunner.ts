@@ -45,14 +45,39 @@ export class TestRunner {
     const stepResults: StepResult[] = []
     const errors: string[] = []
 
-    // Capture initial state
+    // ✅ CLEANUP: Clear battlefield before running test
     const mapStore = useMapStore.getState()
     const roundStore = useTimelineStore.getState()
+    const toolStore = useToolStore.getState()
+
+    // Clear all objects from map (keeps void-token)
+    mapStore.clearMapObjects()
+
+    // Clear selection
+    mapStore.clearSelection()
+
+    // End any active combat
+    if (roundStore.isInCombat) {
+      roundStore.endCombat()
+    }
+
+    // Clear timeline
+    roundStore.clearTimeline()
+
+    // Reset tool to select mode
+    toolStore.setTool('select')
+
+    // Wait for cleanup to complete
+    await this.wait(100)
+
+    console.log('🧹 Battlefield cleaned before test')
+
+    // Capture initial state
     const startState = this.canvasCapture.captureState(
       mapStore.currentMap!,
       roundStore.timeline || undefined,
       mapStore.selectedObjects,
-      useToolStore.getState().currentTool
+      toolStore.currentTool
     )
 
     this.currentResult = {
@@ -178,9 +203,16 @@ export class TestRunner {
         break
 
       case 'moveToken':
-        mapStore.updateObject(action.params.tokenId, {
-          position: action.params.toPosition
-        })
+        // Use updateObjectPosition for direct position updates
+        console.log(`🔄 Moving token ${action.params.tokenId} to`, action.params.toPosition)
+        mapStore.updateObjectPosition(action.params.tokenId, action.params.toPosition)
+
+        // Wait for next tick to ensure Zustand state update has propagated
+        await new Promise(resolve => setTimeout(resolve, 0))
+
+        // Verify position was updated
+        const updatedToken = mapStore.currentMap?.objects.find(obj => obj.id === action.params.tokenId)
+        console.log(`✓ Token position after update:`, updatedToken?.position)
         break
 
       case 'selectToken':
@@ -241,6 +273,7 @@ export class TestRunner {
           if (!token) {
             return { success: false, error: `Token ${assertion.params.tokenId} not found` }
           }
+          console.log(`🔍 Checking position for ${assertion.params.tokenId}: expected`, assertion.expected, 'got', token.position)
           if (token.position.x !== assertion.expected.x || token.position.y !== assertion.expected.y) {
             return {
               success: false,
@@ -269,6 +302,32 @@ export class TestRunner {
             return {
               success: false,
               error: `Expected spell active: ${assertion.expected}, got: ${spellActive}`
+            }
+          }
+          break
+
+        case 'spellOriginPosition':
+          // Validate that a spell's fromPosition matches expected value
+          const spell = mapStore.currentMap?.objects.find(
+            obj => obj.type === 'spell' && (obj as any).spellData?.spellName === assertion.params.spellName
+          )
+          if (!spell) {
+            return {
+              success: false,
+              error: `Spell ${assertion.params.spellName} not found`
+            }
+          }
+          const spellFromPos = (spell as any).spellData?.fromPosition
+          if (!spellFromPos) {
+            return {
+              success: false,
+              error: `Spell ${assertion.params.spellName} has no fromPosition`
+            }
+          }
+          if (spellFromPos.x !== assertion.expected.x || spellFromPos.y !== assertion.expected.y) {
+            return {
+              success: false,
+              error: `Spell origin mismatch: expected ${JSON.stringify(assertion.expected)}, got ${JSON.stringify(spellFromPos)}`
             }
           }
           break

@@ -4,12 +4,12 @@
  * Located under the navigation pad, locked to screen position
  */
 
-import React from 'react'
+import { type FC } from 'react'
 import { Cloud } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 
-export const EnvironmentToken: React.FC = () => {
+export const EnvironmentToken: FC = () => {
   return (
     <Box
       style={{

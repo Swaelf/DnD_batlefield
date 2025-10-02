@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useMemo } from 'react'
+import { useCallback, useState, useMemo, type FC, type ChangeEvent } from 'react'
 import { Group, Line, Circle } from 'react-konva'
 // import useMapStore from '@store/mapStore' // Unused since currentMap is commented
 import type { Point } from '@/types'
@@ -28,7 +28,7 @@ interface DrawingAssistanceSystemProps {
   onConstraintChange?: (constraints: DrawingConstraint[]) => void
 }
 
-export const DrawingAssistanceSystem: React.FC<DrawingAssistanceSystemProps> = ({
+export const DrawingAssistanceSystem: FC<DrawingAssistanceSystemProps> = ({
   isActive,
   gridSize,
   gridSnap,
@@ -438,7 +438,7 @@ export const DrawingAssistanceSystem: React.FC<DrawingAssistanceSystemProps> = (
                   min="1"
                   max="45"
                   value={constraint.tolerance}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     handleToleranceChange(constraint.type, Number(e.target.value))
                   }
                   style={{

@@ -1,4 +1,4 @@
-import type React from 'react'
+import type { RefObject, MutableRefObject } from 'react'
 import type Konva from 'konva'
 import type { Position } from '@/types/map'
 
@@ -9,12 +9,12 @@ export type CanvasSize = {
 }
 
 export type UseCanvasReturn = {
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: RefObject<HTMLDivElement>
   canvasSize: CanvasSize
 }
 
 export type UseCanvasControlsProps = {
-  stageRef: React.MutableRefObject<Konva.Stage | null>
+  stageRef: MutableRefObject<Konva.Stage | null>
   containerWidth: number
   containerHeight: number
   mapWidth: number
@@ -60,7 +60,7 @@ export type UseKeyboardShortcutsReturn = {
 
 // Token Animation Types
 export type UseTokenAnimationProps = {
-  stageRef: React.MutableRefObject<Konva.Stage | null>
+  stageRef: MutableRefObject<Konva.Stage | null>
 }
 
 export type UseTokenAnimationReturn = {

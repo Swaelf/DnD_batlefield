@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef, type FC, type RefObject, type ChangeEvent, type FormEvent } from 'react'
 import { Group, Text as KonvaText, Rect } from 'react-konva'
 import type Konva from 'konva'
 import { Users, MessageSquare, Settings, UserPlus, Crown, Eye } from '@/utils/optimizedIcons'
@@ -12,11 +12,11 @@ import useMapStore from '@/store/mapStore'
 import type { CollaborativeUser } from '@/store/collaborationStore'
 
 export type RealTimeCollaborationManagerProps = {
-  stageRef?: React.RefObject<Konva.Stage>
+  stageRef?: RefObject<Konva.Stage>
   isActive: boolean
 }
 
-export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManagerProps> = ({
+export const RealTimeCollaborationManager: FC<RealTimeCollaborationManagerProps> = ({
   stageRef,
   isActive
 }) => {
@@ -112,7 +112,7 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
   }, [chatMessages])
 
   // Handle chat input
-  const handleChatSubmit = useCallback((e: React.FormEvent) => {
+  const handleChatSubmit = useCallback((e: FormEvent) => {
     e.preventDefault()
     if (!chatInput.trim()) return
 
@@ -136,7 +136,7 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
   }, [chatInput, sendMessage, sendDiceRoll, setTyping, isTypingTimeout])
 
   // Handle typing indicators
-  const handleChatInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChatInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setChatInput(e.target.value)
 
     if (!isTyping.get(currentUser?.id || '')) {
@@ -682,7 +682,7 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
               <Text size="sm">Session Name:</Text>
               <Input
                 value={currentSession.name}
-                onChange={(_e: React.ChangeEvent<HTMLInputElement>) => {
+                onChange={(_e: ChangeEvent<HTMLInputElement>) => {
                   // updateSessionSettings({ name: e.target.value })
                 }}
                 style={{ width: '100%' }}
@@ -713,7 +713,7 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
                 <input
                   type="checkbox"
                   checked={currentSession.settings.lockLayersForPlayers}
-                  onChange={(_e: React.ChangeEvent<HTMLInputElement>) => {
+                  onChange={(_e: ChangeEvent<HTMLInputElement>) => {
                     // updateSessionSettings({ lockLayersForPlayers: e.target.checked })
                   }}
                   style={{ accentColor: 'var(--primary)' }}
@@ -725,7 +725,7 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
                 <input
                   type="checkbox"
                   checked={currentSession.settings.allowAnonymous}
-                  onChange={(_e: React.ChangeEvent<HTMLInputElement>) => {
+                  onChange={(_e: ChangeEvent<HTMLInputElement>) => {
                     // updateSessionSettings({ allowAnonymous: e.target.checked })
                   }}
                   style={{ accentColor: 'var(--primary)' }}
@@ -737,7 +737,7 @@ export const RealTimeCollaborationManager: React.FC<RealTimeCollaborationManager
                 <input
                   type="checkbox"
                   checked={currentSession.settings.enableTextChat}
-                  onChange={(_e: React.ChangeEvent<HTMLInputElement>) => {
+                  onChange={(_e: ChangeEvent<HTMLInputElement>) => {
                     // updateSessionSettings({ enableTextChat: e.target.checked })
                   }}
                   style={{ accentColor: 'var(--primary)' }}

@@ -3,11 +3,13 @@ import { useHotkeys } from 'react-hotkeys-hook'
 import useToolStore from '@store/toolStore'
 import useMapStore from '@store/mapStore'
 import { useHistoryStore } from '@store/historyStore'
+import useEventCreationStore from '@store/eventCreationStore'
 
 export const useKeyboardShortcuts = () => {
   const { setTool, currentTool, clearMeasurementPoints } = useToolStore()
-  const { deleteSelected, duplicateSelected, clearSelection, selectedObjects, currentMap, loadMap, toggleGridSnap, toggleGridVisibility, selectMultiple } = useMapStore()
+  const { deleteSelected, duplicateSelected, clearSelection, selectedObjects, currentMap, loadMap, toggleGridSnap, toggleGridVisibility, selectMultiple, updateObject } = useMapStore()
   const historyStore = useHistoryStore()
+  const { isPicking, exitPickingMode } = useEventCreationStore()
 
   // Tool shortcuts
   useHotkeys('v', () => setTool('select'), [setTool])
@@ -30,14 +32,21 @@ export const useKeyboardShortcuts = () => {
     }
   }, [selectedObjects, deleteSelected])
 
-  // Clear selection or measurement points
+  // Clear selection, measurement points, or exit event picking mode
   useHotkeys('escape', () => {
+    // If we're in event creation picking mode, exit it but keep modal open
+    if (isPicking) {
+      exitPickingMode()
+      return
+    }
+
+    // Otherwise handle normal escape behavior
     if (currentTool === 'measure') {
       clearMeasurementPoints()
     } else {
       clearSelection()
     }
-  }, [clearSelection, clearMeasurementPoints, currentTool])
+  }, [clearSelection, clearMeasurementPoints, currentTool, isPicking, exitPickingMode])
 
   // Select all objects
   useHotkeys('ctrl+a, cmd+a', () => {
@@ -88,6 +97,63 @@ export const useKeyboardShortcuts = () => {
   useHotkeys('shift+g', () => {
     toggleGridSnap()
   }, [toggleGridSnap])
+
+  // Rotation shortcuts for selected objects
+  useHotkeys('[', () => {
+    // Rotate selected objects counter-clockwise by 15 degrees
+    if (selectedObjects.length > 0 && currentMap) {
+      selectedObjects.forEach(objId => {
+        const obj = currentMap.objects.find(o => o.id === objId)
+        if (obj) {
+          const currentRotation = obj.rotation || 0
+          const newRotation = (currentRotation - 15 + 360) % 360
+          updateObject(objId, { rotation: newRotation })
+        }
+      })
+    }
+  }, [selectedObjects, currentMap, updateObject])
+
+  useHotkeys(']', () => {
+    // Rotate selected objects clockwise by 15 degrees
+    if (selectedObjects.length > 0 && currentMap) {
+      selectedObjects.forEach(objId => {
+        const obj = currentMap.objects.find(o => o.id === objId)
+        if (obj) {
+          const currentRotation = obj.rotation || 0
+          const newRotation = (currentRotation + 15) % 360
+          updateObject(objId, { rotation: newRotation })
+        }
+      })
+    }
+  }, [selectedObjects, currentMap, updateObject])
+
+  useHotkeys('shift+[', () => {
+    // Rotate selected objects counter-clockwise by 45 degrees
+    if (selectedObjects.length > 0 && currentMap) {
+      selectedObjects.forEach(objId => {
+        const obj = currentMap.objects.find(o => o.id === objId)
+        if (obj) {
+          const currentRotation = obj.rotation || 0
+          const newRotation = (currentRotation - 45 + 360) % 360
+          updateObject(objId, { rotation: newRotation })
+        }
+      })
+    }
+  }, [selectedObjects, currentMap, updateObject])
+
+  useHotkeys('shift+]', () => {
+    // Rotate selected objects clockwise by 45 degrees
+    if (selectedObjects.length > 0 && currentMap) {
+      selectedObjects.forEach(objId => {
+        const obj = currentMap.objects.find(o => o.id === objId)
+        if (obj) {
+          const currentRotation = obj.rotation || 0
+          const newRotation = (currentRotation + 45) % 360
+          updateObject(objId, { rotation: newRotation })
+        }
+      })
+    }
+  }, [selectedObjects, currentMap, updateObject])
 
   // Space for temporary pan tool
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, type RefObject } from 'react'
 import type Konva from 'konva'
 import type { Position, Shape } from '@/types/map'
 import { snapToGrid } from '@/utils/grid'
@@ -110,7 +110,7 @@ const getTokenPixelSize = (size: string, gridSize: number): number => {
 }
 
 type ToolHandlersProps = {
-  stageRef: React.RefObject<Konva.Stage>
+  stageRef: RefObject<Konva.Stage>
   currentTool: string
   currentMap: any
   fillColor: string

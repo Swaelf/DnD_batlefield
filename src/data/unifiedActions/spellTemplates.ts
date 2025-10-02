@@ -409,5 +409,251 @@ export const spellTemplates: UnifiedAction[] = [
     },
     timestamp: 0,
     duration: 900
+  },
+
+  // Fire Cone Spells
+  {
+    id: 'burning-hands-template',
+    name: 'Burning Hands',
+    description: 'A magical spell effect',
+    type: 'spell',
+    category: 'fire',
+    tags: ["spell","magic"],
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'cone',
+      duration: 800,
+      color: '#ff4500',
+      secondaryColor: '#FFA500',
+      size: 15, // 15ft cone length
+      coneAngle: 60,
+      particles: true
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#ff4500',
+      areaOfEffect: {
+        type: 'cone',
+        origin: { x: 0, y: 0 },
+        direction: 0,
+        angle: 60,
+        range: 15
+      }
+    },
+    metadata: {
+      name: 'Burning Hands',
+      description: 'A thin sheet of flames shoots forth from your outstretched fingertips.'
+    },
+    range: 5, // Touch range (self)
+    areaOfEffect: 15,
+    damage: '3d6',
+    damageType: 'fire',
+    spellLevel: 1,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 800
+  },
+  {
+    id: 'breath-of-the-dragon-template',
+    name: 'Breath of the Dragon',
+    description: 'A magical spell effect',
+    type: 'spell',
+    category: 'fire',
+    tags: ["spell","magic"],
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'cone',
+      duration: 1200,
+      color: '#ff4500',
+      secondaryColor: '#FF6B00',
+      size: 30, // 30ft cone length
+      coneAngle: 60,
+      particles: true,
+      persistDuration: 1,
+      persistColor: '#CC2500',
+      persistOpacity: 0.4
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#ff4500',
+      areaOfEffect: {
+        type: 'cone',
+        origin: { x: 0, y: 0 },
+        direction: 0,
+        angle: 60,
+        range: 30
+      }
+    },
+    metadata: {
+      name: 'Breath of the Dragon',
+      description: 'Channel the power of dragons to unleash a devastating wave of fire in a cone, leaving burning embers for one round.'
+    },
+    range: 5, // Touch range (self)
+    areaOfEffect: 30,
+    damage: '6d6',
+    damageType: 'fire',
+    spellLevel: 3,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 1200
+  },
+
+  // Ice Cone Spells
+  {
+    id: 'cone-of-cold-template',
+    name: 'Cone of Cold',
+    description: 'A magical spell effect',
+    type: 'spell',
+    category: 'ice',
+    tags: ["spell","magic"],
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'cone',
+      duration: 1000,
+      color: '#00bfff',
+      secondaryColor: '#B0E0E6',
+      size: 60, // 60ft cone length
+      coneAngle: 60,
+      particles: true
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#00bfff',
+      areaOfEffect: {
+        type: 'cone',
+        origin: { x: 0, y: 0 },
+        direction: 0,
+        angle: 60,
+        range: 60
+      }
+    },
+    metadata: {
+      name: 'Cone of Cold',
+      description: 'A blast of cold air erupts from your hands in a 60-foot cone.'
+    },
+    range: 5, // Touch range (self)
+    areaOfEffect: 60,
+    damage: '8d8',
+    damageType: 'cold',
+    spellLevel: 5,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 1000
+  },
+
+  // Additional missing spells
+  {
+    id: 'thunderwave-template',
+    name: 'Thunderwave',
+    description: 'A magical spell effect',
+    type: 'spell',
+    category: 'thunder',
+    tags: ["spell","magic"],
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'burst',
+      duration: 600,
+      color: '#4169e1',
+      size: 15,
+      burstSize: 60
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#4169e1',
+      areaOfEffect: {
+        type: 'circle',
+        center: { x: 0, y: 0 },
+        radius: 15
+      }
+    },
+    metadata: {
+      name: 'Thunderwave',
+      description: 'A wave of thunderous force sweeps out from you.'
+    },
+    range: 5, // Self
+    areaOfEffect: 15,
+    damage: '2d8',
+    damageType: 'thunder',
+    spellLevel: 1,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 600
+  },
+  {
+    id: 'eldritch-blast-template',
+    name: 'Eldritch Blast',
+    description: 'A magical spell effect',
+    type: 'spell',
+    category: 'force',
+    tags: ["spell","magic"],
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'projectile',
+      duration: 1000,
+      color: '#8B00FF',
+      size: 10,
+      speed: 900,
+      trail: true,
+      trackTarget: true,
+      targetTokenId: ''
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#8B00FF'
+    },
+    metadata: {
+      name: 'Eldritch Blast',
+      description: 'A beam of crackling energy streaks toward a creature within range.'
+    },
+    range: 120,
+    damage: '1d10',
+    damageType: 'force',
+    spellLevel: 0,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 1000
+  },
+  {
+    id: 'web-template',
+    name: 'Web',
+    description: 'A magical spell effect',
+    type: 'spell',
+    category: 'conjuration',
+    tags: ["spell","magic"],
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'area',
+      duration: 800,
+      color: '#F5F5DC',
+      size: 20,
+      persistDuration: 10,
+      persistColor: '#F5F5DC',
+      persistOpacity: 0.6
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#F5F5DC',
+      areaOfEffect: {
+        type: 'circle',
+        center: { x: 0, y: 0 },
+        radius: 20
+      }
+    },
+    metadata: {
+      name: 'Web',
+      description: 'You conjure a mass of thick, sticky webbing at a point of your choice within range.'
+    },
+    range: 60,
+    areaOfEffect: 20,
+    spellLevel: 2,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 800
   }
 ]

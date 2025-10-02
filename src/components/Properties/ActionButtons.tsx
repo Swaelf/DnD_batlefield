@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC } from 'react'
 import { Eye, EyeOff, Copy, Trash2 } from '@/utils/optimizedIcons'
 import {
   PanelSection,
@@ -13,7 +13,7 @@ type ActionButtonsProps = {
   onDelete: () => void
 }
 
-const ActionButtonsComponent: React.FC<ActionButtonsProps> = ({
+const ActionButtonsComponent: FC<ActionButtonsProps> = ({
   isVisible,
   onVisibilityToggle,
   onDuplicate,

@@ -1,8 +1,9 @@
-import React, { memo } from 'react'
+import { memo, type FC, type ChangeEvent } from 'react'
 import type { MapObject } from '@/types'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Input } from '@/components/ui/Input'
+import { RotationIndicator } from '@/components/ui/RotationIndicator'
 
 type BasePropertiesProps = {
   selectedObject: MapObject
@@ -14,7 +15,7 @@ type BasePropertiesProps = {
   onOpacityChange: (value: number) => void
 }
 
-const BasePropertiesComponent: React.FC<BasePropertiesProps> = ({
+const BasePropertiesComponent: FC<BasePropertiesProps> = ({
   selectedObject,
   localPosition,
   localRotation,
@@ -96,7 +97,7 @@ const BasePropertiesComponent: React.FC<BasePropertiesProps> = ({
             <Input
               type="number"
               value={Math.round(localPosition.x)}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onPositionChange('x', Number(e.target.value))}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onPositionChange('x', Number(e.target.value))}
               style={{ width: '100%' }}
             />
           </Box>
@@ -116,55 +117,43 @@ const BasePropertiesComponent: React.FC<BasePropertiesProps> = ({
             <Input
               type="number"
               value={Math.round(localPosition.y)}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onPositionChange('y', Number(e.target.value))}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onPositionChange('y', Number(e.target.value))}
               style={{ width: '100%' }}
             />
           </Box>
         </Box>
 
-        {/* Rotation */}
-        <Box style={{ marginBottom: '16px' }}>
-          <Text
-            variant="label"
-            size="sm"
-            style={{
-              display: 'block',
-              marginBottom: '8px',
-              color: 'var(--colors-gray300)',
-              fontWeight: '500'
-            }}
-          >
-            Rotation
-          </Text>
-          <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <input
-              type="range"
-              value={localRotation}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onRotationChange(Number(e.target.value))}
-              min="0"
-              max="360"
-              style={{
-                flex: 1,
-                height: '6px',
-                backgroundColor: 'var(--colors-gray700)',
-                borderRadius: '3px',
-                outline: 'none',
-                appearance: 'none'
-              }}
-            />
+        {/* Rotation with existing control */}
+        <Box style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <RotationIndicator
+            value={localRotation}
+            onChange={onRotationChange}
+            label="Rotation"
+            size={70}
+          />
+
+          {/* Manual rotation input */}
+          <Box style={{ flex: 1 }}>
             <Text
-              variant="body"
+              variant="label"
               size="sm"
               style={{
-                margin: 0,
-                minWidth: '40px',
-                textAlign: 'right',
-                color: 'var(--colors-gray200)',
-                fontFamily: 'monospace'
+                display: 'block',
+                marginBottom: '4px',
+                color: 'var(--colors-gray300)',
+                fontWeight: '500'
               }}
             >
-              {localRotation}°
+              Angle (degrees)
             </Text>
+            <Input
+              type="number"
+              value={localRotation}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onRotationChange(Number(e.target.value))}
+              min="0"
+              max="359"
+              style={{ width: '100%' }}
+            />
           </Box>
         </Box>
 
@@ -186,7 +175,7 @@ const BasePropertiesComponent: React.FC<BasePropertiesProps> = ({
             <input
               type="range"
               value={localOpacity}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onOpacityChange(Number(e.target.value))}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onOpacityChange(Number(e.target.value))}
               min="0"
               max="1"
               step="0.1"

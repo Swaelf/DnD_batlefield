@@ -1,181 +1,115 @@
 import type { UnifiedAction } from '@/types/unifiedAction'
 
 export const attackTemplates: UnifiedAction[] = [
-  // Sword Attacks
+  // ===== MELEE ATTACKS =====
+
+  // Slashing - Longsword
   {
-    id: 'longsword-slash-template',
-    name: 'Longsword Slash',
-    description: 'A powerful sweeping attack with a longsword',
+    id: 'longsword-slash',
+    name: 'Longsword (Slashing)',
+    description: 'A powerful sweeping slash with a longsword',
     type: 'attack',
-    category: 'sword',
-    tags: ['attack', 'melee', 'sword'],
+    category: 'melee',
+    tags: ['attack', 'melee', 'slashing'],
     source: { x: 0, y: 0 }, // Will be set when used
     target: { x: 0, y: 0 }, // Will be set when used
     animation: {
-      type: 'melee_swing',
+      type: 'melee_slash',
       duration: 600,
       color: '#C0C0C0',
-      size: 40,
-      arc: 90
+      size: 40
     },
     effects: {
       affectedTargets: [],
       highlightColor: '#C0C0C0'
     },
     metadata: {
-      name: 'Longsword Slash',
-      description: 'A powerful sweeping attack with a longsword.',
-      // Attack data for reference:
-      // damage:'1d8+3',
-      // damageType:'slashing',
-      // attackBonus:5
+      name: 'Longsword (Slashing)',
+      description: 'A powerful sweeping slash with a longsword.',
       rollResult: undefined
     },
     timestamp: 0,
-    duration: 600
+    duration: 600,
+    damage: '1d8+3',
+    damageType: 'slashing',
+    range: 5
   },
+
+  // Piercing - Rapier
   {
-    id: 'rapier-thrust-template',
-    name: 'Rapier Thrust',
-    description: 'A combat attack action',
+    id: 'rapier-pierce',
+    name: 'Rapier (Piercing)',
+    description: 'A precise thrusting attack with a rapier',
     type: 'attack',
-    category: 'sword',
-    tags: ["attack","combat"],
+    category: 'melee',
+    tags: ['attack', 'melee', 'piercing'],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'melee_slash',
-      duration: 400,
-      color: '#E6E6FA',
-      size: 30,
-      speed: 300
+      type: 'melee_thrust',
+      duration: 500,
+      color: '#B0B0B0',
+      size: 35
     },
     effects: {
       affectedTargets: [],
-      highlightColor: '#E6E6FA'
+      highlightColor: '#B0B0B0'
     },
     metadata: {
-      name: 'Rapier Thrust',
+      name: 'Rapier (Piercing)',
       description: 'A precise thrusting attack with a rapier.',
-      // Attack data for reference:
-      // damage:'1d8+3',
-      // damageType:'piercing',
-      // attackBonus:5
       rollResult: undefined
     },
     timestamp: 0,
-    duration: 400
+    duration: 500,
+    damage: '1d8+2',
+    damageType: 'piercing',
+    range: 5
   },
 
-  // Axe Attacks
+  // Bludgeoning - Warhammer
   {
-    id: 'greataxe-cleave-template',
-    name: 'Greataxe Cleave',
-    description: 'A combat attack action',
+    id: 'warhammer-bludgeon',
+    name: 'Warhammer (Bludgeoning)',
+    description: 'A bone-crushing swing with a warhammer',
     type: 'attack',
-    category: 'axe',
-    tags: ["attack","combat"],
-    source: { x: 0, y: 0 },
-    target: { x: 0, y: 0 },
-    animation: {
-      type: 'melee_swing',
-      duration: 800,
-      color: '#8B4513',
-      size: 50,
-      arc: 120
-    },
-    effects: {
-      affectedTargets: [],
-      highlightColor: '#8B4513'
-    },
-    metadata: {
-      name: 'Greataxe Cleave',
-      description: 'A devastating overhead chop with a greataxe.',
-      // Attack data for reference:
-      // damage:'1d12+3',
-      // damageType:'slashing',
-      // attackBonus:5
-      rollResult: undefined
-    },
-    timestamp: 0,
-    duration: 800
-  },
-  {
-    id: 'handaxe-throw-template',
-    name: 'Handaxe Throw',
-    description: 'A combat attack action',
-    type: 'attack',
-    category: 'axe',
-    tags: ["attack","combat"],
-    source: { x: 0, y: 0 },
-    target: { x: 0, y: 0 },
-    animation: {
-      type: 'projectile',
-      duration: 700,
-      color: '#CD853F',
-      size: 20,
-      speed: 350,
-      spin: true
-    },
-    effects: {
-      affectedTargets: [],
-      highlightColor: '#CD853F'
-    },
-    metadata: {
-      name: 'Handaxe Throw',
-      description: 'A thrown handaxe spinning through the air.',
-      // Attack data for reference:
-      // damage:'1d6+3',
-      // damageType:'slashing',
-      // attackBonus:5
-      rollResult: undefined
-    },
-    timestamp: 0,
-    duration: 700
-  },
-
-  // Mace Attacks
-  {
-    id: 'warhammer-crush-template',
-    name: 'Warhammer Crush',
-    description: 'A combat attack action',
-    type: 'attack',
-    category: 'mace',
-    tags: ["attack","combat"],
+    category: 'melee',
+    tags: ['attack', 'melee', 'bludgeoning'],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
       type: 'melee_swing',
       duration: 700,
-      color: '#696969',
+      color: '#8B7355',
       size: 35,
       impact: true
     },
     effects: {
       affectedTargets: [],
-      highlightColor: '#696969'
+      highlightColor: '#8B7355'
     },
     metadata: {
-      name: 'Warhammer Crush',
-      description: 'A bone-crushing blow from a warhammer.',
-      // Attack data for reference:
-      // damage:'1d8+3',
-      // damageType:'bludgeoning',
-      // attackBonus:5
+      name: 'Warhammer (Bludgeoning)',
+      description: 'A bone-crushing swing with a warhammer.',
       rollResult: undefined
     },
     timestamp: 0,
-    duration: 700
+    duration: 700,
+    damage: '1d8+3',
+    damageType: 'bludgeoning',
+    range: 5
   },
 
-  // Arrow Attacks
+  // ===== RANGED ATTACKS =====
+
+  // Piercing - Longbow
   {
-    id: 'longbow-shot-template',
-    name: 'Longbow Shot',
-    description: 'A combat attack action',
+    id: 'longbow-pierce',
+    name: 'Longbow (Piercing)',
+    description: 'An arrow fired from a longbow',
     type: 'attack',
-    category: 'arrow',
-    tags: ["attack","combat"],
+    category: 'ranged',
+    tags: ['attack', 'ranged', 'piercing'],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
@@ -191,164 +125,81 @@ export const attackTemplates: UnifiedAction[] = [
       highlightColor: '#8B4513'
     },
     metadata: {
-      name: 'Longbow Shot',
+      name: 'Longbow (Piercing)',
       description: 'An arrow fired from a longbow.',
-      // Attack data for reference:
-      // damage:'1d8+3',
-      // damageType:'piercing',
-      // attackBonus:5
       rollResult: undefined
     },
     timestamp: 0,
-    duration: 800
-  },
-  {
-    id: 'shortbow-rapid-template',
-    name: 'Shortbow Rapid',
-    description: 'A combat attack action',
-    type: 'attack',
-    category: 'arrow',
-    tags: ["attack","combat"],
-    source: { x: 0, y: 0 },
-    target: { x: 0, y: 0 },
-    animation: {
-      type: 'projectile',
-      duration: 600,
-      color: '#A0522D',
-      size: 6,
-      speed: 500,
-      multiple: 2
-    },
-    effects: {
-      affectedTargets: [],
-      highlightColor: '#A0522D'
-    },
-    metadata: {
-      name: 'Shortbow Rapid Shot',
-      description: 'Two quick arrows from a shortbow.',
-      // Attack data for reference:
-      // damage:'2x(1d6+3)',
-      // damageType:'piercing',
-      // attackBonus:5
-      rollResult: undefined
-    },
-    timestamp: 0,
-    duration: 600
+    duration: 800,
+    damage: '1d8+3',
+    damageType: 'piercing',
+    range: 150
   },
 
-  // Bolt Attacks
+  // Slashing - Thrown Dagger
   {
-    id: 'crossbow-bolt-template',
-    name: 'Crossbow Bolt',
-    description: 'A combat attack action',
+    id: 'thrown-dagger',
+    name: 'Thrown Dagger (Piercing)',
+    description: 'A dagger thrown at the target',
     type: 'attack',
-    category: 'bolt',
-    tags: ["attack","combat"],
+    category: 'ranged',
+    tags: ['attack', 'ranged', 'piercing', 'thrown'],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
       type: 'projectile',
       duration: 500,
-      color: '#4A4A4A',
-      size: 10,
-      speed: 700
+      color: '#C0C0C0',
+      size: 12,
+      speed: 400,
+      spin: true
     },
     effects: {
       affectedTargets: [],
-      highlightColor: '#4A4A4A'
+      highlightColor: '#C0C0C0'
     },
     metadata: {
-      name: 'Crossbow Bolt',
-      description: 'A heavy crossbow bolt.',
-      // Attack data for reference:
-      // damage:'1d10+3',
-      // damageType:'piercing',
-      // attackBonus:5
+      name: 'Thrown Dagger (Piercing)',
+      description: 'A dagger thrown at the target.',
       rollResult: undefined
     },
     timestamp: 0,
-    duration: 500
+    duration: 500,
+    damage: '1d4+2',
+    damageType: 'piercing',
+    range: 20
   },
 
-  // Breath Attacks
+  // Bludgeoning - Sling
   {
-    id: 'fire-breath-template',
-    name: 'Fire Breath',
-    description: 'A combat attack action',
+    id: 'sling-bludgeon',
+    name: 'Sling (Bludgeoning)',
+    description: 'A stone hurled from a sling',
     type: 'attack',
-    category: 'breath',
-    tags: ["attack","combat"],
+    category: 'ranged',
+    tags: ['attack', 'ranged', 'bludgeoning'],
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'cone',
-      duration: 1200,
-      color: '#FF4500',
-      size: 120,
-      particles: true
+      type: 'projectile',
+      duration: 600,
+      color: '#696969',
+      size: 10,
+      speed: 450
     },
     effects: {
       affectedTargets: [],
-      highlightColor: '#FF4500',
-      areaOfEffect: {
-        type: 'cone',
-        origin: { x: 0, y: 0 },
-        direction: 0,
-        angle: 90,
-        range: 120
-      }
+      highlightColor: '#696969'
     },
     metadata: {
-      name: 'Fire Breath',
-      description: 'A cone of scorching flames.',
-      // Attack data for reference:
-      // damage:'3d6',
-      // damageType:'fire',
-      // attackBonus:0,
-      // saveType:'Dexterity',
+      name: 'Sling (Bludgeoning)',
+      description: 'A stone hurled from a sling.',
       rollResult: undefined
     },
     timestamp: 0,
-    duration: 1200
-  },
-  {
-    id: 'cold-breath-template',
-    name: 'Cold Breath',
-    description: 'A combat attack action',
-    type: 'attack',
-    category: 'breath',
-    tags: ["attack","combat"],
-    source: { x: 0, y: 0 },
-    target: { x: 0, y: 0 },
-    animation: {
-      type: 'cone',
-      duration: 1000,
-      color: '#87CEEB',
-      size: 100,
-      particles: true
-    },
-    effects: {
-      affectedTargets: [],
-      highlightColor: '#87CEEB',
-      areaOfEffect: {
-        type: 'cone',
-        origin: { x: 0, y: 0 },
-        direction: 0,
-        angle: 90,
-        range: 100
-      }
-    },
-    metadata: {
-      name: 'Cold Breath',
-      description: 'A blast of freezing cold.',
-      // Attack data for reference:
-      // damage:'2d8',
-      // damageType:'cold',
-      // attackBonus:0,
-      // saveType:'Constitution',
-      rollResult: undefined
-    },
-    timestamp: 0,
-    duration: 1000
+    duration: 600,
+    damage: '1d4+2',
+    damageType: 'bludgeoning',
+    range: 30
   }
 ]

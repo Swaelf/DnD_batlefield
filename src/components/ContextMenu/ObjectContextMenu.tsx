@@ -1,4 +1,4 @@
-import React from 'react'
+import { type FC } from 'react'
 import {
   Copy,
   Trash2,
@@ -21,7 +21,7 @@ type ObjectContextMenuProps = {
   onClose: () => void
 }
 
-export const ObjectContextMenu: React.FC<ObjectContextMenuProps> = ({
+export const ObjectContextMenu: FC<ObjectContextMenuProps> = ({
   position,
   objectId,
   onClose

@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC } from 'react'
 import { Target, Users } from '@/utils/optimizedIcons'
 import { Box, Text, Button } from '@/components/primitives'
 import type { Position } from '@/types/map'
@@ -13,7 +13,7 @@ type SelectTargetProps = {
   isPicking: 'token' | 'from' | 'to' | 'targetToken' | null
 }
 
-const SelectTargetComponent: React.FC<SelectTargetProps> = ({
+const SelectTargetComponent: FC<SelectTargetProps> = ({
   targetPosition,
   targetTokenId,
   tokens,

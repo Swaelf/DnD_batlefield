@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.tsx'
+import { App } from './App'
 import { TooltipProvider } from '@/components/ui'
 import { AppErrorBoundary } from '@/components/ErrorBoundary/ErrorBoundary'
 import swManager from '@/utils/serviceWorker'
@@ -40,9 +40,13 @@ if (process.env.NODE_ENV === 'production') {
 if (process.env.NODE_ENV === 'development') {
   // Enable React DevTools profiler
   if (typeof window !== 'undefined') {
-    (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
-      ...(window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__,
-      isDisabled: false
+    const globalWindow = window as Window & {
+      __REACT_DEVTOOLS_GLOBAL_HOOK__?: {
+        isDisabled?: boolean
+      }
+    }
+    if (globalWindow.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+      globalWindow.__REACT_DEVTOOLS_GLOBAL_HOOK__.isDisabled = false
     }
   }
 }

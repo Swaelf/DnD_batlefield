@@ -1,8 +1,7 @@
-import React, { useCallback } from 'react'
+import { useCallback, useMemo, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
 import { Group, Rect, Circle, Line, Text as KonvaText } from 'react-konva'
 import type Konva from 'konva'
 import type { MapObject, Shape, Text } from '@/types/map'
-import type { Token as TokenType } from '@/types/token'
 import type { SpellEventData, AttackEventData } from '@/types/timeline'
 import useMapStore from '@/store/mapStore'
 import useToolStore from '@/store/toolStore'
@@ -17,34 +16,34 @@ import { PersistentArea } from '../Spells'
 import { AttackRenderer } from '../Actions/ActionRenderer/AttackRenderer'
 import { SimpleSpellComponent } from '../Spells/SimpleSpellComponent'
 import { StaticObjectRenderer } from '../StaticObject/StaticObjectRenderer'
+import { isToken, isShape, isText, isSpell, isAttack, isPersistentArea } from './objectUtils'
 
 // Track completed spell animations to prevent duplicate persistent areas
 const completedSpellAnimations = new Set<string>()
 
-// Type guards (same as before)
-function isToken(obj: MapObject): obj is TokenType {
-  return obj.type === 'token'
-}
+// ✅ CACHE: WeakMap for static object detection (prevents object mutation errors)
+const staticObjectCache = new WeakMap<Shape, boolean>()
 
-function isShape(obj: MapObject): obj is Shape {
-  return obj.type === 'shape'
-}
+// ✅ STABLE EMPTY ARRAYS: Shared constants to prevent reference changes
+const EMPTY_ARRAY: any[] = []
 
-function isText(obj: MapObject): obj is Text {
-  return obj.type === 'text'
-}
-
-function isSpell(obj: MapObject): obj is MapObject & { type: 'spell'; spellData?: SpellEventData } {
-  return obj.type === 'spell'
-}
-
-function isAttack(obj: MapObject): obj is MapObject & { type: 'attack'; attackData?: AttackEventData } {
-  return obj.type === 'attack'
-}
-
-function isPersistentArea(obj: MapObject): obj is MapObject & { type: 'persistent-area'; persistentAreaData?: any } {
-  return obj.type === 'persistent-area'
-}
+// ✅ STABLE SELECTORS: Define selectors outside component to avoid re-creating on every render
+// CRITICAL: Never use || [] - it creates new array every time! Use shared EMPTY_ARRAY constant
+const selectObjects = (state: { currentMap: { objects: any[] } | null }) => state.currentMap?.objects ?? EMPTY_ARRAY
+const selectMapVersion = (state: { mapVersion: number }) => state.mapVersion
+const selectGridSettings = (state: { currentMap: { grid: any } | null }) => state.currentMap?.grid
+const selectSelectedObjects = (state: { selectedObjects: string[] }) => state.selectedObjects
+const selectDeleteObject = (state: { deleteObject: (id: string) => void }) => state.deleteObject
+const selectUpdateObjectPosition = (state: { updateObjectPosition: (id: string, position: { x: number; y: number }) => void }) => state.updateObjectPosition
+const selectBatchUpdatePosition = (state: { batchUpdatePosition: (objectIds: string[], deltaPosition: { x: number; y: number }) => void }) => state.batchUpdatePosition
+const selectCurrentTool = (state: { currentTool: string }) => state.currentTool
+const selectCurrentEvent = (state: { currentEvent: number }) => state.currentEvent
+const selectIsPicking = (state: { isPicking: string | null }) => state.isPicking
+const selectSetSelectedToken = (state: { setSelectedToken: (id: string) => void }) => state.setSelectedToken
+const selectActivePaths = (state: { activePaths: any[] }) => state.activePaths ?? EMPTY_ARRAY
+const selectLayers = (state: { layers: any[] }) => state.layers ?? EMPTY_ARRAY
+const selectGetDefaultLayerForObjectType = (state: { getDefaultLayerForObjectType: (type: string) => string }) => state.getDefaultLayerForObjectType
+const selectMigrateNumericLayer = (state: { migrateNumericLayer: (layer: number) => string }) => state.migrateNumericLayer
 
 type ObjectsLayerProps = {
   onObjectClick?: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void
@@ -56,24 +55,33 @@ type ObjectsLayerProps = {
 /**
  * ObjectsLayer that uses the new spell effect architecture
  */
-export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
+export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   onObjectClick,
   onObjectDragEnd,
   onTokenSelect,
   onTokenDeselect
 }) => {
-  const currentMap = useMapStore(state => state.currentMap)
-  const selectedObjects = useMapStore(state => state.selectedObjects)
-  const deleteObject = useMapStore(state => state.deleteObject)
-  const updateObjectPosition = useMapStore(state => state.updateObjectPosition)
-  const batchUpdatePosition = useMapStore(state => state.batchUpdatePosition)
-  const currentTool = useToolStore(state => state.currentTool)
-  const gridSettings = currentMap?.grid
-  const { isPicking, setSelectedToken } = useEventCreationStore()
-  const { activePaths } = useAnimationStore()
-  const currentEvent = useTimelineStore(state => state.currentEvent)
-  const { layers, getDefaultLayerForObjectType, migrateNumericLayer } = useLayerStore()
+  // ✅ OPTIMIZED: Use granular selectors with stable references
+  const objects = useMapStore(selectObjects)
+  const mapVersion = useMapStore(selectMapVersion)
+  const gridSettings = useMapStore(selectGridSettings)
+  const selectedObjects = useMapStore(selectSelectedObjects)
+  const deleteObject = useMapStore(selectDeleteObject)
+  const updateObjectPosition = useMapStore(selectUpdateObjectPosition)
+  const batchUpdatePosition = useMapStore(selectBatchUpdatePosition)
+  const currentTool = useToolStore(selectCurrentTool)
+  const isPicking = useEventCreationStore(selectIsPicking)
+  const setSelectedToken = useEventCreationStore(selectSetSelectedToken)
+  const activePaths = useAnimationStore(selectActivePaths)
+  const currentEvent = useTimelineStore(selectCurrentEvent)
+  const layers = useLayerStore(selectLayers)
+  const getDefaultLayerForObjectType = useLayerStore(selectGetDefaultLayerForObjectType)
+  const migrateNumericLayer = useLayerStore(selectMigrateNumericLayer)
   const { handleContextMenu } = useContextMenu()
+
+  // NOTE: Viewport culling disabled due to infinite loop issues with forceUpdate
+  // The performance optimization caused state update loops that exceeded React's limit
+  // Future implementation should use a different approach (e.g., Konva's built-in culling)
 
   const handleObjectDragEnd = (objId: string, e: Konva.KonvaEventObject<MouseEvent>) => {
     const node = e.target
@@ -93,7 +101,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
 
     if (isPartOfMultiSelection) {
       // Calculate delta from original position
-      const draggedObject = currentMap?.objects.find(obj => obj.id === objId)
+      const draggedObject = objects.find(obj => obj.id === objId)
       if (draggedObject) {
         const deltaX = newPosition.x - draggedObject.position.x
         const deltaY = newPosition.y - draggedObject.position.y
@@ -113,7 +121,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
   const handleObjectClick = (objId: string, e: Konva.KonvaEventObject<MouseEvent> | null) => {
     // If we're picking a token (either main token or target token), handle that first
     if (isPicking === 'token' || isPicking === 'targetToken') {
-      const obj = currentMap?.objects.find(o => o.id === objId)
+      const obj = objects.find(o => o.id === objId)
       if (obj && isToken(obj)) {
         setSelectedToken(objId)
         return
@@ -121,7 +129,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
     }
 
     // Check if this is a token
-    const obj = currentMap?.objects.find(o => o.id === objId)
+    const obj = objects.find(o => o.id === objId)
 
     // Priority 1: If in token picking mode for events, select the token for the event
     if (obj && isToken(obj) && (isPicking === 'token' || isPicking === 'targetToken')) {
@@ -180,7 +188,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
         clientY: screenY,
         preventDefault: () => e.evt.preventDefault(),
         stopPropagation: () => e.evt.stopPropagation()
-      } as React.MouseEvent,
+      } as ReactMouseEvent,
       'object',
       { objectId: objId }
     )
@@ -196,7 +204,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
     if (isToken(obj)) {
       return (
         <Token
-          key={obj.id}
+          key={`${obj.id}-${obj.position.x}-${obj.position.y}`}
           token={obj}
           gridSize={gridSettings?.size || 50}
           isSelected={isSelected}
@@ -233,11 +241,16 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
     return null
   }
 
-  const renderShape = (shape: Shape, isSelected: boolean, isDraggable: boolean) => {
-    // Determine if this is a static object based on its properties
-    // EXCLUDE static effects (they are simple shapes, not complex static objects)
+  // ✅ OPTIMIZED: Memoize static object detection to avoid 30+ color checks per render
+  const checkIsStaticObject = useCallback((shape: Shape): boolean => {
+    // Check WeakMap cache first
+    const cached = staticObjectCache.get(shape)
+    if (cached !== undefined) {
+      return cached
+    }
+
     const isStaticEffect = shape.metadata?.isStaticEffect === true
-    const isStaticObject = !isStaticEffect && (
+    const result = !isStaticEffect && (
       shape.metadata?.isStatic ||
       shape.fill?.includes('#6B7280') || // Wall/Stairs
       shape.fill?.includes('#8B4513') || // Door/furniture
@@ -268,6 +281,16 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
       shape.fill?.includes('#654321')    // Wood/furniture
     )
 
+    // ✅ Cache result in WeakMap (no object mutation!)
+    staticObjectCache.set(shape, result)
+
+    return result
+  }, [])
+
+  const renderShape = (shape: Shape, isSelected: boolean, isDraggable: boolean) => {
+    // ✅ OPTIMIZED: Use cached static object detection
+    const isStaticObject = checkIsStaticObject(shape)
+
     // Use enhanced StaticObjectRenderer for static objects (but NOT static effects)
     if (isStaticObject) {
       return (
@@ -281,8 +304,8 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
           onContextMenu={(e: Konva.KonvaEventObject<MouseEvent>) => handleObjectRightClick(shape.id, e)}
           onMouseEnter={(e: Konva.KonvaEventObject<MouseEvent>) => {
             const target = e.target
-            target.scaleX(1.05)
-            target.scaleY(1.05)
+            // ✅ OPTIMIZED: Use Konva's to() for smoother animations
+            target.to({ scaleX: 1.05, scaleY: 1.05, duration: 0.1 })
             const stage = target.getStage()
             if (stage) {
               stage.container().style.cursor = isDraggable ? 'move' : 'pointer'
@@ -290,8 +313,8 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
           }}
           onMouseLeave={(e: Konva.KonvaEventObject<MouseEvent>) => {
             const target = e.target
-            target.scaleX(1)
-            target.scaleY(1)
+            // ✅ OPTIMIZED: Use Konva's to() for smoother animations
+            target.to({ scaleX: 1, scaleY: 1, duration: 0.1 })
             const stage = target.getStage()
             if (stage) {
               stage.container().style.cursor = 'default'
@@ -328,17 +351,11 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
       onDragEnd: (e: Konva.KonvaEventObject<MouseEvent>) => handleObjectDragEnd(shape.id, e),
       onContextMenu: (e: Konva.KonvaEventObject<MouseEvent>) => handleObjectRightClick(shape.id, e),
       ...shadowConfig,
-      // Add hover effects
+      // ✅ OPTIMIZED: Add hover effects with smooth Konva animations
       onMouseEnter: (e: Konva.KonvaEventObject<MouseEvent>) => {
         const target = e.target
         if (isStaticObject) {
-          //target.shadowBlur(8)
-          //target.shadowOpacity(0.8)
-          target.scaleX(1.05)
-          target.scaleY(1.05)
-        } else {
-          //target.shadowBlur(15)
-          //target.shadowOpacity(0.5)
+          target.to({ scaleX: 1.05, scaleY: 1.05, duration: 0.1 })
         }
         const stage = target.getStage()
         if (stage) {
@@ -348,13 +365,7 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
       onMouseLeave: (e: Konva.KonvaEventObject<MouseEvent>) => {
         const target = e.target
         if (isStaticObject) {
-          //target.shadowBlur(isSelected ? 10 : 4)
-          //target.shadowOpacity(0.6)
-          target.scaleX(1)
-          target.scaleY(1)
-        } else {
-          //target.shadowBlur(isSelected ? 12 : 8)
-          //target.shadowOpacity(0.3)
+          target.to({ scaleX: 1, scaleY: 1, duration: 0.1 })
         }
         const stage = target.getStage()
         if (stage) {
@@ -572,14 +583,16 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
 
       // For spells with persist duration, create a persistent area
       const persistDuration = spell.spellData?.persistDuration || 0
+      console.log('[ObjectsLayer] Animation complete for spell:', spell.spellData?.spellName, 'persistDuration:', persistDuration, 'category:', spell.spellData?.category)
+      console.log('[ObjectsLayer] ⚠️ SPELL SIZE:', spell.spellData?.size, 'BURST RADIUS:', spell.spellData?.burstRadius)
 
-      // Area spells and projectile-burst spells can create persistent areas
-      if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst')) {
+      // Area spells, projectile-burst spells, and cone spells can create persistent areas
+      if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst' || spell.spellData?.category === 'cone')) {
         // Determine position for persistent area - use current target position if tracking enabled
         let persistentPosition = spell.spellData.toPosition
         if (spell.spellData.trackTarget && spell.spellData.targetTokenId) {
           // Get current token position for tracking spells
-          const targetToken = currentMap?.objects.find(obj =>
+          const targetToken = objects.find(obj =>
             obj.id === spell.spellData?.targetTokenId && obj.type === 'token'
           )
           if (targetToken) {
@@ -588,6 +601,12 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
         }
 
         // Create persistent area object
+        console.log('[ObjectsLayer] Spell data for persistent area:', {
+          burstRadius: spell.spellData.burstRadius,
+          size: spell.spellData.size,
+          spellName: spell.spellData.spellName
+        })
+
         const persistentAreaObject = {
           id: `persistent-area-${Date.now()}-${Math.random()}`,
           type: 'persistent-area' as const,
@@ -596,26 +615,41 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
           layer: 9,
           persistentAreaData: {
             position: persistentPosition,
-            radius: spell.spellData.burstRadius || spell.spellData.size || 60, // Use burst radius for area effects
+            // For cone spells, use size (in feet). For burst spells, use burstRadius (in pixels)
+            radius: spell.spellData.category === 'cone' ? spell.spellData.size : (spell.spellData.burstRadius || spell.spellData.size || 60),
             color: spell.spellData.persistColor || spell.spellData.color || '#3D3D2E',
             opacity: spell.spellData.persistOpacity || 0.8,
             spellName: spell.spellData.spellName || 'Area Effect',
             roundCreated: currentEvent, // Use actual current event number
             // Store token tracking information for persistent areas
             trackTarget: spell.spellData.trackTarget || false,
-            targetTokenId: spell.spellData.targetTokenId || null
+            targetTokenId: spell.spellData.targetTokenId || null,
+            // Cone-specific properties
+            shape: spell.spellData.category === 'cone' ? 'cone' : 'circle',
+            fromPosition: spell.spellData.fromPosition,
+            toPosition: spell.spellData.toPosition,
+            coneAngle: spell.spellData.coneAngle || 60
           },
           roundCreated: currentEvent, // Use actual current event number
           spellDuration: persistDuration,
           isSpellEffect: true as const // Mark as spell effect for cleanup
         }
 
+        console.log('[ObjectsLayer] ⚠️ PERSISTENT AREA VALUES:', {
+          roundCreated: currentEvent,
+          spellDuration: persistDuration,
+          expiresAtRound: currentEvent + persistDuration,
+          spellName: spell.spellData?.spellName
+        })
+
         // Add persistent area to map using addSpellEffect to ensure it's tracked properly
         const addSpellEffect = useMapStore.getState().addSpellEffect
+        console.log('[ObjectsLayer] Creating persistent area:', persistentAreaObject)
         addSpellEffect(persistentAreaObject)
 
         // Remove the spell animation object
         setTimeout(() => {
+          console.log('[ObjectsLayer] Removing spell animation object:', spell.id)
           deleteObject(spell.id)
         }, 100)
       } else {
@@ -660,13 +694,16 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
 
   const renderPersistentArea = (area: MapObject & { type: 'persistent-area'; persistentAreaData?: any }) => {
     if (!area.persistentAreaData) {
+      console.warn('[ObjectsLayer] Persistent area has no data:', area.id)
       return null
     }
+
+    console.log('[ObjectsLayer] Rendering persistent area:', area.id, 'shape:', area.persistentAreaData.shape)
 
     // Determine current position - track token if enabled
     let currentPosition = area.persistentAreaData.position
     if (area.persistentAreaData.trackTarget && area.persistentAreaData.targetTokenId) {
-      const targetToken = currentMap?.objects.find(obj =>
+      const targetToken = objects.find(obj =>
         obj.id === area.persistentAreaData.targetTokenId && obj.type === 'token'
       )
       if (targetToken) {
@@ -674,6 +711,55 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
       }
     }
 
+    // Render cone-shaped persistent area
+    if (area.persistentAreaData.shape === 'cone') {
+      const PIXELS_PER_FOOT = 8
+      const coneLength = (area.persistentAreaData.radius || 30) * PIXELS_PER_FOOT
+      const coneAngle = (area.persistentAreaData.coneAngle || 60) * (Math.PI / 180)
+
+      console.log('[ObjectsLayer] Cone calculation:', {
+        fromPosition: area.persistentAreaData.fromPosition,
+        toPosition: area.persistentAreaData.toPosition,
+        radius: area.persistentAreaData.radius,
+        coneLength,
+        coneAngle
+      })
+
+      const dx = area.persistentAreaData.toPosition.x - area.persistentAreaData.fromPosition.x
+      const dy = area.persistentAreaData.toPosition.y - area.persistentAreaData.fromPosition.y
+      const direction = Math.atan2(dy, dx)
+
+      const leftAngle = direction - coneAngle / 2
+      const rightAngle = direction + coneAngle / 2
+
+      const conePoints = [
+        area.persistentAreaData.fromPosition.x,
+        area.persistentAreaData.fromPosition.y,
+        area.persistentAreaData.fromPosition.x + Math.cos(leftAngle) * coneLength,
+        area.persistentAreaData.fromPosition.y + Math.sin(leftAngle) * coneLength,
+        area.persistentAreaData.fromPosition.x + Math.cos(direction) * coneLength,
+        area.persistentAreaData.fromPosition.y + Math.sin(direction) * coneLength,
+        area.persistentAreaData.fromPosition.x + Math.cos(rightAngle) * coneLength,
+        area.persistentAreaData.fromPosition.y + Math.sin(rightAngle) * coneLength
+      ]
+
+      console.log('[ObjectsLayer] Cone points:', conePoints)
+
+      return (
+        <Line
+          key={area.id}
+          points={conePoints}
+          closed={true}
+          fill={area.persistentAreaData.color}
+          opacity={area.persistentAreaData.opacity}
+          shadowColor={area.persistentAreaData.color}
+          shadowBlur={20}
+          shadowOpacity={0.4}
+        />
+      )
+    }
+
+    // Default circular persistent area
     return (
       <PersistentArea
         key={area.id}
@@ -687,38 +773,49 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
     )
   }
 
-  // Create layer-aware object rendering with proper sorting and visibility
-  const getLayerForObject = (obj: MapObject) => {
-    // If object has a layer ID, use it; otherwise migrate numeric layer or use default
-    if (obj.layerId) {
-      return layers.find(l => l.id === obj.layerId)
+  // ✅ OPTIMIZED: Memoize expensive layer calculations and sorting
+  // NOTE: Viewport culling removed - was causing infinite render loops
+  // NOTE: getLayerForObject defined inline to avoid useCallback dependency issues
+  const visibleSortedObjects = useMemo(() => {
+    if (!objects || objects.length === 0) return []
+
+    const getLayerForObject = (obj: MapObject) => {
+      // If object has a layer ID, use it; otherwise migrate numeric layer or use default
+      if (obj.layerId) {
+        return layers.find(l => l.id === obj.layerId)
+      }
+
+      // Migrate legacy numeric layer to layer ID
+      if (obj.layer !== undefined) {
+        const layerId = migrateNumericLayer(obj.layer)
+        return layers.find(l => l.id === layerId)
+      }
+
+      // Use default layer for object type
+      const defaultLayerId = getDefaultLayerForObjectType(obj.type)
+      return layers.find(l => l.id === defaultLayerId)
     }
 
-    // Migrate legacy numeric layer to layer ID
-    if (obj.layer !== undefined) {
-      const layerId = migrateNumericLayer(obj.layer)
-      return layers.find(l => l.id === layerId)
-    }
+    return objects
+      .map(obj => ({ obj, layer: getLayerForObject(obj) }))
+      .filter(({ layer }) => layer?.visible !== false) // Show if layer is visible or undefined
+      .sort((a, b) => {
+        // Always render animations (spells, attacks, persistent-area) on top
+        const isAnimationA = a.obj.type === 'spell' || a.obj.type === 'attack' || a.obj.type === 'persistent-area'
+        const isAnimationB = b.obj.type === 'spell' || b.obj.type === 'attack' || b.obj.type === 'persistent-area'
 
-    // Use default layer for object type
-    const defaultLayerId = getDefaultLayerForObjectType(obj.type)
-    return layers.find(l => l.id === defaultLayerId)
-  }
+        if (isAnimationA && !isAnimationB) return 1  // A is animation, goes after B
+        if (!isAnimationA && isAnimationB) return -1 // B is animation, goes after A
 
-  // Filter and sort objects by layer visibility and z-index
-  const visibleSortedObjects = currentMap?.objects
-    ? currentMap.objects
-        .map(obj => ({ obj, layer: getLayerForObject(obj) }))
-        .filter(({ layer }) => layer?.visible !== false) // Show if layer is visible or undefined
-        .sort((a, b) => {
-          const zIndexA = a.layer?.zIndex || a.obj.layer || 0
-          const zIndexB = b.layer?.zIndex || b.obj.layer || 0
-          return zIndexA - zIndexB
-        })
-        .map(({ obj }) => obj)
-    : []
+        // Both same type (both animations or both regular), sort by zIndex
+        const zIndexA = a.layer?.zIndex || a.obj.layer || 0
+        const zIndexB = b.layer?.zIndex || b.obj.layer || 0
+        return zIndexA - zIndexB
+      })
+      .map(({ obj }) => obj)
+  }, [objects, mapVersion, layers, migrateNumericLayer, getDefaultLayerForObjectType]) // Re-compute when objects change OR mapVersion increments
 
-  if (!currentMap) {
+  if (!objects || objects.length === 0) {
     return null
   }
 
@@ -729,15 +826,17 @@ export const ObjectsLayer: React.FC<ObjectsLayerProps> = React.memo(({
   )
 })
 
-// Custom comparison function to prevent unnecessary re-renders
+// ✅ OPTIMIZED: Custom comparison function to prevent unnecessary re-renders
 const arePropsEqual = (
   prevProps: ObjectsLayerProps,
   nextProps: ObjectsLayerProps
 ): boolean => {
   return (
     prevProps.onObjectClick === nextProps.onObjectClick &&
-    prevProps.onObjectDragEnd === nextProps.onObjectDragEnd
+    prevProps.onObjectDragEnd === nextProps.onObjectDragEnd &&
+    prevProps.onTokenSelect === nextProps.onTokenSelect &&
+    prevProps.onTokenDeselect === nextProps.onTokenDeselect
   )
 }
 
-export default React.memo(ObjectsLayer, arePropsEqual)
+export default memo(ObjectsLayer, arePropsEqual)

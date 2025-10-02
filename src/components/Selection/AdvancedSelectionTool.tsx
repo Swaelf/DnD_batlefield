@@ -3,7 +3,7 @@
  * Konva-based selection tool with multiple selection modes
  */
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, type FC } from 'react'
 import { Group, Rect, Line, Circle } from 'react-konva'
 import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
@@ -22,7 +22,7 @@ export interface AdvancedSelectionToolProps {
   onCancel?: () => void
 }
 
-export const AdvancedSelectionTool: React.FC<AdvancedSelectionToolProps> = ({
+export const AdvancedSelectionTool: FC<AdvancedSelectionToolProps> = ({
   isActive,
   gridSize,
   gridSnap,

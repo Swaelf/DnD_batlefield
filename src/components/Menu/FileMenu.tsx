@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import { useRef, useState, type FC, type RefObject, type ChangeEvent, type KeyboardEvent } from 'react'
 import {
   Save,
   Download,
@@ -37,13 +37,14 @@ import {
   MenuStatus,
   MenuGroup,
 } from '@/components/ui/Menu'
+import { vars } from '@/styles/theme.css'
 
 type FileMenuProps = {
-  stageRef?: React.RefObject<Konva.Stage>
+  stageRef?: RefObject<Konva.Stage>
 }
 
 
-export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
+export const FileMenu: FC<FileMenuProps> = ({ stageRef }) => {
   // Use specific selectors to prevent unnecessary re-renders
   const currentMap = useMapStore(state => state.currentMap)
   const loadMap = useMapStore(state => state.loadMap)
@@ -66,7 +67,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
     fileInputRef.current?.click()
   }
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -164,7 +165,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
         onOpenChange={setIsMenuOpen}
       >
         {/* Auto-save Status */}
-        <MenuHeader size="sm">
+        <MenuHeader>
           <MenuStatus>
             <Text size="xs" color="gray400">Auto-save</Text>
             <Box
@@ -173,7 +174,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
-                color: isSaving ? 'var(--colors-warning)' : 'var(--colors-success)'
+                color: isSaving ? vars.colors.warning : vars.colors.success
               }}
             >
               <Clock size={12} />
@@ -284,17 +285,17 @@ export const FileMenu: React.FC<FileMenuProps> = ({ stageRef }) => {
             size="sm"
             style={{
               marginBottom: '8px',
-              color: 'var(--colors-gray400)'
+              color: vars.colors.gray400
             }}
           >
             Map Name
           </Text>
           <Input
             value={newMapName}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewMapName(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMapName(e.target.value)}
             fullWidth
             autoFocus
-            onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && confirmNewMap()}
+            onKeyDown={(e: KeyboardEvent) => e.key === 'Enter' && confirmNewMap()}
           />
         </Box>
 

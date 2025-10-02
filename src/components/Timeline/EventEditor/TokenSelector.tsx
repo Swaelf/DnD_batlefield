@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC, type ChangeEvent } from 'react'
 import { MousePointer } from '@/utils/optimizedIcons'
 import type { Token } from '@/types/token'
 import { Box, Button } from '@/components/ui'
@@ -13,7 +13,7 @@ type TokenSelectorProps = {
   onTokenPick: () => void
 }
 
-const TokenSelectorComponent: React.FC<TokenSelectorProps> = ({
+const TokenSelectorComponent: FC<TokenSelectorProps> = ({
   selectedToken,
   setSelectedToken,
   tokens,
@@ -44,7 +44,7 @@ const TokenSelectorComponent: React.FC<TokenSelectorProps> = ({
         <Box flexGrow={1}>
           <select
             value={selectedToken || ''}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedToken(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedToken(e.target.value)}
             style={{
               width: '100%',
               padding: '6px 8px',

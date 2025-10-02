@@ -1,7 +1,9 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import { type FC, useCallback, useMemo, useState, useEffect } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
+import { StaticObjectPropertiesEditor } from '@/components/Properties/StaticObjectPropertiesEditor'
+import { BaseProperties } from '@/components/Properties/BaseProperties'
 import {
   MousePointer,
   Square,
@@ -37,11 +39,14 @@ interface AdvancedSelectionManagerProps {
   onSelectionModeChange?: (mode: SelectionMode) => void
 }
 
-export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> = ({
+export const AdvancedSelectionManager: FC<AdvancedSelectionManagerProps> = ({
   onSelectionModeChange
 }) => {
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('pointer')
   const [copiedObjects, setCopiedObjects] = useState<MapObject[]>([])
+  const [rotationValue, setRotationValue] = useState(0)
+  const [localPosition, setLocalPosition] = useState({ x: 0, y: 0 })
+  const [localOpacity, setLocalOpacity] = useState(1)
 
   const {
     selectedObjects,
@@ -61,6 +66,18 @@ export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> =
     if (!currentMap || selectedObjects.length === 0) return []
     return currentMap.objects.filter(obj => selectedObjects.includes(obj.id))
   }, [currentMap, selectedObjects])
+
+  // Get first selected object for BaseProperties
+  const firstSelectedObject = selectedObjectData[0] || null
+
+  // Update local state when selection changes (for single selection)
+  useEffect(() => {
+    if (firstSelectedObject) {
+      setLocalPosition(firstSelectedObject.position || { x: 0, y: 0 })
+      setRotationValue(firstSelectedObject.rotation || 0)
+      setLocalOpacity(firstSelectedObject.opacity || 1)
+    }
+  }, [firstSelectedObject?.id])
 
   // Selection mode handlers
   const handleSelectionModeChange = useCallback((mode: SelectionMode) => {
@@ -238,6 +255,7 @@ export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> =
     })
   }, [selectedObjectData, updateObject])
 
+
   const selectionModes = [
     { id: 'pointer' as const, name: 'Pointer', icon: <MousePointer size={16} />, tooltip: 'Click to select individual objects' },
     { id: 'rectangle' as const, name: 'Rectangle', icon: <Square size={16} />, tooltip: 'Drag to select objects in rectangle' },
@@ -250,6 +268,12 @@ export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> =
   const hasGroupableObjects = selectedObjects.length > 1
   const hasGroups = selectedObjectData.some(obj => 'groupedObjects' in obj && obj.groupedObjects !== undefined)
   const hasCopiedObjects = copiedObjects.length > 0
+
+  // Check if single static object is selected
+  const singleStaticObject = selectedObjects.length === 1 &&
+    selectedObjectData[0]?.type === 'shape' &&
+    ((selectedObjectData[0] as any).metadata?.isStatic || (selectedObjectData[0] as any).metadata?.isStaticEffect)
+      ? selectedObjectData[0] : null
 
   return (
     <Box
@@ -587,6 +611,67 @@ export const AdvancedSelectionManager: React.FC<AdvancedSelectionManagerProps> =
             </Box>
           </Box>
         )}
+
+        {/* Static Object Properties Editor - for single static object */}
+        {singleStaticObject && (
+          <Box
+            style={{
+              padding: '12px',
+              backgroundColor: 'var(--colors-gray800)',
+              borderRadius: '4px',
+              marginBottom: '12px'
+            }}
+          >
+            <Text
+              variant="label"
+              size="xs"
+              style={{
+                marginBottom: '8px',
+                fontWeight: '600',
+                color: 'var(--colors-secondary)'
+              }}
+            >
+              Static Object Properties
+            </Text>
+            <StaticObjectPropertiesEditor
+              staticObject={singleStaticObject as any}
+              onUpdate={(updates) => updateObject(singleStaticObject.id, updates)}
+            />
+          </Box>
+        )}
+
+        {/* Base Properties - for single non-static, non-token object */}
+        {hasSelection && selectedObjects.length === 1 && !singleStaticObject && firstSelectedObject && firstSelectedObject.type !== 'token' && (
+          <Box
+            style={{
+              padding: '12px',
+              backgroundColor: 'var(--colors-gray800)',
+              borderRadius: '4px',
+              marginBottom: '12px'
+            }}
+          >
+            <BaseProperties
+              selectedObject={firstSelectedObject}
+              localPosition={localPosition}
+              localRotation={rotationValue}
+              localOpacity={localOpacity}
+              onPositionChange={(axis, value) => {
+                const newPos = { ...localPosition, [axis]: value }
+                setLocalPosition(newPos)
+                updateObject(firstSelectedObject.id, { position: newPos })
+              }}
+              onRotationChange={(value) => {
+                setRotationValue(value)
+                updateObject(firstSelectedObject.id, { rotation: value })
+              }}
+              onOpacityChange={(value) => {
+                setLocalOpacity(value)
+                updateObject(firstSelectedObject.id, { opacity: value })
+              }}
+            />
+          </Box>
+        )}
+
 
         {/* Selection Mode Help */}
         <Box

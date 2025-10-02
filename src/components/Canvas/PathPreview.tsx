@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, Fragment, type FC } from 'react'
 import { Line, Circle, Arrow, Text } from 'react-konva'
 import useEventCreationStore from '@/store/eventCreationStore'
 import useAnimationStore from '@/store/animationStore'
@@ -9,7 +9,7 @@ type PathPreviewProps = {
   gridSize: number
 }
 
-const PathPreviewComponent: React.FC<PathPreviewProps> = ({ gridSize }) => {
+const PathPreviewComponent: FC<PathPreviewProps> = ({ gridSize }) => {
   // Use specific selectors to prevent unnecessary re-renders
   const isPicking = useEventCreationStore(state => state.isPicking)
   const fromPosition = useEventCreationStore(state => state.fromPosition)
@@ -166,7 +166,7 @@ const PathPreviewComponent: React.FC<PathPreviewProps> = ({ gridSize }) => {
         const currentY = path.from.y + (path.to.y - path.from.y) * path.progress
 
         return (
-          <React.Fragment key={path.tokenId}>
+          <Fragment key={path.tokenId}>
             {/* Full path (faded) */}
             <Line
               points={[
@@ -214,7 +214,7 @@ const PathPreviewComponent: React.FC<PathPreviewProps> = ({ gridSize }) => {
               strokeWidth={2}
               opacity={0.7}
             />
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </>

@@ -1,25 +1,25 @@
-import React, { forwardRef } from 'react'
+import { forwardRef, createElement, useState, type ReactNode, type CSSProperties, type MouseEvent, type FocusEvent, type KeyboardEvent, type UIEvent } from 'react'
 
 // Panel event handlers
 type PanelEventHandlers = {
-  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
-  onMouseEnter?: (event: React.MouseEvent<HTMLDivElement>) => void
-  onMouseLeave?: (event: React.MouseEvent<HTMLDivElement>) => void
-  onFocus?: (event: React.FocusEvent<HTMLDivElement>) => void
-  onBlur?: (event: React.FocusEvent<HTMLDivElement>) => void
-  onKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void
-  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void
+  onClick?: (event: MouseEvent<HTMLDivElement>) => void
+  onMouseEnter?: (event: MouseEvent<HTMLDivElement>) => void
+  onMouseLeave?: (event: MouseEvent<HTMLDivElement>) => void
+  onFocus?: (event: FocusEvent<HTMLDivElement>) => void
+  onBlur?: (event: FocusEvent<HTMLDivElement>) => void
+  onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void
+  onScroll?: (event: UIEvent<HTMLDivElement>) => void
 }
 
 // Panel component props with exact typing
 export type PanelProps = {
-  children: React.ReactNode
+  children: ReactNode
   padding?: 'none' | 'sm' | 'md' | 'lg'
   elevation?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
   variant?: 'default' | 'elevated' | 'outlined' | 'ghost'
   size?: 'sm' | 'md' | 'lg' | 'full' | 'sidebar'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 
   // HTML attributes
   id?: string
@@ -138,8 +138,9 @@ export const Panel = forwardRef<HTMLDivElement, PanelProps>(
     }
 
     // Base styles
-    const baseStyles: React.CSSProperties = {
-      display: 'block',
+    const baseStyles: CSSProperties = {
+      display: 'flex',
+      flexDirection: 'column',
       borderRadius: '8px',
       position: 'relative',
       overflow: 'hidden',
@@ -147,7 +148,7 @@ export const Panel = forwardRef<HTMLDivElement, PanelProps>(
       outline: 'none',
     }
 
-    const combinedStyles: React.CSSProperties = {
+    const combinedStyles: CSSProperties = {
       ...baseStyles,
       ...paddingStyles[padding],
       ...elevationStyles[elevation],
@@ -194,16 +195,16 @@ Panel.displayName = 'Panel'
 
 // Panel Header component
 export type PanelHeaderProps = {
-  children: React.ReactNode
+  children: ReactNode
   sticky?: boolean
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   'data-testid'?: string
 }
 
 export const PanelHeader = forwardRef<HTMLDivElement, PanelHeaderProps>(
   ({ children, sticky = false, className, style, 'data-testid': dataTestId }, ref) => {
-    const headerStyles: React.CSSProperties = {
+    const headerStyles: CSSProperties = {
       display: 'block',
       borderBottom: '1px solid var(--gray700)',
       marginBottom: '16px',
@@ -239,16 +240,16 @@ PanelHeader.displayName = 'PanelHeader'
 
 // Panel Title component
 export type PanelTitleProps = {
-  children: React.ReactNode
+  children: ReactNode
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   id?: string
 }
 
 export const PanelTitle = forwardRef<HTMLHeadingElement, PanelTitleProps>(
   ({ children, as: Component = 'h2', className, style, id }, ref) => {
-    const titleStyles: React.CSSProperties = {
+    const titleStyles: CSSProperties = {
       margin: 0,
       fontSize: '18px',
       fontWeight: '600',
@@ -258,7 +259,7 @@ export const PanelTitle = forwardRef<HTMLHeadingElement, PanelTitleProps>(
       ...style,
     }
 
-    return React.createElement(
+    return createElement(
       Component,
       {
         ref,
@@ -275,12 +276,12 @@ PanelTitle.displayName = 'PanelTitle'
 
 // Panel Body component
 export type PanelBodyProps = {
-  children: React.ReactNode
+  children: ReactNode
   scrollable?: boolean
   padding?: 'none' | 'sm' | 'md'
   className?: string
-  style?: React.CSSProperties
-  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void
+  style?: CSSProperties
+  onScroll?: (event: UIEvent<HTMLDivElement>) => void
 }
 
 export const PanelBody = forwardRef<HTMLDivElement, PanelBodyProps>(
@@ -301,7 +302,7 @@ export const PanelBody = forwardRef<HTMLDivElement, PanelBodyProps>(
       md: { padding: '16px' },
     }
 
-    const bodyStyles: React.CSSProperties = {
+    const bodyStyles: CSSProperties = {
       display: 'block',
       flex: 1,
       ...(scrollable && {
@@ -331,10 +332,10 @@ PanelBody.displayName = 'PanelBody'
 
 // Panel Footer component
 export type PanelFooterProps = {
-  children: React.ReactNode
+  children: ReactNode
   justify?: 'start' | 'center' | 'end' | 'between'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const PanelFooter = forwardRef<HTMLDivElement, PanelFooterProps>(
@@ -346,7 +347,7 @@ export const PanelFooter = forwardRef<HTMLDivElement, PanelFooterProps>(
       between: 'space-between',
     }
 
-    const footerStyles: React.CSSProperties = {
+    const footerStyles: CSSProperties = {
       borderTop: '1px solid var(--gray700)',
       marginTop: '16px',
       paddingTop: '12px',
@@ -378,11 +379,11 @@ PanelFooter.displayName = 'PanelFooter'
 
 // Panel Section component
 export type PanelSectionProps = {
-  children: React.ReactNode
+  children: ReactNode
   spacing?: 'none' | 'sm' | 'md' | 'lg'
   divider?: boolean
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const PanelSection = forwardRef<HTMLDivElement, PanelSectionProps>(
@@ -394,7 +395,7 @@ export const PanelSection = forwardRef<HTMLDivElement, PanelSectionProps>(
       lg: { marginBottom: '32px' },
     }
 
-    const sectionStyles: React.CSSProperties = {
+    const sectionStyles: CSSProperties = {
       display: 'block',
       ...spacingStyles[spacing],
       ...(divider && {
@@ -423,11 +424,11 @@ PanelSection.displayName = 'PanelSection'
 
 // Panel Group component
 export type PanelGroupProps = {
-  children: React.ReactNode
+  children: ReactNode
   direction?: 'row' | 'column'
   spacing?: 'sm' | 'md' | 'lg'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const PanelGroup = forwardRef<HTMLDivElement, PanelGroupProps>(
@@ -438,7 +439,7 @@ export const PanelGroup = forwardRef<HTMLDivElement, PanelGroupProps>(
       lg: '24px',
     }
 
-    const groupStyles: React.CSSProperties = {
+    const groupStyles: CSSProperties = {
       display: 'flex',
       flexDirection: direction,
       gap: spacingValues[spacing],
@@ -486,19 +487,19 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     },
     ref
   ) => {
-    const [isHovered, setIsHovered] = React.useState(false)
+    const [isHovered, setIsHovered] = useState(false)
 
-    const handleMouseEnter = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleMouseEnter = (event: MouseEvent<HTMLDivElement>) => {
       if (interactive) setIsHovered(true)
       onMouseEnter?.(event)
     }
 
-    const handleMouseLeave = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleMouseLeave = (event: MouseEvent<HTMLDivElement>) => {
       if (interactive) setIsHovered(false)
       onMouseLeave?.(event)
     }
 
-    const interactiveStyles: React.CSSProperties = interactive
+    const interactiveStyles: CSSProperties = interactive
       ? {
           cursor: 'pointer',
           transition: 'all 0.2s ease',
@@ -516,7 +517,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         }
       : {}
 
-    const cardStyles: React.CSSProperties = {
+    const cardStyles: CSSProperties = {
       ...interactiveStyles,
       ...style,
     }

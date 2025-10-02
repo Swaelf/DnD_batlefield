@@ -3,12 +3,13 @@
 ## Overview
 The Actions system provides advanced D&D combat coordination through sophisticated action sequencing, custom action building, and comprehensive template libraries. This system enables DMs to create complex, multi-step combat scenarios with conditional execution, parallel actions, and precise timing control.
 
-**✅ IMPLEMENTATION STATUS**: **COMPLETE** (September 2025)
+**✅ IMPLEMENTATION STATUS**: **COMPLETE** (October 2025)
 - All action configuration components fully implemented and tested
-- Attack animation system with full D&D weapon support
+- Attack animation system with full D&D weapon support and authentic combat visuals
 - Type-safe integration with Timeline system
 - Comprehensive template library with 20+ D&D action patterns
 - All sequence types (Simple, Conditional, Parallel, Loop, Branch) operational
+- Advanced melee attack animations (slash, thrust, bludgeoning) with range-based effects
 
 ## Architecture
 
@@ -499,3 +500,183 @@ const profileSequence = (sequence: SequenceEventData) => {
 ```
 
 The Actions system represents a significant advancement in D&D combat coordination, providing DMs with powerful tools to create sophisticated, engaging combat encounters that leverage the full depth of D&D 5e mechanics while maintaining smooth, performant execution.
+## Attack Animation System
+
+### Melee Attack Animations
+
+The attack animation system provides authentic D&D combat visuals with three distinct melee attack types, each with unique visual effects that respect weapon ranges and D&D mechanics.
+
+#### Slashing Attacks (Longsword)
+**Animation Type**: `melee_slash`
+**Visual Effect**: Sweeping cone slash with motion blur trails
+
+**Features**:
+- **60-degree cone**: Sweeps from right (+30°) to left (-30°) and back
+- **Dynamic length**: Grows from half → full → half → zero during sweep
+- **Range extension**: +0.5 grid cells (25px) at center of cone for maximum reach
+- **Motion blur**: 5 trailing lines with progressive lag (4% per trail)
+- **Range-based sizing**: Slash length calculated from attack range parameter
+
+**Animation Phases**:
+1. **0-25% progress**: Slash grows from half to full length on right side
+2. **25-50% progress**: Full-length slash sweeps to left side, shrinking to half
+3. **50-75% progress**: Return sweep with shrinking length
+4. **75-100% progress**: Fade out
+
+**Code Example**:
+```typescript
+const coneHalfAngle = Math.PI / 6 // 30 degrees (60° cone)
+const maxSlashLength = rangeInSquares * PIXELS_PER_SQUARE
+const centerBonus = (progress / 0.25) * 25 // +25px at center
+const currentLength = (maxSlashLength * lengthMultiplier) + centerBonus
+```
+
+#### Piercing Attacks (Rapier)
+**Animation Type**: `melee_thrust`
+**Visual Effect**: Arrow-shaped wave with fading trails
+
+**Features**:
+- **Arrow shape**: Chevron pointing in direction of travel (15px wide, 37.5px long)
+- **Z-axis movement**: Travels from source toward target within range limit
+- **Scale effect**: Grows and shrinks using sine wave (creates pulsing effect)
+- **Fading trails**: 4 trailing arrow shapes with 8% progressive lag
+- **Range limiting**: Respects attack range + 0.5 grid cells extension
+
+**Animation Phases**:
+1. **0-100% progress**: Arrow wave travels along attack path
+2. **Continuous**: Arrow scales with sin(progress * π) for pulsing effect
+3. **Trails**: Each of 4 trails lags behind and fades progressively
+
+**Code Example**:
+```typescript
+// Arrow geometry
+const arrowWidth = PIXELS_PER_SQUARE * 0.3  // 15px
+const arrowLength = (arrowWidth * 1.5) + (PIXELS_PER_SQUARE * 0.3)  // 37.5px
+const travelDistance = Math.min(fullDistance, maxDistance + rangeBonus)
+
+// Trail lag
+const trailLag = (index + 1) * 0.08  // 8% per trail
+```
+
+#### Bludgeoning Attacks (Warhammer)
+**Animation Type**: `melee_swing`
+**Visual Effect**: Hammer falling from Z-axis with shockwave burst
+
+**Features**:
+- **Dynamic handle**: Line connecting source to hammer, stretches during fall
+- **Z-axis simulation**: Hammer scales from 0.2 → 1.0 as it "falls closer"
+- **Hammer design**: 12px metal head with brown wooden handle
+- **Shockwave burst**: Expanding rings on impact (0.6 grid cells max)
+- **Gradient ring**: Radial gradient from transparent center to opaque edge
+- **Multi-wave effect**: 2 trailing rings + 3 aftershock waves
+
+**Animation Phases**:
+1. **0-70% progress**: Hammer falls from Z-axis (scale + position interpolation)
+   - Starts small at source position
+   - Grows and moves toward target
+   - Handle stretches from source to hammer
+2. **70-100% progress**: Impact burst
+   - Hammer fades out quickly
+   - Main ring with radial gradient expands
+   - 2 trailing rings follow (15% lag each)
+   - 3 aftershock waves (20% delay increments)
+
+**Shockwave Rings**:
+- **Main ring**: Radial gradient (0% center → 70% edge opacity), 3px thick
+- **Trailing rings**: 2 rings at 40% base opacity, progressive fade
+- **Aftershock waves**: 3 rings with decreasing opacity (30%, 23%, 16%)
+- **All rings**: Expand to 30px radius and fade out
+
+**Code Example**:
+```typescript
+// Z-axis fall simulation
+const fallProgress = progress / 0.7
+const hammerScale = 0.2 + (0.8 * fallProgress)  // 0.2 → 1.0
+
+// Dynamic handle from source to hammer
+handle.points([fromPosition.x, fromPosition.y, hammerX, hammerY])
+
+// Radial gradient for main burst
+const hexToRgba = (hex: string, alpha: number) => {
+  const r = parseInt(hex.slice(1, 3), 16)
+  // ...
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+fillRadialGradientColorStops: [
+  0, hexToRgba(color, 0),      // Transparent center
+  0.7, hexToRgba(color, 0.4),  // Semi-transparent
+  1, hexToRgba(color, 0.7)     // 70% opacity at edge
+]
+```
+
+### Range-Based Mechanics
+
+All melee attacks respect D&D range mechanics:
+- **Default range**: 5 feet (1 grid square = 50px)
+- **Range calculation**: `rangeInSquares = (range || 5) / 5`
+- **Distance limiting**: `Math.min(fullDistance, maxDistance)`
+- **Bonus reach**: Some attacks add 0.5 grid cells for visual impact
+
+### Animation Performance
+
+**Optimization Techniques**:
+- **Listening disabled**: All attack animations have `listening={false}` for click-through
+- **Render ordering**: Animations render after tokens but are non-interactive
+- **Dynamic cleanup**: Burst effects are destroyed each frame and recreated
+- **Efficient geometry**: Uses mathematical calculations instead of complex shapes
+
+**Memory Management**:
+```typescript
+// Cleanup old burst effects
+group.find('.hammer-burst').forEach(node => node.destroy())
+
+// Animation cleanup
+useEffect(() => {
+  return () => {
+    if (animationRef.current) {
+      animationRef.current.stop()
+      animationRef.current = null
+    }
+  }
+}, [isAnimating, attack])
+```
+
+### Integration with Combat System
+
+**Event Data Structure**:
+```typescript
+{
+  type: 'attack',
+  weaponName: 'Longsword',
+  attackType: 'melee',
+  damageType: 'slashing',
+  animation: 'melee_slash',
+  range: 5,
+  color: '#C0C0C0',
+  duration: 600
+}
+```
+
+**Rendering Priority**:
+1. Regular objects (tokens, shapes, text) render first
+2. Animations render last (on top) with `listening={false}`
+3. Ensures animations are visible but don't block interactions
+
+### D&D Authenticity
+
+**Weapon-Specific Effects**:
+- **Slashing**: Wide sweeping arc appropriate for swords and axes
+- **Piercing**: Focused thrust appropriate for rapiers and spears
+- **Bludgeoning**: Heavy impact appropriate for hammers and maces
+
+**Damage Type Colors**:
+- Slashing: Silver/gray (#C0C0C0)
+- Piercing: Light gray (#B0B0B0)
+- Bludgeoning: Brown (#8B7355)
+
+**Range Compliance**:
+- All animations limited to weapon range parameter
+- Visual effects scale with attack range
+- Bonus reach for dramatic effect (not gameplay-affecting)
+

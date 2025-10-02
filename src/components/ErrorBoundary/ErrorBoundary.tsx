@@ -1,5 +1,4 @@
-import type { ErrorInfo, ReactNode } from 'react';
-import React, { Component } from 'react'
+import { Component, type ErrorInfo, type ReactNode, type FC } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -369,7 +368,7 @@ ${error?.stack}
 }
 
 // Convenience wrapper components for different levels
-export const AppErrorBoundary: React.FC<{ children: ReactNode; onError?: ErrorBoundaryProps['onError'] }> = ({
+export const AppErrorBoundary: FC<{ children: ReactNode; onError?: ErrorBoundaryProps['onError'] }> = ({
   children,
   onError
 }) => (
@@ -378,7 +377,7 @@ export const AppErrorBoundary: React.FC<{ children: ReactNode; onError?: ErrorBo
   </ErrorBoundary>
 )
 
-export const FeatureErrorBoundary: React.FC<{
+export const FeatureErrorBoundary: FC<{
   children: ReactNode
   name: string
   onError?: ErrorBoundaryProps['onError']
@@ -388,7 +387,7 @@ export const FeatureErrorBoundary: React.FC<{
   </ErrorBoundary>
 )
 
-export const ComponentErrorBoundary: React.FC<{
+export const ComponentErrorBoundary: FC<{
   children: ReactNode
   name: string
   fallback?: ReactNode

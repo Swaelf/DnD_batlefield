@@ -3,7 +3,7 @@
  * Reduces bundle size by loading icons on-demand instead of importing entire lucide-react library
  */
 
-import React from 'react'
+import { useState, useEffect, type FC, type CSSProperties } from 'react'
 import { LucideIcon } from 'lucide-react'
 
 // Cache for loaded icons to prevent re-fetching
@@ -69,19 +69,19 @@ export interface DynamicIconProps {
   name: string
   size?: number
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
-export const DynamicIcon: React.FC<DynamicIconProps> = ({
+export const DynamicIcon: FC<DynamicIconProps> = ({
   name,
   size = 16,
   className = '',
   style = {}
 }) => {
-  const [Icon, setIcon] = React.useState<LucideIcon | null>(() => getIcon(name))
-  const [isLoading, setIsLoading] = React.useState(!Icon)
+  const [Icon, setIcon] = useState<LucideIcon | null>(() => getIcon(name))
+  const [isLoading, setIsLoading] = useState(!Icon)
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!Icon) {
       void loadIcon(name).then((loadedIcon) => {
         if (loadedIcon) {

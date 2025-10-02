@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState, useEffect, type FC, type RefObject } from 'react'
 import { Group, Layer } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
@@ -11,10 +11,10 @@ import type { SelectionMode } from '@/components/Selection/AdvancedSelectionMana
 interface AdvancedCanvasInteractionLayerProps {
   width: number
   height: number
-  stageRef: React.RefObject<Konva.Stage>
+  stageRef: RefObject<Konva.Stage>
 }
 
-export const AdvancedCanvasInteractionLayer: React.FC<AdvancedCanvasInteractionLayerProps> = ({
+export const AdvancedCanvasInteractionLayer: FC<AdvancedCanvasInteractionLayerProps> = ({
   // Width, height, and stageRef passed but not used currently
 }) => {
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('pointer')
@@ -43,7 +43,7 @@ export const AdvancedCanvasInteractionLayer: React.FC<AdvancedCanvasInteractionL
   }, [])
 
   // Handle keyboard shortcuts for selection modes
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isSelectToolActive) return
 
     const handleKeyDown = (e: KeyboardEvent) => {

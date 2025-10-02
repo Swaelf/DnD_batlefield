@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { type FC, useEffect, useRef, useState } from 'react'
 import { Group, Circle, Ring, RegularPolygon, Line, Star } from 'react-konva'
 import type { SpellEventData } from '@/types/timeline'
 import type { Position } from '@/types/map'
@@ -26,7 +26,7 @@ interface StoneBurst {
 /**
  * Simplified spell component that uses React state for animation
  */
-export const SimpleSpellComponent: React.FC<SimpleSpellComponentProps> = ({
+export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
   spell,
   isAnimating,
   onAnimationComplete
@@ -729,6 +729,137 @@ export const SimpleSpellComponent: React.FC<SimpleSpellComponentProps> = ({
           </>
         )
 
+      case 'cone':
+        // Cone spell effect - expanding arc animation with fire particles
+        const PIXELS_PER_FOOT = 8
+        const coneLength = (spell.size || 30) * PIXELS_PER_FOOT
+        const coneAngle = (spell.coneAngle || 60) * (Math.PI / 180)
+        const expansionProgress = Math.min(progress * 1.3, 1)
+
+        // Calculate cone direction
+        const coneDx = getTargetPosition().x - spell.fromPosition.x
+        const coneDy = getTargetPosition().y - spell.fromPosition.y
+        const coneDirection = Math.atan2(coneDy, coneDx)
+
+        // Calculate cone edges
+        const leftAngle = coneDirection - coneAngle / 2
+
+        const coneOpacity = progress < 0.8 ? 0.7 : (1 - progress) * 3.5
+
+        return (
+          <>
+            {/* Expanding fire arc waves */}
+            {[0, 0.1, 0.2, 0.3].map((waveOffset, index) => {
+              const wavePos = expansionProgress - waveOffset
+              if (wavePos <= 0 || wavePos > 1) return null
+
+              const currentRadius = coneLength * wavePos
+              const trailLength = 0.2 // Longer fading tail for fire effect
+              const trailStart = Math.max(0, wavePos - trailLength)
+
+              // Create arc segment
+              const arcSegments = 25
+              const arcPoints: number[] = []
+
+              for (let i = 0; i <= arcSegments; i++) {
+                const angle = leftAngle + (coneAngle * i / arcSegments)
+                arcPoints.push(
+                  spell.fromPosition.x + Math.cos(angle) * currentRadius,
+                  spell.fromPosition.y + Math.sin(angle) * currentRadius
+                )
+              }
+
+              const waveIntensity = Math.pow(1 - waveOffset / 0.3, 1.8)
+              const fadeOpacity = (1 - waveOffset / 0.3) * waveIntensity
+
+              return (
+                <Group key={index}>
+                  {/* Main fire arc - bright orange/yellow */}
+                  <Line
+                    points={arcPoints}
+                    stroke={index === 0 ? '#FFD700' : spell.secondaryColor || '#FF6B00'}
+                    strokeWidth={8 * waveIntensity}
+                    opacity={fadeOpacity * coneOpacity * 0.9}
+                    lineCap="round"
+                    lineJoin="round"
+                    shadowColor={'#FFD700'}
+                    shadowBlur={25 * waveIntensity}
+                  />
+
+                  {/* Fire trail - darker red */}
+                  {trailStart > 0 && (
+                    <Line
+                      points={arcPoints.map((_val, i) => {
+                        const isX = i % 2 === 0
+                        const segmentIndex = Math.floor(i / 2)
+                        const angle = leftAngle + (coneAngle * segmentIndex / arcSegments)
+                        const trailDist = coneLength * trailStart
+                        return isX
+                          ? spell.fromPosition.x + Math.cos(angle) * trailDist
+                          : spell.fromPosition.y + Math.sin(angle) * trailDist
+                      })}
+                      stroke={spell.color}
+                      strokeWidth={5 * waveIntensity}
+                      opacity={fadeOpacity * coneOpacity * 0.5}
+                      lineCap="round"
+                      lineJoin="round"
+                      shadowColor={spell.color}
+                      shadowBlur={15 * waveIntensity}
+                    />
+                  )}
+                </Group>
+              )
+            })}
+
+            {/* Fire particles - ember-like particles throughout cone */}
+            {spell.particleEffect && (
+              <>
+                {[...Array(30)].map((_, i) => {
+                  // Random position within cone, following expansion
+                  const angleVariation = (Math.random() - 0.5) * coneAngle
+                  const particleAngle = coneDirection + angleVariation
+                  const baseDistance = Math.random()
+                  const particleDistance = coneLength * expansionProgress * baseDistance
+
+                  const particleX = spell.fromPosition.x + Math.cos(particleAngle) * particleDistance
+                  const particleY = spell.fromPosition.y + Math.sin(particleAngle) * particleDistance
+
+                  // Particles flicker and fade based on distance and time
+                  const flickerOffset = (i * 0.1) % 1
+                  const flickerValue = Math.sin((progress + flickerOffset) * Math.PI * 4) * 0.3 + 0.7
+                  const distanceFade = 1 - (baseDistance * 0.4)
+                  const particleOpacity = Math.max(0, (1 - progress) * distanceFade * flickerValue)
+
+                  // Fire colors: yellow core, orange mid, red outer
+                  const particleColor = i % 4 === 0
+                    ? '#FFFF00'  // Bright yellow
+                    : i % 4 === 1
+                    ? '#FFD700'  // Gold
+                    : i % 4 === 2
+                    ? '#FF8C00'  // Dark orange
+                    : '#FF4500'  // Red-orange
+
+                  const particleSize = (3 + Math.random() * 5) * (1 - baseDistance * 0.3)
+
+                  return (
+                    <Circle
+                      key={i}
+                      x={particleX}
+                      y={particleY}
+                      radius={particleSize}
+                      fill={particleColor}
+                      opacity={particleOpacity * 0.9}
+                      shadowColor={particleColor}
+                      shadowBlur={8}
+                      shadowOpacity={0.8}
+                    />
+                  )
+                })}
+              </>
+            )}
+          </>
+        )
+
       default:
         // Check for Stone Rain spell
         if (spell.spellName?.toLowerCase() === 'stone rain') {
@@ -821,7 +952,7 @@ export const SimpleSpellComponent: React.FC<SimpleSpellComponentProps> = ({
   }
 
   return (
-    <Group>
+    <Group listening={false}>
       {renderSpell()}
     </Group>
   )

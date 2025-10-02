@@ -1,13 +1,13 @@
-import React, { useMemo } from 'react'
+import { useMemo, type FC, type ReactNode } from 'react'
 import useMapStore from '@store/mapStore'
 import { useContextMenu } from '@hooks/useContextMenu'
 import { ContextMenu, createObjectContextMenu, createCanvasContextMenu } from './ContextMenu'
 
 interface ContextMenuManagerProps {
-  children: React.ReactNode
+  children: ReactNode
 }
 
-export const ContextMenuManager: React.FC<ContextMenuManagerProps> = ({ children }) => {
+export const ContextMenuManager: FC<ContextMenuManagerProps> = ({ children }) => {
   const { contextMenu, closeContextMenu } = useContextMenu()
 
   // Map store state

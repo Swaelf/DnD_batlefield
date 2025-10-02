@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useMemo, memo } from 'react'
+import { useState, useEffect, useMemo, memo, type CSSProperties } from 'react'
 import useMapStore from '@/store/mapStore'
 import type { Shape, Token, MapObject } from '@/types'
 import { nanoid } from 'nanoid'
-import { Trash2 } from '@/utils/optimizedIcons'
 import { BaseProperties } from './BaseProperties'
 import { TokenProperties } from './TokenProperties'
 import { ShapeProperties } from './ShapeProperties'
+import { StaticObjectPropertiesEditor } from './StaticObjectPropertiesEditor'
 import { ActionButtons } from './ActionButtons'
 import { LayerControls } from './LayerControls'
 import { LayerManagementPanel } from './LayerManagementPanel'
 import { ShapeStylePanel } from './ShapeStylePanel'
+import { MultiSelectProperties } from './MultiSelectProperties'
+import { ComponentErrorBoundary } from '../ErrorBoundary/ErrorBoundary'
 import {
   Panel,
   PanelHeader,
@@ -17,27 +19,30 @@ import {
   PanelBody,
   PanelSection
 } from '@/components/ui/Panel'
-import { Button } from '@/components/primitives/ButtonVE'
 import { Text } from '@/components/primitives/TextVE'
+import { Box } from '@/components/primitives/BoxVE'
 
 export type PropertiesPanelProps = {
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) => {
-  // Use specific selectors to prevent unnecessary re-renders
+  // Use specific selectors to prevent unnecessary re-renders - hooks must be outside try-catch
   const selectedObjects = useMapStore((state: any) => state.selectedObjects) as string[]
   const currentMap = useMapStore((state: any) => state.currentMap)
   const updateObject = useMapStore((state: any) => state.updateObject)
   const deleteSelected = useMapStore((state: any) => state.deleteSelected)
   const addObject = useMapStore((state: any) => state.addObject)
 
+  // Ensure selectedObjects is always an array
+  const safeSelectedObjects = Array.isArray(selectedObjects) ? selectedObjects : []
+
   // Get selected object with memoization
   const selectedObject = useMemo(() => {
-    if (selectedObjects.length !== 1) return null
-    return currentMap?.objects.find((obj: MapObject) => obj.id === selectedObjects[0]) || null
-  }, [selectedObjects, currentMap?.objects])
+    if (safeSelectedObjects.length !== 1) return null
+    return currentMap?.objects.find((obj: MapObject) => obj.id === safeSelectedObjects[0]) || null
+  }, [safeSelectedObjects, currentMap?.objects])
 
   const [localPosition, setLocalPosition] = useState({ x: 0, y: 0 })
   const [localRotation, setLocalRotation] = useState(0)
@@ -98,59 +103,69 @@ const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) =>
     updateObject(selectedObject.id, updates)
   }
 
-  const panelStyles: React.CSSProperties = {
+  const panelStyles: CSSProperties = {
     borderLeft: '1px solid var(--gray800)',
     ...style,
   }
 
-  // Handle empty selection
-  if (selectedObjects.length === 0) {
-    return (
-      <Panel size="sidebar" style={panelStyles} className={className}>
-        <PanelHeader>
-          <PanelTitle>Properties</PanelTitle>
-        </PanelHeader>
-        <PanelBody>
-          <Text style={{ fontSize: '14px', color: 'var(--gray400)', marginBottom: '16px' }}>
-            Select an object to edit its properties
-          </Text>
+  try {
+    // Handle empty selection
+    if (safeSelectedObjects.length === 0) {
+      return (
+        <Panel size="sidebar" style={panelStyles} className={className} data-testid="properties-panel-empty">
+          <PanelHeader>
+            <PanelTitle>Properties</PanelTitle>
+          </PanelHeader>
+          <PanelBody scrollable={true} style={{ maxHeight: 'calc(100vh - 80px)', overflowY: 'auto' }} className="custom-scrollbar">
+            <Text style={{ fontSize: '14px', color: 'var(--gray400)', marginBottom: '16px' }}>
+              Select an object to edit its properties
+            </Text>
 
-          {/* Shape Style Panel for Drawing Tools */}
-          <ShapeStylePanel />
+            {/* Shape Style Panel for Drawing Tools */}
+            <ComponentErrorBoundary
+              name="ShapeStylePanel"
+              fallback={<Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Shape styles unavailable</Text>}
+            >
+              <ShapeStylePanel />
+            </ComponentErrorBoundary>
 
-          {/* Layer Management - Always Available */}
-          <PanelSection>
-            <LayerManagementPanel />
-          </PanelSection>
+            {/* Layer Management - Always Available */}
+            <PanelSection>
+              <ComponentErrorBoundary
+                name="LayerManagementPanel"
+                fallback={
+                  <Box style={{ padding: '12px' }}>
+                    <Text style={{ fontSize: '14px', color: 'var(--gray400)' }}>Layer management unavailable</Text>
+                    <Text style={{ fontSize: '12px', color: 'var(--gray500)', marginTop: '8px' }}>
+                      Try refreshing the page
+                    </Text>
+                  </Box>
+                }
+              >
+                <LayerManagementPanel />
+              </ComponentErrorBoundary>
+            </PanelSection>
         </PanelBody>
       </Panel>
     )
   }
 
   // Handle multi-selection
-  if (selectedObjects.length > 1) {
+  if (safeSelectedObjects.length > 1) {
     return (
-      <Panel size="sidebar" style={panelStyles} className={className}>
+      <Panel size="sidebar" style={panelStyles} className={className} data-testid="properties-panel-multi">
         <PanelHeader>
           <PanelTitle>Multiple Selection</PanelTitle>
         </PanelHeader>
-        <PanelBody>
-          <Text style={{ fontSize: '14px', color: 'var(--gray300)', marginBottom: '16px' }}>
-            {selectedObjects.length} objects selected
-          </Text>
+        <PanelBody scrollable={true} style={{ maxHeight: 'calc(100vh - 80px)', overflowY: 'auto' }} className="custom-scrollbar">
+          {/* Multi-select properties with rotation control */}
+          <MultiSelectProperties
+            selectedCount={safeSelectedObjects.length}
+            onDelete={deleteSelected}
+          />
 
           {/* Shape Style Panel for Drawing Tools */}
           <ShapeStylePanel />
-
-          <Button
-            onClick={deleteSelected}
-            variant="destructive"
-            size="sm"
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            <Trash2 size={16} />
-            Delete Selected
-          </Button>
         </PanelBody>
       </Panel>
     )
@@ -160,35 +175,55 @@ const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) =>
 
   // Main properties panel
   return (
-    <Panel size="sidebar" style={panelStyles} className={className}>
+    <Panel size="sidebar" style={panelStyles} className={className} data-testid="properties-panel">
       <PanelHeader>
         <PanelTitle>Properties</PanelTitle>
       </PanelHeader>
 
-      <PanelBody>
-        {/* Base properties common to all objects */}
-        <BaseProperties
-          selectedObject={selectedObject}
-          localPosition={localPosition}
-          localRotation={localRotation}
-          localOpacity={localOpacity}
-          onPositionChange={handlePositionChange}
-          onRotationChange={handleRotationChange}
-          onOpacityChange={handleOpacityChange}
-        />
+      <PanelBody scrollable={true} style={{ maxHeight: 'calc(100vh - 80px)', overflowY: 'auto' }} className="custom-scrollbar">
+        {/* Check if it's a static object or static effect */}
+        {selectedObject.type === 'shape' &&
+         ((selectedObject as Shape).metadata?.isStatic || (selectedObject as Shape).metadata?.isStaticEffect) ? (
+          <PanelSection>
+            <StaticObjectPropertiesEditor
+              staticObject={selectedObject as Shape}
+              onUpdate={(updates) => {
+                handleUpdateObject(updates)
+                // Update local state for any properties that changed
+                if (updates.rotation !== undefined) setLocalRotation(updates.rotation)
+                if (updates.opacity !== undefined) setLocalOpacity(updates.opacity)
+              }}
+            />
+          </PanelSection>
+        ) : (
+          <>
+            {/* Base properties - only for non-token objects */}
+            {selectedObject.type !== 'token' && (
+              <BaseProperties
+                selectedObject={selectedObject}
+                localPosition={localPosition}
+                localRotation={localRotation}
+                localOpacity={localOpacity}
+                onPositionChange={handlePositionChange}
+                onRotationChange={handleRotationChange}
+                onOpacityChange={handleOpacityChange}
+              />
+            )}
 
-        {/* Type-specific properties */}
-        {selectedObject.type === 'shape' && (
-          <ShapeProperties
-            shape={selectedObject as Shape}
-            onUpdate={handleUpdateObject}
-          />
-        )}
-        {selectedObject.type === 'token' && (
-          <TokenProperties
-            token={selectedObject as Token}
-            onUpdate={handleUpdateObject}
-          />
+            {/* Type-specific properties */}
+            {selectedObject.type === 'shape' && (
+              <ShapeProperties
+                shape={selectedObject as Shape}
+                onUpdate={handleUpdateObject}
+              />
+            )}
+            {selectedObject.type === 'token' && (
+              <TokenProperties
+                token={selectedObject as Token}
+                onUpdate={handleUpdateObject}
+              />
+            )}
+          </>
         )}
 
         {/* Layer Management System */}
@@ -211,6 +246,22 @@ const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) =>
       </PanelBody>
     </Panel>
   )
+  } catch (error) {
+    console.error('PropertiesPanel error:', error)
+    // Return a fallback UI if there's an error
+    return (
+      <Panel size="sidebar" style={{ borderLeft: '1px solid var(--gray800)', ...style }} className={className} data-testid="properties-panel-error">
+        <PanelHeader>
+          <PanelTitle>Properties</PanelTitle>
+        </PanelHeader>
+        <PanelBody scrollable={true} style={{ maxHeight: 'calc(100vh - 80px)', overflowY: 'auto' }} className="custom-scrollbar">
+          <Text style={{ fontSize: '14px', color: 'var(--gray400)' }}>
+            Error loading properties panel. Please refresh.
+          </Text>
+        </PanelBody>
+      </Panel>
+    )
+  }
 }
 
 export const PropertiesPanel = memo(PropertiesPanelComponent)

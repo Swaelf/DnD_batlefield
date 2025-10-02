@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react'
+import { forwardRef, createElement, type ReactNode, type CSSProperties, type MouseEvent, type FocusEvent } from 'react'
 import { clsx } from 'clsx'
 import { text } from '@/styles/recipes/text.css'
 
@@ -20,22 +20,22 @@ export type TextProps = {
   truncate?: boolean
   variant?: 'body' | 'heading' | 'label' | 'caption' | 'code'
   gradient?: 'dnd' | 'gold'
-  children?: React.ReactNode
+  children?: ReactNode
   className?: string
   htmlFor?: string // For label element
 
   // Event handlers
-  onClick?: (event: React.MouseEvent<HTMLElement>) => void
-  onMouseEnter?: (event: React.MouseEvent<HTMLElement>) => void
-  onMouseLeave?: (event: React.MouseEvent<HTMLElement>) => void
-  onFocus?: (event: React.FocusEvent<HTMLElement>) => void
-  onBlur?: (event: React.FocusEvent<HTMLElement>) => void
+  onClick?: (event: MouseEvent<HTMLElement>) => void
+  onMouseEnter?: (event: MouseEvent<HTMLElement>) => void
+  onMouseLeave?: (event: MouseEvent<HTMLElement>) => void
+  onFocus?: (event: FocusEvent<HTMLElement>) => void
+  onBlur?: (event: FocusEvent<HTMLElement>) => void
 
   // Common HTML attributes
   id?: string
   role?: string
   title?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   'aria-label'?: string
   'aria-labelledby'?: string
   'aria-describedby'?: string
@@ -103,7 +103,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(
       htmlProps.htmlFor = htmlFor
     }
 
-    return React.createElement(
+    return createElement(
       Component,
       htmlProps,
       children

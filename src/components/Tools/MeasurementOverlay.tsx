@@ -5,7 +5,7 @@
  * grid-aware snapping, and professional measurement display.
  */
 
-import React from 'react'
+import { memo, type FC } from 'react'
 import { Line, Text as KonvaText, Circle, Group } from 'react-konva'
 import type { Point } from '@/types/geometry'
 import {
@@ -32,7 +32,7 @@ export interface MeasurementOverlayProps {
   textColor?: string
 }
 
-export const MeasurementOverlay: React.FC<MeasurementOverlayProps> = ({
+export const MeasurementOverlay: FC<MeasurementOverlayProps> = ({
   points,
   currentPoint,
   gridSize = DEFAULT_GRID_SIZE_PIXELS,
@@ -175,4 +175,4 @@ export const MeasurementOverlay: React.FC<MeasurementOverlayProps> = ({
   )
 }
 
-export default React.memo(MeasurementOverlay)
+export default memo(MeasurementOverlay)

@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC, type ChangeEvent } from 'react'
 import { MousePointer, Cloud } from '@/utils/optimizedIcons'
 import { Box, Text, Button } from '@/components/primitives'
 import type { Token } from '@/types/token'
@@ -13,7 +13,7 @@ type SelectTokenProps = {
   onUseEnvironmentTokenChange?: (use: boolean) => void
 }
 
-const SelectTokenComponent: React.FC<SelectTokenProps> = ({
+const SelectTokenComponent: FC<SelectTokenProps> = ({
   selectedToken,
   setSelectedToken,
   tokens,
@@ -117,7 +117,7 @@ const SelectTokenComponent: React.FC<SelectTokenProps> = ({
         <Box style={{ flex: 1 }}>
           <select
             value={selectedToken || ''}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedToken(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedToken(e.target.value)}
             disabled={useEnvironmentToken}
             style={{
               width: '100%',

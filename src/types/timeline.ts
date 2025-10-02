@@ -105,6 +105,9 @@ export type SpellEventData = {
   curveDirection?: 'up' | 'down' | 'auto'  // Direction of curve
   curveRandomSeed?: number  // Random seed (0-1) for varying curves per dart
 
+  // Cone spell properties
+  coneAngle?: number        // Cone angle in degrees (for cone spells)
+
   // Target tracking properties
   targetTokenId?: string    // Token ID to track and follow
   trackTarget?: boolean     // Enable dynamic target tracking
@@ -129,6 +132,9 @@ export type AttackEventData = {
   actualDamage?: number    // Actual damage dealt (after roll)
   properties?: string[]     // Weapon properties (finesse, reach, etc.)
   weaponType?: string      // Specific weapon (longsword, shortbow, etc.)
+
+  // Target tracking properties
+  targetTokenId?: string    // Token ID to track and follow (like spells)
 }
 
 // Object interaction event data for doors, traps, levers, containers, etc.

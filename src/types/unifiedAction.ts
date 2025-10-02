@@ -28,7 +28,7 @@ export type UnifiedAction = {
 
 // Animation configuration
 export type AnimationConfig = {
-  type: 'projectile' | 'projectile_burst' | 'melee_swing' | 'melee_slash' | 'ray' | 'area' | 'burst' | 'interaction' | 'line' | 'cone' | 'touch' | 'pillar'
+  type: 'projectile' | 'projectile_burst' | 'melee_swing' | 'melee_slash' | 'melee_thrust' | 'ray' | 'area' | 'burst' | 'interaction' | 'line' | 'cone' | 'touch' | 'pillar'
   duration: number
   color: string
   size?: number
@@ -64,6 +64,9 @@ export type AnimationConfig = {
   radiance?: boolean
   sparks?: boolean
   persistent?: boolean
+
+  // Cone spell properties
+  coneAngle?: number // Cone angle in degrees (for cone spells)
 
   // Additional animation properties
   arc?: number // arc radius for curved attacks

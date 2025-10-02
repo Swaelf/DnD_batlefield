@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, type FC } from 'react'
 import { Group, Rect, Circle } from 'react-konva'
 import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
@@ -18,7 +18,7 @@ interface AdvancedRectangleToolProps {
   onCancel?: () => void
 }
 
-export const AdvancedRectangleTool: React.FC<AdvancedRectangleToolProps> = ({
+export const AdvancedRectangleTool: FC<AdvancedRectangleToolProps> = ({
   isActive,
   gridSize,
   gridSnap,
@@ -285,4 +285,3 @@ export const AdvancedRectangleTool: React.FC<AdvancedRectangleToolProps> = ({
   )
 }
 
-export default AdvancedRectangleTool

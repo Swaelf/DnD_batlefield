@@ -1,4 +1,4 @@
-import React from 'react';
+import { type FC } from 'react';
 import useMapStore from '@/store/mapStore';
 import type { MapObject } from '@/types/map';
 import { ArrowUp, ArrowDown, ArrowUpToLine, ArrowDownToLine } from '@/utils/optimizedIcons';
@@ -7,7 +7,7 @@ type LayerControlsProps = {
   selectedObject: MapObject;
 }
 
-export const LayerControls: React.FC<LayerControlsProps> = ({ selectedObject }) => {
+export const LayerControls: FC<LayerControlsProps> = ({ selectedObject }) => {
   // Use specific selectors to prevent unnecessary re-renders
   const currentMap = useMapStore(state => state.currentMap);
   const updateObject = useMapStore(state => state.updateObject);

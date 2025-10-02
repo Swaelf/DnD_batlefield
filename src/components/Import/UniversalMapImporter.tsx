@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from 'react'
+import { useCallback, useState, useRef, type ReactNode, type ChangeEvent } from 'react'
 import useMapStore from '@store/mapStore'
 import type { BattleMap, MapObject, Shape } from '@/types'
 
@@ -21,7 +21,7 @@ interface MapFormat {
   name: string
   extension: string
   description: string
-  icon: React.ReactNode
+  icon: ReactNode
 }
 
 interface ImportedMapData {
@@ -128,7 +128,7 @@ export const UniversalMapImporter = ({
   ]
 
   // File selection handler
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
       setImportFile(file)
@@ -532,7 +532,7 @@ export const UniversalMapImporter = ({
                 <Text variant="body" size="sm" style={{ marginBottom: '8px' }}>Map Format:</Text>
                 <select
                   value={selectedFormat}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedFormat(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedFormat(e.target.value)}
                   style={{
                     width: '100%',
                     padding: '8px 12px',
@@ -748,5 +748,3 @@ export const UniversalMapImporter = ({
     </>
   )
 }
-
-export default UniversalMapImporter

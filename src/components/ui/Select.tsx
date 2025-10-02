@@ -1,4 +1,4 @@
-import React from 'react'
+import { forwardRef, type FC, type ReactNode, type CSSProperties, type MouseEvent } from 'react'
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { ChevronDown, ChevronUp, Check } from '@/utils/optimizedIcons'
 
@@ -12,7 +12,7 @@ export interface SelectProps {
   onValueChange?: (value: string) => void
   placeholder?: string
   disabled?: boolean
-  children: React.ReactNode
+  children: ReactNode
   name?: string
   required?: boolean
   'aria-label'?: string
@@ -23,16 +23,22 @@ export interface SelectProps {
 export interface SelectOptionProps {
   value: string
   disabled?: boolean
-  children: React.ReactNode
+  children: ReactNode
 }
 
 export interface SelectGroupProps {
   label?: string
-  children: React.ReactNode
+  children: ReactNode
 }
 
 // Temporary styled components using inline styles
-const SelectTrigger = React.forwardRef<HTMLButtonElement, any>((props, ref) => (
+interface SelectTriggerProps {
+  style?: CSSProperties
+  'aria-label'?: string
+  children?: ReactNode
+}
+
+const SelectTrigger = forwardRef<HTMLButtonElement, SelectTriggerProps>((props, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     style={{
@@ -56,7 +62,12 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, any>((props, ref) => (
 ))
 SelectTrigger.displayName = 'SelectTrigger'
 
-const SelectContent = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+interface SelectContentProps {
+  style?: CSSProperties
+  children?: ReactNode
+}
+
+const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>((props, ref) => (
   <SelectPrimitive.Content
     ref={ref}
     style={{
@@ -72,7 +83,12 @@ const SelectContent = React.forwardRef<HTMLDivElement, any>((props, ref) => (
 ))
 SelectContent.displayName = 'SelectContent'
 
-const SelectViewport = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+interface SelectViewportProps {
+  style?: CSSProperties
+  children?: ReactNode
+}
+
+const SelectViewport = forwardRef<HTMLDivElement, SelectViewportProps>((props, ref) => (
   <SelectPrimitive.Viewport
     ref={ref}
     style={{
@@ -84,7 +100,16 @@ const SelectViewport = React.forwardRef<HTMLDivElement, any>((props, ref) => (
 ))
 SelectViewport.displayName = 'SelectViewport'
 
-const SelectItem = React.forwardRef<HTMLDivElement, any>(({ style, onMouseEnter, onMouseLeave, value, ...props }, ref) => (
+interface SelectItemProps {
+  style?: CSSProperties
+  onMouseEnter?: (e: MouseEvent<HTMLDivElement>) => void
+  onMouseLeave?: (e: MouseEvent<HTMLDivElement>) => void
+  value: string
+  disabled?: boolean
+  children?: ReactNode
+}
+
+const SelectItem = forwardRef<HTMLDivElement, SelectItemProps>(({ style, onMouseEnter, onMouseLeave, value, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
     value={value}
@@ -114,7 +139,12 @@ const SelectItem = React.forwardRef<HTMLDivElement, any>(({ style, onMouseEnter,
 ))
 SelectItem.displayName = 'SelectItem'
 
-const SelectLabel = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+interface SelectLabelProps {
+  style?: CSSProperties
+  children?: ReactNode
+}
+
+const SelectLabel = forwardRef<HTMLDivElement, SelectLabelProps>((props, ref) => (
   <SelectPrimitive.Label
     ref={ref}
     style={{
@@ -129,7 +159,11 @@ const SelectLabel = React.forwardRef<HTMLDivElement, any>((props, ref) => (
 ))
 SelectLabel.displayName = 'SelectLabel'
 
-const SelectSeparator = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+interface SelectSeparatorProps {
+  style?: CSSProperties
+}
+
+const SelectSeparator = forwardRef<HTMLDivElement, SelectSeparatorProps>((props, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
     style={{
@@ -143,7 +177,12 @@ const SelectSeparator = React.forwardRef<HTMLDivElement, any>((props, ref) => (
 ))
 SelectSeparator.displayName = 'SelectSeparator'
 
-const StyledItemIndicator = React.forwardRef<HTMLSpanElement, any>((props, ref) => (
+interface StyledItemIndicatorProps {
+  style?: CSSProperties
+  children?: ReactNode
+}
+
+const StyledItemIndicator = forwardRef<HTMLSpanElement, StyledItemIndicatorProps>((props, ref) => (
   <SelectPrimitive.ItemIndicator
     ref={ref}
     style={{
@@ -160,7 +199,12 @@ const StyledItemIndicator = React.forwardRef<HTMLSpanElement, any>((props, ref) 
 ))
 StyledItemIndicator.displayName = 'StyledItemIndicator'
 
-const StyledScrollUpButton = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+interface StyledScrollUpButtonProps {
+  style?: CSSProperties
+  children?: ReactNode
+}
+
+const StyledScrollUpButton = forwardRef<HTMLDivElement, StyledScrollUpButtonProps>((props, ref) => (
   <SelectPrimitive.ScrollUpButton
     ref={ref}
     style={{
@@ -178,7 +222,12 @@ const StyledScrollUpButton = React.forwardRef<HTMLDivElement, any>((props, ref) 
 ))
 StyledScrollUpButton.displayName = 'StyledScrollUpButton'
 
-const StyledScrollDownButton = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+interface StyledScrollDownButtonProps {
+  style?: CSSProperties
+  children?: ReactNode
+}
+
+const StyledScrollDownButton = forwardRef<HTMLDivElement, StyledScrollDownButtonProps>((props, ref) => (
   <SelectPrimitive.ScrollDownButton
     ref={ref}
     style={{
@@ -197,7 +246,7 @@ const StyledScrollDownButton = React.forwardRef<HTMLDivElement, any>((props, ref
 StyledScrollDownButton.displayName = 'StyledScrollDownButton'
 
 // Main Select component
-export const Select: React.FC<SelectProps> = ({
+export const Select: FC<SelectProps> = ({
   value,
   defaultValue,
   onValueChange,
@@ -248,7 +297,7 @@ export const Select: React.FC<SelectProps> = ({
 }
 
 // Select Option component
-export const SelectOption: React.FC<SelectOptionProps> = ({
+export const SelectOption: FC<SelectOptionProps> = ({
   value,
   disabled,
   children,
@@ -264,7 +313,7 @@ export const SelectOption: React.FC<SelectOptionProps> = ({
 }
 
 // Select Group component for grouping options
-export const SelectGroup: React.FC<SelectGroupProps> = ({ children, label }) => {
+export const SelectGroup: FC<SelectGroupProps> = ({ children, label }) => {
   return (
     <SelectPrimitive.Group>
       {label && <SelectLabel>{label}</SelectLabel>}

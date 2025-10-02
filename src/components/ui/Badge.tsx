@@ -1,17 +1,17 @@
-import React, { forwardRef } from 'react'
+import { forwardRef, type ReactNode, type CSSProperties, type MouseEvent } from 'react'
 
 // Badge component props with exact typing
 export type BadgeProps = {
-  children: React.ReactNode
+  children: ReactNode
   variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info' | 'outline' | 'ghost'
   size?: 'sm' | 'md' | 'lg'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 
   // Event handlers
-  onClick?: (event: React.MouseEvent<HTMLSpanElement>) => void
-  onMouseEnter?: (event: React.MouseEvent<HTMLSpanElement>) => void
-  onMouseLeave?: (event: React.MouseEvent<HTMLSpanElement>) => void
+  onClick?: (event: MouseEvent<HTMLSpanElement>) => void
+  onMouseEnter?: (event: MouseEvent<HTMLSpanElement>) => void
+  onMouseLeave?: (event: MouseEvent<HTMLSpanElement>) => void
 
   // HTML attributes
   id?: string
@@ -45,7 +45,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     ref
   ) => {
     // Base styles
-    const baseStyles: React.CSSProperties = {
+    const baseStyles: CSSProperties = {
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -118,7 +118,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       },
     }
 
-    const combinedStyles: React.CSSProperties = {
+    const combinedStyles: CSSProperties = {
       ...baseStyles,
       ...sizeStyles[size],
       ...variantStyles[variant],
@@ -221,7 +221,7 @@ export type DotBadgeProps = Omit<BadgeProps, 'children' | 'size'> & {
 
 export const DotBadge = forwardRef<HTMLSpanElement, DotBadgeProps>(
   ({ size: dotSize = 8, style, ...props }, ref) => {
-    const dotStyles: React.CSSProperties = {
+    const dotStyles: CSSProperties = {
       width: `${dotSize}px`,
       height: `${dotSize}px`,
       minWidth: `${dotSize}px`,

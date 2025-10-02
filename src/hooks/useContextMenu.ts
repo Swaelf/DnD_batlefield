@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, type MouseEvent as ReactMouseEvent } from 'react'
 
 interface ContextMenuState {
   isOpen: boolean
@@ -19,7 +19,7 @@ export const useContextMenu = () => {
   contextMenuRef.current = contextMenu
 
   const openContextMenu = useCallback((
-    event: React.MouseEvent | MouseEvent,
+    event: ReactMouseEvent | MouseEvent,
     target: string,
     metadata?: Record<string, any>
   ) => {
@@ -44,7 +44,7 @@ export const useContextMenu = () => {
   }, [])
 
   const handleContextMenu = useCallback((
-    event: React.MouseEvent,
+    event: ReactMouseEvent,
     target: string,
     metadata?: Record<string, any>
   ) => {

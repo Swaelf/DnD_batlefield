@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC } from 'react'
 import { Box, Text } from '@/components/primitives'
 import type { UnifiedAction } from '@/types/unifiedAction'
 
@@ -7,7 +7,7 @@ type ActionPreviewProps = {
   targetTokenId?: string
 }
 
-const ActionPreviewComponent: React.FC<ActionPreviewProps> = ({
+const ActionPreviewComponent: FC<ActionPreviewProps> = ({
   selectedAction,
   targetTokenId
 }) => {

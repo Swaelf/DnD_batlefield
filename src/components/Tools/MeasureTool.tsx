@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo, type FC } from 'react'
 import { Group, Line, Text, Circle } from 'react-konva'
 import useToolStore from '@/store/toolStore'
 
@@ -6,7 +6,7 @@ type MeasureToolProps = {
   gridSize: number
 }
 
-const MeasureTool: React.FC<MeasureToolProps> = ({ gridSize }) => {
+const MeasureTool: FC<MeasureToolProps> = ({ gridSize }) => {
   // Use specific selectors to prevent unnecessary re-renders
   const currentTool = useToolStore(state => state.currentTool)
   const drawingState = useToolStore(state => state.drawingState)
@@ -108,4 +108,4 @@ const MeasureTool: React.FC<MeasureToolProps> = ({ gridSize }) => {
   )
 }
 
-export default React.memo(MeasureTool)
+export default memo(MeasureTool)

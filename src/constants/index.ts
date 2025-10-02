@@ -26,14 +26,5 @@ export {
 } from './attacks'
 export { DAMAGE_TYPES as ATTACK_DAMAGE_TYPES } from './attacks'
 
-export {
-  SPELL_CATEGORIES,
-  SPELL_RANGES,
-  SPELL_SIZES,
-  SPELL_DURATIONS,
-  SPELL_VISUALS,
-  SPELL_PRESETS,
-  SPELL_SPEEDS,
-  // DAMAGE_TYPES exported with alias below
-} from './spells'
-export { DAMAGE_TYPES as SPELL_DAMAGE_TYPES } from './spells'
+// Spell constants removed - spells are now defined in /src/data/unifiedActions/spellTemplates.ts
+// This provides a unified action system for spells, attacks, and interactions

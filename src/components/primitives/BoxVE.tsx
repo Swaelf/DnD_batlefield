@@ -1,19 +1,19 @@
-import React, { forwardRef } from 'react'
+import { forwardRef, createElement, type ReactNode, type CSSProperties, type ElementType, type HTMLAttributes, type ButtonHTMLAttributes } from 'react'
 import { clsx } from 'clsx'
 import { sprinkles, type Sprinkles } from '@/styles/sprinkles.css'
 
 // Base props for Box component
 type BoxOwnProps = {
-  as?: React.ElementType
-  children?: React.ReactNode
+  as?: ElementType
+  children?: ReactNode
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 // Combined Box props with Sprinkles and HTML attributes
 export type BoxProps = Partial<Sprinkles> &
   BoxOwnProps &
-  Omit<React.HTMLAttributes<HTMLElement>, keyof Sprinkles | keyof BoxOwnProps>
+  Omit<HTMLAttributes<HTMLElement>, keyof Sprinkles | keyof BoxOwnProps>
 
 // List of valid sprinkles properties for efficient filtering
 const SPRINKLES_PROPS = new Set([
@@ -72,8 +72,8 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
       ? sprinkles(sprinkleProps as Sprinkles)
       : undefined
 
-    return React.createElement(
-      Component as React.ElementType,
+    return createElement(
+      Component as ElementType,
       {
         ref,
         className: clsx(sprinklesClassName, className),
@@ -88,8 +88,8 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
 Box.displayName = 'Box'
 
 // Export specific element type variants
-export type DivBoxProps = BoxProps & React.HTMLAttributes<HTMLDivElement>
-export type SpanBoxProps = BoxProps & React.HTMLAttributes<HTMLSpanElement>
-export type ButtonBoxProps = BoxProps & React.ButtonHTMLAttributes<HTMLButtonElement>
-export type SectionBoxProps = BoxProps & React.HTMLAttributes<HTMLElement>
-export type ArticleBoxProps = BoxProps & React.HTMLAttributes<HTMLElement>
+export type DivBoxProps = BoxProps & HTMLAttributes<HTMLDivElement>
+export type SpanBoxProps = BoxProps & HTMLAttributes<HTMLSpanElement>
+export type ButtonBoxProps = BoxProps & ButtonHTMLAttributes<HTMLButtonElement>
+export type SectionBoxProps = BoxProps & HTMLAttributes<HTMLElement>
+export type ArticleBoxProps = BoxProps & HTMLAttributes<HTMLElement>

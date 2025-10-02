@@ -1,4 +1,4 @@
-import React from 'react'
+import { type FC } from 'react'
 import { Group, Circle, Rect, Wedge } from 'react-konva'
 import type { StaticEffectTemplate } from './types'
 
@@ -16,7 +16,7 @@ type StaticEffectRendererProps = {
   onRemove?: (id: string) => void
 }
 
-export const StaticEffectRenderer: React.FC<StaticEffectRendererProps> = ({
+export const StaticEffectRenderer: FC<StaticEffectRendererProps> = ({
   effect,
   onSelect,
 }) => {

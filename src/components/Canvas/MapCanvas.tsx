@@ -5,143 +5,24 @@
  * Implements Layer 1 (Grid), Layer 2 (Objects + Effects), Layer 3 (Selection + Drawing + Preview).
  */
 
-import React, { useCallback, useState, useRef } from 'react'
-import { Stage, Layer, Line, Group, Rect, Circle } from 'react-konva'
+import { useCallback, useState, useRef, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
+import { Stage, Layer, Group } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
 import useEventCreationStore from '@store/eventCreationStore'
 import { ObjectsLayer } from './ObjectsLayer'
-import TokenHPTooltip from '../Token/TokenHPTooltip'
+import { BackgroundLayer } from './BackgroundLayer'
+import { InteractiveLayer } from './InteractiveLayer'
 import { useContextMenu } from '@hooks/useContextMenu'
-import AdvancedSelectionManager from '../Selection/SelectionManager'
-import { StaticEffectPreview } from '../StaticEffect/StaticEffectPreview'
-import { Token } from '../Token/Token'
-import { MeasurementOverlay } from '../Tools/MeasurementOverlay'
 import { snapToGrid } from '@/utils/grid'
 import { registerStage } from '@/utils/stageRegistry'
+import { findTokenAtPosition, objectIntersectsRect } from './utils'
 import type { Point } from '@/types/geometry'
-import type { Token as TokenType } from '@/types/token'
+import type { Token } from '@/types/token'
+import type { MapCanvasProps } from './types'
 
-// Helper function to check if an object intersects with a rectangle
-const objectIntersectsRect = (obj: any, rect: { x: number; y: number; width: number; height: number }): boolean => {
-  let objBounds: { x: number; y: number; width: number; height: number }
-
-  switch (obj.type) {
-    case 'token': {
-      const tokenSize = getTokenPixelSize(obj.size || 'medium', 50)
-      objBounds = {
-        x: obj.position.x - tokenSize / 2,
-        y: obj.position.y - tokenSize / 2,
-        width: tokenSize,
-        height: tokenSize
-      }
-      break
-    }
-    case 'shape':
-      switch (obj.shapeType) {
-        case 'rectangle':
-          objBounds = {
-            x: obj.position.x,
-            y: obj.position.y,
-            width: obj.width || 0,
-            height: obj.height || 0
-          }
-          break
-        case 'circle': {
-          const radius = obj.radius || 0
-          objBounds = {
-            x: obj.position.x - radius,
-            y: obj.position.y - radius,
-            width: radius * 2,
-            height: radius * 2
-          }
-          break
-        }
-        case 'line':
-        case 'polygon':
-          if (obj.points && obj.points.length >= 2) {
-            const xs = obj.points.filter((_: any, i: number) => i % 2 === 0)
-            const ys = obj.points.filter((_: any, i: number) => i % 2 === 1)
-            const minX = Math.min(...xs)
-            const maxX = Math.max(...xs)
-            const minY = Math.min(...ys)
-            const maxY = Math.max(...ys)
-            objBounds = {
-              x: minX,
-              y: minY,
-              width: maxX - minX,
-              height: maxY - minY
-            }
-          } else {
-            return false
-          }
-          break
-        default:
-          return false
-      }
-      break
-    default:
-      return false
-  }
-
-  return !(
-    objBounds.x > rect.x + rect.width ||
-    objBounds.x + objBounds.width < rect.x ||
-    objBounds.y > rect.y + rect.height ||
-    objBounds.y + objBounds.height < rect.y
-  )
-}
-
-// Helper function to get token pixel size based on D&D size
-const getTokenPixelSize = (size: string, gridSize: number): number => {
-  switch (size) {
-    case 'tiny': return gridSize * 0.5
-    case 'small':
-    case 'medium': return gridSize
-    case 'large': return gridSize * 2
-    case 'huge': return gridSize * 3
-    case 'gargantuan': return gridSize * 4
-    default: return gridSize
-  }
-}
-
-// Helper function to find token at a specific position
-const findTokenAtPosition = (position: Point, tokens: any[], gridSize: number): any | null => {
-  for (const token of tokens) {
-    if (token.type !== 'token') continue
-
-    const tokenSize = getTokenPixelSize(token.size || 'medium', gridSize)
-    const halfSize = tokenSize / 2
-
-    const isWithinToken = (
-      position.x >= token.position.x - halfSize &&
-      position.x <= token.position.x + halfSize &&
-      position.y >= token.position.y - halfSize &&
-      position.y <= token.position.y + halfSize
-    )
-
-    if (isWithinToken) {
-      return token
-    }
-  }
-  return null
-}
-
-// Helper to check if tool is a drawing tool
-const isDrawingTool = (tool: string): boolean => {
-  return ['rectangle', 'circle', 'polygon', 'line', 'text', 'pen'].includes(tool)
-}
-
-export interface MapCanvasProps {
-  readonly width: number
-  readonly height: number
-  readonly stageRef?: React.MutableRefObject<Konva.Stage | null>
-  readonly onMouseMove?: (position: { x: number; y: number }) => void
-  readonly onZoomChange?: (zoom: number) => void
-}
-
-export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
+export const MapCanvas: FC<MapCanvasProps> = memo(({
   width,
   height,
   stageRef,
@@ -150,13 +31,6 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
   const currentMap = useMapStore(state => state.currentMap)
   const currentTool = useToolStore(state => state.currentTool)
   const gridSettings = useMapStore(state => state.currentMap?.grid)
-  const updateObject = useMapStore(state => state.updateObject)
-
-  // HP Tooltip state
-  const [hpTooltip, setHpTooltip] = useState<{
-    tokenId: string | null
-    position: { x: number; y: number }
-  }>({ tokenId: null, position: { x: 0, y: 0 } })
 
   // Event creation store integration
   const isPicking = useEventCreationStore(state => state.isPicking)
@@ -218,7 +92,8 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
     }
 
     if (isPicking === 'from') {
-      const tokenAtPosition = findTokenAtPosition(position, mapState.currentMap?.objects || [], gridSettings?.size || 50)
+      const tokens = (mapState.currentMap?.objects || []).filter(obj => obj.type === 'token') as Token[]
+      const tokenAtPosition = findTokenAtPosition(position, tokens, gridSettings?.size || 50)
       // Apply grid snapping if not clicking on a token
       const snappedPosition = tokenAtPosition
         ? tokenAtPosition.position
@@ -228,7 +103,8 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
       return
     }
     if (isPicking === 'to') {
-      const tokenAtPosition = findTokenAtPosition(position, mapState.currentMap?.objects || [], gridSettings?.size || 50)
+      const tokens = (mapState.currentMap?.objects || []).filter(obj => obj.type === 'token') as Token[]
+      const tokenAtPosition = findTokenAtPosition(position, tokens, gridSettings?.size || 50)
       // Apply grid snapping if not clicking on a token
       const snappedPosition = tokenAtPosition
         ? tokenAtPosition.position
@@ -299,7 +175,8 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
         strokeWidth: 2,
         opacity: template.defaultOpacity,
         visible: true,
-        locked: false
+        locked: false,
+        metadata: { isStatic: true, templateId: template.id, templateName: template.name }
       }
       mapState.addObject(staticObject)
       return
@@ -467,68 +344,13 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
           clientY: e.evt.clientY,
           preventDefault: () => e.evt.preventDefault(),
           stopPropagation: () => e.evt.stopPropagation()
-        } as React.MouseEvent,
+        } as ReactMouseEvent,
         'canvas'
       )
     }
   }, [handleContextMenu, currentTool])
 
   // Grid rendering
-  const renderGrid = () => {
-    if (!gridSettings?.visible) return null
-
-    const gridSize = gridSettings.size || 50
-    const stage = stageRef?.current
-
-    // Get stage transform to calculate visible area
-    const scale = stage?.scaleX() || 1
-    const pos = stage?.position() || { x: 0, y: 0 }
-
-    // Calculate the visible area in canvas coordinates
-    const visibleLeft = -pos.x / scale
-    const visibleTop = -pos.y / scale
-    const visibleRight = visibleLeft + width / scale
-    const visibleBottom = visibleTop + height / scale
-
-    // Add padding to render grid beyond visible area
-    const padding = gridSize * 5
-    const startX = Math.floor((visibleLeft - padding) / gridSize) * gridSize
-    const endX = Math.ceil((visibleRight + padding) / gridSize) * gridSize
-    const startY = Math.floor((visibleTop - padding) / gridSize) * gridSize
-    const endY = Math.ceil((visibleBottom + padding) / gridSize) * gridSize
-
-    const lines = []
-
-    // Vertical lines
-    for (let x = startX; x <= endX; x += gridSize) {
-      lines.push(
-        <Line
-          key={`v-${x}`}
-          points={[x, startY, x, endY]}
-          stroke={gridSettings.color || '#374151'}
-          strokeWidth={1 / scale}
-          opacity={0.6}
-          listening={false}
-        />
-      )
-    }
-
-    // Horizontal lines
-    for (let y = startY; y <= endY; y += gridSize) {
-      lines.push(
-        <Line
-          key={`h-${y}`}
-          points={[startX, y, endX, y]}
-          stroke={gridSettings.color || '#374151'}
-          strokeWidth={1 / scale}
-          opacity={0.6}
-          listening={false}
-        />
-      )
-    }
-
-    return lines
-  }
 
   // Handle object click
   const handleObjectClick = useCallback((objectId: string, e?: Konva.KonvaEventObject<MouseEvent>) => {
@@ -679,7 +501,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
       const selectedObjectIds: string[] = []
       if (currentMap?.objects) {
         for (const obj of currentMap.objects) {
-          if (objectIntersectsRect(obj, selectionRect)) {
+          if (objectIntersectsRect(obj, selectionRect, gridSettings?.size || 50)) {
             selectedObjectIds.push(obj.id)
           }
         }
@@ -775,10 +597,6 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
     }
   }, [selectionRect, currentTool, currentMap])
 
-  const selectedToken = hpTooltip.tokenId
-    ? currentMap?.objects.find(o => o.id === hpTooltip.tokenId && o.type === 'token') as TokenType | undefined
-    : undefined
-
   // Determine cursor style based on mode
   const cursorStyle = isPicking ? 'crosshair' : 'default'
 
@@ -818,232 +636,43 @@ export const MapCanvas: React.FC<MapCanvasProps> = React.memo(({
         }}
       >
         {/* Layer 1: Background (Static) */}
-        <Layer name="background" listening={false}>
-          <Group name="grid">
-            {renderGrid()}
-          </Group>
-        </Layer>
+        <BackgroundLayer
+          gridSettings={gridSettings}
+          stageRef={stageRef || { current: null }}
+          width={width}
+          height={height}
+        />
 
         {/* Layer 2: Content (Objects + Effects) */}
         <Layer name="content">
           <Group name="objects">
             <ObjectsLayer
               onObjectClick={handleObjectClick}
-              onTokenSelect={(tokenId, position) => {
-                setHpTooltip({ tokenId, position })
-              }}
-              onTokenDeselect={() => {
-                setHpTooltip({ tokenId: null, position: { x: 0, y: 0 } })
-              }}
             />
           </Group>
         </Layer>
 
         {/* Layer 3: Interactive (Selection + Drawing + Preview) */}
-        <Layer name="interactive">
-          <Group name="selection" visible={currentTool === 'select' || isSelectingRef.current}>
-            <AdvancedSelectionManager
-              isActive={true}
-              gridSize={gridSettings?.size || 50}
-            />
-          </Group>
-
-          <Group name="drawing" visible={!isCreatingEvent && (isDrawingTool(currentTool) || currentTool === 'measure' || currentTool === 'token' || currentTool === 'staticObject')}>
-            {/* Token preview - wrapped in non-listening Group to prevent click interception */}
-            {/* Hide previews during event creation to avoid confusion */}
-            {currentTool === 'token' && tokenTemplate && drawingState.currentPoint && !drawingState.isDrawing && !isCreatingEvent && (() => {
-              const snappedPreviewPos = snapToGrid(drawingState.currentPoint, gridSettings?.size || 50, gridSettings?.snap || false)
-              return (
-                <Group listening={false}>
-                  <Token
-                    token={{
-                      id: 'preview-token',
-                      type: 'token',
-                      position: snappedPreviewPos,
-                      rotation: 0,
-                      layer: 999,
-                      locked: false,
-                      ...tokenTemplate,
-                      opacity: 0.6
-                    }}
-                    gridSize={gridSettings?.size || 50}
-                    isSelected={false}
-                    isDraggable={false}
-                  />
-                </Group>
-              )
-            })()}
-
-            {/* Static object preview - use snapped position to match actual placement */}
-            {currentTool === 'staticObject' && staticObjectTemplate && drawingState.currentPoint && !drawingState.isDrawing && !isCreatingEvent && (() => {
-              const snappedPreviewPos = snapToGrid(drawingState.currentPoint, gridSettings?.size || 50, gridSettings?.snap || false)
-              const sizeProps = staticObjectTemplate.sizeProperties || {}
-              const width = sizeProps.width || 100
-              const height = sizeProps.height || 60
-              const radius = sizeProps.radius || 50
-
-              return (
-                <Group
-                  x={snappedPreviewPos.x}
-                  y={snappedPreviewPos.y}
-                  rotation={staticObjectTemplate.rotation || 0}
-                  opacity={staticObjectTemplate.defaultOpacity * 0.6}
-                  listening={false}
-                >
-                  {staticObjectTemplate.type === 'rectangle' && (
-                    <Rect
-                      x={-width / 2}
-                      y={-height / 2}
-                      width={width}
-                      height={height}
-                      fill={staticObjectTemplate.defaultColor}
-                      stroke={staticObjectTemplate.defaultColor}
-                      strokeWidth={2}
-                      shadowColor="black"
-                      shadowBlur={6}
-                      shadowOpacity={0.4}
-                      shadowOffset={{ x: 3, y: 4 }}
-                      listening={false}
-                    />
-                  )}
-                  {staticObjectTemplate.type === 'circle' && (
-                    <Circle
-                      x={0}
-                      y={0}
-                      radius={radius}
-                      fill={staticObjectTemplate.defaultColor}
-                      stroke={staticObjectTemplate.defaultColor}
-                      strokeWidth={2}
-                      shadowColor="black"
-                      shadowBlur={6}
-                      shadowOpacity={0.4}
-                      shadowOffset={{ x: 3, y: 4 }}
-                      listening={false}
-                    />
-                  )}
-                  {staticObjectTemplate.type === 'polygon' && (
-                    <Rect
-                      x={-width / 2}
-                      y={-height / 2}
-                      width={width}
-                      height={height}
-                      fill={staticObjectTemplate.defaultColor}
-                      stroke={staticObjectTemplate.defaultColor}
-                      strokeWidth={2}
-                      lineCap="square"
-                      lineJoin="miter"
-                      shadowColor="black"
-                      shadowBlur={6}
-                      shadowOpacity={0.4}
-                      shadowOffset={{ x: 3, y: 4 }}
-                      listening={false}
-                    />
-                  )}
-                </Group>
-              )
-            })()}
-
-            {/* Drawing tool preview (rectangle, circle, line) */}
-            {drawingState.isDrawing && drawingState.startPoint && drawingState.currentPoint && (
-              <>
-                {currentTool === 'rectangle' && (
-                  <Rect
-                    x={Math.min(drawingState.startPoint.x, drawingState.currentPoint.x)}
-                    y={Math.min(drawingState.startPoint.y, drawingState.currentPoint.y)}
-                    width={Math.abs(drawingState.currentPoint.x - drawingState.startPoint.x)}
-                    height={Math.abs(drawingState.currentPoint.y - drawingState.startPoint.y)}
-                    fill={fillColor}
-                    stroke={strokeColor}
-                    strokeWidth={strokeWidth}
-                    opacity={opacity * 0.7}
-                    listening={false}
-                  />
-                )}
-                {currentTool === 'circle' && (
-                  <Circle
-                    x={drawingState.startPoint.x}
-                    y={drawingState.startPoint.y}
-                    radius={Math.sqrt(
-                      Math.pow(drawingState.currentPoint.x - drawingState.startPoint.x, 2) +
-                      Math.pow(drawingState.currentPoint.y - drawingState.startPoint.y, 2)
-                    )}
-                    fill={fillColor}
-                    stroke={strokeColor}
-                    strokeWidth={strokeWidth}
-                    opacity={opacity * 0.7}
-                    listening={false}
-                  />
-                )}
-                {currentTool === 'line' && (
-                  <Line
-                    points={[
-                      drawingState.startPoint.x,
-                      drawingState.startPoint.y,
-                      drawingState.currentPoint.x,
-                      drawingState.currentPoint.y
-                    ]}
-                    fill={fillColor}
-                    stroke={strokeColor}
-                    strokeWidth={strokeWidth}
-                    opacity={opacity * 0.7}
-                    listening={false}
-                  />
-                )}
-              </>
-            )}
-
-            {/* Selection rectangle preview */}
-            {currentTool === 'select' && selectionRect && selectionRect.visible && (
-              <Rect
-                x={selectionRect.x}
-                y={selectionRect.y}
-                width={selectionRect.width}
-                height={selectionRect.height}
-                stroke="#3B82F6"
-                strokeWidth={1}
-                dash={[5, 5]}
-                fill="rgba(59, 130, 246, 0.1)"
-                listening={false}
-              />
-            )}
-
-            {/* Measurement overlay */}
-            {currentTool === 'measure' && (
-              <MeasurementOverlay
-                points={measurementPoints}
-                currentPoint={drawingState.currentPoint || undefined}
-                gridSize={gridSettings?.size || 50}
-                showSegmentDistances={true}
-                showTotalDistance={true}
-              />
-            )}
-          </Group>
-
-          <Group name="preview" visible={!!previewPosition && !!staticEffectTemplate && !isCreatingEvent}>
-            {previewPosition && staticEffectTemplate && !isCreatingEvent && (
-              <StaticEffectPreview
-                template={staticEffectTemplate}
-                position={previewPosition}
-                visible={true}
-              />
-            )}
-          </Group>
-        </Layer>
+        <InteractiveLayer
+          currentTool={currentTool}
+          gridSettings={gridSettings}
+          isCreatingEvent={isCreatingEvent}
+          isSelecting={isSelectingRef.current}
+          selectionRect={selectionRect}
+          drawingState={drawingState}
+          tokenTemplate={tokenTemplate}
+          staticObjectTemplate={staticObjectTemplate}
+          staticEffectTemplate={staticEffectTemplate}
+          previewPosition={previewPosition}
+          measurementPoints={measurementPoints}
+          fillColor={fillColor}
+          strokeColor={strokeColor}
+          strokeWidth={strokeWidth}
+          opacity={opacity}
+        />
         </Stage>
       </div>
 
-      {selectedToken && hpTooltip.tokenId && (
-        <TokenHPTooltip
-          token={selectedToken}
-          position={hpTooltip.position}
-          onUpdate={(updates) => {
-            updateObject(hpTooltip.tokenId!, updates)
-          }}
-          onClose={() => {
-            setHpTooltip({ tokenId: null, position: { x: 0, y: 0 } })
-          }}
-        />
-      )}
     </>
   )
 })

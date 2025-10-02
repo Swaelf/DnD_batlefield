@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import { type FC, useState, useCallback } from 'react'
 import { Group } from 'react-konva'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
@@ -14,7 +14,7 @@ interface SelectionManagerProps {
   onSelectionChange?: (selectedIds: string[]) => void
 }
 
-export const AdvancedSelectionManager: React.FC<SelectionManagerProps> = ({
+export const AdvancedSelectionManager: FC<SelectionManagerProps> = ({
   isActive,
   gridSize,
   onSelectionChange

@@ -3,7 +3,7 @@
  * Professional selection tools and statistics interface
  */
 
-import React, { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, type FC } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -42,7 +42,7 @@ export interface AdvancedSelectionPanelProps {
   onRedoSelection?: () => void
 }
 
-export const AdvancedSelectionPanel: React.FC<AdvancedSelectionPanelProps> = ({
+export const AdvancedSelectionPanel: FC<AdvancedSelectionPanelProps> = ({
   selectionMode,
   selectionFilter,
   onSelectionModeChange,

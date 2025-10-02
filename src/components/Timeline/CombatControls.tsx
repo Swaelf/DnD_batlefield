@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type ChangeEvent, type FC } from 'react'
 import { Pause, Plus, Sparkles, ChevronUp, ChevronDown } from '@/utils/optimizedIcons'
 import { Text, Box } from '@/components/primitives'
 import {
@@ -24,7 +24,7 @@ type CombatControlsProps = {
   onSetAnimationSpeed: (speed: number) => void
 }
 
-const CombatControlsComponent: React.FC<CombatControlsProps> = ({
+const CombatControlsComponent: FC<CombatControlsProps> = ({
   eventCount,
   activeSpells,
   animationSpeed: _animationSpeed,
@@ -86,7 +86,7 @@ type SpeedControlsProps = {
   onSetAnimationSpeed: (speed: number) => void
 }
 
-const SpeedControlsComponent: React.FC<SpeedControlsProps> = ({
+const SpeedControlsComponent: FC<SpeedControlsProps> = ({
   animationSpeed,
   onSetAnimationSpeed
 }) => {
@@ -100,7 +100,7 @@ const SpeedControlsComponent: React.FC<SpeedControlsProps> = ({
           max="3"
           step="0.5"
           value={animationSpeed}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSetAnimationSpeed(parseFloat(e.target.value))}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => onSetAnimationSpeed(parseFloat(e.target.value))}
         />
         <SpeedValue>{animationSpeed}x</SpeedValue>
       </Box>

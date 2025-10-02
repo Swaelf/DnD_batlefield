@@ -1,4 +1,4 @@
-import React, { memo, forwardRef } from 'react'
+import { memo, forwardRef, type ReactNode, type CSSProperties } from 'react'
 import { Text } from '@/components/primitives/TextVE'
 
 export type CanvasControlsProps = {
@@ -8,21 +8,21 @@ export type CanvasControlsProps = {
   resetView: () => void
   centerView: () => void
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 // Control Button component
 export type ControlButtonProps = {
   onClick: () => void
   title: string
-  children: React.ReactNode
+  children: ReactNode
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const ControlButton = forwardRef<HTMLButtonElement, ControlButtonProps>(
   ({ onClick, title, children, className, style }, ref) => {
-    const buttonStyles: React.CSSProperties = {
+    const buttonStyles: CSSProperties = {
       padding: '6px 8px',
       backgroundColor: 'var(--gray800)',
       border: '1px solid var(--gray700)',
@@ -77,7 +77,7 @@ const CanvasControlsComponent = ({
   className,
   style
 }: CanvasControlsProps) => {
-  const panelStyles: React.CSSProperties = {
+  const panelStyles: CSSProperties = {
     position: 'absolute',
     top: '16px',
     right: '16px',
@@ -91,7 +91,7 @@ const CanvasControlsComponent = ({
     ...style,
   }
 
-  const containerStyles: React.CSSProperties = {
+  const containerStyles: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',

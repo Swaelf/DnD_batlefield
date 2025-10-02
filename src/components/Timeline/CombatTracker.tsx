@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react'
+import { useState, memo, type FC } from 'react'
 import { Shield } from '@/utils/optimizedIcons'
 import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
@@ -14,7 +14,7 @@ import {
   ExpandedSection
 } from './CombatTracker.styled.tsx'
 
-const CombatTrackerComponent: React.FC = () => {
+const CombatTrackerComponent: FC = () => {
   const [isExpanded, setIsExpanded] = useState(false)
   const [showEventEditor, setShowEventEditor] = useState(false)
 

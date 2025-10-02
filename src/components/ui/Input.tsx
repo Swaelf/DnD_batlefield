@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react'
+import { forwardRef, type ReactNode, type CSSProperties, type ChangeEvent, type FormEvent, type FocusEvent, type KeyboardEvent, type MouseEvent, type UIEvent } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 
@@ -39,16 +39,16 @@ const inputStyles = {
 
 // Exact input event handlers
 type InputEventHandlers = {
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
-  onInput?: (event: React.FormEvent<HTMLInputElement>) => void
-  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
-  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void
-  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void
-  onKeyUp?: (event: React.KeyboardEvent<HTMLInputElement>) => void
-  onKeyPress?: (event: React.KeyboardEvent<HTMLInputElement>) => void
-  onClick?: (event: React.MouseEvent<HTMLInputElement>) => void
-  onMouseEnter?: (event: React.MouseEvent<HTMLInputElement>) => void
-  onMouseLeave?: (event: React.MouseEvent<HTMLInputElement>) => void
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void
+  onInput?: (event: FormEvent<HTMLInputElement>) => void
+  onFocus?: (event: FocusEvent<HTMLInputElement>) => void
+  onBlur?: (event: FocusEvent<HTMLInputElement>) => void
+  onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void
+  onKeyUp?: (event: KeyboardEvent<HTMLInputElement>) => void
+  onKeyPress?: (event: KeyboardEvent<HTMLInputElement>) => void
+  onClick?: (event: MouseEvent<HTMLInputElement>) => void
+  onMouseEnter?: (event: MouseEvent<HTMLInputElement>) => void
+  onMouseLeave?: (event: MouseEvent<HTMLInputElement>) => void
 }
 
 // Exact input HTML attributes
@@ -105,7 +105,7 @@ export type InputProps = {
 
   // Styling
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 
   // Data attributes
   'data-testid'?: string
@@ -237,7 +237,7 @@ export type NumberInputProps = Omit<InputProps, 'type'> & {
 
 export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
   ({ min, max, step = 1, precision, onChange, ...props }, ref) => {
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
       if (precision !== undefined) {
         const value = parseFloat(event.target.value)
         if (!isNaN(value)) {
@@ -290,7 +290,7 @@ ColorInput.displayName = 'ColorInput'
 
 // Search input with icon
 export type SearchInputProps = Omit<InputProps, 'type'> & {
-  icon?: React.ReactNode
+  icon?: ReactNode
 }
 
 export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
@@ -332,17 +332,17 @@ SearchInput.displayName = 'SearchInput'
 
 // Textarea component
 type TextareaEventHandlers = {
-  onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
-  onInput?: (event: React.FormEvent<HTMLTextAreaElement>) => void
-  onFocus?: (event: React.FocusEvent<HTMLTextAreaElement>) => void
-  onBlur?: (event: React.FocusEvent<HTMLTextAreaElement>) => void
-  onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
-  onKeyUp?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
-  onKeyPress?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
-  onClick?: (event: React.MouseEvent<HTMLTextAreaElement>) => void
-  onMouseEnter?: (event: React.MouseEvent<HTMLTextAreaElement>) => void
-  onMouseLeave?: (event: React.MouseEvent<HTMLTextAreaElement>) => void
-  onScroll?: (event: React.UIEvent<HTMLTextAreaElement>) => void
+  onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void
+  onInput?: (event: FormEvent<HTMLTextAreaElement>) => void
+  onFocus?: (event: FocusEvent<HTMLTextAreaElement>) => void
+  onBlur?: (event: FocusEvent<HTMLTextAreaElement>) => void
+  onKeyDown?: (event: KeyboardEvent<HTMLTextAreaElement>) => void
+  onKeyUp?: (event: KeyboardEvent<HTMLTextAreaElement>) => void
+  onKeyPress?: (event: KeyboardEvent<HTMLTextAreaElement>) => void
+  onClick?: (event: MouseEvent<HTMLTextAreaElement>) => void
+  onMouseEnter?: (event: MouseEvent<HTMLTextAreaElement>) => void
+  onMouseLeave?: (event: MouseEvent<HTMLTextAreaElement>) => void
+  onScroll?: (event: UIEvent<HTMLTextAreaElement>) => void
 }
 
 export type TextareaProps = {
@@ -364,7 +364,7 @@ export type TextareaProps = {
   form?: string
   autoFocus?: boolean
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 } & TextareaEventHandlers & InputAriaAttributes & {
   'data-testid'?: string
   'data-test-id'?: string
@@ -440,9 +440,9 @@ Textarea.displayName = 'Textarea'
 
 // Field wrapper for labels and validation messages
 export type FieldProps = {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const Field = ({ children, className, style }: FieldProps) => (
@@ -464,13 +464,13 @@ Field.displayName = 'Field'
 
 // Field label
 export type FieldLabelProps = {
-  children: React.ReactNode
+  children: ReactNode
   htmlFor?: string
   required?: boolean
   disabled?: boolean
   className?: string
-  style?: React.CSSProperties
-  onClick?: (event: React.MouseEvent<HTMLLabelElement>) => void
+  style?: CSSProperties
+  onClick?: (event: MouseEvent<HTMLLabelElement>) => void
 }
 
 export const FieldLabel = forwardRef<HTMLLabelElement, FieldLabelProps>(
@@ -499,10 +499,10 @@ FieldLabel.displayName = 'FieldLabel'
 
 // Field message for help text and validation
 export type FieldMessageProps = {
-  children: React.ReactNode
+  children: ReactNode
   state?: 'default' | 'error' | 'success' | 'warning'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const FieldMessage = ({ children, state = 'default', className, style }: FieldMessageProps) => {

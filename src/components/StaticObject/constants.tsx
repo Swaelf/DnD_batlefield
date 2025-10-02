@@ -1,4 +1,4 @@
-import React from 'react'
+import { type ReactNode } from 'react'
 import type { StaticObjectTemplate, StaticObjectCategory } from './types'
 
 // Enhanced SVG icon components with better details
@@ -194,7 +194,7 @@ const SpiralStairsIcon = () => (
 export const staticObjectCategories: Array<{
   id: StaticObjectCategory
   name: string
-  icon: React.ReactNode
+  icon: ReactNode
 }> = [
   { id: 'structures', name: 'Structures', icon: <WallIcon /> },
   { id: 'nature', name: 'Nature', icon: <TreeIcon /> },

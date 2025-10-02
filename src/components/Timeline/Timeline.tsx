@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, type FC, type ChangeEvent } from 'react'
 import { Play, Pause, SkipForward, SkipBack, Clock, Zap, Eye, EyeOff, Move } from '@/utils/optimizedIcons'
 import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
@@ -11,7 +11,7 @@ type TimelineProps = {
   onEditEvents?: () => void
 }
 
-export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
+export const Timeline: FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
   const [isExpanded] = useState(false)
   // Use specific selectors to prevent unnecessary re-renders
   const timeline = useTimelineStore(state => state.timeline)
@@ -122,7 +122,7 @@ export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) 
                 <input
                   type="number"
                   value={currentEvent}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => goToEvent(parseInt(e.target.value) || 1)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => goToEvent(parseInt(e.target.value) || 1)}
                   className={styles.roundInput}
                   min="1"
                   disabled={isAnimating}
@@ -187,7 +187,7 @@ export const Timeline: React.FC<TimelineProps> = ({ onAddEvent, onEditEvents }) 
                   max="3"
                   step="0.5"
                   value={animationSpeed}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAnimationSpeed(parseFloat(e.target.value))}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setAnimationSpeed(parseFloat(e.target.value))}
                   className={styles.speedSlider}
                 />
                 <span className={styles.speedValue}>{animationSpeed}x</span>

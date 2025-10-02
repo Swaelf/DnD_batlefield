@@ -9,6 +9,7 @@ import { testScenarios } from './TestScenarios'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
+import { vars } from '@/styles/theme.css'
 import type Konva from 'konva'
 
 interface TestingPanelProps {
@@ -127,8 +128,8 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({ stage, isOpen, onClo
         top: 0,
         bottom: 0,
         width: '400px',
-        background: 'var(--colors-background)',
-        borderLeft: '1px solid var(--colors-gray700)',
+        background: vars.colors.background,
+        borderLeft: `1px solid ${vars.colors.gray700}`,
         padding: '16px',
         overflowY: 'auto',
         zIndex: 1000
@@ -141,7 +142,7 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({ stage, isOpen, onClo
 
       {/* Test Controls */}
       <Box style={{ marginBottom: '16px' }}>
-        <Text variant="body" size="sm" style={{ color: 'var(--colors-gray400)', marginBottom: '8px' }}>Test Category</Text>
+        <Text variant="body" size="sm" style={{ color: vars.colors.gray400, marginBottom: '8px' }}>Test Category</Text>
         <select
           value={selectedCategory}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value)}
@@ -164,7 +165,7 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({ stage, isOpen, onClo
           <option value="visual">Visual</option>
         </select>
 
-        <Text variant="body" size="sm" style={{ color: 'var(--colors-gray400)', marginBottom: '8px' }}>Test Scenario</Text>
+        <Text variant="body" size="sm" style={{ color: vars.colors.gray400, marginBottom: '8px' }}>Test Scenario</Text>
         <select
           value={selectedScenario}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedScenario(e.target.value)}
@@ -227,13 +228,13 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({ stage, isOpen, onClo
       {currentStep && (
         <Box
           style={{
-            background: 'var(--colors-gray800)',
+            background: vars.colors.gray800,
             padding: '12px',
             borderRadius: '8px',
             marginBottom: '16px'
           }}
         >
-          <Text variant="body" size="sm" style={{ color: 'var(--colors-gray300)' }}>{currentStep}</Text>
+          <Text variant="body" size="sm" style={{ color: vars.colors.gray300 }}>{currentStep}</Text>
         </Box>
       )}
 
@@ -248,11 +249,11 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({ stage, isOpen, onClo
             <Box
               key={index}
               style={{
-                background: 'var(--colors-gray800)',
+                background: vars.colors.gray800,
                 padding: '12px',
                 borderRadius: '8px',
                 marginBottom: '8px',
-                border: result.success ? '1px solid var(--colors-success)' : '1px solid var(--colors-error)'
+                border: result.success ? `1px solid ${vars.colors.success}` : `1px solid ${vars.colors.error}`
               }}
             >
               <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -265,13 +266,13 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({ stage, isOpen, onClo
                   <XCircle size={16} color="#f87171" />
                 )}
               </Box>
-              <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)', marginTop: '4px' }}>
+              <Text variant="body" size="xs" style={{ color: vars.colors.gray400, marginTop: '4px' }}>
                 Duration: {result.duration}ms | Steps: {result.steps.length}
               </Text>
               {result.errors.length > 0 && (
                 <Box style={{ marginTop: '8px' }}>
                   {result.errors.map((error: string, i: number) => (
-                    <Text key={i} variant="body" size="xs" style={{ color: 'var(--colors-error)' }}>• {error}</Text>
+                    <Text key={i} variant="body" size="xs" style={{ color: vars.colors.error }}>• {error}</Text>
                   ))}
                 </Box>
               )}
@@ -291,7 +292,7 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({ stage, isOpen, onClo
             <Box
               key={index}
               style={{
-                background: 'var(--colors-gray800)',
+                background: vars.colors.gray800,
                 padding: '12px',
                 borderRadius: '8px',
                 marginBottom: '8px',
@@ -320,9 +321,9 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({ stage, isOpen, onClo
                 >
                   {bug.severity}
                 </Text>
-                <Text variant="body" size="xs" style={{ color: 'var(--colors-gray400)' }}>{bug.type}</Text>
+                <Text variant="body" size="xs" style={{ color: vars.colors.gray400 }}>{bug.type}</Text>
               </Box>
-              <Text variant="body" size="sm" style={{ color: 'var(--colors-gray200)' }}>{bug.description}</Text>
+              <Text variant="body" size="sm" style={{ color: vars.colors.gray200 }}>{bug.description}</Text>
             </Box>
           ))}
         </Box>

@@ -1,4 +1,4 @@
-import React from 'react'
+import { type FC } from 'react'
 import { Group, Path, Rect, Circle, Ellipse, Line as KonvaLine } from 'react-konva'
 import type { Shape } from '@/types/map'
 
@@ -13,7 +13,7 @@ type StaticObjectRendererProps = {
   onMouseLeave: (e: any) => void
 }
 
-export const StaticObjectRenderer: React.FC<StaticObjectRendererProps> = ({
+export const StaticObjectRenderer: FC<StaticObjectRendererProps> = ({
   shape,
   isSelected,
   isDraggable,
@@ -48,10 +48,15 @@ export const StaticObjectRenderer: React.FC<StaticObjectRendererProps> = ({
   const objectType = getObjectType(shape)
 
   const renderWall = () => (
-    <Group {...commonProps} x={shape.position.x} y={shape.position.y} rotation={shape.rotation}>
+    <Group {...commonProps} x={shape.position.x} y={shape.position.y}>
       <Rect
         width={shape.width}
         height={shape.height}
+        rotation={shape.rotation}
+        offsetX={shape.width! / 2}
+        offsetY={shape.height! / 2}
+        x={shape.width! / 2}
+        y={shape.height! / 2}
         fill={baseColor}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
@@ -59,18 +64,23 @@ export const StaticObjectRenderer: React.FC<StaticObjectRendererProps> = ({
         {...shadowConfig}
       />
       {/* Brick pattern */}
-      <Rect x={0} y={shape.height! * 0.25} width={shape.width! * 0.45} height={1} fill="rgba(0,0,0,0.2)" listening={false} />
-      <Rect x={shape.width! * 0.55} y={shape.height! * 0.25} width={shape.width! * 0.45} height={1} fill="rgba(0,0,0,0.2)" listening={false} />
-      <Rect x={0} y={shape.height! * 0.75} width={shape.width! * 0.45} height={1} fill="rgba(0,0,0,0.2)" listening={false} />
-      <Rect x={shape.width! * 0.55} y={shape.height! * 0.75} width={shape.width! * 0.45} height={1} fill="rgba(0,0,0,0.2)" listening={false} />
+      <Rect rotation={shape.rotation} offsetX={shape.width! * 0.225} offsetY={0.5} x={shape.width! * 0.225} y={shape.height! * 0.25} width={shape.width! * 0.45} height={1} fill="rgba(0,0,0,0.2)" listening={false} />
+      <Rect rotation={shape.rotation} offsetX={shape.width! * 0.225} offsetY={0.5} x={shape.width! * 0.775} y={shape.height! * 0.25} width={shape.width! * 0.45} height={1} fill="rgba(0,0,0,0.2)" listening={false} />
+      <Rect rotation={shape.rotation} offsetX={shape.width! * 0.225} offsetY={0.5} x={shape.width! * 0.225} y={shape.height! * 0.75} width={shape.width! * 0.45} height={1} fill="rgba(0,0,0,0.2)" listening={false} />
+      <Rect rotation={shape.rotation} offsetX={shape.width! * 0.225} offsetY={0.5} x={shape.width! * 0.775} y={shape.height! * 0.75} width={shape.width! * 0.45} height={1} fill="rgba(0,0,0,0.2)" listening={false} />
     </Group>
   )
 
   const renderDoor = () => (
-    <Group {...commonProps} x={shape.position.x} y={shape.position.y} rotation={shape.rotation}>
+    <Group {...commonProps} x={shape.position.x} y={shape.position.y}>
       <Rect
         width={shape.width}
         height={shape.height}
+        rotation={shape.rotation}
+        offsetX={shape.width! / 2}
+        offsetY={shape.height! / 2}
+        x={shape.width! / 2}
+        y={shape.height! / 2}
         fill={baseColor}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
@@ -78,18 +88,21 @@ export const StaticObjectRenderer: React.FC<StaticObjectRendererProps> = ({
         {...shadowConfig}
       />
       {/* Door panels */}
-      <Rect x={shape.width! * 0.1} y={shape.height! * 0.05} width={shape.width! * 0.8} height={shape.height! * 0.4} fill="rgba(0,0,0,0.15)" cornerRadius={1} listening={false} />
-      <Rect x={shape.width! * 0.1} y={shape.height! * 0.5} width={shape.width! * 0.8} height={shape.height! * 0.4} fill="rgba(0,0,0,0.15)" cornerRadius={1} listening={false} />
-      {/* Door handle */}
-      <Circle x={shape.width! * 0.85} y={shape.height! * 0.5} radius={Math.min(shape.width!, shape.height!) * 0.05} fill="#C9AD6A" listening={false} />
+      <Group rotation={shape.rotation} offsetX={shape.width! / 2} offsetY={shape.height! / 2} x={shape.width! / 2} y={shape.height! / 2}>
+        <Rect x={shape.width! * 0.1} y={shape.height! * 0.05} width={shape.width! * 0.8} height={shape.height! * 0.4} fill="rgba(0,0,0,0.15)" cornerRadius={1} listening={false} />
+        <Rect x={shape.width! * 0.1} y={shape.height! * 0.5} width={shape.width! * 0.8} height={shape.height! * 0.4} fill="rgba(0,0,0,0.15)" cornerRadius={1} listening={false} />
+        {/* Door handle */}
+        <Circle x={shape.width! * 0.85} y={shape.height! * 0.5} radius={Math.min(shape.width!, shape.height!) * 0.05} fill="#C9AD6A" listening={false} />
+      </Group>
     </Group>
   )
 
   const renderPillar = () => (
-    <Group {...commonProps} x={shape.position.x} y={shape.position.y} rotation={shape.rotation}>
+    <Group {...commonProps} x={shape.position.x} y={shape.position.y}>
       {/* Outer circle */}
       <Circle
         radius={shape.radius}
+        rotation={shape.rotation}
         fill={baseColor}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
@@ -105,11 +118,16 @@ export const StaticObjectRenderer: React.FC<StaticObjectRendererProps> = ({
     const stepHeight = shape.height! / stepCount
 
     return (
-      <Group {...commonProps} x={shape.position.x} y={shape.position.y} rotation={shape.rotation}>
+      <Group {...commonProps} x={shape.position.x} y={shape.position.y}>
         {/* Base rectangle */}
         <Rect
           width={shape.width}
           height={shape.height}
+          rotation={shape.rotation}
+          offsetX={shape.width! / 2}
+          offsetY={shape.height! / 2}
+          x={shape.width! / 2}
+          y={shape.height! / 2}
           fill={baseColor}
           stroke={strokeColor}
           strokeWidth={strokeWidth}
@@ -117,30 +135,33 @@ export const StaticObjectRenderer: React.FC<StaticObjectRendererProps> = ({
           {...shadowConfig}
         />
 
-        {/* Steps across */}
-        {Array.from({ length: stepCount }).map((_, i) => (
-          <Rect
-            key={i}
-            y={i * stepHeight}
-            width={shape.width}
-            height={stepHeight * 0.15}
-            fill="rgba(0,0,0,0.2)"
+        {/* Steps and arrow in a rotating group */}
+        <Group rotation={shape.rotation} offsetX={shape.width! / 2} offsetY={shape.height! / 2} x={shape.width! / 2} y={shape.height! / 2}>
+          {/* Steps across */}
+          {Array.from({ length: stepCount }).map((_, i) => (
+            <Rect
+              key={i}
+              y={i * stepHeight}
+              width={shape.width}
+              height={stepHeight * 0.15}
+              fill="rgba(0,0,0,0.2)"
+              listening={false}
+            />
+          ))}
+
+          {/* Directional arrow */}
+          <Path
+            data={`M ${shape.width! * 0.5} ${shape.height! * 0.2}
+                   L ${shape.width! * 0.7} ${shape.height! * 0.5}
+                   L ${shape.width! * 0.6} ${shape.height! * 0.5}
+                   L ${shape.width! * 0.6} ${shape.height! * 0.8}
+                   L ${shape.width! * 0.4} ${shape.height! * 0.8}
+                   L ${shape.width! * 0.4} ${shape.height! * 0.5}
+                   L ${shape.width! * 0.3} ${shape.height! * 0.5} Z`}
+            fill="rgba(255,255,255,0.3)"
             listening={false}
           />
-        ))}
-
-        {/* Directional arrow */}
-        <Path
-          data={`M ${shape.width! * 0.5} ${shape.height! * 0.2}
-                 L ${shape.width! * 0.7} ${shape.height! * 0.5}
-                 L ${shape.width! * 0.6} ${shape.height! * 0.5}
-                 L ${shape.width! * 0.6} ${shape.height! * 0.8}
-                 L ${shape.width! * 0.4} ${shape.height! * 0.8}
-                 L ${shape.width! * 0.4} ${shape.height! * 0.5}
-                 L ${shape.width! * 0.3} ${shape.height! * 0.5} Z`}
-          fill="rgba(255,255,255,0.3)"
-          listening={false}
-        />
+        </Group>
       </Group>
     )
   }
@@ -501,12 +522,19 @@ export const StaticObjectRenderer: React.FC<StaticObjectRendererProps> = ({
     case 'brazier':
       return renderDungeonObject('brazier')
     default:
-      // Fallback to simple rectangle
+      // Fallback to simple rectangle with centered rotation
+      const defaultWidth = shape.width || 50
+      const defaultHeight = shape.height || 50
       return (
-        <Group {...commonProps} x={shape.position.x} y={shape.position.y} rotation={shape.rotation}>
+        <Group {...commonProps} x={shape.position.x} y={shape.position.y}>
           <Rect
-            width={shape.width || 50}
-            height={shape.height || 50}
+            width={defaultWidth}
+            height={defaultHeight}
+            rotation={shape.rotation}
+            offsetX={defaultWidth / 2}
+            offsetY={defaultHeight / 2}
+            x={defaultWidth / 2}
+            y={defaultHeight / 2}
             fill={baseColor}
             stroke={strokeColor}
             strokeWidth={strokeWidth}

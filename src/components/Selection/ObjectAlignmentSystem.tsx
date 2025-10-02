@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import { type FC, useRef, useState } from 'react'
 import { Group, Line, Rect } from 'react-konva'
 import type Konva from 'konva'
 // import useMapStore from '@store/mapStore' // Unused
@@ -21,7 +21,7 @@ interface AlignmentGuide {
   endY?: number
 }
 
-export const ObjectAlignmentSystem: React.FC<ObjectAlignmentSystemProps> = ({
+export const ObjectAlignmentSystem: FC<ObjectAlignmentSystemProps> = ({
   isActive,
   // selectedObjects, // Unused parameter
   // snapTolerance = 5, // Unused parameter

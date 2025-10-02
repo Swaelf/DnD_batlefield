@@ -3,7 +3,7 @@
  * Provides a clean React API for subscribing to and emitting domain events
  */
 
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, type DependencyList } from 'react'
 import { eventBus } from './EventBus'
 import type { EventHandler, CleanupFunction } from '@/foundation/types'
 import type { DomainEvent, EventType, EventPayload } from './DomainEvents'
@@ -141,7 +141,7 @@ export const useEventBus = (options: UseEventBusOptions = {}): UseEventBusReturn
 export const useEventSubscription = <T extends EventType>(
   event: T,
   handler: EventHandler<EventPayload<T>>,
-  deps: React.DependencyList = []
+  deps: DependencyList = []
 ): void => {
   const { on } = useEventBus()
 

@@ -1,4 +1,4 @@
-import React from 'react'
+import { type FC, type ChangeEvent } from 'react'
 import { Box, Text } from '@/components/primitives'
 import { Input } from '@/components/ui'
 import { RotationIndicator } from './RotationIndicator'
@@ -25,7 +25,7 @@ type EffectPropertiesPanelProps = {
   onChange: (properties: EffectProperties) => void
 }
 
-export const EffectPropertiesPanel: React.FC<EffectPropertiesPanelProps> = ({
+export const EffectPropertiesPanel: FC<EffectPropertiesPanelProps> = ({
   effectType,
   properties,
   onChange
@@ -71,7 +71,7 @@ export const EffectPropertiesPanel: React.FC<EffectPropertiesPanelProps> = ({
             />
             <Input
               value={properties.color}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 updateProperty('color', e.target.value)
               }
               size="sm"
@@ -89,7 +89,7 @@ export const EffectPropertiesPanel: React.FC<EffectPropertiesPanelProps> = ({
             min="10"
             max="100"
             value={Math.round(properties.opacity * 100)}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
               const val = Number(e.target.value)
               if (val >= 10 && val <= 100) {
                 updateProperty('opacity', val / 100)
@@ -124,7 +124,7 @@ export const EffectPropertiesPanel: React.FC<EffectPropertiesPanelProps> = ({
                 min="10"
                 max="500"
                 value={properties.dimensions.radius || 50}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const val = Number(e.target.value)
                   if (val >= 10 && val <= 500) updateDimension('radius', val)
                 }}
@@ -145,7 +145,7 @@ export const EffectPropertiesPanel: React.FC<EffectPropertiesPanelProps> = ({
                   min="10"
                   max="1000"
                   value={properties.dimensions.width || 100}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     const val = Number(e.target.value)
                     if (val >= 10 && val <= 1000) updateDimension('width', val)
                   }}
@@ -161,7 +161,7 @@ export const EffectPropertiesPanel: React.FC<EffectPropertiesPanelProps> = ({
                   min="10"
                   max="1000"
                   value={properties.dimensions.height || 60}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     const val = Number(e.target.value)
                     if (val >= 10 && val <= 1000) updateDimension('height', val)
                   }}
@@ -182,7 +182,7 @@ export const EffectPropertiesPanel: React.FC<EffectPropertiesPanelProps> = ({
                   min="30"
                   max="500"
                   value={properties.dimensions.length || 80}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     const val = Number(e.target.value)
                     if (val >= 30 && val <= 500) updateDimension('length', val)
                   }}
@@ -213,7 +213,7 @@ export const EffectPropertiesPanel: React.FC<EffectPropertiesPanelProps> = ({
                 min="30"
                 max="1000"
                 value={properties.dimensions.length || 100}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const val = Number(e.target.value)
                   if (val >= 30 && val <= 1000) updateDimension('length', val)
                 }}
@@ -234,7 +234,7 @@ export const EffectPropertiesPanel: React.FC<EffectPropertiesPanelProps> = ({
                   min="10"
                   max="1000"
                   value={properties.dimensions.width || 100}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     const val = Number(e.target.value)
                     if (val >= 10 && val <= 1000) updateDimension('width', val)
                   }}
@@ -250,7 +250,7 @@ export const EffectPropertiesPanel: React.FC<EffectPropertiesPanelProps> = ({
                   min="10"
                   max="1000"
                   value={properties.dimensions.height || 60}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     const val = Number(e.target.value)
                     if (val >= 10 && val <= 1000) updateDimension('height', val)
                   }}

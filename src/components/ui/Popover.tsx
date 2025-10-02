@@ -1,6 +1,7 @@
-import React, { useState, useCallback, forwardRef } from 'react'
+import { useState, useCallback, forwardRef, createElement, type ReactNode, type CSSProperties, type MouseEvent, type UIEvent } from 'react'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { X } from '@/utils/optimizedIcons'
+import { vars } from '@/styles/theme.css'
 
 // Popover event handlers
 type PopoverEventHandlers = {
@@ -10,8 +11,8 @@ type PopoverEventHandlers = {
 
 // Popover component props with exact typing
 export type PopoverProps = {
-  children: React.ReactNode
-  content: React.ReactNode
+  children: ReactNode
+  content: ReactNode
   open?: boolean
   defaultOpen?: boolean
   side?: 'top' | 'right' | 'bottom' | 'left'
@@ -25,7 +26,7 @@ export type PopoverProps = {
   title?: string
   showCloseButton?: boolean
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 
   // HTML attributes
   id?: string
@@ -104,10 +105,10 @@ export const Popover = ({
   }
 
   // Content styles
-  const contentStyles: React.CSSProperties = {
+  const contentStyles: CSSProperties = {
     borderRadius: '12px',
-    backgroundColor: 'var(--surface)',
-    border: '1px solid var(--gray700)',
+    backgroundColor: vars.colors.surface,
+    border: `1px solid ${vars.colors.gray700}`,
     animationDuration: '200ms',
     animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
     willChange: 'transform, opacity',
@@ -119,9 +120,9 @@ export const Popover = ({
   }
 
   // Arrow styles
-  const arrowStyles: React.CSSProperties = {
-    fill: 'var(--surface)',
-    stroke: 'var(--gray700)',
+  const arrowStyles: CSSProperties = {
+    fill: vars.colors.surface,
+    stroke: vars.colors.gray700,
     strokeWidth: 1,
   }
 
@@ -217,20 +218,20 @@ Popover.displayName = 'Popover'
 
 // Popover Header component
 export type PopoverHeaderProps = {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const PopoverHeader = forwardRef<HTMLDivElement, PopoverHeaderProps>(
   ({ children, className, style }, ref) => {
-    const headerStyles: React.CSSProperties = {
+    const headerStyles: CSSProperties = {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: '16px',
       paddingBottom: '12px',
-      borderBottom: '1px solid var(--gray700)',
+      borderBottom: `1px solid ${vars.colors.gray700}`,
       ...style,
     }
 
@@ -246,26 +247,26 @@ PopoverHeader.displayName = 'PopoverHeader'
 
 // Popover Title component
 export type PopoverTitleProps = {
-  children: React.ReactNode
+  children: ReactNode
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   id?: string
 }
 
 export const PopoverTitle = forwardRef<HTMLHeadingElement, PopoverTitleProps>(
   ({ children, as: Component = 'h3', className, style, id }, ref) => {
-    const titleStyles: React.CSSProperties = {
+    const titleStyles: CSSProperties = {
       margin: 0,
       fontSize: '18px',
       fontWeight: '600',
-      color: 'var(--gray100)',
+      color: vars.colors.gray100,
       fontFamily: 'system-ui, sans-serif',
       lineHeight: 1.2,
       ...style,
     }
 
-    return React.createElement(
+    return createElement(
       Component,
       {
         ref,
@@ -282,17 +283,17 @@ PopoverTitle.displayName = 'PopoverTitle'
 
 // Popover Body component
 export type PopoverBodyProps = {
-  children: React.ReactNode
+  children: ReactNode
   scrollable?: boolean
   className?: string
-  style?: React.CSSProperties
-  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void
+  style?: CSSProperties
+  onScroll?: (event: UIEvent<HTMLDivElement>) => void
 }
 
 export const PopoverBody = forwardRef<HTMLDivElement, PopoverBodyProps>(
   ({ children, scrollable = false, className, style, onScroll }, ref) => {
-    const bodyStyles: React.CSSProperties = {
-      color: 'var(--gray200)',
+    const bodyStyles: CSSProperties = {
+      color: vars.colors.gray200,
       fontSize: '14px',
       lineHeight: 1.5,
       ...(scrollable && {
@@ -321,10 +322,10 @@ PopoverBody.displayName = 'PopoverBody'
 
 // Popover Footer component
 export type PopoverFooterProps = {
-  children: React.ReactNode
+  children: ReactNode
   justify?: 'start' | 'center' | 'end' | 'between'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const PopoverFooter = forwardRef<HTMLDivElement, PopoverFooterProps>(
@@ -336,14 +337,14 @@ export const PopoverFooter = forwardRef<HTMLDivElement, PopoverFooterProps>(
       between: 'space-between',
     }
 
-    const footerStyles: React.CSSProperties = {
+    const footerStyles: CSSProperties = {
       display: 'flex',
       alignItems: 'center',
       justifyContent: justifyContentValues[justify],
       gap: '12px',
       marginTop: '16px',
       paddingTop: '12px',
-      borderTop: '1px solid var(--gray700)',
+      borderTop: `1px solid ${vars.colors.gray700}`,
       ...style,
     }
 
@@ -359,15 +360,15 @@ PopoverFooter.displayName = 'PopoverFooter'
 
 // Popover Close Button component
 export type PopoverCloseButtonProps = {
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   'aria-label'?: string
 }
 
 export const PopoverCloseButton = forwardRef<HTMLButtonElement, PopoverCloseButtonProps>(
   ({ onClick, className, style, 'aria-label': ariaLabel = 'Close' }, ref) => {
-    const buttonStyles: React.CSSProperties = {
+    const buttonStyles: CSSProperties = {
       width: '24px',
       height: '24px',
       borderRadius: '6px',
@@ -375,7 +376,7 @@ export const PopoverCloseButton = forwardRef<HTMLButtonElement, PopoverCloseButt
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: 'transparent',
-      color: 'var(--gray400)',
+      color: vars.colors.gray400,
       border: 'none',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
@@ -392,20 +393,20 @@ export const PopoverCloseButton = forwardRef<HTMLButtonElement, PopoverCloseButt
         className={className}
         aria-label={ariaLabel}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--gray800)'
-          e.currentTarget.style.color = 'var(--gray200)'
+          e.currentTarget.style.backgroundColor = vars.colors.gray800
+          e.currentTarget.style.color = vars.colors.gray200
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent'
-          e.currentTarget.style.color = 'var(--gray400)'
+          e.currentTarget.style.color = vars.colors.gray400
         }}
         onFocus={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--gray700)'
-          e.currentTarget.style.color = 'var(--gray100)'
+          e.currentTarget.style.backgroundColor = vars.colors.gray700
+          e.currentTarget.style.color = vars.colors.gray100
         }}
         onBlur={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent'
-          e.currentTarget.style.color = 'var(--gray400)'
+          e.currentTarget.style.color = vars.colors.gray400
         }}
       >
         <X size={14} />
@@ -418,15 +419,15 @@ PopoverCloseButton.displayName = 'PopoverCloseButton'
 
 // Dropdown variant (menu-style popover)
 export type DropdownProps = {
-  trigger: React.ReactNode
-  children: React.ReactNode
+  trigger: ReactNode
+  children: ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
   side?: 'top' | 'right' | 'bottom' | 'left'
   align?: 'start' | 'center' | 'end'
   sideOffset?: number
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const Dropdown = ({
@@ -440,14 +441,14 @@ export const Dropdown = ({
   className,
   style,
 }: DropdownProps) => {
-  const dropdownStyles: React.CSSProperties = {
+  const dropdownStyles: CSSProperties = {
     minWidth: '160px',
     padding: '4px',
     display: 'flex',
     flexDirection: 'column',
     borderRadius: '12px',
-    backgroundColor: 'var(--surface)',
-    border: '1px solid var(--gray700)',
+    backgroundColor: vars.colors.surface,
+    border: `1px solid ${vars.colors.gray700}`,
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     zIndex: 1000,
     outline: 'none',
@@ -479,12 +480,12 @@ Dropdown.displayName = 'Dropdown'
 
 // Menu Item component
 export type MenuItemProps = {
-  children: React.ReactNode
-  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void
+  children: ReactNode
+  onClick?: (event: MouseEvent<HTMLDivElement>) => void
   disabled?: boolean
   variant?: 'default' | 'destructive'
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   'aria-label'?: string
 }
 
@@ -503,18 +504,18 @@ export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
   ) => {
     const variantStyles = {
       default: {
-        color: 'var(--gray200)',
-        hoverBackgroundColor: 'var(--gray700)',
-        hoverColor: 'var(--gray100)',
+        color: vars.colors.gray200,
+        hoverBackgroundColor: vars.colors.gray700,
+        hoverColor: vars.colors.gray100,
       },
       destructive: {
-        color: 'var(--error)',
-        hoverBackgroundColor: 'var(--error)',
+        color: vars.colors.error,
+        hoverBackgroundColor: vars.colors.error,
         hoverColor: 'white',
       },
     }
 
-    const itemStyles: React.CSSProperties = {
+    const itemStyles: CSSProperties = {
       display: 'flex',
       alignItems: 'center',
       gap: '8px',
@@ -531,7 +532,7 @@ export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
       ...style,
     }
 
-    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleClick = (event: MouseEvent<HTMLDivElement>) => {
       if (!disabled) {
         onClick?.(event)
       }
@@ -572,14 +573,14 @@ MenuItem.displayName = 'MenuItem'
 // Menu Separator component
 export type MenuSeparatorProps = {
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export const MenuSeparator = forwardRef<HTMLDivElement, MenuSeparatorProps>(
   ({ className, style }, ref) => {
-    const separatorStyles: React.CSSProperties = {
+    const separatorStyles: CSSProperties = {
       height: '1px',
-      backgroundColor: 'var(--gray700)',
+      backgroundColor: vars.colors.gray700,
       margin: '4px 0',
       ...style,
     }

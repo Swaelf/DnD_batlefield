@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useEffect } from 'react'
+import { type FC, useCallback, useRef, useState, useEffect } from 'react'
 import { Group, Rect, Line } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
@@ -11,7 +11,7 @@ interface MultiSelectToolProps {
   onSelectionComplete?: (selectedIds: string[]) => void
 }
 
-export const MultiSelectTool: React.FC<MultiSelectToolProps> = ({
+export const MultiSelectTool: FC<MultiSelectToolProps> = ({
   isActive,
   selectionMode,
   onSelectionComplete
