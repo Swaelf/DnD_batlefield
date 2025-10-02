@@ -1,5 +1,6 @@
 import { fireballPersistenceBugTest } from './TestFireballFix'
 import { persistentAreaCleanupTest } from './TestPersistentAreaCleanup'
+import { allSpellTestScenarios } from './TestAllSpells'
 
 export interface TestStep {
   type: 'action' | 'wait' | 'assert' | 'capture'
@@ -1405,7 +1406,16 @@ export const testScenarios: TestScenario[] = [
     ]
   },
   fireballPersistenceBugTest,
-  persistentAreaCleanupTest
+  persistentAreaCleanupTest,
+
+  // ============================================================================
+  // DYNAMIC SPELL TESTS - Auto-generated from spellTemplates.ts
+  // ============================================================================
+  // These tests are automatically generated for ALL spells in spellTemplates.ts
+  // When spells are added/removed from spellTemplates.ts, tests update automatically
+  // Each test validates: movement + spell tracking + spell to static position
+  // Total tests: One per spell (currently 20 spells = 20 tests)
+  ...allSpellTestScenarios
 ]
 
 export function getScenarioById(id: string): TestScenario | undefined {
@@ -1414,4 +1424,14 @@ export function getScenarioById(id: string): TestScenario | undefined {
 
 export function getScenariosByCategory(category: TestScenario['category']): TestScenario[] {
   return testScenarios.filter(s => s.category === category)
+}
+
+// Get count of dynamically generated spell tests
+export function getDynamicSpellTestCount(): number {
+  return allSpellTestScenarios.length
+}
+
+// Get all spell test IDs for reference
+export function getAllSpellTestIds(): string[] {
+  return allSpellTestScenarios.map(scenario => scenario.id)
 }
