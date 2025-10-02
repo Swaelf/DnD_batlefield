@@ -690,28 +690,28 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     )
   }
 
-  // Create layer-aware object rendering with proper sorting and visibility
-  const getLayerForObject = (obj: MapObject) => {
-    // If object has a layer ID, use it; otherwise migrate numeric layer or use default
-    if (obj.layerId) {
-      return layers.find(l => l.id === obj.layerId)
-    }
-
-    // Migrate legacy numeric layer to layer ID
-    if (obj.layer !== undefined) {
-      const layerId = migrateNumericLayer(obj.layer)
-      return layers.find(l => l.id === layerId)
-    }
-
-    // Use default layer for object type
-    const defaultLayerId = getDefaultLayerForObjectType(obj.type)
-    return layers.find(l => l.id === defaultLayerId)
-  }
-
   // ✅ OPTIMIZED: Memoize expensive layer calculations and sorting
   // NOTE: Viewport culling removed - was causing infinite render loops
+  // NOTE: getLayerForObject defined inline to avoid useCallback dependency issues
   const visibleSortedObjects = useMemo(() => {
     if (!objects || objects.length === 0) return []
+
+    const getLayerForObject = (obj: MapObject) => {
+      // If object has a layer ID, use it; otherwise migrate numeric layer or use default
+      if (obj.layerId) {
+        return layers.find(l => l.id === obj.layerId)
+      }
+
+      // Migrate legacy numeric layer to layer ID
+      if (obj.layer !== undefined) {
+        const layerId = migrateNumericLayer(obj.layer)
+        return layers.find(l => l.id === layerId)
+      }
+
+      // Use default layer for object type
+      const defaultLayerId = getDefaultLayerForObjectType(obj.type)
+      return layers.find(l => l.id === defaultLayerId)
+    }
 
     return objects
       .map(obj => ({ obj, layer: getLayerForObject(obj) }))
@@ -722,7 +722,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         return zIndexA - zIndexB
       })
       .map(({ obj }) => obj)
-  }, [objects, layers]) // Re-compute when objects or layers change
+  }, [objects, layers, migrateNumericLayer, getDefaultLayerForObjectType]) // Only re-compute when actual data changes
 
   if (!objects || objects.length === 0) {
     return null
