@@ -778,7 +778,7 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
               const fadeOpacity = (1 - waveOffset / 0.36) * waveIntensity
 
               return (
-                <React.Fragment key={index}>
+                <Group key={index}>
                   {/* Main expanding arc */}
                   <Line
                     points={arcPoints}
@@ -808,7 +808,7 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
                       lineJoin="round"
                     />
                   )}
-                </React.Fragment>
+                </Group>
               )
             })}
 
