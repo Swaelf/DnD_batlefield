@@ -529,11 +529,10 @@ export const testScenarios: TestScenario[] = [
           params: {
             execute: async () => {
               const roundStore = (await import('@/store/timelineStore')).default.getState()
-              const mapStore = (await import('@/store/mapStore')).default.getState()
 
-              // Add movement event to timeline
+              // Add movement action to timeline (correct method: addAction, not addEvent)
               if (roundStore.timeline) {
-                roundStore.addEvent('animated-token', 'move', {
+                roundStore.addAction('animated-token', 'move', {
                   fromPosition: { x: 150, y: 150 },
                   toPosition: { x: 400, y: 300 },
                   duration: 1000
@@ -542,7 +541,7 @@ export const testScenarios: TestScenario[] = [
             }
           }
         },
-        description: 'Add movement event to timeline'
+        description: 'Add movement action to timeline'
       },
       {
         type: 'capture',
@@ -552,10 +551,16 @@ export const testScenarios: TestScenario[] = [
       {
         type: 'action',
         action: {
-          type: 'nextRound',
-          params: {}
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              // Execute event actions for current round (triggers movement animation)
+              await roundStore.executeEventActions(1)
+            }
+          }
         },
-        description: 'Execute round (triggers animation)'
+        description: 'Execute event actions (triggers animation)'
       },
       {
         type: 'wait',
