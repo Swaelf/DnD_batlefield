@@ -58,6 +58,11 @@ export const testScenarios: TestScenario[] = [
         description: 'Add token to map'
       },
       {
+        type: 'wait',
+        wait: 300,
+        description: 'Wait for token to render'
+      },
+      {
         type: 'capture',
         capture: { name: 'token-placed' },
         description: 'Capture token placement'
@@ -93,13 +98,18 @@ export const testScenarios: TestScenario[] = [
       },
       {
         type: 'wait',
-        wait: 200,
-        description: 'Wait for state update'
+        wait: 300,
+        description: 'Wait for state update and re-render'
       },
       {
         type: 'capture',
         capture: { name: 'token-moved' },
         description: 'Capture after movement'
+      },
+      {
+        type: 'wait',
+        wait: 500,
+        description: 'Pause to observe final position'
       },
       {
         type: 'assert',
@@ -580,6 +590,120 @@ export const testScenarios: TestScenario[] = [
           expected: { x: 400, y: 300 }
         },
         description: 'Verify final position after animation'
+      }
+    ]
+  },
+  {
+    id: 'token-multi-waypoint-movement',
+    name: 'Multi-Waypoint Animated Movement',
+    description: 'Tests token moving through multiple positions in one timeline event',
+    category: 'movement',
+    steps: [
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'waypoint-token',
+            name: 'Scout',
+            position: { x: 100, y: 100 },
+            size: 'medium',
+            color: '#10B981',
+            shape: 'circle'
+          }
+        },
+        description: 'Add token for waypoint movement'
+      },
+      {
+        type: 'wait',
+        wait: 300,
+        description: 'Wait for token to render'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'startCombat',
+          params: {}
+        },
+        description: 'Start combat to enable timeline'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+
+              if (roundStore.timeline) {
+                // First movement: (100,100) -> (300,100)
+                roundStore.addAction('waypoint-token', 'move', {
+                  fromPosition: { x: 100, y: 100 },
+                  toPosition: { x: 300, y: 100 },
+                  duration: 800
+                }, 1)
+
+                // Second movement: (300,100) -> (300,300)
+                roundStore.addAction('waypoint-token', 'move', {
+                  fromPosition: { x: 300, y: 100 },
+                  toPosition: { x: 300, y: 300 },
+                  duration: 800
+                }, 1)
+
+                // Third movement: (300,300) -> (500,300)
+                roundStore.addAction('waypoint-token', 'move', {
+                  fromPosition: { x: 300, y: 300 },
+                  toPosition: { x: 500, y: 300 },
+                  duration: 800
+                }, 1)
+              }
+            }
+          }
+        },
+        description: 'Add three sequential movement actions to timeline'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'before-waypoint-movement' },
+        description: 'Capture before movement starts'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              // Execute all movement actions in sequence
+              await roundStore.executeEventActions(1)
+            }
+          }
+        },
+        description: 'Execute all waypoint movements'
+      },
+      {
+        type: 'wait',
+        wait: 2600,
+        description: 'Wait for all three animations to complete (3 × 800ms + buffer)'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'after-waypoint-movement' },
+        description: 'Capture final position'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'tokenPosition',
+          params: { tokenId: 'waypoint-token' },
+          expected: { x: 500, y: 300 }
+        },
+        description: 'Verify token reached final waypoint'
+      },
+      {
+        type: 'wait',
+        wait: 500,
+        description: 'Pause to observe final position'
       }
     ]
   },
