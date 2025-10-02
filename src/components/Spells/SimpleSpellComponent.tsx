@@ -731,8 +731,8 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
 
       case 'cone':
         // Cone spell effect with wave animation
-        // D&D scale: 4 pixels per foot (so 30ft = 120 pixels)
-        const PIXELS_PER_FOOT = 4
+        // D&D scale: Increased multiplier for longer range visual
+        const PIXELS_PER_FOOT = 8  // Doubled from 4 to 8 for more dramatic range
         const coneLength = (spell.size || 30) * PIXELS_PER_FOOT
         const coneAngle = (spell.coneAngle || 60) * (Math.PI / 180) // Convert degrees to radians
         const waveProgress = Math.min(progress * 1.5, 1) // Faster wave progression
@@ -756,23 +756,23 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         const rightX = spell.fromPosition.x + Math.cos(rightAngle) * coneLength * waveProgress
         const rightY = spell.fromPosition.y + Math.sin(rightAngle) * coneLength * waveProgress
 
+        // Create cone WITHOUT origin point to avoid glow at source
         const conePoints = [
-          spell.fromPosition.x, spell.fromPosition.y, // Origin
-          leftX, leftY,                                // Left edge
-          coneEndX, coneEndY,                          // Center end
-          rightX, rightY                               // Right edge
+          leftX, leftY,          // Left edge
+          coneEndX, coneEndY,    // Center end
+          rightX, rightY         // Right edge
         ]
 
         const coneOpacity = progress < 0.8 ? 0.7 : (1 - progress) * 3.5
 
         return (
           <>
-            {/* Main cone shape */}
+            {/* Main cone shape - no fill at origin */}
             <Line
               points={conePoints}
               closed={true}
               fill={spell.color}
-              opacity={coneOpacity * 0.5}
+              opacity={coneOpacity * 0.4}
               shadowColor={spell.color}
               shadowBlur={20}
               shadowOpacity={0.6}
@@ -842,15 +842,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
                 })}
               </>
             )}
-
-            {/* Origin glow */}
-            <Circle
-              x={spell.fromPosition.x}
-              y={spell.fromPosition.y}
-              radius={baseRadius * 1.5}
-              fill={spell.color}
-              opacity={coneOpacity * 0.4}
-            />
           </>
         )
 
