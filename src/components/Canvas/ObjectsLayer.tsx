@@ -21,8 +21,12 @@ import { isToken, isShape, isText, isSpell, isAttack, isPersistentArea } from '.
 // Track completed spell animations to prevent duplicate persistent areas
 const completedSpellAnimations = new Set<string>()
 
+// ✅ STABLE EMPTY ARRAYS: Shared constants to prevent reference changes
+const EMPTY_ARRAY: any[] = []
+
 // ✅ STABLE SELECTORS: Define selectors outside component to avoid re-creating on every render
-const selectObjects = (state: { currentMap: { objects: any[] } | null }) => state.currentMap?.objects || []
+// CRITICAL: Never use || [] - it creates new array every time! Use shared EMPTY_ARRAY constant
+const selectObjects = (state: { currentMap: { objects: any[] } | null }) => state.currentMap?.objects ?? EMPTY_ARRAY
 const selectGridSettings = (state: { currentMap: { grid: any } | null }) => state.currentMap?.grid
 const selectSelectedObjects = (state: { selectedObjects: string[] }) => state.selectedObjects
 const selectDeleteObject = (state: { deleteObject: (id: string) => void }) => state.deleteObject
@@ -32,8 +36,8 @@ const selectCurrentTool = (state: { currentTool: string }) => state.currentTool
 const selectCurrentEvent = (state: { currentEvent: number }) => state.currentEvent
 const selectIsPicking = (state: { isPicking: string | null }) => state.isPicking
 const selectSetSelectedToken = (state: { setSelectedToken: (id: string) => void }) => state.setSelectedToken
-const selectActivePaths = (state: { activePaths: any[] }) => state.activePaths
-const selectLayers = (state: { layers: any[] }) => state.layers
+const selectActivePaths = (state: { activePaths: any[] }) => state.activePaths ?? EMPTY_ARRAY
+const selectLayers = (state: { layers: any[] }) => state.layers ?? EMPTY_ARRAY
 const selectGetDefaultLayerForObjectType = (state: { getDefaultLayerForObjectType: (type: string) => string }) => state.getDefaultLayerForObjectType
 const selectMigrateNumericLayer = (state: { migrateNumericLayer: (layer: number) => string }) => state.migrateNumericLayer
 
