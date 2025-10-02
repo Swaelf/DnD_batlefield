@@ -19,6 +19,7 @@ import { snapToGrid } from '@/utils/grid'
 import { registerStage } from '@/utils/stageRegistry'
 import { findTokenAtPosition, objectIntersectsRect } from './utils'
 import type { Point } from '@/types/geometry'
+import type { Token } from '@/types/token'
 import type { MapCanvasProps } from './types'
 
 export const MapCanvas: FC<MapCanvasProps> = memo(({
@@ -30,7 +31,6 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
   const currentMap = useMapStore(state => state.currentMap)
   const currentTool = useToolStore(state => state.currentTool)
   const gridSettings = useMapStore(state => state.currentMap?.grid)
-  const updateObject = useMapStore(state => state.updateObject)
 
   // Event creation store integration
   const isPicking = useEventCreationStore(state => state.isPicking)
@@ -92,7 +92,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
     }
 
     if (isPicking === 'from') {
-      const tokens = (mapState.currentMap?.objects || []).filter(obj => obj.type === 'token') as TokenType[]
+      const tokens = (mapState.currentMap?.objects || []).filter(obj => obj.type === 'token') as Token[]
       const tokenAtPosition = findTokenAtPosition(position, tokens, gridSettings?.size || 50)
       // Apply grid snapping if not clicking on a token
       const snappedPosition = tokenAtPosition
@@ -103,7 +103,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       return
     }
     if (isPicking === 'to') {
-      const tokens = (mapState.currentMap?.objects || []).filter(obj => obj.type === 'token') as TokenType[]
+      const tokens = (mapState.currentMap?.objects || []).filter(obj => obj.type === 'token') as Token[]
       const tokenAtPosition = findTokenAtPosition(position, tokens, gridSettings?.size || 50)
       // Apply grid snapping if not clicking on a token
       const snappedPosition = tokenAtPosition

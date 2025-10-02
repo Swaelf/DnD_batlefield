@@ -1,10 +1,10 @@
 import { memo, type FC } from 'react'
-import type { Layer, BattleMap } from '@/types'
+import type { LayerDefinition, BattleMap } from '@/types'
 import { Box } from '@/components/primitives/BoxVE'
 import { LayerListItem } from './LayerListItem'
 
 type LayerListProps = {
-  layers: Layer[]
+  layers: LayerDefinition[]
   activeLayerId: string | null
   currentMap: BattleMap | null
   onSelectLayer: (layerId: string) => void

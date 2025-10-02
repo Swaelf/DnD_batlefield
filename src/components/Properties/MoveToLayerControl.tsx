@@ -1,11 +1,11 @@
 import { memo, type FC } from 'react'
-import type { Layer } from '@/types'
+import type { LayerDefinition } from '@/types'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
 
 type MoveToLayerControlProps = {
-  layers: Layer[]
+  layers: LayerDefinition[]
   selectedObjectsCount: number
   onMoveToLayer: (layerId: string) => void
 }

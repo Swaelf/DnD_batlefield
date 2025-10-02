@@ -26,7 +26,7 @@ type ObjectsLayerProps = {
   onObjectDragEnd?: (id: string, newPosition: { x: number; y: number }) => void
   onTokenSelect?: (tokenId: string, position: { x: number; y: number }) => void
   onTokenDeselect?: () => void
-  stageRef?: React.RefObject<Konva.Stage>
+  stageRef?: React.MutableRefObject<Konva.Stage | null>
 }
 
 /**
@@ -286,7 +286,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
   const renderShape = (shape: Shape, isSelected: boolean, isDraggable: boolean) => {
     // ✅ OPTIMIZED: Use cached static object detection
-    const isStaticEffect = shape.metadata?.isStaticEffect === true
     const isStaticObject = checkIsStaticObject(shape)
 
     // Use enhanced StaticObjectRenderer for static objects (but NOT static effects)

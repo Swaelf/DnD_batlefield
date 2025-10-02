@@ -2,11 +2,9 @@ import { useState, useEffect, useMemo, memo, type CSSProperties } from 'react'
 import useMapStore from '@/store/mapStore'
 import type { Shape, Token, MapObject } from '@/types'
 import { nanoid } from 'nanoid'
-import { Trash2 } from '@/utils/optimizedIcons'
 import { BaseProperties } from './BaseProperties'
 import { TokenProperties } from './TokenProperties'
 import { ShapeProperties } from './ShapeProperties'
-import { StaticObjectProperties } from './StaticObjectProperties'
 import { StaticObjectPropertiesEditor } from './StaticObjectPropertiesEditor'
 import { ActionButtons } from './ActionButtons'
 import { LayerControls } from './LayerControls'
@@ -21,7 +19,6 @@ import {
   PanelBody,
   PanelSection
 } from '@/components/ui/Panel'
-import { Button } from '@/components/primitives/ButtonVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Box } from '@/components/primitives/BoxVE'
 

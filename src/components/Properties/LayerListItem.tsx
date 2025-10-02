@@ -1,12 +1,12 @@
 import { memo, type FC, type MouseEvent } from 'react'
-import type { Layer } from '@/types'
+import type { LayerDefinition } from '@/types'
 import { Eye, EyeOff, Lock, Unlock, ChevronUp, ChevronDown, Trash2 } from '@/utils/optimizedIcons'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
 
 type LayerListItemProps = {
-  layer: Layer
+  layer: LayerDefinition
   isActive: boolean
   objectCount: number
   onSelect: (layerId: string) => void
