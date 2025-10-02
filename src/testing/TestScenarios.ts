@@ -707,6 +707,144 @@ export const testScenarios: TestScenario[] = [
       }
     ]
   },
+  {
+    id: 'multi-token-interleaved-movement',
+    name: 'Multi-Token Interleaved Movement',
+    description: 'Tests two tokens moving in interleaved sequence within one event',
+    category: 'movement',
+    steps: [
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'fighter-token',
+            name: 'Fighter',
+            position: { x: 100, y: 100 },
+            size: 'medium',
+            color: '#3D82AB',
+            shape: 'circle'
+          }
+        },
+        description: 'Add first token (Fighter)'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'rogue-token',
+            name: 'Rogue',
+            position: { x: 100, y: 300 },
+            size: 'medium',
+            color: '#10B981',
+            shape: 'circle'
+          }
+        },
+        description: 'Add second token (Rogue)'
+      },
+      {
+        type: 'wait',
+        wait: 300,
+        description: 'Wait for tokens to render'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'startCombat',
+          params: {}
+        },
+        description: 'Start combat to enable timeline'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+
+              if (roundStore.timeline) {
+                // Fighter moves first: (100,100) -> (250,100)
+                roundStore.addAction('fighter-token', 'move', {
+                  fromPosition: { x: 100, y: 100 },
+                  toPosition: { x: 250, y: 100 },
+                  duration: 600
+                }, 1)
+
+                // Rogue moves: (100,300) -> (250,300)
+                roundStore.addAction('rogue-token', 'move', {
+                  fromPosition: { x: 100, y: 300 },
+                  toPosition: { x: 250, y: 300 },
+                  duration: 600
+                }, 1)
+
+                // Fighter moves again: (250,100) -> (400,100)
+                roundStore.addAction('fighter-token', 'move', {
+                  fromPosition: { x: 250, y: 100 },
+                  toPosition: { x: 400, y: 100 },
+                  duration: 600
+                }, 1)
+              }
+            }
+          }
+        },
+        description: 'Add interleaved movements: Fighter → Rogue → Fighter'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'before-interleaved-movement' },
+        description: 'Capture initial positions'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              // Execute all movement actions in sequence
+              await roundStore.executeEventActions(1)
+            }
+          }
+        },
+        description: 'Execute interleaved movements'
+      },
+      {
+        type: 'wait',
+        wait: 2000,
+        description: 'Wait for all animations to complete (3 × 600ms + buffer)'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'after-interleaved-movement' },
+        description: 'Capture final positions'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'tokenPosition',
+          params: { tokenId: 'fighter-token' },
+          expected: { x: 400, y: 100 }
+        },
+        description: 'Verify Fighter reached final position'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'tokenPosition',
+          params: { tokenId: 'rogue-token' },
+          expected: { x: 250, y: 300 }
+        },
+        description: 'Verify Rogue reached final position'
+      },
+      {
+        type: 'wait',
+        wait: 500,
+        description: 'Pause to observe final positions'
+      }
+    ]
+  },
   fireballPersistenceBugTest,
   persistentAreaCleanupTest
 ]
