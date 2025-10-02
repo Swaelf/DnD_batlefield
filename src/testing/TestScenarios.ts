@@ -93,7 +93,7 @@ export const testScenarios: TestScenario[] = [
       },
       {
         type: 'wait',
-        wait: 100,
+        wait: 200,
         description: 'Wait for state update'
       },
       {
