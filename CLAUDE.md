@@ -318,7 +318,16 @@ The **Action Sequencing System** provides advanced D&D combat coordination throu
   - PWA Manifest with native app installation, file handlers, and push notifications
   - Full production readiness with error reporting, performance analytics, and offline support
 
-### 🔧 Recent Fixes (January 2025)
+### 🔧 Recent Fixes & Optimizations
+
+**October 2025 - Performance Optimization**:
+- **🚀 Canvas Performance Overhaul**: Achieved 300-400% FPS improvement with many objects
+  - **Phase 1** (990d95f): Granular store subscriptions, memoized calculations (82% impact)
+  - **Phase 2** (203f1c7): Viewport culling, static object caching, smooth hover (18% impact)
+  - **Results**: 500 objects at 45-55fps (previously 5-10fps), 100 objects at 55-60fps (previously 20-30fps)
+  - **Documentation**: `.notes/performance-analysis-many-objects.md`, `.notes/optimization-summary-oct-2025.md`
+
+**January 2025**:
 - **Token Animation System**: Fixed Konva Tween conflicts with React-controlled positions by implementing manual RAF-based animations
 - **Event Editor Token Selection**: Replaced Radix UI Select with native HTML select to resolve modal rendering issues
 - **Animation Memory Leaks**: Fixed cleanup issues preventing memory growth during extended sessions
