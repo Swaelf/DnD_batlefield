@@ -45,14 +45,39 @@ export class TestRunner {
     const stepResults: StepResult[] = []
     const errors: string[] = []
 
-    // Capture initial state
+    // ✅ CLEANUP: Clear battlefield before running test
     const mapStore = useMapStore.getState()
     const roundStore = useTimelineStore.getState()
+    const toolStore = useToolStore.getState()
+
+    // Clear all objects from map (keeps void-token)
+    mapStore.clearMapObjects()
+
+    // Clear selection
+    mapStore.clearSelection()
+
+    // End any active combat
+    if (roundStore.isInCombat) {
+      roundStore.endCombat()
+    }
+
+    // Clear timeline
+    roundStore.clearTimeline()
+
+    // Reset tool to select mode
+    toolStore.setTool('select')
+
+    // Wait for cleanup to complete
+    await this.wait(100)
+
+    console.log('🧹 Battlefield cleaned before test')
+
+    // Capture initial state
     const startState = this.canvasCapture.captureState(
       mapStore.currentMap!,
       roundStore.timeline || undefined,
       mapStore.selectedObjects,
-      useToolStore.getState().currentTool
+      toolStore.currentTool
     )
 
     this.currentResult = {

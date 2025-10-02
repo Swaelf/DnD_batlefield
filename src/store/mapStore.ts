@@ -322,6 +322,14 @@ const useMapStore = create<MapStore>()(
         })
       }
     }),
+
+    clearMapObjects: () => set((state) => {
+      if (state.currentMap) {
+        // Keep only the void-token, remove all other objects
+        state.currentMap.objects = state.currentMap.objects.filter(obj => obj.id === 'void-token')
+        state.selectedObjects = []
+      }
+    }),
   }))
 )
 
