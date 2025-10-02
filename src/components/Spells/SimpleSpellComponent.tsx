@@ -731,7 +731,9 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
 
       case 'cone':
         // Cone spell effect with wave animation
-        const coneLength = spell.size || 30
+        // D&D scale: 4 pixels per foot (so 30ft = 120 pixels)
+        const PIXELS_PER_FOOT = 4
+        const coneLength = (spell.size || 30) * PIXELS_PER_FOOT
         const coneAngle = (spell.coneAngle || 60) * (Math.PI / 180) // Convert degrees to radians
         const waveProgress = Math.min(progress * 1.5, 1) // Faster wave progression
 
@@ -785,10 +787,10 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
             />
 
             {/* Wave effect - multiple concentric cones */}
-            {[0.3, 0.5, 0.7, 0.9].map((wavePos) => {
+            {[0.2, 0.4, 0.6, 0.8, 1.0].map((wavePos, index) => {
               if (waveProgress < wavePos) return null
 
-              const waveDistance = coneLength * wavePos
+              const waveDistance = coneLength * wavePos * waveProgress
               const waveLeftX = spell.fromPosition.x + Math.cos(leftAngle) * waveDistance
               const waveLeftY = spell.fromPosition.y + Math.sin(leftAngle) * waveDistance
               const waveRightX = spell.fromPosition.x + Math.cos(rightAngle) * waveDistance
@@ -801,10 +803,12 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
                   key={wavePos}
                   points={[waveLeftX, waveLeftY, waveCenterX, waveCenterY, waveRightX, waveRightY]}
                   stroke={spell.secondaryColor || '#FFFFFF'}
-                  strokeWidth={2}
-                  opacity={(1 - wavePos) * coneOpacity * 0.8}
+                  strokeWidth={3}
+                  opacity={(1 - wavePos) * coneOpacity * 0.9}
                   lineCap="round"
                   lineJoin="round"
+                  shadowColor={spell.secondaryColor || '#FFFFFF'}
+                  shadowBlur={10}
                 />
               )
             })}
@@ -812,22 +816,27 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
             {/* Fire particles for dragon breath */}
             {spell.spellName?.toLowerCase().includes('dragon') && spell.particleEffect && (
               <>
-                {[...Array(8)].map((_, i) => {
-                  const particleAngle = leftAngle + (coneAngle / 8) * i
-                  const particleProgress = (progress + i * 0.05) % 1
-                  const particleDistance = coneLength * waveProgress * (0.7 + Math.random() * 0.3)
+                {[...Array(20)].map((_, i) => {
+                  // Random position within cone
+                  const angleVariation = (Math.random() - 0.5) * coneAngle
+                  const particleAngle = coneDirection + angleVariation
+                  const distanceVariation = 0.5 + Math.random() * 0.5
+                  const particleDistance = coneLength * waveProgress * distanceVariation
 
                   const particleX = spell.fromPosition.x + Math.cos(particleAngle) * particleDistance
                   const particleY = spell.fromPosition.y + Math.sin(particleAngle) * particleDistance
+
+                  // Particles fade as they travel
+                  const particleOpacity = Math.max(0, (1 - progress) * (1 - distanceVariation * 0.3))
 
                   return (
                     <Circle
                       key={i}
                       x={particleX}
                       y={particleY}
-                      radius={3 + Math.random() * 3}
-                      fill={i % 2 === 0 ? spell.color : '#FFD700'}
-                      opacity={Math.max(0, (1 - particleProgress) * 0.8)}
+                      radius={4 + Math.random() * 4}
+                      fill={i % 3 === 0 ? '#FFD700' : i % 3 === 1 ? '#FF6B00' : spell.color}
+                      opacity={particleOpacity * 0.8}
                     />
                   )
                 })}
