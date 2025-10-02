@@ -204,7 +204,15 @@ export class TestRunner {
 
       case 'moveToken':
         // Use updateObjectPosition for direct position updates
+        console.log(`🔄 Moving token ${action.params.tokenId} to`, action.params.toPosition)
         mapStore.updateObjectPosition(action.params.tokenId, action.params.toPosition)
+
+        // Wait for next tick to ensure Zustand state update has propagated
+        await new Promise(resolve => setTimeout(resolve, 0))
+
+        // Verify position was updated
+        const updatedToken = mapStore.currentMap?.objects.find(obj => obj.id === action.params.tokenId)
+        console.log(`✓ Token position after update:`, updatedToken?.position)
         break
 
       case 'selectToken':
@@ -265,6 +273,7 @@ export class TestRunner {
           if (!token) {
             return { success: false, error: `Token ${assertion.params.tokenId} not found` }
           }
+          console.log(`🔍 Checking position for ${assertion.params.tokenId}: expected`, assertion.expected, 'got', token.position)
           if (token.position.x !== assertion.expected.x || token.position.y !== assertion.expected.y) {
             return {
               success: false,
