@@ -1,6 +1,7 @@
 import { fireballPersistenceBugTest } from './TestFireballFix'
 import { persistentAreaCleanupTest } from './TestPersistentAreaCleanup'
 import { allSpellTestScenarios } from './TestAllSpells'
+import { allAttackTestScenarios } from './TestAllAttacks'
 
 export interface TestStep {
   type: 'action' | 'wait' | 'assert' | 'capture'
@@ -1431,7 +1432,16 @@ export const testScenarios: TestScenario[] = [
   // When spells are added/removed from spellTemplates.ts, tests update automatically
   // Each test validates: movement + spell tracking + spell to static position
   // Total tests: One per spell (currently 20 spells = 20 tests)
-  ...allSpellTestScenarios
+  ...allSpellTestScenarios,
+
+  // ============================================================================
+  // DYNAMIC ATTACK TESTS - Auto-generated weapon attack scenarios
+  // ============================================================================
+  // These tests are automatically generated for various weapon types
+  // Each test validates: movement + attack animations for melee and ranged weapons
+  // Covers slashing, piercing, and bludgeoning damage types
+  // Total tests: 12 weapon types (6 melee + 6 ranged)
+  ...allAttackTestScenarios
 ]
 
 export function getScenarioById(id: string): TestScenario | undefined {
@@ -1450,4 +1460,14 @@ export function getDynamicSpellTestCount(): number {
 // Get all spell test IDs for reference
 export function getAllSpellTestIds(): string[] {
   return allSpellTestScenarios.map(scenario => scenario.id)
+}
+
+// Get count of dynamically generated attack tests
+export function getDynamicAttackTestCount(): number {
+  return allAttackTestScenarios.length
+}
+
+// Get all attack test IDs for reference
+export function getAllAttackTestIds(): string[] {
+  return allAttackTestScenarios.map(scenario => scenario.id)
 }
