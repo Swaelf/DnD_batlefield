@@ -544,6 +544,7 @@ export const testScenarios: TestScenario[] = [
               // Add movement action to timeline (correct method: addAction, not addEvent)
               if (roundStore.timeline) {
                 roundStore.addAction('animated-token', 'move', {
+                  type: 'move',
                   fromPosition: { x: 150, y: 150 },
                   toPosition: { x: 400, y: 300 },
                   duration: 1000
@@ -639,6 +640,7 @@ export const testScenarios: TestScenario[] = [
               if (roundStore.timeline) {
                 // First movement: (100,100) -> (300,100)
                 roundStore.addAction('waypoint-token', 'move', {
+                  type: 'move',
                   fromPosition: { x: 100, y: 100 },
                   toPosition: { x: 300, y: 100 },
                   duration: 800
@@ -646,6 +648,7 @@ export const testScenarios: TestScenario[] = [
 
                 // Second movement: (300,100) -> (300,300)
                 roundStore.addAction('waypoint-token', 'move', {
+                  type: 'move',
                   fromPosition: { x: 300, y: 100 },
                   toPosition: { x: 300, y: 300 },
                   duration: 800
@@ -653,6 +656,7 @@ export const testScenarios: TestScenario[] = [
 
                 // Third movement: (300,300) -> (500,300)
                 roundStore.addAction('waypoint-token', 'move', {
+                  type: 'move',
                   fromPosition: { x: 300, y: 300 },
                   toPosition: { x: 500, y: 300 },
                   duration: 800
@@ -768,6 +772,7 @@ export const testScenarios: TestScenario[] = [
               if (roundStore.timeline) {
                 // Fighter moves first: (100,100) -> (250,100)
                 roundStore.addAction('fighter-token', 'move', {
+                  type: 'move',
                   fromPosition: { x: 100, y: 100 },
                   toPosition: { x: 250, y: 100 },
                   duration: 600
@@ -775,6 +780,7 @@ export const testScenarios: TestScenario[] = [
 
                 // Rogue moves: (100,300) -> (250,300)
                 roundStore.addAction('rogue-token', 'move', {
+                  type: 'move',
                   fromPosition: { x: 100, y: 300 },
                   toPosition: { x: 250, y: 300 },
                   duration: 600
@@ -782,6 +788,7 @@ export const testScenarios: TestScenario[] = [
 
                 // Fighter moves again: (250,100) -> (400,100)
                 roundStore.addAction('fighter-token', 'move', {
+                  type: 'move',
                   fromPosition: { x: 250, y: 100 },
                   toPosition: { x: 400, y: 100 },
                   duration: 600
@@ -906,6 +913,7 @@ export const testScenarios: TestScenario[] = [
               if (roundStore.timeline) {
                 // 1. Wizard 1 moves: (100,100) -> (200,300)
                 roundStore.addAction('wizard-1', 'move', {
+                  type: 'move',
                   fromPosition: { x: 100, y: 100 },
                   toPosition: { x: 200, y: 300 },
                   duration: 600
@@ -913,6 +921,7 @@ export const testScenarios: TestScenario[] = [
 
                 // 2. Wizard 2 moves: (500,100) -> (400,300)
                 roundStore.addAction('wizard-2', 'move', {
+                  type: 'move',
                   fromPosition: { x: 500, y: 100 },
                   toPosition: { x: 400, y: 300 },
                   duration: 600
@@ -922,7 +931,8 @@ export const testScenarios: TestScenario[] = [
                 // EXPECTED: From (200,300) to (400,300) - both final positions
                 // BUG: Likely starts from (100,100) to (500,100) - initial positions
                 roundStore.addAction('wizard-1', 'spell', {
-                  tokenId: 'wizard-1',
+                  type: 'spell',
+                  
                   targetTokenId: 'wizard-2',
                   spellName: 'Fireball',
                   category: 'projectile-burst',
@@ -937,7 +947,8 @@ export const testScenarios: TestScenario[] = [
                 // 4. Wizard 2 casts Fireball back at Wizard 1's INITIAL position (static target)
                 // EXPECTED: From (400,300) to (100,100)
                 roundStore.addAction('wizard-2', 'spell', {
-                  tokenId: 'wizard-2',
+                  type: 'spell',
+                  
                   // NO targetTokenId - targets static position, not tracking wizard-1
                   spellName: 'Fireball',
                   category: 'projectile-burst',
@@ -1067,6 +1078,7 @@ export const testScenarios: TestScenario[] = [
               if (roundStore.timeline) {
                 // 1. Wizard A moves: (150,150) -> (250,350)
                 roundStore.addAction('mm-wizard-1', 'move', {
+                  type: 'move',
                   fromPosition: { x: 150, y: 150 },
                   toPosition: { x: 250, y: 350 },
                   duration: 600
@@ -1074,6 +1086,7 @@ export const testScenarios: TestScenario[] = [
 
                 // 2. Wizard B moves: (450,150) -> (350,350)
                 roundStore.addAction('mm-wizard-2', 'move', {
+                  type: 'move',
                   fromPosition: { x: 450, y: 150 },
                   toPosition: { x: 350, y: 350 },
                   duration: 600
@@ -1081,7 +1094,8 @@ export const testScenarios: TestScenario[] = [
 
                 // 3. Wizard A casts Magic Missile at Wizard B
                 roundStore.addAction('mm-wizard-1', 'spell', {
-                  tokenId: 'mm-wizard-1',
+                  type: 'spell',
+                  
                   targetTokenId: 'mm-wizard-2',
                   spellName: 'Magic Missile',
                   category: 'projectile',
@@ -1094,7 +1108,8 @@ export const testScenarios: TestScenario[] = [
 
                 // 4. Wizard B casts Magic Missile back at Wizard A's INITIAL position (static target)
                 roundStore.addAction('mm-wizard-2', 'spell', {
-                  tokenId: 'mm-wizard-2',
+                  type: 'spell',
+                  
                   // NO targetTokenId - targets static position, not tracking wizard A
                   spellName: 'Magic Missile',
                   category: 'projectile',
@@ -1223,6 +1238,7 @@ export const testScenarios: TestScenario[] = [
               if (roundStore.timeline) {
                 // 1. Ice Mage A moves: (120,200) -> (220,400)
                 roundStore.addAction('rof-wizard-1', 'move', {
+                  type: 'move',
                   fromPosition: { x: 120, y: 200 },
                   toPosition: { x: 220, y: 400 },
                   duration: 600
@@ -1230,6 +1246,7 @@ export const testScenarios: TestScenario[] = [
 
                 // 2. Ice Mage B moves: (480,200) -> (380,400)
                 roundStore.addAction('rof-wizard-2', 'move', {
+                  type: 'move',
                   fromPosition: { x: 480, y: 200 },
                   toPosition: { x: 380, y: 400 },
                   duration: 600
@@ -1237,10 +1254,11 @@ export const testScenarios: TestScenario[] = [
 
                 // 3. Ice Mage A casts Ray of Frost at Ice Mage B
                 roundStore.addAction('rof-wizard-1', 'spell', {
-                  tokenId: 'rof-wizard-1',
+                  type: 'spell',
+                  
                   targetTokenId: 'rof-wizard-2',
                   spellName: 'Ray of Frost',
-                  category: 'beam',
+                  category: 'ray',
                   fromPosition: { x: 220, y: 400 },
                   toPosition: { x: 380, y: 400 },
                   color: '#60a5fa',
@@ -1250,10 +1268,11 @@ export const testScenarios: TestScenario[] = [
 
                 // 4. Ice Mage B casts Ray of Frost back at Ice Mage A's INITIAL position (static target)
                 roundStore.addAction('rof-wizard-2', 'spell', {
-                  tokenId: 'rof-wizard-2',
+                  type: 'spell',
+                  
                   // NO targetTokenId - targets static position, not tracking ice mage A
                   spellName: 'Ray of Frost',
-                  category: 'beam',
+                  category: 'ray',
                   fromPosition: { x: 380, y: 400 },
                   toPosition: { x: 120, y: 200 }, // Ice Mage A's starting position (static)
                   color: '#34d399',
@@ -1359,16 +1378,13 @@ export const testScenarios: TestScenario[] = [
           type: 'custom',
           params: {
             execute: async () => {
-              // Import UI conversion function
-              const { convertActionToLegacyData } = await import('@/components/Timeline/UnifiedEventEditor')
-
-              // This would test the actual UI conversion, but we can't easily access it
-              // Instead, we'll check the timeline store after UI interaction
+              // Check the timeline store after UI interaction
               const roundStore = (await import('@/store/timelineStore')).default.getState()
 
               // Simulate what UI does: create action through timeline
               roundStore.addAction('test-wizard', 'spell', {
-                tokenId: 'test-wizard', // This should be set by UI
+                  type: 'spell',
+                 // This should be set by UI
                 targetTokenId: '',
                 spellName: 'Test Spell',
                 category: 'projectile',

@@ -305,16 +305,28 @@ const useMapStore = create<MapStore>()(
     }),
 
     cleanupExpiredSpells: (currentRound) => set((state) => {
+      console.log('[mapStore.cleanupExpiredSpells] Called with currentRound:', currentRound)
       if (state.currentMap) {
         state.currentMap.objects = state.currentMap.objects.filter(obj => {
           if (obj.isSpellEffect && obj.spellDuration !== undefined && obj.roundCreated !== undefined) {
             // Don't remove instant spells (duration 0) - they're handled by animation timeout
             if (obj.spellDuration === 0) {
+              console.log('[mapStore.cleanupExpiredSpells] Keeping instant spell:', obj.id)
               return true  // Keep instant spells, let animation handle removal
             }
             // Remove persistent spells that have expired
+            // A spell created in round 1 with duration 1 should persist through round 2
+            // So it expires AFTER round 2, meaning we remove it when currentRound > expiresAtRound
             const expiresAtRound = obj.roundCreated + obj.spellDuration
-            const shouldKeep = currentRound < expiresAtRound
+            const shouldKeep = currentRound <= expiresAtRound
+            console.log('[mapStore.cleanupExpiredSpells] Persistent spell:', {
+              id: obj.id,
+              roundCreated: obj.roundCreated,
+              spellDuration: obj.spellDuration,
+              expiresAtRound,
+              currentRound,
+              shouldKeep
+            })
 
             return shouldKeep
           }

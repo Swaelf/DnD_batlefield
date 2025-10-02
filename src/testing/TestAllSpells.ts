@@ -1,4 +1,5 @@
 import type { TestScenario } from './TestScenarios'
+import type { SpellCategory } from '@/types/timeline'
 import { spellTemplates } from '@/data/unifiedActions/spellTemplates'
 
 /**
@@ -16,18 +17,18 @@ import { spellTemplates } from '@/data/unifiedActions/spellTemplates'
  */
 
 // Map animation types to spell categories for legacy event data
-const getSpellCategory = (animationType: string): string => {
-  const categoryMap: Record<string, string> = {
+const getSpellCategory = (animationType: string): SpellCategory => {
+  const categoryMap: Record<string, SpellCategory> = {
     'projectile': 'projectile',
     'projectile_burst': 'projectile-burst',
-    'ray': 'beam',
-    'beam': 'beam',
+    'ray': 'ray',
+    'beam': 'ray',
     'area': 'area',
     'burst': 'burst',
     'cone': 'cone',
-    'line': 'line',
-    'touch': 'touch',
-    'pillar': 'pillar'
+    'line': 'ray',
+    'touch': 'area',
+    'pillar': 'area'
   }
   return categoryMap[animationType] || 'projectile'
 }
@@ -51,8 +52,9 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
 
     // Token positions
     const token1Initial = { x: 200, y: 200 }
-    const token2Position = { x: 500, y: 200 }
+    const token2Initial = { x: 500, y: 200 }
     const token1Final = { x: 300, y: 400 }
+    const token2Final = { x: 600, y: 300 }
 
     // Generate unique token IDs
     const token1Id = `spell-test-token1-${index}`
@@ -88,7 +90,7 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
             params: {
               id: token2Id,
               name: `Caster (${spellName})`,
-              position: token2Position,
+              position: token2Initial,
               size: 'medium',
               color: '#10B981',
               shape: 'circle'
@@ -123,18 +125,27 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
                 if (roundStore.timeline) {
                   // 1. Token 1 moves to final position
                   roundStore.addAction(token1Id, 'move', {
+                    type: 'move',
                     fromPosition: token1Initial,
                     toPosition: token1Final,
                     duration: 600
                   }, 1)
 
-                  // 2. Token 2 casts spell at Token 1 (tracking)
+                  // 2. Token 2 moves to final position
+                  roundStore.addAction(token2Id, 'move', {
+                    type: 'move',
+                    fromPosition: token2Initial,
+                    toPosition: token2Final,
+                    duration: 600
+                  }, 1)
+
+                  // 3. Token 2 casts spell at Token 1 (tracking)
                   roundStore.addAction(token2Id, 'spell', {
-                    tokenId: token2Id,
+                    type: 'spell',
                     targetTokenId: token1Id, // Tracks moving target
                     spellName: spellName,
                     category: category,
-                    fromPosition: token2Position,
+                    fromPosition: token2Final,
                     toPosition: token1Final, // Will track to final position
                     color: color,
                     secondaryColor: secondaryColor,
@@ -148,13 +159,13 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
                     ...(category === 'projectile-burst' && { burstRadius: 30 })
                   }, 1)
 
-                  // 3. Token 2 casts spell at Token 1's INITIAL position (static)
+                  // 4. Token 2 casts spell at Token 1's INITIAL position (static)
                   roundStore.addAction(token2Id, 'spell', {
-                    tokenId: token2Id,
+                    type: 'spell',
                     // NO targetTokenId - static position
                     spellName: spellName,
                     category: category,
-                    fromPosition: token2Position,
+                    fromPosition: token2Final,
                     toPosition: token1Initial, // Static initial position
                     color: color,
                     secondaryColor: secondaryColor,
@@ -215,15 +226,15 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
           },
           description: 'Verify target token moved to final position'
         },
-        // Step 11: Assert token 2 stayed
+        // Step 11: Assert token 2 moved
         {
           type: 'assert',
           assert: {
             type: 'tokenPosition',
             params: { tokenId: token2Id },
-            expected: token2Position
+            expected: token2Final
           },
-          description: 'Verify caster token stayed in place'
+          description: 'Verify caster token moved to final position'
         },
         // Step 12: Pause to observe
         {
@@ -243,7 +254,7 @@ export const allSpellTestScenarios = generateSpellTestScenarios()
 export const getSpellTestsByCategory = (category: string): TestScenario[] => {
   return spellTemplates
     .filter(spell => spell.category === category)
-    .map((spell, index) => {
+    .map(spell => {
       const allScenarios = generateSpellTestScenarios()
       return allScenarios.find(scenario => scenario.id === `spell-movement-tracking-${spell.id}`)!
     })

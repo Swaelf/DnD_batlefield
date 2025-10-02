@@ -65,6 +65,9 @@ export type AnimationConfig = {
   sparks?: boolean
   persistent?: boolean
 
+  // Cone spell properties
+  coneAngle?: number // Cone angle in degrees (for cone spells)
+
   // Additional animation properties
   arc?: number // arc radius for curved attacks
   spin?: boolean // spinning animation for weapons

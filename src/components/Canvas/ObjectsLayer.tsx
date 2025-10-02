@@ -635,6 +635,13 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           isSpellEffect: true as const // Mark as spell effect for cleanup
         }
 
+        console.log('[ObjectsLayer] ⚠️ PERSISTENT AREA VALUES:', {
+          roundCreated: currentEvent,
+          spellDuration: persistDuration,
+          expiresAtRound: currentEvent + persistDuration,
+          spellName: spell.spellData?.spellName
+        })
+
         // Add persistent area to map using addSpellEffect to ensure it's tracked properly
         const addSpellEffect = useMapStore.getState().addSpellEffect
         console.log('[ObjectsLayer] Creating persistent area:', persistentAreaObject)
