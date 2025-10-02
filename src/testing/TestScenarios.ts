@@ -845,6 +845,288 @@ export const testScenarios: TestScenario[] = [
       }
     ]
   },
+  {
+    id: 'spell-after-movement-bug',
+    name: 'Spell After Movement (Bug Test)',
+    description: 'BUG: Spell should originate from token\'s final position after movement, not initial position',
+    category: 'spells',
+    steps: [
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'moving-caster',
+            name: 'Wizard',
+            position: { x: 100, y: 100 },
+            size: 'medium',
+            color: '#3D82AB',
+            shape: 'circle'
+          }
+        },
+        description: 'Add caster token at initial position'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'stationary-target',
+            name: 'Enemy',
+            position: { x: 500, y: 300 },
+            size: 'medium',
+            color: '#922610',
+            shape: 'circle'
+          }
+        },
+        description: 'Add target token'
+      },
+      {
+        type: 'wait',
+        wait: 300,
+        description: 'Wait for tokens to render'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'startCombat',
+          params: {}
+        },
+        description: 'Start combat'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+
+              if (roundStore.timeline) {
+                // 1. Wizard moves: (100,100) -> (300,200)
+                roundStore.addAction('moving-caster', 'move', {
+                  fromPosition: { x: 100, y: 100 },
+                  toPosition: { x: 300, y: 200 },
+                  duration: 800
+                }, 1)
+
+                // 2. Wizard casts Fireball at target
+                // BUG: Should start from (300,200) but starts from (100,100)
+                roundStore.addAction('moving-caster', 'spell', {
+                  tokenId: 'moving-caster',
+                  targetTokenId: 'stationary-target',
+                  spellName: 'Fireball',
+                  category: 'projectile-burst',
+                  fromPosition: { x: 300, y: 200 }, // Expected: final position after move
+                  toPosition: { x: 500, y: 300 },
+                  color: '#ff4500',
+                  size: 20,
+                  duration: 1500,
+                  burstRadius: 40
+                }, 1)
+              }
+            }
+          }
+        },
+        description: 'Add movement then spell (spell should originate from final position)'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'before-move-and-spell' },
+        description: 'Capture initial state'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              await roundStore.executeEventActions(1)
+            }
+          }
+        },
+        description: 'Execute movement and spell'
+      },
+      {
+        type: 'wait',
+        wait: 2500,
+        description: 'Wait for movement and spell to complete'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'after-move-and-spell' },
+        description: 'Capture final state (fireball should have come from 300,200)'
+      },
+      {
+        type: 'wait',
+        wait: 500,
+        description: 'Pause to observe'
+      }
+    ]
+  },
+  {
+    id: 'complex-movement-spell-tracking',
+    name: 'Complex Movement + Spell Tracking (Bug Test)',
+    description: 'BUG: Spells should track moving targets and originate from caster\'s final position',
+    category: 'spells',
+    steps: [
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'wizard-1',
+            name: 'Wizard 1',
+            position: { x: 100, y: 100 },
+            size: 'medium',
+            color: '#3D82AB',
+            shape: 'circle'
+          }
+        },
+        description: 'Add first wizard'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'wizard-2',
+            name: 'Wizard 2',
+            position: { x: 500, y: 100 },
+            size: 'medium',
+            color: '#10B981',
+            shape: 'circle'
+          }
+        },
+        description: 'Add second wizard'
+      },
+      {
+        type: 'wait',
+        wait: 300,
+        description: 'Wait for tokens to render'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'startCombat',
+          params: {}
+        },
+        description: 'Start combat'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+
+              if (roundStore.timeline) {
+                // 1. Wizard 1 moves: (100,100) -> (200,300)
+                roundStore.addAction('wizard-1', 'move', {
+                  fromPosition: { x: 100, y: 100 },
+                  toPosition: { x: 200, y: 300 },
+                  duration: 600
+                }, 1)
+
+                // 2. Wizard 2 moves: (500,100) -> (400,300)
+                roundStore.addAction('wizard-2', 'move', {
+                  fromPosition: { x: 500, y: 100 },
+                  toPosition: { x: 400, y: 300 },
+                  duration: 600
+                }, 1)
+
+                // 3. Wizard 1 casts Fireball at Wizard 2
+                // EXPECTED: From (200,300) to (400,300) - both final positions
+                // BUG: Likely starts from (100,100) to (500,100) - initial positions
+                roundStore.addAction('wizard-1', 'spell', {
+                  tokenId: 'wizard-1',
+                  targetTokenId: 'wizard-2',
+                  spellName: 'Fireball',
+                  category: 'projectile-burst',
+                  fromPosition: { x: 200, y: 300 }, // Expected: Wizard 1's final position
+                  toPosition: { x: 400, y: 300 },   // Expected: Wizard 2's final position
+                  color: '#ff4500',
+                  size: 15,
+                  duration: 1000,
+                  burstRadius: 30
+                }, 1)
+
+                // 4. Wizard 2 casts Fireball back at Wizard 1's original position
+                // EXPECTED: From (400,300) to (100,100)
+                // BUG: Likely starts from (500,100)
+                roundStore.addAction('wizard-2', 'spell', {
+                  tokenId: 'wizard-2',
+                  targetTokenId: 'wizard-1',
+                  spellName: 'Fireball',
+                  category: 'projectile-burst',
+                  fromPosition: { x: 400, y: 300 }, // Expected: Wizard 2's final position
+                  toPosition: { x: 100, y: 100 },   // Wizard 1's starting position
+                  color: '#00ff00',
+                  size: 15,
+                  duration: 1000,
+                  burstRadius: 30
+                }, 1)
+              }
+            }
+          }
+        },
+        description: 'Add complex movement + spell sequence'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'before-complex-sequence' },
+        description: 'Capture initial positions'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              await roundStore.executeEventActions(1)
+            }
+          }
+        },
+        description: 'Execute all actions'
+      },
+      {
+        type: 'wait',
+        wait: 3000,
+        description: 'Wait for all animations to complete'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'after-complex-sequence' },
+        description: 'Capture final state'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'tokenPosition',
+          params: { tokenId: 'wizard-1' },
+          expected: { x: 200, y: 300 }
+        },
+        description: 'Verify Wizard 1 final position'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'tokenPosition',
+          params: { tokenId: 'wizard-2' },
+          expected: { x: 400, y: 300 }
+        },
+        description: 'Verify Wizard 2 final position'
+      },
+      {
+        type: 'wait',
+        wait: 500,
+        description: 'Pause to observe (fireballs should reflect final positions)'
+      }
+    ]
+  },
   fireballPersistenceBugTest,
   persistentAreaCleanupTest
 ]
