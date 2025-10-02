@@ -729,6 +729,122 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
           </>
         )
 
+      case 'cone':
+        // Cone spell effect with wave animation
+        const coneLength = spell.size || 30
+        const coneAngle = (spell.coneAngle || 60) * (Math.PI / 180) // Convert degrees to radians
+        const waveProgress = Math.min(progress * 1.5, 1) // Faster wave progression
+
+        // Calculate cone direction
+        const coneDx = getTargetPosition().x - spell.fromPosition.x
+        const coneDy = getTargetPosition().y - spell.fromPosition.y
+        const coneDirection = Math.atan2(coneDy, coneDx)
+
+        // Calculate cone polygon points
+        const coneEndX = spell.fromPosition.x + Math.cos(coneDirection) * coneLength * waveProgress
+        const coneEndY = spell.fromPosition.y + Math.sin(coneDirection) * coneLength * waveProgress
+
+        // Calculate cone edges
+        const leftAngle = coneDirection - coneAngle / 2
+        const rightAngle = coneDirection + coneAngle / 2
+
+        const leftX = spell.fromPosition.x + Math.cos(leftAngle) * coneLength * waveProgress
+        const leftY = spell.fromPosition.y + Math.sin(leftAngle) * coneLength * waveProgress
+
+        const rightX = spell.fromPosition.x + Math.cos(rightAngle) * coneLength * waveProgress
+        const rightY = spell.fromPosition.y + Math.sin(rightAngle) * coneLength * waveProgress
+
+        const conePoints = [
+          spell.fromPosition.x, spell.fromPosition.y, // Origin
+          leftX, leftY,                                // Left edge
+          coneEndX, coneEndY,                          // Center end
+          rightX, rightY                               // Right edge
+        ]
+
+        const coneOpacity = progress < 0.8 ? 0.7 : (1 - progress) * 3.5
+
+        return (
+          <>
+            {/* Main cone shape */}
+            <Line
+              points={conePoints}
+              closed={true}
+              fill={spell.color}
+              opacity={coneOpacity * 0.5}
+              shadowColor={spell.color}
+              shadowBlur={20}
+              shadowOpacity={0.6}
+            />
+
+            {/* Brighter inner cone */}
+            <Line
+              points={conePoints}
+              closed={true}
+              fill={spell.secondaryColor || spell.color}
+              opacity={coneOpacity * 0.3}
+            />
+
+            {/* Wave effect - multiple concentric cones */}
+            {[0.3, 0.5, 0.7, 0.9].map((wavePos) => {
+              if (waveProgress < wavePos) return null
+
+              const waveDistance = coneLength * wavePos
+              const waveLeftX = spell.fromPosition.x + Math.cos(leftAngle) * waveDistance
+              const waveLeftY = spell.fromPosition.y + Math.sin(leftAngle) * waveDistance
+              const waveRightX = spell.fromPosition.x + Math.cos(rightAngle) * waveDistance
+              const waveRightY = spell.fromPosition.y + Math.sin(rightAngle) * waveDistance
+              const waveCenterX = spell.fromPosition.x + Math.cos(coneDirection) * waveDistance
+              const waveCenterY = spell.fromPosition.y + Math.sin(coneDirection) * waveDistance
+
+              return (
+                <Line
+                  key={wavePos}
+                  points={[waveLeftX, waveLeftY, waveCenterX, waveCenterY, waveRightX, waveRightY]}
+                  stroke={spell.secondaryColor || '#FFFFFF'}
+                  strokeWidth={2}
+                  opacity={(1 - wavePos) * coneOpacity * 0.8}
+                  lineCap="round"
+                  lineJoin="round"
+                />
+              )
+            })}
+
+            {/* Fire particles for dragon breath */}
+            {spell.spellName?.toLowerCase().includes('dragon') && spell.particleEffect && (
+              <>
+                {[...Array(8)].map((_, i) => {
+                  const particleAngle = leftAngle + (coneAngle / 8) * i
+                  const particleProgress = (progress + i * 0.05) % 1
+                  const particleDistance = coneLength * waveProgress * (0.7 + Math.random() * 0.3)
+
+                  const particleX = spell.fromPosition.x + Math.cos(particleAngle) * particleDistance
+                  const particleY = spell.fromPosition.y + Math.sin(particleAngle) * particleDistance
+
+                  return (
+                    <Circle
+                      key={i}
+                      x={particleX}
+                      y={particleY}
+                      radius={3 + Math.random() * 3}
+                      fill={i % 2 === 0 ? spell.color : '#FFD700'}
+                      opacity={Math.max(0, (1 - particleProgress) * 0.8)}
+                    />
+                  )
+                })}
+              </>
+            )}
+
+            {/* Origin glow */}
+            <Circle
+              x={spell.fromPosition.x}
+              y={spell.fromPosition.y}
+              radius={baseRadius * 1.5}
+              fill={spell.color}
+              opacity={coneOpacity * 0.4}
+            />
+          </>
+        )
+
       default:
         // Check for Stone Rain spell
         if (spell.spellName?.toLowerCase() === 'stone rain') {

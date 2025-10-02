@@ -82,6 +82,19 @@ export const SPELL_PRESETS = {
     range: SPELL_RANGES.TOUCH,
     duration: SPELL_DURATIONS.INSTANT,
   },
+  BREATH_OF_THE_DRAGON: {
+    name: 'Breath of the Dragon',
+    category: SPELL_CATEGORIES.CONE,
+    color: SPELL_COLORS.FIRE,
+    secondaryColor: '#FF6B00',
+    size: 30, // 30ft cone length
+    coneAngle: 60, // 60 degree cone angle
+    range: SPELL_RANGES.TOUCH,
+    duration: SPELL_DURATIONS.ONE_ROUND,
+    persistDuration: 1,
+    waveSpeed: 600, // Animation speed
+    particleEffect: true,
+  },
 
   // Ice spells
   RAY_OF_FROST: {

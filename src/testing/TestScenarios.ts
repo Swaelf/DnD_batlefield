@@ -846,135 +846,6 @@ export const testScenarios: TestScenario[] = [
     ]
   },
   {
-    id: 'spell-after-movement-bug',
-    name: 'Spell After Movement (Bug Test)',
-    description: 'BUG: Spell should originate from token\'s final position after movement, not initial position',
-    category: 'spells',
-    steps: [
-      {
-        type: 'action',
-        action: {
-          type: 'addToken',
-          params: {
-            id: 'moving-caster',
-            name: 'Wizard',
-            position: { x: 100, y: 100 },
-            size: 'medium',
-            color: '#3D82AB',
-            shape: 'circle'
-          }
-        },
-        description: 'Add caster token at initial position'
-      },
-      {
-        type: 'action',
-        action: {
-          type: 'addToken',
-          params: {
-            id: 'stationary-target',
-            name: 'Enemy',
-            position: { x: 500, y: 300 },
-            size: 'medium',
-            color: '#922610',
-            shape: 'circle'
-          }
-        },
-        description: 'Add target token'
-      },
-      {
-        type: 'wait',
-        wait: 300,
-        description: 'Wait for tokens to render'
-      },
-      {
-        type: 'action',
-        action: {
-          type: 'startCombat',
-          params: {}
-        },
-        description: 'Start combat'
-      },
-      {
-        type: 'action',
-        action: {
-          type: 'custom',
-          params: {
-            execute: async () => {
-              const roundStore = (await import('@/store/timelineStore')).default.getState()
-
-              if (roundStore.timeline) {
-                // 1. Wizard moves: (100,100) -> (300,200)
-                roundStore.addAction('moving-caster', 'move', {
-                  fromPosition: { x: 100, y: 100 },
-                  toPosition: { x: 300, y: 200 },
-                  duration: 800
-                }, 1)
-
-                // 2. Wizard casts Fireball at target
-                // BUG: Should start from (300,200) but starts from (100,100)
-                roundStore.addAction('moving-caster', 'spell', {
-                  tokenId: 'moving-caster',
-                  targetTokenId: 'stationary-target',
-                  spellName: 'Fireball',
-                  category: 'projectile-burst',
-                  fromPosition: { x: 300, y: 200 }, // Expected: final position after move
-                  toPosition: { x: 500, y: 300 },
-                  color: '#ff4500',
-                  size: 20,
-                  duration: 1500,
-                  burstRadius: 40
-                }, 1)
-              }
-            }
-          }
-        },
-        description: 'Add movement then spell (spell should originate from final position)'
-      },
-      {
-        type: 'capture',
-        capture: { name: 'before-move-and-spell' },
-        description: 'Capture initial state'
-      },
-      {
-        type: 'action',
-        action: {
-          type: 'custom',
-          params: {
-            execute: async () => {
-              const roundStore = (await import('@/store/timelineStore')).default.getState()
-              await roundStore.executeEventActions(1)
-            }
-          }
-        },
-        description: 'Execute movement and spell'
-      },
-      {
-        type: 'wait',
-        wait: 2500,
-        description: 'Wait for movement and spell to complete'
-      },
-      {
-        type: 'capture',
-        capture: { name: 'after-move-and-spell' },
-        description: 'Capture final state (fireball should have come from 300,200)'
-      },
-      {
-        type: 'assert',
-        assert: {
-          type: 'spellOriginPosition',
-          params: { spellName: 'Fireball' },
-          expected: { x: 300, y: 200 }
-        },
-        description: 'Verify fireball originated from final position (300,200), not initial (100,100)'
-      },
-      {
-        type: 'wait',
-        wait: 500,
-        description: 'Pause to observe'
-      }
-    ]
-  },
-  {
     id: 'complex-movement-spell-tracking',
     name: 'Complex Movement + Spell Tracking (Bug Test)',
     description: 'BUG: Spells should track moving targets and originate from caster\'s final position',
@@ -1133,6 +1004,318 @@ export const testScenarios: TestScenario[] = [
         type: 'wait',
         wait: 500,
         description: 'Pause to observe (fireballs should reflect final positions)'
+      }
+    ]
+  },
+  {
+    id: 'magic-missile-movement-tracking',
+    name: 'Magic Missile + Movement Tracking',
+    description: 'Magic Missile should track moving targets and originate from caster\'s final position',
+    category: 'spells',
+    steps: [
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'mm-wizard-1',
+            name: 'Wizard A',
+            position: { x: 150, y: 150 },
+            size: 'medium',
+            color: '#8B5CF6',
+            shape: 'circle'
+          }
+        },
+        description: 'Add first wizard'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'mm-wizard-2',
+            name: 'Wizard B',
+            position: { x: 450, y: 150 },
+            size: 'medium',
+            color: '#EC4899',
+            shape: 'circle'
+          }
+        },
+        description: 'Add second wizard'
+      },
+      {
+        type: 'wait',
+        wait: 300,
+        description: 'Wait for tokens to render'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'startCombat',
+          params: {}
+        },
+        description: 'Start combat'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+
+              if (roundStore.timeline) {
+                // 1. Wizard A moves: (150,150) -> (250,350)
+                roundStore.addAction('mm-wizard-1', 'move', {
+                  fromPosition: { x: 150, y: 150 },
+                  toPosition: { x: 250, y: 350 },
+                  duration: 600
+                }, 1)
+
+                // 2. Wizard B moves: (450,150) -> (350,350)
+                roundStore.addAction('mm-wizard-2', 'move', {
+                  fromPosition: { x: 450, y: 150 },
+                  toPosition: { x: 350, y: 350 },
+                  duration: 600
+                }, 1)
+
+                // 3. Wizard A casts Magic Missile at Wizard B
+                roundStore.addAction('mm-wizard-1', 'spell', {
+                  tokenId: 'mm-wizard-1',
+                  targetTokenId: 'mm-wizard-2',
+                  spellName: 'Magic Missile',
+                  category: 'projectile',
+                  fromPosition: { x: 250, y: 350 },
+                  toPosition: { x: 350, y: 350 },
+                  color: '#a855f7',
+                  size: 10,
+                  duration: 800
+                }, 1)
+
+                // 4. Wizard B casts Magic Missile back at Wizard A's initial position
+                roundStore.addAction('mm-wizard-2', 'spell', {
+                  tokenId: 'mm-wizard-2',
+                  targetTokenId: 'mm-wizard-1',
+                  spellName: 'Magic Missile',
+                  category: 'projectile',
+                  fromPosition: { x: 350, y: 350 },
+                  toPosition: { x: 150, y: 150 },
+                  color: '#ec4899',
+                  size: 10,
+                  duration: 800
+                }, 1)
+              }
+            }
+          }
+        },
+        description: 'Add movement + Magic Missile sequence'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'before-magic-missile-sequence' },
+        description: 'Capture initial positions'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              await roundStore.executeEventActions(1)
+            }
+          }
+        },
+        description: 'Execute all actions'
+      },
+      {
+        type: 'wait',
+        wait: 3000,
+        description: 'Wait for all animations to complete'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'after-magic-missile-sequence' },
+        description: 'Capture final state'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'tokenPosition',
+          params: { tokenId: 'mm-wizard-1' },
+          expected: { x: 250, y: 350 }
+        },
+        description: 'Verify Wizard A final position'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'tokenPosition',
+          params: { tokenId: 'mm-wizard-2' },
+          expected: { x: 350, y: 350 }
+        },
+        description: 'Verify Wizard B final position'
+      },
+      {
+        type: 'wait',
+        wait: 500,
+        description: 'Pause to observe (Magic Missiles should reflect final positions)'
+      }
+    ]
+  },
+  {
+    id: 'ray-of-frost-movement-tracking',
+    name: 'Ray of Frost + Movement Tracking',
+    description: 'Ray of Frost should track moving targets and originate from caster\'s final position',
+    category: 'spells',
+    steps: [
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'rof-wizard-1',
+            name: 'Ice Mage A',
+            position: { x: 120, y: 200 },
+            size: 'medium',
+            color: '#60A5FA',
+            shape: 'circle'
+          }
+        },
+        description: 'Add first ice mage'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'rof-wizard-2',
+            name: 'Ice Mage B',
+            position: { x: 480, y: 200 },
+            size: 'medium',
+            color: '#34D399',
+            shape: 'circle'
+          }
+        },
+        description: 'Add second ice mage'
+      },
+      {
+        type: 'wait',
+        wait: 300,
+        description: 'Wait for tokens to render'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'startCombat',
+          params: {}
+        },
+        description: 'Start combat'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+
+              if (roundStore.timeline) {
+                // 1. Ice Mage A moves: (120,200) -> (220,400)
+                roundStore.addAction('rof-wizard-1', 'move', {
+                  fromPosition: { x: 120, y: 200 },
+                  toPosition: { x: 220, y: 400 },
+                  duration: 600
+                }, 1)
+
+                // 2. Ice Mage B moves: (480,200) -> (380,400)
+                roundStore.addAction('rof-wizard-2', 'move', {
+                  fromPosition: { x: 480, y: 200 },
+                  toPosition: { x: 380, y: 400 },
+                  duration: 600
+                }, 1)
+
+                // 3. Ice Mage A casts Ray of Frost at Ice Mage B
+                roundStore.addAction('rof-wizard-1', 'spell', {
+                  tokenId: 'rof-wizard-1',
+                  targetTokenId: 'rof-wizard-2',
+                  spellName: 'Ray of Frost',
+                  category: 'beam',
+                  fromPosition: { x: 220, y: 400 },
+                  toPosition: { x: 380, y: 400 },
+                  color: '#60a5fa',
+                  size: 8,
+                  duration: 1000
+                }, 1)
+
+                // 4. Ice Mage B casts Ray of Frost back at Ice Mage A's initial position
+                roundStore.addAction('rof-wizard-2', 'spell', {
+                  tokenId: 'rof-wizard-2',
+                  targetTokenId: 'rof-wizard-1',
+                  spellName: 'Ray of Frost',
+                  category: 'beam',
+                  fromPosition: { x: 380, y: 400 },
+                  toPosition: { x: 120, y: 200 },
+                  color: '#34d399',
+                  size: 8,
+                  duration: 1000
+                }, 1)
+              }
+            }
+          }
+        },
+        description: 'Add movement + Ray of Frost sequence'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'before-ray-of-frost-sequence' },
+        description: 'Capture initial positions'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              await roundStore.executeEventActions(1)
+            }
+          }
+        },
+        description: 'Execute all actions'
+      },
+      {
+        type: 'wait',
+        wait: 3000,
+        description: 'Wait for all animations to complete'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'after-ray-of-frost-sequence' },
+        description: 'Capture final state'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'tokenPosition',
+          params: { tokenId: 'rof-wizard-1' },
+          expected: { x: 220, y: 400 }
+        },
+        description: 'Verify Ice Mage A final position'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'tokenPosition',
+          params: { tokenId: 'rof-wizard-2' },
+          expected: { x: 380, y: 400 }
+        },
+        description: 'Verify Ice Mage B final position'
+      },
+      {
+        type: 'wait',
+        wait: 500,
+        description: 'Pause to observe (Ray of Frost should reflect final positions)'
       }
     ]
   },

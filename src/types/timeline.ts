@@ -105,6 +105,9 @@ export type SpellEventData = {
   curveDirection?: 'up' | 'down' | 'auto'  // Direction of curve
   curveRandomSeed?: number  // Random seed (0-1) for varying curves per dart
 
+  // Cone spell properties
+  coneAngle?: number        // Cone angle in degrees (for cone spells)
+
   // Target tracking properties
   targetTokenId?: string    // Token ID to track and follow
   trackTarget?: boolean     // Enable dynamic target tracking
