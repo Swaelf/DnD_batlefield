@@ -50,7 +50,9 @@ export const testScenarios: TestScenario[] = [
             id: 'test-token-1',
             name: 'Test Fighter',
             position: { x: 100, y: 100 },
-            size: 'medium'
+            size: 'medium',
+            color: '#3D82AB',
+            shape: 'circle'
           }
         },
         description: 'Add token to map'
@@ -115,7 +117,9 @@ export const testScenarios: TestScenario[] = [
             id: 'caster',
             name: 'Wizard',
             position: { x: 200, y: 300 },
-            size: 'medium'
+            size: 'medium',
+            color: '#3D82AB',
+            shape: 'circle'
           }
         },
         description: 'Add caster token'
@@ -128,7 +132,9 @@ export const testScenarios: TestScenario[] = [
             id: 'target',
             name: 'Goblin',
             position: { x: 500, y: 300 },
-            size: 'small'
+            size: 'small',
+            color: '#922610',
+            shape: 'circle'
           }
         },
         description: 'Add target token'
@@ -139,7 +145,8 @@ export const testScenarios: TestScenario[] = [
           type: 'castSpell',
           params: {
             spell: {
-              type: 'spell',
+              tokenId: 'caster',
+              targetTokenId: 'target',
               spellName: 'Fireball',
               category: 'projectile-burst',
               fromPosition: { x: 200, y: 300 },
@@ -175,7 +182,7 @@ export const testScenarios: TestScenario[] = [
       },
       {
         type: 'wait',
-        wait: 500,
+        wait: 1000,
         description: 'Wait for completion'
       },
       {
@@ -211,7 +218,9 @@ export const testScenarios: TestScenario[] = [
             id: 'select-test-1',
             name: 'Fighter',
             position: { x: 200, y: 200 },
-            size: 'medium'
+            size: 'medium',
+            color: '#3D82AB',
+            shape: 'circle'
           }
         },
         description: 'Add first token'
@@ -224,7 +233,9 @@ export const testScenarios: TestScenario[] = [
             id: 'select-test-2',
             name: 'Rogue',
             position: { x: 400, y: 200 },
-            size: 'medium'
+            size: 'medium',
+            color: '#10B981',
+            shape: 'circle'
           }
         },
         description: 'Add second token'
@@ -397,7 +408,9 @@ export const testScenarios: TestScenario[] = [
             id: 'ray-caster',
             name: 'Wizard',
             position: { x: 200, y: 300 },
-            size: 'medium'
+            size: 'medium',
+            color: '#3D82AB',
+            shape: 'circle'
           }
         },
         description: 'Add caster'
@@ -410,7 +423,9 @@ export const testScenarios: TestScenario[] = [
             id: 'ray-target',
             name: 'Enemy',
             position: { x: 400, y: 300 },
-            size: 'medium'
+            size: 'medium',
+            color: '#922610',
+            shape: 'circle'
           }
         },
         description: 'Add target'
@@ -421,12 +436,12 @@ export const testScenarios: TestScenario[] = [
           type: 'castSpell',
           params: {
             spell: {
-              type: 'spell',
+              tokenId: 'ray-caster',
+              targetTokenId: 'ray-target',
               spellName: 'Lightning Bolt',
               category: 'ray',
               fromPosition: { x: 200, y: 300 },
               toPosition: { x: 400, y: 300 },
-              targetTokenId: 'ray-target',
               trackTarget: true,
               color: '#00bfff',
               size: 10,
