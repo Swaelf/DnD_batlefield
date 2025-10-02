@@ -148,13 +148,9 @@ const AttackRendererComponent = ({
       }
 
       if (progress >= 1) {
-        // Impact effect at target
-        createImpactEffect(group, toPosition, color, isCritical)
+        // No impact effect for melee slash - just complete animation
         anim.stop()
-
-        setTimeout(() => {
-          onAnimationComplete?.()
-        }, ATTACK_VISUALS.IMPACT_FLASH_DURATION)
+        onAnimationComplete?.()
       }
     })
 
@@ -186,8 +182,8 @@ const AttackRendererComponent = ({
         y: fromPos.y,
         innerRadius: 0,
         outerRadius: coneRadius,
-        angle: 90, // 90-degree cone arc
-        rotation: (angle * 180) / Math.PI + 45, // Start from right side (45 degrees offset)
+        angle: 45, // 45-degree cone arc
+        rotation: (angle * 180) / Math.PI + 22.5, // Center cone on target direction (+22.5 to start right of center)
         fill: color,
         opacity: 0,
         stroke: color,
@@ -223,10 +219,11 @@ const AttackRendererComponent = ({
     // Calculate opacity with fade-in and fade-out
     const opacity = Math.sin(progress * Math.PI) * 0.8
 
-    // Sweep from right to left: start rotation at +45 degrees, end at -45 degrees (90-degree sweep)
-    // The rotation represents the starting edge of the arc
-    const baseRotation = effect.rotation() - 45 // Get base angle to target
-    const sweepAngle = -90 * progress // Negative for right-to-left sweep
+    // Sweep from right to left within 45-degree cone centered on target
+    // Arc is 45 degrees wide, starts at +22.5 degrees (right side)
+    // Sweep it by 45 degrees to end at -22.5 degrees (left side)
+    const baseRotation = effect.rotation() - 22.5 // Get base angle (center of target direction)
+    const sweepAngle = -45 * progress // Negative for right-to-left sweep through the 45-degree cone
     const currentRotation = baseRotation + sweepAngle
 
     // Scale effect for critical hits
