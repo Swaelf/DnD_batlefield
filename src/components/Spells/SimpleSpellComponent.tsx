@@ -760,19 +760,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
 
         return (
           <>
-            {/* Persistent fire cone area - shows where fire has spread */}
-            {spell.persistDuration && progress > 0.3 && (
-              <Line
-                points={fullConePoints}
-                closed={true}
-                fill={spell.persistColor || spell.color}
-                opacity={Math.min(progress * 2, 1) * (spell.persistOpacity || 0.3)}
-                shadowColor={spell.persistColor || spell.color}
-                shadowBlur={25}
-                shadowOpacity={0.5}
-              />
-            )}
-
             {/* Expanding fire arc waves */}
             {[0, 0.1, 0.2, 0.3].map((waveOffset, index) => {
               const wavePos = expansionProgress - waveOffset
