@@ -39,7 +39,7 @@ export const testScenarios: TestScenario[] = [
   {
     id: 'token-movement-basic',
     name: 'Basic Token Movement',
-    description: 'Tests token placement and movement',
+    description: 'Tests token placement and direct position updates',
     category: 'movement',
     steps: [
       {
@@ -65,11 +65,20 @@ export const testScenarios: TestScenario[] = [
       {
         type: 'assert',
         assert: {
+          type: 'tokenExists',
+          params: { tokenId: 'test-token-1' },
+          expected: true
+        },
+        description: 'Verify token exists'
+      },
+      {
+        type: 'assert',
+        assert: {
           type: 'tokenPosition',
           params: { tokenId: 'test-token-1' },
           expected: { x: 100, y: 100 }
         },
-        description: 'Verify token position'
+        description: 'Verify initial position'
       },
       {
         type: 'action',
@@ -80,12 +89,12 @@ export const testScenarios: TestScenario[] = [
             toPosition: { x: 300, y: 200 }
           }
         },
-        description: 'Move token'
+        description: 'Move token to new position'
       },
       {
         type: 'wait',
-        wait: 1500,
-        description: 'Wait for animation'
+        wait: 100,
+        description: 'Wait for state update'
       },
       {
         type: 'capture',
@@ -481,6 +490,91 @@ export const testScenarios: TestScenario[] = [
         type: 'wait',
         wait: 500,
         description: 'Wait for completion'
+      }
+    ]
+  },
+  {
+    id: 'token-animated-movement',
+    name: 'Animated Token Movement (Timeline)',
+    description: 'Tests token movement with timeline-based animation',
+    category: 'movement',
+    steps: [
+      {
+        type: 'action',
+        action: {
+          type: 'addToken',
+          params: {
+            id: 'animated-token',
+            name: 'Rogue',
+            position: { x: 150, y: 150 },
+            size: 'medium',
+            color: '#10B981',
+            shape: 'circle'
+          }
+        },
+        description: 'Add token for animated movement'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'startCombat',
+          params: {}
+        },
+        description: 'Start combat to enable timeline'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              const mapStore = (await import('@/store/mapStore')).default.getState()
+
+              // Add movement event to timeline
+              if (roundStore.timeline) {
+                roundStore.addEvent('animated-token', 'move', {
+                  fromPosition: { x: 150, y: 150 },
+                  toPosition: { x: 400, y: 300 },
+                  duration: 1000
+                }, 1)
+              }
+            }
+          }
+        },
+        description: 'Add movement event to timeline'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'before-animation' },
+        description: 'Capture before animation'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'nextRound',
+          params: {}
+        },
+        description: 'Execute round (triggers animation)'
+      },
+      {
+        type: 'wait',
+        wait: 1200,
+        description: 'Wait for animation to complete'
+      },
+      {
+        type: 'capture',
+        capture: { name: 'after-animation' },
+        description: 'Capture after animation'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'tokenPosition',
+          params: { tokenId: 'animated-token' },
+          expected: { x: 400, y: 300 }
+        },
+        description: 'Verify final position after animation'
       }
     ]
   },
