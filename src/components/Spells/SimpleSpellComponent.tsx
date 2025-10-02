@@ -743,18 +743,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
 
         // Calculate cone edges
         const leftAngle = coneDirection - coneAngle / 2
-        const rightAngle = coneDirection + coneAngle / 2
-
-        // Full cone area points for persistent effect
-        const fullConePoints = [
-          spell.fromPosition.x, spell.fromPosition.y,
-          spell.fromPosition.x + Math.cos(leftAngle) * coneLength,
-          spell.fromPosition.y + Math.sin(leftAngle) * coneLength,
-          spell.fromPosition.x + Math.cos(coneDirection) * coneLength,
-          spell.fromPosition.y + Math.sin(coneDirection) * coneLength,
-          spell.fromPosition.x + Math.cos(rightAngle) * coneLength,
-          spell.fromPosition.y + Math.sin(rightAngle) * coneLength
-        ]
 
         const coneOpacity = progress < 0.8 ? 0.7 : (1 - progress) * 3.5
 
@@ -801,7 +789,7 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
                   {/* Fire trail - darker red */}
                   {trailStart > 0 && (
                     <Line
-                      points={arcPoints.map((val, i) => {
+                      points={arcPoints.map((_val, i) => {
                         const isX = i % 2 === 0
                         const segmentIndex = Math.floor(i / 2)
                         const angle = leftAngle + (coneAngle * segmentIndex / arcSegments)

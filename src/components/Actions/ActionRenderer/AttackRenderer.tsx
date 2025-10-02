@@ -180,7 +180,7 @@ const AttackRendererComponent = ({
       } else if (animation === 'melee_thrust') {
         animateThrustEffect(effect as Konva.Line, progress, isCritical, arrowTrails)
       } else {
-        animateSwingEffect(effect as Konva.Circle, progress, isCritical)
+        animateSwingEffect(effect as Konva.Group, progress, isCritical)
       }
 
       if (progress >= 1) {
@@ -200,10 +200,8 @@ const AttackRendererComponent = ({
     toPos: { x: number; y: number },
     color: string,
     range?: number
-  ): Konva.Arc | Konva.Line | Konva.Circle => {
+  ): Konva.Arc | Konva.Line | Konva.Group => {
     const angle = Math.atan2(toPos.y - fromPos.y, toPos.x - fromPos.x)
-    const midX = (fromPos.x + toPos.x) / 2
-    const midY = (fromPos.y + toPos.y) / 2
 
     if (animation === 'melee_slash') {
       // Create line for slash that sweeps through cone
@@ -238,16 +236,42 @@ const AttackRendererComponent = ({
         opacity: 0,
       })
     } else {
-      // Default swing effect
-      return new Konva.Circle({
-        x: midX,
-        y: midY,
-        radius: 0,
-        fill: color,
+      // Default swing effect - create hammer with dynamic handle
+      // The handle will be drawn dynamically from source to hammer position
+      const hammerGroup = new Konva.Group({
+        x: 0,
+        y: 0,
         opacity: 0,
-        stroke: color,
-        strokeWidth: 2,
       })
+
+      const hammerSize = 12
+
+      // Hammer handle (will be positioned dynamically in animation)
+      const handle = new Konva.Line({
+        name: 'hammer-handle',
+        points: [fromPos.x, fromPos.y, fromPos.x, fromPos.y], // Will be updated
+        stroke: '#654321',
+        strokeWidth: 3,
+        lineCap: 'round',
+      })
+
+      // Hammer head (metal rectangle, will be positioned at end of handle)
+      const head = new Konva.Rect({
+        name: 'hammer-head',
+        x: fromPos.x - hammerSize / 2,
+        y: fromPos.y - hammerSize / 2,
+        width: hammerSize,
+        height: hammerSize,
+        fill: color,
+        stroke: '#8B7355',
+        strokeWidth: 2,
+        cornerRadius: 2,
+      })
+
+      hammerGroup.add(handle)
+      hammerGroup.add(head)
+
+      return hammerGroup
     }
   }
 
@@ -465,12 +489,171 @@ const AttackRendererComponent = ({
     }
   }
 
-  const animateSwingEffect = (effect: Konva.Circle, progress: number, isCritical?: boolean) => {
-    const radius = 25 * progress * (isCritical ? CRITICAL_HIT.EFFECT_SCALE : 1)
-    const opacity = Math.sin(progress * Math.PI)
+  const animateSwingEffect = (effect: Konva.Group, progress: number, _isCritical?: boolean) => {
+    const { fromPosition, toPosition, color, range } = attack
 
-    effect.radius(radius)
-    effect.opacity(opacity * 0.6)
+    // Calculate direction and distance
+    const angle = Math.atan2(toPosition.y - fromPosition.y, toPosition.x - fromPosition.x)
+    const PIXELS_PER_SQUARE = 50
+    const rangeInSquares = (range || 5) / 5
+    const maxDistance = rangeInSquares * PIXELS_PER_SQUARE
+
+    const fullDistance = Math.sqrt(
+      Math.pow(toPosition.x - fromPosition.x, 2) +
+      Math.pow(toPosition.y - fromPosition.y, 2)
+    )
+    const travelDistance = Math.min(fullDistance, maxDistance)
+
+    // Calculate target position
+    const targetX = fromPosition.x + Math.cos(angle) * travelDistance
+    const targetY = fromPosition.y + Math.sin(angle) * travelDistance
+
+    // Two-phase animation: fall from Z-axis (0-0.7), burst (0.7-1.0)
+    let hammerX, hammerY, hammerScale, hammerOpacity, showBurst = false
+
+    if (progress <= 0.7) {
+      // Phase 1: Fall from Z-axis (simulated by scaling and position interpolation)
+      const fallProgress = progress / 0.7 // 0 to 1
+
+      // Interpolate position from source to target
+      hammerX = fromPosition.x + (targetX - fromPosition.x) * fallProgress
+      hammerY = fromPosition.y + (targetY - fromPosition.y) * fallProgress
+
+      // Scale grows as hammer "falls closer" (Z-axis simulation)
+      // Starts small (0.2) and grows to full size (1.0)
+      hammerScale = 0.2 + (0.8 * fallProgress)
+      hammerOpacity = 0.5 + (0.4 * fallProgress) // Fade in as it approaches
+    } else {
+      // Phase 2: Impact - hammer disappears, burst appears
+      const burstProgress = (progress - 0.7) / 0.3 // 0 to 1
+      hammerX = targetX
+      hammerY = targetY
+      hammerScale = 1.0
+      hammerOpacity = Math.max(0, 0.9 - burstProgress * 2) // Quick fade out
+      showBurst = true
+    }
+
+    // Update hammer group opacity
+    effect.opacity(hammerOpacity)
+
+    // Get handle and head from group
+    const handle = effect.findOne('.hammer-handle') as Konva.Line
+    const head = effect.findOne('.hammer-head') as Konva.Rect
+
+    if (handle && head) {
+      // Update handle - always connects from source to hammer position
+      handle.points([fromPosition.x, fromPosition.y, hammerX, hammerY])
+
+      // Update hammer head position and scale
+      const hammerSize = 12
+      const scaledSize = hammerSize * hammerScale
+
+      head.x(hammerX - scaledSize / 2)
+      head.y(hammerY - scaledSize / 2)
+      head.width(scaledSize)
+      head.height(scaledSize)
+      head.fill(color)
+    }
+
+    // Create expanding ring burst effect on impact with trailing rings
+    if (showBurst && progress >= 0.7) {
+      const burstProgress = (progress - 0.7) / 0.3
+
+      // Get parent group to add burst effect
+      const group = effect.getParent() as Konva.Group
+      if (group) {
+        // Remove old bursts if exist
+        group.find('.hammer-burst').forEach(node => node.destroy())
+
+        // Create expanding ring (0.6 grid cells = 30px max radius - smaller burst)
+        const maxRadius = PIXELS_PER_SQUARE * 0.6 // Smaller burst
+        const ringThickness = 3 // Thinner ring
+
+        // Main expanding ring with radial gradient (0% opacity at center, 100% at border)
+        const currentRadius = maxRadius * burstProgress
+
+        // Create a circle with radial gradient for gradient effect
+        // Convert hex color to rgba for gradient with alpha
+        const hexToRgba = (hex: string, alpha: number) => {
+          const r = parseInt(hex.slice(1, 3), 16)
+          const g = parseInt(hex.slice(3, 5), 16)
+          const b = parseInt(hex.slice(5, 7), 16)
+          return `rgba(${r}, ${g}, ${b}, ${alpha})`
+        }
+
+        const gradientCircle = new Konva.Circle({
+          name: 'hammer-burst',
+          x: targetX,
+          y: targetY,
+          radius: currentRadius,
+          fillRadialGradientStartPoint: { x: 0, y: 0 },
+          fillRadialGradientStartRadius: 0,
+          fillRadialGradientEndPoint: { x: 0, y: 0 },
+          fillRadialGradientEndRadius: currentRadius,
+          fillRadialGradientColorStops: [
+            0, hexToRgba(color, 0),      // 0% position: fully transparent center
+            0.7, hexToRgba(color, 0.4),  // 70% position: semi-transparent
+            1, hexToRgba(color, 0.7)     // 100% position: 70% opacity at edge
+          ],
+          opacity: (1 - burstProgress),
+          stroke: color,
+          strokeWidth: 1.5,
+          strokeOpacity: (1 - burstProgress) * 0.9,
+        })
+        group.add(gradientCircle)
+
+        // Add 2 trailing rings behind the main ring
+        for (let i = 1; i <= 2; i++) {
+          const trailLag = i * 0.15 // Each trail lags by 15%
+          const trailProgress = Math.max(0, burstProgress - trailLag)
+
+          if (trailProgress > 0) {
+            const trailRadius = maxRadius * trailProgress
+            const trailOpacity = (1 - trailProgress) * 0.4 * (1 - i * 0.3) // Fainter trails
+
+            const trailRing = new Konva.Ring({
+              name: 'hammer-burst',
+              x: targetX,
+              y: targetY,
+              innerRadius: Math.max(0, trailRadius - ringThickness),
+              outerRadius: trailRadius,
+              fill: color,
+              opacity: trailOpacity,
+              stroke: color,
+              strokeWidth: 1,
+              strokeOpacity: trailOpacity,
+            })
+            group.add(trailRing)
+          }
+        }
+
+        // Add 3 aftershock waves after the main burst
+        for (let i = 1; i <= 3; i++) {
+          const aftershockDelay = i * 0.2 // Each aftershock starts 20% later
+          const aftershockProgress = Math.max(0, burstProgress - aftershockDelay)
+
+          if (aftershockProgress > 0) {
+            const aftershockRadius = maxRadius * aftershockProgress
+            const baseOpacity = 0.3 - (i * 0.07) // Decreasing base opacity: 0.3, 0.23, 0.16
+            const aftershockOpacity = (1 - aftershockProgress) * baseOpacity
+
+            const aftershockRing = new Konva.Ring({
+              name: 'hammer-burst',
+              x: targetX,
+              y: targetY,
+              innerRadius: Math.max(0, aftershockRadius - ringThickness),
+              outerRadius: aftershockRadius,
+              fill: color,
+              opacity: aftershockOpacity,
+              stroke: color,
+              strokeWidth: 0.8,
+              strokeOpacity: aftershockOpacity * 0.8,
+            })
+            group.add(aftershockRing)
+          }
+        }
+      }
+    }
   }
 
   const createImpactEffect = (
