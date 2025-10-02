@@ -204,7 +204,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     if (isToken(obj)) {
       return (
         <Token
-          key={obj.id}
+          key={`${obj.id}-${obj.position.x}-${obj.position.y}`}
           token={obj}
           gridSize={gridSettings?.size || 50}
           isSelected={isSelected}
