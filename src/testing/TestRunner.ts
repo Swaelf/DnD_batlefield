@@ -203,9 +203,8 @@ export class TestRunner {
         break
 
       case 'moveToken':
-        mapStore.updateObject(action.params.tokenId, {
-          position: action.params.toPosition
-        })
+        // Use updateObjectPosition for direct position updates
+        mapStore.updateObjectPosition(action.params.tokenId, action.params.toPosition)
         break
 
       case 'selectToken':
