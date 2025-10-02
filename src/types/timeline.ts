@@ -132,6 +132,9 @@ export type AttackEventData = {
   actualDamage?: number    // Actual damage dealt (after roll)
   properties?: string[]     // Weapon properties (finesse, reach, etc.)
   weaponType?: string      // Specific weapon (longsword, shortbow, etc.)
+
+  // Target tracking properties
+  targetTokenId?: string    // Token ID to track and follow (like spells)
 }
 
 // Object interaction event data for doors, traps, levers, containers, etc.

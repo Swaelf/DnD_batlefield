@@ -8,14 +8,16 @@ import type { TestScenario } from './TestScenarios'
  * 2. Add token 2 (attacker) at (500, 200)
  * 3. Move token 1 to (300, 400)
  * 4. Move token 2 to (600, 300)
- * 5. Token 2 performs melee attack on token 1
- * 6. Token 2 performs ranged attack on token 1's initial position
+ * 5. Token 2 performs attack on token 1 (tracking - follows movement)
+ * 6. Token 2 performs attack on token 1's INITIAL position (static - no tracking)
  * 7. Execute event
  */
 
-// Attack configurations for testing
+// Attack configurations for testing - matches attackTemplates.ts exactly
 const attackConfigs = [
-  // Melee attacks
+  // ===== MELEE ATTACKS =====
+
+  // Slashing - Longsword
   {
     id: 'longsword-slash',
     name: 'Longsword (Slashing)',
@@ -28,6 +30,8 @@ const attackConfigs = [
     duration: 600,
     range: 5
   },
+
+  // Piercing - Rapier
   {
     id: 'rapier-pierce',
     name: 'Rapier (Piercing)',
@@ -35,11 +39,13 @@ const attackConfigs = [
     attackType: 'melee' as const,
     damageType: 'piercing',
     damage: '1d8+2',
-    animation: 'melee_thrust',
+    animation: 'melee_slash',
     color: '#B0B0B0',
     duration: 500,
     range: 5
   },
+
+  // Bludgeoning - Warhammer
   {
     id: 'warhammer-bludgeon',
     name: 'Warhammer (Bludgeoning)',
@@ -52,44 +58,10 @@ const attackConfigs = [
     duration: 700,
     range: 5
   },
-  {
-    id: 'greatsword-slash',
-    name: 'Greatsword (Slashing)',
-    weaponName: 'Greatsword',
-    attackType: 'melee' as const,
-    damageType: 'slashing',
-    damage: '2d6+3',
-    animation: 'melee_slash',
-    color: '#D3D3D3',
-    duration: 800,
-    range: 5
-  },
-  {
-    id: 'dagger-pierce',
-    name: 'Dagger (Piercing)',
-    weaponName: 'Dagger',
-    attackType: 'melee' as const,
-    damageType: 'piercing',
-    damage: '1d4+2',
-    animation: 'melee_thrust',
-    color: '#A9A9A9',
-    duration: 400,
-    range: 5
-  },
-  {
-    id: 'mace-bludgeon',
-    name: 'Mace (Bludgeoning)',
-    weaponName: 'Mace',
-    attackType: 'melee' as const,
-    damageType: 'bludgeoning',
-    damage: '1d6+3',
-    animation: 'melee_swing',
-    color: '#696969',
-    duration: 600,
-    range: 5
-  },
 
-  // Ranged attacks
+  // ===== RANGED ATTACKS =====
+
+  // Piercing - Longbow
   {
     id: 'longbow-pierce',
     name: 'Longbow (Piercing)',
@@ -102,30 +74,8 @@ const attackConfigs = [
     duration: 800,
     range: 150
   },
-  {
-    id: 'shortbow-pierce',
-    name: 'Shortbow (Piercing)',
-    weaponName: 'Shortbow',
-    attackType: 'ranged' as const,
-    damageType: 'piercing',
-    damage: '1d6+2',
-    animation: 'projectile',
-    color: '#A0522D',
-    duration: 700,
-    range: 80
-  },
-  {
-    id: 'crossbow-pierce',
-    name: 'Crossbow (Piercing)',
-    weaponName: 'Light Crossbow',
-    attackType: 'ranged' as const,
-    damageType: 'piercing',
-    damage: '1d8+2',
-    animation: 'projectile',
-    color: '#654321',
-    duration: 600,
-    range: 80
-  },
+
+  // Piercing - Thrown Dagger
   {
     id: 'thrown-dagger',
     name: 'Thrown Dagger (Piercing)',
@@ -138,18 +88,8 @@ const attackConfigs = [
     duration: 500,
     range: 20
   },
-  {
-    id: 'javelin-pierce',
-    name: 'Javelin (Piercing)',
-    weaponName: 'Javelin',
-    attackType: 'ranged' as const,
-    damageType: 'piercing',
-    damage: '1d6+3',
-    animation: 'projectile',
-    color: '#8B7355',
-    duration: 700,
-    range: 30
-  },
+
+  // Bludgeoning - Sling
   {
     id: 'sling-bludgeon',
     name: 'Sling (Bludgeoning)',
@@ -259,7 +199,7 @@ export const generateAttackTestScenarios = (): TestScenario[] => {
                     duration: 600
                   }, 1)
 
-                  // 3. Token 2 attacks Token 1 (from final positions)
+                  // 3. Token 2 attacks Token 1 (from final positions - tracking)
                   roundStore.addAction(token2Id, 'attack', {
                     type: 'attack',
                     weaponName: attack.weaponName,
@@ -273,7 +213,8 @@ export const generateAttackTestScenarios = (): TestScenario[] => {
                     duration: attack.duration,
                     animation: attack.animation,
                     color: attack.color,
-                    isCritical: false
+                    isCritical: false,
+                    targetTokenId: token1Id // Track moving target
                   }, 1)
 
                   // 4. Token 2 attacks Token 1's INITIAL position (static target)
@@ -291,6 +232,7 @@ export const generateAttackTestScenarios = (): TestScenario[] => {
                     animation: attack.animation,
                     color: attack.color,
                     isCritical: false
+                    // NO targetTokenId - static position
                   }, 1)
                 }
               }
@@ -389,3 +331,6 @@ export const getAttackTest = (attackId: string): TestScenario | undefined => {
   const allScenarios = generateAttackTestScenarios()
   return allScenarios.find(scenario => scenario.id === `attack-movement-tracking-${attackId}`)
 }
+
+// Export attack count for test runner info
+export const attackTestCount = attackConfigs.length
