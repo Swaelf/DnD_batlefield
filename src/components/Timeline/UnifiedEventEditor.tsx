@@ -319,15 +319,17 @@ const UnifiedEventEditorComponent = ({
           type: 'attack',
           tokenId: selectedToken, // ✅ FIX: Include attacker token ID for position lookup
           weaponName: action.metadata.name || 'Weapon',
-          attackType: action.category === 'sword' ? 'melee' : 'ranged',
+          attackType: action.category, // Use category directly ('melee' or 'ranged')
           fromPosition: action.source,
           toPosition: action.target,
-          damage: '1d8',
-          damageType: 'slashing',
-          attackBonus: 0,
+          damage: action.damage || '1d8',
+          damageType: action.damageType || 'slashing',
+          attackBonus: 5, // Default attack bonus
+          range: action.range || 5,
           duration: action.animation.duration || 800,
-          animation: 'melee_swing',
+          animation: action.animation.type, // Use the animation type from template
           color: action.animation.color || '#FFFFFF',
+          isCritical: false,
           targetTokenId: finalTargetTokenId || ''
         }
 
