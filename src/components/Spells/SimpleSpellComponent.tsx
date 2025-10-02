@@ -735,62 +735,53 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         const PIXELS_PER_FOOT = 8  // Doubled from 4 to 8 for more dramatic range
         const coneLength = (spell.size || 30) * PIXELS_PER_FOOT
         const coneAngle = (spell.coneAngle || 60) * (Math.PI / 180) // Convert degrees to radians
-        const waveProgress = Math.min(progress * 1.5, 1) // Faster wave progression
+        const waveProgress = Math.min(progress * 1.2, 1) // Wave progression
 
         // Calculate cone direction
         const coneDx = getTargetPosition().x - spell.fromPosition.x
         const coneDy = getTargetPosition().y - spell.fromPosition.y
         const coneDirection = Math.atan2(coneDy, coneDx)
 
-        // Calculate cone polygon points
-        const coneEndX = spell.fromPosition.x + Math.cos(coneDirection) * coneLength * waveProgress
-        const coneEndY = spell.fromPosition.y + Math.sin(coneDirection) * coneLength * waveProgress
-
         // Calculate cone edges
         const leftAngle = coneDirection - coneAngle / 2
         const rightAngle = coneDirection + coneAngle / 2
 
-        const leftX = spell.fromPosition.x + Math.cos(leftAngle) * coneLength * waveProgress
-        const leftY = spell.fromPosition.y + Math.sin(leftAngle) * coneLength * waveProgress
+        // Full cone area (for background fill)
+        const fullLeftX = spell.fromPosition.x + Math.cos(leftAngle) * coneLength
+        const fullLeftY = spell.fromPosition.y + Math.sin(leftAngle) * coneLength
+        const fullRightX = spell.fromPosition.x + Math.cos(rightAngle) * coneLength
+        const fullRightY = spell.fromPosition.y + Math.sin(rightAngle) * coneLength
+        const fullCenterX = spell.fromPosition.x + Math.cos(coneDirection) * coneLength
+        const fullCenterY = spell.fromPosition.y + Math.sin(coneDirection) * coneLength
 
-        const rightX = spell.fromPosition.x + Math.cos(rightAngle) * coneLength * waveProgress
-        const rightY = spell.fromPosition.y + Math.sin(rightAngle) * coneLength * waveProgress
-
-        // Create cone WITHOUT origin point to avoid glow at source
-        const conePoints = [
-          leftX, leftY,          // Left edge
-          coneEndX, coneEndY,    // Center end
-          rightX, rightY         // Right edge
+        const fullConePoints = [
+          spell.fromPosition.x, spell.fromPosition.y, // Origin
+          fullLeftX, fullLeftY,                        // Left edge
+          fullCenterX, fullCenterY,                    // Center end
+          fullRightX, fullRightY                       // Right edge
         ]
 
-        const coneOpacity = progress < 0.8 ? 0.7 : (1 - progress) * 3.5
+        const coneOpacity = progress < 0.8 ? 0.6 : (1 - progress) * 3
 
         return (
           <>
-            {/* Main cone shape - no fill at origin */}
+            {/* Background cone area - full cone with color */}
             <Line
-              points={conePoints}
+              points={fullConePoints}
               closed={true}
               fill={spell.color}
-              opacity={coneOpacity * 0.4}
+              opacity={coneOpacity * 0.25}
               shadowColor={spell.color}
-              shadowBlur={20}
-              shadowOpacity={0.6}
+              shadowBlur={30}
+              shadowOpacity={0.4}
             />
 
-            {/* Brighter inner cone */}
-            <Line
-              points={conePoints}
-              closed={true}
-              fill={spell.secondaryColor || spell.color}
-              opacity={coneOpacity * 0.3}
-            />
+            {/* Traveling wave fronts - realistic wave progression */}
+            {[0, 0.15, 0.3, 0.45, 0.6].map((waveOffset, index) => {
+              const wavePos = waveProgress - waveOffset
+              if (wavePos <= 0 || wavePos > 1) return null
 
-            {/* Wave effect - multiple concentric cones */}
-            {[0.2, 0.4, 0.6, 0.8, 1.0].map((wavePos, index) => {
-              if (waveProgress < wavePos) return null
-
-              const waveDistance = coneLength * wavePos * waveProgress
+              const waveDistance = coneLength * wavePos
               const waveLeftX = spell.fromPosition.x + Math.cos(leftAngle) * waveDistance
               const waveLeftY = spell.fromPosition.y + Math.sin(leftAngle) * waveDistance
               const waveRightX = spell.fromPosition.x + Math.cos(rightAngle) * waveDistance
@@ -798,17 +789,20 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
               const waveCenterX = spell.fromPosition.x + Math.cos(coneDirection) * waveDistance
               const waveCenterY = spell.fromPosition.y + Math.sin(coneDirection) * waveDistance
 
+              // Wave intensity based on position (stronger at front)
+              const waveIntensity = Math.pow(1 - waveOffset / 0.6, 2)
+
               return (
                 <Line
-                  key={wavePos}
+                  key={index}
                   points={[waveLeftX, waveLeftY, waveCenterX, waveCenterY, waveRightX, waveRightY]}
-                  stroke={spell.secondaryColor || '#FFFFFF'}
-                  strokeWidth={3}
-                  opacity={(1 - wavePos) * coneOpacity * 0.9}
+                  stroke={spell.secondaryColor || '#FFD700'}
+                  strokeWidth={5 * waveIntensity}
+                  opacity={waveIntensity * coneOpacity}
                   lineCap="round"
                   lineJoin="round"
-                  shadowColor={spell.secondaryColor || '#FFFFFF'}
-                  shadowBlur={10}
+                  shadowColor={spell.secondaryColor || '#FFD700'}
+                  shadowBlur={15 * waveIntensity}
                 />
               )
             })}
