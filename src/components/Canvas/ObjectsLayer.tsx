@@ -21,6 +21,16 @@ import { isToken, isShape, isText, isSpell, isAttack, isPersistentArea } from '.
 // Track completed spell animations to prevent duplicate persistent areas
 const completedSpellAnimations = new Set<string>()
 
+// ✅ STABLE SELECTORS: Define selectors outside component to avoid re-creating on every render
+const selectObjects = (state: any) => state.currentMap?.objects || []
+const selectGridSettings = (state: any) => state.currentMap?.grid
+const selectSelectedObjects = (state: any) => state.selectedObjects
+const selectDeleteObject = (state: any) => state.deleteObject
+const selectUpdateObjectPosition = (state: any) => state.updateObjectPosition
+const selectBatchUpdatePosition = (state: any) => state.batchUpdatePosition
+const selectCurrentTool = (state: any) => state.currentTool
+const selectCurrentEvent = (state: any) => state.currentEvent
+
 type ObjectsLayerProps = {
   onObjectClick?: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void
   onObjectDragEnd?: (id: string, newPosition: { x: number; y: number }) => void
@@ -39,17 +49,17 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   onTokenDeselect,
   stageRef
 }) => {
-  // ✅ OPTIMIZED: Use granular selectors to prevent unnecessary re-renders
-  const objects = useMapStore(state => state.currentMap?.objects || [])
-  const gridSettings = useMapStore(state => state.currentMap?.grid)
-  const selectedObjects = useMapStore(state => state.selectedObjects)
-  const deleteObject = useMapStore(state => state.deleteObject)
-  const updateObjectPosition = useMapStore(state => state.updateObjectPosition)
-  const batchUpdatePosition = useMapStore(state => state.batchUpdatePosition)
-  const currentTool = useToolStore(state => state.currentTool)
+  // ✅ OPTIMIZED: Use granular selectors with stable references
+  const objects = useMapStore(selectObjects)
+  const gridSettings = useMapStore(selectGridSettings)
+  const selectedObjects = useMapStore(selectSelectedObjects)
+  const deleteObject = useMapStore(selectDeleteObject)
+  const updateObjectPosition = useMapStore(selectUpdateObjectPosition)
+  const batchUpdatePosition = useMapStore(selectBatchUpdatePosition)
+  const currentTool = useToolStore(selectCurrentTool)
   const { isPicking, setSelectedToken } = useEventCreationStore()
   const { activePaths } = useAnimationStore()
-  const currentEvent = useTimelineStore(state => state.currentEvent)
+  const currentEvent = useTimelineStore(selectCurrentEvent)
   const { layers, getDefaultLayerForObjectType, migrateNumericLayer } = useLayerStore()
   const { handleContextMenu } = useContextMenu()
 
