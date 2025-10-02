@@ -702,6 +702,14 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       const coneLength = (area.persistentAreaData.radius || 30) * PIXELS_PER_FOOT
       const coneAngle = (area.persistentAreaData.coneAngle || 60) * (Math.PI / 180)
 
+      console.log('[ObjectsLayer] Cone calculation:', {
+        fromPosition: area.persistentAreaData.fromPosition,
+        toPosition: area.persistentAreaData.toPosition,
+        radius: area.persistentAreaData.radius,
+        coneLength,
+        coneAngle
+      })
+
       const dx = area.persistentAreaData.toPosition.x - area.persistentAreaData.fromPosition.x
       const dy = area.persistentAreaData.toPosition.y - area.persistentAreaData.fromPosition.y
       const direction = Math.atan2(dy, dx)
@@ -719,6 +727,8 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         area.persistentAreaData.fromPosition.x + Math.cos(rightAngle) * coneLength,
         area.persistentAreaData.fromPosition.y + Math.sin(rightAngle) * coneLength
       ]
+
+      console.log('[ObjectsLayer] Cone points:', conePoints)
 
       return (
         <Line
