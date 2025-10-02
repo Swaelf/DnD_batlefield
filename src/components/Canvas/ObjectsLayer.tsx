@@ -30,6 +30,12 @@ const selectUpdateObjectPosition = (state: { updateObjectPosition: (id: string, 
 const selectBatchUpdatePosition = (state: { batchUpdatePosition: (objectIds: string[], deltaPosition: { x: number; y: number }) => void }) => state.batchUpdatePosition
 const selectCurrentTool = (state: { currentTool: string }) => state.currentTool
 const selectCurrentEvent = (state: { currentEvent: number }) => state.currentEvent
+const selectIsPicking = (state: { isPicking: string | null }) => state.isPicking
+const selectSetSelectedToken = (state: { setSelectedToken: (id: string) => void }) => state.setSelectedToken
+const selectActivePaths = (state: { activePaths: any[] }) => state.activePaths
+const selectLayers = (state: { layers: any[] }) => state.layers
+const selectGetDefaultLayerForObjectType = (state: { getDefaultLayerForObjectType: (type: string) => string }) => state.getDefaultLayerForObjectType
+const selectMigrateNumericLayer = (state: { migrateNumericLayer: (layer: number) => string }) => state.migrateNumericLayer
 
 type ObjectsLayerProps = {
   onObjectClick?: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void
@@ -55,10 +61,13 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   const updateObjectPosition = useMapStore(selectUpdateObjectPosition)
   const batchUpdatePosition = useMapStore(selectBatchUpdatePosition)
   const currentTool = useToolStore(selectCurrentTool)
-  const { isPicking, setSelectedToken } = useEventCreationStore()
-  const { activePaths } = useAnimationStore()
+  const isPicking = useEventCreationStore(selectIsPicking)
+  const setSelectedToken = useEventCreationStore(selectSetSelectedToken)
+  const activePaths = useAnimationStore(selectActivePaths)
   const currentEvent = useTimelineStore(selectCurrentEvent)
-  const { layers, getDefaultLayerForObjectType, migrateNumericLayer } = useLayerStore()
+  const layers = useLayerStore(selectLayers)
+  const getDefaultLayerForObjectType = useLayerStore(selectGetDefaultLayerForObjectType)
+  const migrateNumericLayer = useLayerStore(selectMigrateNumericLayer)
   const { handleContextMenu } = useContextMenu()
 
   // NOTE: Viewport culling disabled due to infinite loop issues with forceUpdate
