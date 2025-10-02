@@ -39,7 +39,7 @@ const attackConfigs = [
     attackType: 'melee' as const,
     damageType: 'piercing',
     damage: '1d8+2',
-    animation: 'melee_slash',
+    animation: 'melee_thrust',
     color: '#B0B0B0',
     duration: 500,
     range: 5

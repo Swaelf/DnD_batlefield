@@ -46,7 +46,7 @@ export const attackTemplates: UnifiedAction[] = [
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'melee_slash',
+      type: 'melee_thrust',
       duration: 500,
       color: '#B0B0B0',
       size: 35
