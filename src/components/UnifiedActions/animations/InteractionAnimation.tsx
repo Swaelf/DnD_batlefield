@@ -1,6 +1,7 @@
-import { memo, useRef, useEffect } from 'react'
+import { memo, useRef, useEffect, useMemo, useState } from 'react'
 import { Group, Rect, Circle, Line, RegularPolygon } from 'react-konva'
 import Konva from 'konva'
+import { EASING } from '@/lib/animation-effects'
 import type { UnifiedAction } from '@/types/unifiedAction'
 import type { Point } from '@/types/geometry'
 
@@ -13,171 +14,155 @@ const InteractionAnimationComponent = ({ action, onComplete }: InteractionAnimat
   const groupRef = useRef<Konva.Group>(null)
   const iconRef = useRef<Konva.Shape>(null)
   const pulseRef = useRef<Konva.Circle>(null)
-  const animationRef = useRef<Konva.Animation | null>(null)
-  const hasStartedRef = useRef(false)
+  const rafRef = useRef<number>(0)
+  const startTimeRef = useRef(Date.now())
+  const [progress, setProgress] = useState(0)
 
-  useEffect(() => {
-    if (!groupRef.current || hasStartedRef.current) return
-    hasStartedRef.current = true
-
-    const group = groupRef.current
-    const icon = iconRef.current
-    const pulse = pulseRef.current
-
-    if (!icon) return
-
-    // Get interaction position
-    const position = typeof action.target === 'object' && !Array.isArray(action.target)
+  // Parse animation parameters
+  const params = useMemo(() => ({
+    position: typeof action.target === 'object' && !Array.isArray(action.target)
       ? action.target as Point
       : typeof action.source === 'object'
         ? action.source as Point
-        : { x: 0, y: 0 }
+        : { x: 0, y: 0 },
+    duration: action.animation.duration || 1000,
+    color: action.animation.color || '#FFD700',
+    size: action.animation.size || 30,
+    category: action.category
+  }), [action])
 
-    // Position group at interaction point
-    group.position(position)
-    group.visible(true)
+  // RAF animation loop
+  useEffect(() => {
+    startTimeRef.current = Date.now()
+    const animate = () => {
+      const elapsed = Date.now() - startTimeRef.current
+      const newProgress = Math.min(elapsed / params.duration, 1)
+      setProgress(newProgress)
 
-    const duration = action.animation.duration || 1000
-    const color = action.animation.color || '#FFD700'
-
-    const startTime = Date.now()
-
-    const anim = new Konva.Animation((frame) => {
-      if (!frame) return
-
-      const elapsed = Date.now() - startTime
-      const progress = Math.min(elapsed / duration, 1)
-
-      // Different animations based on interaction type
-      switch (action.category) {
-        case 'door':
-          // Door opening animation
-          if (progress < 0.5) {
-            const openProgress = progress * 2
-            icon.rotation(openProgress * 90) // Rotate to show opening
-            icon.opacity(1)
-          } else {
-            icon.opacity(2 - progress * 2) // Fade out
-          }
-          break
-
-        case 'lever':
-        case 'switch':
-          // Lever/switch animation
-          if (progress < 0.3) {
-            // Pull down
-            icon.scaleY(1 - progress * 2)
-            icon.y(progress * 10)
-          } else if (progress < 0.6) {
-            // Spring back
-            const springProgress = (progress - 0.3) / 0.3
-            icon.scaleY(0.4 + springProgress * 0.6)
-            icon.y(10 - springProgress * 10)
-          } else {
-            // Hold and fade
-            icon.scaleY(1)
-            icon.y(0)
-            icon.opacity(1 - (progress - 0.6) / 0.4)
-          }
-          break
-
-        case 'chest':
-        case 'container':
-          // Chest opening animation
-          if (progress < 0.4) {
-            const openProgress = progress / 0.4
-            icon.scaleY(1 + openProgress * 0.3) // Lid lifting
-            if (pulse) {
-              pulse.visible(true)
-              pulse.scaleX(1 + openProgress)
-              pulse.scaleY(1 + openProgress)
-              pulse.opacity(0.5 * (1 - openProgress))
-            }
-          } else {
-            icon.scaleY(1.3)
-            icon.opacity(1 - (progress - 0.4) / 0.6)
-          }
-          break
-
-        case 'trap':
-          // Trap trigger animation
-          if (progress < 0.2) {
-            // Flash warning
-            icon.fill(progress % 0.1 < 0.05 ? 'red' : color)
-            icon.opacity(1)
-          } else if (progress < 0.5) {
-            // Trigger effect
-            const triggerProgress = (progress - 0.2) / 0.3
-            icon.scaleX(1 + triggerProgress * 0.5)
-            icon.scaleY(1 + triggerProgress * 0.5)
-            icon.rotation(triggerProgress * 180)
-          } else {
-            // Fade out
-            icon.opacity(1 - (progress - 0.5) / 0.5)
-          }
-          break
-
-        case 'button':
-        case 'pressure_plate':
-          // Button press animation
-          if (progress < 0.3) {
-            // Press down
-            const pressProgress = progress / 0.3
-            icon.scaleY(1 - pressProgress * 0.5)
-            icon.y(pressProgress * 5)
-          } else if (progress < 0.7) {
-            // Hold pressed
-            icon.scaleY(0.5)
-            icon.y(5)
-            // Glow effect
-            if (pulse) {
-              pulse.visible(true)
-              pulse.opacity(0.5)
-              const pulseScale = 1 + Math.sin((progress - 0.3) * 20) * 0.1
-              pulse.scaleX(pulseScale)
-              pulse.scaleY(pulseScale)
-            }
-          } else {
-            // Release
-            const releaseProgress = (progress - 0.7) / 0.3
-            icon.scaleY(0.5 + releaseProgress * 0.5)
-            icon.y(5 - releaseProgress * 5)
-            icon.opacity(1 - releaseProgress)
-          }
-          break
-
-        default:
-          // Generic interaction animation
-          const scaleAmount = 1 + Math.sin(progress * Math.PI) * 0.3
-          icon.scaleX(scaleAmount)
-          icon.scaleY(scaleAmount)
-          icon.opacity(1 - progress * 0.5)
-
-          if (pulse) {
-            pulse.visible(true)
-            pulse.scaleX(1 + progress * 2)
-            pulse.scaleY(1 + progress * 2)
-            pulse.opacity((1 - progress) * 0.5)
-          }
-      }
-
-      if (progress >= 1) {
-        anim.stop()
-        group.visible(false)
+      if (newProgress < 1) {
+        rafRef.current = requestAnimationFrame(animate)
+      } else {
         onComplete?.()
       }
-    })
-
-    animationRef.current = anim
-    anim.start()
+    }
+    rafRef.current = requestAnimationFrame(animate)
 
     return () => {
-      if (animationRef.current) {
-        animationRef.current.stop()
-        animationRef.current = null
-      }
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
-  }, [action, onComplete])
+  }, [params.duration, onComplete])
+
+  // Rendering logic
+  useEffect(() => {
+    const group = groupRef.current
+    const icon = iconRef.current
+    const pulse = pulseRef.current
+    if (!group || !icon) return
+
+    group.position(params.position)
+    group.visible(true)
+
+    // Category-specific animations
+    switch (params.category) {
+      case 'door':
+        if (progress < 0.5) {
+          const openProgress = EASING.easeOut(progress * 2)
+          icon.rotation(openProgress * 90)
+          icon.opacity(1)
+        } else {
+          icon.opacity(EASING.easeIn(2 - progress * 2))
+        }
+        break
+
+      case 'lever':
+      case 'switch':
+        if (progress < 0.3) {
+          const pullProgress = EASING.easeIn(progress / 0.3)
+          icon.scaleY(1 - pullProgress * 0.6)
+          icon.y(pullProgress * 10)
+        } else if (progress < 0.6) {
+          const springProgress = EASING.easeOutElastic((progress - 0.3) / 0.3)
+          icon.scaleY(0.4 + springProgress * 0.6)
+          icon.y(10 - springProgress * 10)
+        } else {
+          icon.scaleY(1)
+          icon.y(0)
+          icon.opacity(EASING.easeIn(1 - (progress - 0.6) / 0.4))
+        }
+        break
+
+      case 'chest':
+      case 'container':
+        if (progress < 0.4) {
+          const openProgress = EASING.easeOut(progress / 0.4)
+          icon.scaleY(1 + openProgress * 0.3)
+          if (pulse) {
+            pulse.visible(true)
+            pulse.scaleX(1 + openProgress)
+            pulse.scaleY(1 + openProgress)
+            pulse.opacity(0.5 * (1 - openProgress))
+          }
+        } else {
+          icon.scaleY(1.3)
+          icon.opacity(EASING.easeIn(1 - (progress - 0.4) / 0.6))
+        }
+        break
+
+      case 'trap':
+        if (progress < 0.2) {
+          icon.fill(progress % 0.1 < 0.05 ? 'red' : params.color)
+          icon.opacity(1)
+        } else if (progress < 0.5) {
+          const triggerProgress = EASING.easeOut((progress - 0.2) / 0.3)
+          icon.scaleX(1 + triggerProgress * 0.5)
+          icon.scaleY(1 + triggerProgress * 0.5)
+          icon.rotation(triggerProgress * 180)
+        } else {
+          icon.opacity(EASING.easeIn(1 - (progress - 0.5) / 0.5))
+        }
+        break
+
+      case 'button':
+      case 'pressure_plate':
+        if (progress < 0.3) {
+          const pressProgress = EASING.easeOut(progress / 0.3)
+          icon.scaleY(1 - pressProgress * 0.5)
+          icon.y(pressProgress * 5)
+        } else if (progress < 0.7) {
+          icon.scaleY(0.5)
+          icon.y(5)
+          if (pulse) {
+            pulse.visible(true)
+            pulse.opacity(0.5)
+            const pulseScale = 1 + Math.sin((progress - 0.3) * 20) * 0.1
+            pulse.scaleX(pulseScale)
+            pulse.scaleY(pulseScale)
+          }
+        } else {
+          const releaseProgress = EASING.easeIn((progress - 0.7) / 0.3)
+          icon.scaleY(0.5 + releaseProgress * 0.5)
+          icon.y(5 - releaseProgress * 5)
+          icon.opacity(1 - releaseProgress)
+        }
+        break
+
+      default:
+        const scaleAmount = 1 + Math.sin(progress * Math.PI) * 0.3
+        icon.scaleX(scaleAmount)
+        icon.scaleY(scaleAmount)
+        icon.opacity(1 - progress * 0.5)
+        if (pulse) {
+          pulse.visible(true)
+          pulse.scaleX(1 + progress * 2)
+          pulse.scaleY(1 + progress * 2)
+          pulse.opacity((1 - progress) * 0.5)
+        }
+    }
+
+    if (progress >= 1) {
+      group.visible(false)
+    }
+  }, [progress, params])
 
   const renderInteractionIcon = () => {
     const color = action.animation.color || '#FFD700'
