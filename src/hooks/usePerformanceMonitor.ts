@@ -36,6 +36,10 @@ export const usePerformanceMonitor = (enabled: boolean = true) => {
   const frameCountRef = useRef<number>(0)
   const renderStartRef = useRef<number>(0)
 
+  // 🚀 PERFORMANCE FIX: Track actual frame times instead of accumulated time
+  const frameTimesRef = useRef<number[]>([])
+  const lastFrameRef = useRef<number>(performance.now())
+
   const { currentMap } = useMapStore()
 
   // FPS Calculation
@@ -75,13 +79,31 @@ export const usePerformanceMonitor = (enabled: boolean = true) => {
     return performance.now() - renderStartRef.current
   }, [])
 
+  // 🚀 PERFORMANCE FIX: Measure actual per-frame time
+  const measureFrameTime = useCallback((): number => {
+    const now = performance.now()
+    const frameTime = now - lastFrameRef.current
+    lastFrameRef.current = now
+
+    // Keep rolling average of last 60 frames
+    frameTimesRef.current.push(frameTime)
+    if (frameTimesRef.current.length > 60) {
+      frameTimesRef.current.shift()
+    }
+
+    // Return average of recent frames for stability
+    return frameTimesRef.current.reduce((a, b) => a + b, 0) / frameTimesRef.current.length
+  }, [])
+
   // Performance Collection Loop
   const collectMetrics = useCallback(() => {
     if (!enabled) return
 
+    // 🚀 PERFORMANCE FIX: Measure frame time on EVERY frame, not just FPS updates
+    const currentFrameTime = measureFrameTime()
+
     const fps = calculateFPS()
     if (fps !== null) {
-      const renderTime = endRenderTracking()
       const memoryUsage = getMemoryUsage()
       const canvasObjects = currentMap?.objects.length || 0
       const totalTime = performance.now()
@@ -89,7 +111,7 @@ export const usePerformanceMonitor = (enabled: boolean = true) => {
       const newMetrics: PerformanceMetrics = {
         fps,
         memoryUsage,
-        renderTime,
+        renderTime: currentFrameTime, // Use the frame time we just measured
         canvasObjects,
         totalTime,
         timestamp: Date.now()
@@ -118,13 +140,10 @@ export const usePerformanceMonitor = (enabled: boolean = true) => {
           }
         })
       }
-
-      // Start tracking next render
-      startRenderTracking()
     }
 
     frameRef.current = requestAnimationFrame(collectMetrics)
-  }, [enabled, calculateFPS, endRenderTracking, getMemoryUsage, currentMap, isRecording, startRenderTracking])
+  }, [enabled, calculateFPS, measureFrameTime, getMemoryUsage, currentMap, isRecording])
 
   // Performance Warning Detection
   const getPerformanceWarnings = useCallback((): string[] => {
@@ -196,8 +215,13 @@ export const usePerformanceMonitor = (enabled: boolean = true) => {
     setIsRecording(false)
   }, [])
 
-  const exportMetrics = useCallback(() => {
-    const data = {
+  const exportMetrics = useCallback(async (options?: {
+    includeConsoleLogs?: boolean
+    includeScreenshots?: boolean
+    consoleLogs?: any[]
+    screenshots?: string[]
+  }) => {
+    const data: any = {
       timestamp: new Date().toISOString(),
       session: {
         duration: history.samples.length,
@@ -205,6 +229,16 @@ export const usePerformanceMonitor = (enabled: boolean = true) => {
         mapSize: currentMap ? `${currentMap.width}x${currentMap.height}` : 'N/A'
       },
       performance: history
+    }
+
+    // Include console logs if provided or requested
+    if (options?.includeConsoleLogs && options?.consoleLogs) {
+      data.consoleLogs = options.consoleLogs
+    }
+
+    // Include screenshots if provided or requested
+    if (options?.includeScreenshots && options?.screenshots) {
+      data.screenshots = options.screenshots
     }
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })

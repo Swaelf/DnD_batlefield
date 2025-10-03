@@ -5,7 +5,7 @@
  * Implements Layer 1 (Grid), Layer 2 (Objects + Effects), Layer 3 (Selection + Drawing + Preview).
  */
 
-import { useCallback, useState, useRef, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
+import { useCallback, useState, useRef, useEffect, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
 import { Stage, Layer, Group } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
@@ -27,6 +27,8 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
   height,
   stageRef,
   onMouseMove,
+  onTransformChange,
+  externalTransformVersion,
 }) => {
   const currentMap = useMapStore(state => state.currentMap)
   const currentTool = useToolStore(state => state.currentTool)
@@ -58,7 +60,15 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
   const staticEffectTemplate = useToolStore(state => state.staticEffectTemplate)
 
   // Force grid re-render on stage transform
-  const [, forceUpdate] = useState(0)
+  const [stageTransform, forceUpdate] = useState(0)
+
+  // Listen for external transform changes (from zoom buttons, navigation pad)
+  useEffect(() => {
+    if (externalTransformVersion !== undefined) {
+      // External control changed the transform, update our local state
+      forceUpdate(n => n + 1)
+    }
+  }, [externalTransformVersion])
 
   // Register stage for global access (environment token positioning)
   const handleStageRef = useCallback((node: any) => {
@@ -609,8 +619,14 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           ref={handleStageRef}
           onClick={handleStageClick}
           onContextMenu={handleStageRightClick}
-          onDragEnd={() => forceUpdate(n => n + 1)}
-          onWheel={() => forceUpdate(n => n + 1)}
+          onDragEnd={() => {
+            forceUpdate(n => n + 1)
+            onTransformChange?.()
+          }}
+          onWheel={() => {
+            forceUpdate(n => n + 1)
+            onTransformChange?.()
+          }}
         onMouseDown={(e) => {
           const stage = e.target.getStage()
           if (stage) {
@@ -641,6 +657,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           stageRef={stageRef || { current: null }}
           width={width}
           height={height}
+          updateTrigger={stageTransform}
         />
 
         {/* Layer 2: Content (Objects + Effects) */}

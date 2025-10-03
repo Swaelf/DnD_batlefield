@@ -13,18 +13,24 @@ export interface BackgroundLayerProps {
   readonly stageRef: RefObject<Konva.Stage | null>
   readonly width: number
   readonly height: number
+  readonly updateTrigger?: number  // Trigger re-render on stage transform changes
 }
 
 export const BackgroundLayer = memo(function BackgroundLayer({
   gridSettings,
   stageRef,
   width,
-  height
+  height,
+  updateTrigger
 }: BackgroundLayerProps) {
   if (!gridSettings?.visible) return null
 
   const gridSize = gridSettings.size || 50
   const stage = stageRef.current
+
+  // updateTrigger is used to force re-render when stage transform changes
+  // It's intentionally not used in logic, only as a dependency trigger
+  void updateTrigger
 
   // Get stage transform to calculate visible area
   const scale = stage?.scaleX() || 1

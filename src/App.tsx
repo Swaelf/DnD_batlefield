@@ -67,13 +67,15 @@ function App() {
   const [showAccessibility, setShowAccessibility] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
+  const [canvasTransformVersion, setCanvasTransformVersion] = useState(0)
 
   // Collaboration state
   const { currentSession, isHost, connectedUsers, connectionStatus } = useCollaborationStore()
   const isCollaborating = currentSession && connectionStatus === 'connected'
 
   // Performance and accessibility
-  const { score: performanceScore, warnings } = usePerformanceMonitor()
+  // 🚀 OPTIMIZATION: Only monitor performance when dashboard is actually open
+  const { score: performanceScore, warnings } = usePerformanceMonitor(showPerformance)
   const { preferences } = useAccessibility()
   useKeyboardShortcuts()
 
@@ -85,6 +87,7 @@ function App() {
     const newZoom = Math.min(zoom * 1.2, 3)
     stageRef.current.scale({ x: newZoom, y: newZoom })
     setZoom(newZoom)
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handleZoomOut = () => {
@@ -92,6 +95,7 @@ function App() {
     const newZoom = Math.max(zoom / 1.2, 0.1)
     stageRef.current.scale({ x: newZoom, y: newZoom })
     setZoom(newZoom)
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handleZoomReset = () => {
@@ -99,30 +103,35 @@ function App() {
     stageRef.current.scale({ x: 1, y: 1 })
     stageRef.current.position({ x: 0, y: 0 })
     setZoom(1)
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handlePanUp = () => {
     if (!stageRef.current) return
     const pos = stageRef.current.position()
     stageRef.current.position({ x: pos.x, y: pos.y + PAN_AMOUNT })
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handlePanDown = () => {
     if (!stageRef.current) return
     const pos = stageRef.current.position()
     stageRef.current.position({ x: pos.x, y: pos.y - PAN_AMOUNT })
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handlePanLeft = () => {
     if (!stageRef.current) return
     const pos = stageRef.current.position()
     stageRef.current.position({ x: pos.x + PAN_AMOUNT, y: pos.y })
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handlePanRight = () => {
     if (!stageRef.current) return
     const pos = stageRef.current.position()
     stageRef.current.position({ x: pos.x - PAN_AMOUNT, y: pos.y })
+    setCanvasTransformVersion(v => v + 1)
   }
 
   // Smart preloading: Load commonly used components after initial render
@@ -400,6 +409,8 @@ function App() {
             stageRef={stageRef}
             onMouseMove={(pos) => setMousePosition(pos)}
             onZoomChange={(z) => setZoom(z)}
+            onTransformChange={() => setCanvasTransformVersion(v => v + 1)}
+            externalTransformVersion={canvasTransformVersion}
           />
 
           {/* Navigation Pad */}
