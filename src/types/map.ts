@@ -64,6 +64,9 @@ export type Shape = MapObject & {
   strokeWidth: number
   opacity: number
   metadata?: any
+  // Abstract component system properties
+  abstractType?: 'wall' | 'furniture' | 'nature' | 'structure' | 'dungeon'
+  variant?: string // Specific variant (e.g., 'stone', 'wooden', 'tree', etc.)
 }
 
 export type Text = MapObject & {
