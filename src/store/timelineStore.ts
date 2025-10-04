@@ -8,6 +8,7 @@ import useEventCreationStore from './eventCreationStore'
 const useTimelineStore = create<TimelineStore>()(
   immer((set, get) => ({
     timeline: null,
+    currentRound: 1,
     currentEvent: 1,
     isInCombat: false,
     animationSpeed: 1,
@@ -21,20 +22,31 @@ const useTimelineStore = create<TimelineStore>()(
 
       set((state) => {
         state.isInCombat = true
+        state.currentRound = 1
         state.currentEvent = 1
 
       if (!state.timeline) {
         state.timeline = {
           id: crypto.randomUUID(),
           mapId,
-          events: [{
+          currentRound: 1,
+          currentEvent: 1,
+          rounds: [{
             id: crypto.randomUUID(),
             number: 1,
-            timestamp: Date.now(),
-            actions: [],
-            executed: false
+            name: 'Round 1',
+            events: [{
+              id: crypto.randomUUID(),
+              roundNumber: 1,
+              number: 1,
+              timestamp: Date.now(),
+              actions: [],
+              executed: false
+            }],
+            allActions: [],
+            executed: false,
+            timestamp: Date.now()
           }],
-          currentEvent: 1,
           isActive: true,
           history: []
         }
@@ -480,6 +492,92 @@ const useTimelineStore = create<TimelineStore>()(
       // This will trigger a preview animation
       // Implementation will be in the Canvas component
       // TODO: Implement action preview functionality
+    },
+
+    // Round Management
+    startNewRound: () => {
+      const { timeline, currentRound } = get()
+      if (!timeline) return
+
+      set((state) => {
+        const currentRoundData = state.timeline!.rounds.find(r => r.number === currentRound)
+        if (currentRoundData) {
+          // Merge all event actions into allActions
+          currentRoundData.allActions = currentRoundData.events.flatMap(e => e.actions)
+          currentRoundData.executed = true
+        }
+
+        // Create new round
+        const newRoundNumber = currentRound + 1
+        const newRound = {
+          id: crypto.randomUUID(),
+          number: newRoundNumber,
+          name: `Round ${newRoundNumber}`,
+          events: [{
+            id: crypto.randomUUID(),
+            roundNumber: newRoundNumber,
+            number: 1,
+            timestamp: Date.now(),
+            actions: [],
+            executed: false
+          }],
+          allActions: [],
+          executed: false,
+          timestamp: Date.now()
+        }
+
+        state.timeline!.rounds.push(newRound)
+        state.currentRound = newRoundNumber
+        state.currentEvent = 1
+        state.timeline!.currentRound = newRoundNumber
+        state.timeline!.currentEvent = 1
+      })
+
+      // Clean up expired spells based on rounds
+      useMapStore.getState().cleanupExpiredSpells(get().currentRound)
+    },
+
+    nextRound: () => {
+      get().startNewRound()
+    },
+
+    previousRound: () => {
+      const { currentRound } = get()
+      if (currentRound <= 1) return
+
+      set((state) => {
+        state.currentRound -= 1
+        state.currentEvent = 1
+        if (state.timeline) {
+          state.timeline.currentRound = state.currentRound
+          state.timeline.currentEvent = 1
+        }
+      })
+    },
+
+    goToRound: (roundNumber) => {
+      set((state) => {
+        state.currentRound = roundNumber
+        state.currentEvent = 1
+        if (state.timeline) {
+          state.timeline.currentRound = roundNumber
+          state.timeline.currentEvent = 1
+        }
+      })
+    },
+
+    replayRound: async (roundNumber) => {
+      const { timeline } = get()
+      if (!timeline) return
+
+      const round = timeline.rounds.find(r => r.number === roundNumber)
+      if (!round || !round.allActions || round.allActions.length === 0) return
+
+      // Execute all actions in sequence
+      for (const action of round.allActions) {
+        await get().executeEventActions(action.eventNumber)
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
     },
 
     setAnimationSpeed: (speed) => set((state) => {
