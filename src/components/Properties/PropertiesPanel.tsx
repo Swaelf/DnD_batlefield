@@ -11,6 +11,7 @@ import { LayerControls } from './LayerControls'
 import { LayerManagementPanel } from './LayerManagementPanel'
 import { ShapeStylePanel } from './ShapeStylePanel'
 import { MapSettingsPanel } from './MapSettingsPanel'
+import { TerrainToolsPanel } from './TerrainToolsPanel'
 import { MultiSelectProperties } from './MultiSelectProperties'
 import { ComponentErrorBoundary } from '../ErrorBoundary/ErrorBoundary'
 import {
@@ -128,6 +129,14 @@ const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) =>
               fallback={<Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Map settings unavailable</Text>}
             >
               <MapSettingsPanel />
+            </ComponentErrorBoundary>
+
+            {/* Terrain Tools Panel */}
+            <ComponentErrorBoundary
+              name="TerrainToolsPanel"
+              fallback={<Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Terrain tools unavailable</Text>}
+            >
+              <TerrainToolsPanel />
             </ComponentErrorBoundary>
 
             {/* Shape Style Panel for Drawing Tools */}
