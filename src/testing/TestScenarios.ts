@@ -1398,9 +1398,10 @@ export const testScenarios: TestScenario[] = [
 
               // Validate the action was created with tokenId
               if (roundStore.timeline) {
-                const event = roundStore.timeline.events.find(e => e.number === 1)
+                const roundData = roundStore.timeline.rounds.find(r => r.number === 1)
+                const event = roundData?.events.find((e: { number: number }) => e.number === 1)
                 if (event) {
-                  const spellAction = event.actions.find(a => a.type === 'spell')
+                  const spellAction = event.actions.find((a: { type: string }) => a.type === 'spell')
                   if (spellAction) {
                     const spellData = spellAction.data as any
                     if (!spellData.tokenId) {

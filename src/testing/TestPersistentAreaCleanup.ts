@@ -75,7 +75,9 @@ export const persistentAreaCleanupTest: TestScenario = {
                 roundCreated: roundStore.currentEvent
               },
               roundCreated: roundStore.currentEvent,
-              spellDuration: 0 // Initial spell object doesn't persist
+              eventCreated: roundStore.currentEvent,
+              spellDuration: 0, // Initial spell object doesn't persist
+              durationType: 'rounds' as const
             }
 
             mapStore.addSpellEffect(spellObject)
@@ -99,7 +101,9 @@ export const persistentAreaCleanupTest: TestScenario = {
                   roundCreated: roundStore.currentEvent
                 },
                 roundCreated: roundStore.currentEvent,
-                spellDuration: 1 // Persists for 1 round
+                eventCreated: roundStore.currentEvent,
+                spellDuration: 1, // Persists for 1 round
+                durationType: 'events' as const
               }
 
               mapStore.addSpellEffect(persistentArea)
@@ -270,7 +274,9 @@ export const persistentAreaCleanupTest: TestScenario = {
                 roundCreated: roundStore.currentEvent
               },
               roundCreated: roundStore.currentEvent,
-              spellDuration: 3 // Persists for 3 rounds
+              eventCreated: roundStore.currentEvent,
+              spellDuration: 3, // Persists for 3 rounds
+              durationType: 'events' as const
             }
 
             mapStore.addSpellEffect(darknessArea)
