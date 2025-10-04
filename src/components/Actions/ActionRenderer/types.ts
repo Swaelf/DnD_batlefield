@@ -33,7 +33,12 @@ export function isMeleeAnimation(animation: string): animation is MeleeAnimation
 
 // Get attack type from event data
 export function getAttackType(attack: AttackEventData): AttackType {
-  return attack.attackType
+  // Normalize attack types to 'melee' or 'ranged'
+  if (attack.attackType === 'ranged' || attack.attackType === 'spell') {
+    return 'ranged'
+  }
+  // 'melee', 'natural', and 'unarmed' are all melee attacks
+  return 'melee'
 }
 
 // Get animation variant from event data

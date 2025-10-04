@@ -260,7 +260,7 @@ export function useTokenAnimation(stageRef: MutableRefObject<Konva.Stage | null>
             roundCreated: event.eventNumber
           },
           roundCreated: event.eventNumber,
-          eventCreated: timelineStore.currentEvent,
+          eventCreated: useTimelineStore.getState().currentEvent,
           spellDuration: spellData.category === 'area' ? 0 : 0, // Initial spell objects don't persist
           durationType: 'rounds' as const
         }
@@ -306,7 +306,7 @@ export function useTokenAnimation(stageRef: MutableRefObject<Konva.Stage | null>
                 roundCreated: event.eventNumber
               },
               roundCreated: event.eventNumber,
-              eventCreated: timelineStore.currentEvent,
+              eventCreated: useTimelineStore.getState().currentEvent,
               // For Fireball and similar spells, persist for 1 round
               // Convert milliseconds to rounds: if persistDuration > 0, use 1 round
               spellDuration: persistDuration > 0 ? 1 : 0,
@@ -366,7 +366,7 @@ export function useTokenAnimation(stageRef: MutableRefObject<Konva.Stage | null>
     // This was incorrectly deleting persistent areas that should still be active
 
     const currentRoundData = timeline.rounds.find(r => r.number === roundNumber)
-    const event = currentRoundData?.events.find(e => e.number === timelineStore.currentEvent)
+    const event = currentRoundData?.events.find(e => e.number === useTimelineStore.getState().currentEvent)
     if (!event || event.actions.length === 0) {
       return
     }
