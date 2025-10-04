@@ -1,19 +1,32 @@
 import type Konva from 'konva'
 import type { Position } from './map'
 
-// Timeline and event management types
+// Timeline and event management types - Round-based system
 export type Timeline = {
   id: string
   mapId: string
-  events: Event[]
-  currentEvent: number
+  currentRound: number // Current combat round
+  currentEvent: number // Event within current round
+  rounds: Round[] // Combat rounds
   isActive: boolean
-  history: Event[] // Completed events
+  history: Round[] // Completed rounds
+}
+
+export type Round = {
+  id: string
+  number: number
+  name?: string // Optional name like "Round 1", "Ambush!", etc.
+  events: Event[] // Events within this round
+  allActions: TimelineAction[] // Merged actions for round replay
+  executed: boolean
+  snapshot?: RoundSnapshot // State at round start for undo
+  timestamp: number
 }
 
 export type Event = {
   id: string
-  number: number
+  roundNumber: number // Which round this event belongs to
+  number: number // Event number within the round
   name?: string // Optional name like "Ambush!" or "Dragon arrives"
   timestamp: number
   actions: TimelineAction[]
@@ -25,6 +38,12 @@ export type Event = {
 export type MapSnapshot = {
   tokenPositions: Record<string, Position> // tokenId -> position
   spellEffects: string[] // IDs of active spell effects
+}
+
+// Round snapshot includes additional state
+export type RoundSnapshot = MapSnapshot & {
+  hp: Record<string, number> // Token HP values at round start
+  roundNumber: number
 }
 
 // Event types
@@ -317,4 +336,25 @@ export function isEnvironmentalEvent(data: EventData): data is EnvironmentalEven
 
 export function isSequenceEvent(data: EventData): data is SequenceEventData {
   return data.type === 'sequence'
+}
+
+// Battle Log System
+export type BattleLogEntry = {
+  id: string
+  roundNumber: number
+  eventNumber: number
+  timestamp: number
+  type: 'action' | 'damage' | 'heal' | 'spell' | 'movement' | 'info' | 'round'
+  message: string
+  tokenId?: string
+  tokenName?: string
+  details?: Record<string, unknown>
+  severity?: 'low' | 'normal' | 'high' | 'critical' // For styling
+}
+
+export type BattleLogFilter = {
+  roundNumber?: number
+  eventNumber?: number
+  type?: BattleLogEntry['type']
+  tokenId?: string
 }
