@@ -13,6 +13,11 @@ import { snapToGrid } from '@/utils/grid'
 import { isDrawingTool } from './utils'
 import type { GridSettings, DrawingState, StaticObjectTemplate } from '@/types'
 import type { Point } from '@/types/geometry'
+
+// Helper function to convert Point[] to number[] for Konva Line
+const pointsToArray = (points: Point[]): number[] => {
+  return points.flatMap(p => [p.x, p.y])
+}
 import type { TokenTemplate } from '@/types/token'
 import type { SelectionRectangle } from './types'
 import type { StaticEffectTemplate } from '../StaticEffect/types'
@@ -50,10 +55,6 @@ export const InteractiveLayer = memo(function InteractiveLayer({
   staticEffectTemplate,
   previewPosition,
   measurementPoints,
-  fillColor,
-  strokeColor,
-  strokeWidth,
-  opacity,
   terrainColor,
   terrainOpacity,
   terrainBrushSize
@@ -200,9 +201,9 @@ export const InteractiveLayer = memo(function InteractiveLayer({
         {(currentTool === 'terrainBrush' || currentTool === 'terrainEraser') && drawingState.currentPoint && (
           <>
             {/* Show the path being drawn */}
-            {drawingState.isDrawing && drawingState.points && drawingState.points.length >= 4 && (
+            {drawingState.isDrawing && drawingState.points && drawingState.points.length >= 2 && (
               <Line
-                points={drawingState.points}
+                points={pointsToArray(drawingState.points)}
                 stroke={currentTool === 'terrainEraser' ? '#DC2626' : terrainColor}
                 strokeWidth={terrainBrushSize}
                 opacity={currentTool === 'terrainEraser' ? 0.6 : terrainOpacity * 0.8}

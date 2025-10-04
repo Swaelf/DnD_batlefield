@@ -455,7 +455,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         isDrawing: true,
         startPoint: drawingStartRef.current,
         currentPoint: drawingStartRef.current,
-        points: currentTool === 'polygon' ? [drawingStartRef.current.x, drawingStartRef.current.y] : []
+        points: currentTool === 'polygon' ? [drawingStartRef.current] : []
       })
     }
   }, [currentTool, gridSettings, staticEffectTemplate])
@@ -532,7 +532,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         isDrawing: true,
         startPoint: null,
         currentPoint: position,
-        points: [...terrainPointsRef.current]
+        points: [] // Terrain brush uses terrainPointsRef directly, not drawingState.points
       })
     }
 
@@ -592,9 +592,10 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
 
       // Only create drawing if we have enough points (at least 2 points = 4 values)
       if (terrainPointsRef.current.length >= 4) {
+        const drawingType: 'erase' | 'brush' = currentTool === 'terrainEraser' ? 'erase' : 'brush'
         const terrainDrawing = {
           id: crypto.randomUUID(),
-          type: (currentTool === 'terrainEraser' ? 'erase' : 'brush') as const,
+          type: drawingType,
           points: [...terrainPointsRef.current],
           color: toolState.terrainColor,
           strokeWidth: toolState.terrainBrushSize,
