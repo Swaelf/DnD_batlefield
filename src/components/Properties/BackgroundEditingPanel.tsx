@@ -142,7 +142,6 @@ export const BackgroundEditingPanel: FC = () => {
             label="Eraser"
             isActive={currentTool === 'terrainEraser'}
             onClick={() => setTool('terrainEraser')}
-            disabled
           />
         </Box>
       </Box>
@@ -151,9 +150,9 @@ export const BackgroundEditingPanel: FC = () => {
       {(currentTool === 'terrainBrush' || currentTool === 'terrainFill' || currentTool === 'terrainEraser' ||
         currentTool === 'rectangle' || currentTool === 'circle' || currentTool === 'line' || currentTool === 'polygon') && (
         <Box style={{ marginBottom: '16px' }}>
-          {currentTool === 'terrainBrush' && (
+          {(currentTool === 'terrainBrush' || currentTool === 'terrainEraser') && (
             <StyleSliderControl
-              label="Brush Size"
+              label={currentTool === 'terrainEraser' ? 'Eraser Size' : 'Brush Size'}
               value={terrainBrushSize}
               onChange={setTerrainBrushSize}
               min={1}

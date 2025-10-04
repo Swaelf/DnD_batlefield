@@ -55,9 +55,21 @@ export const TerrainLayer: FC<TerrainLayerProps> = memo(({
             return null
 
           case 'erase':
-            // Erase - handled by removing drawings from array
-            // No rendering needed
-            return null
+            // Erase stroke - render with destination-out to erase terrain
+            return (
+              <Line
+                key={drawing.id}
+                points={drawing.points || []}
+                stroke="white"
+                strokeWidth={drawing.strokeWidth || 5}
+                opacity={1}
+                lineCap="round"
+                lineJoin="round"
+                tension={0.5}
+                listening={false}
+                globalCompositeOperation="destination-out"
+              />
+            )
 
           case 'rectangle':
             return (

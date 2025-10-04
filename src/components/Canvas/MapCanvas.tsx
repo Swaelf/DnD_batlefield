@@ -440,8 +440,8 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         height: 0,
         visible: true
       })
-    } else if (currentTool === 'terrainBrush') {
-      // Start terrain brush stroke
+    } else if (currentTool === 'terrainBrush' || currentTool === 'terrainEraser') {
+      // Start terrain brush/eraser stroke
       isDrawingTerrainRef.current = true
       terrainPointsRef.current = [position.x, position.y]
     } else if (['rectangle', 'circle', 'line', 'polygon'].includes(currentTool)) {
@@ -521,8 +521,8 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       })
     }
 
-    // Terrain brush: collect points during drag
-    if (isDrawingTerrainRef.current && currentTool === 'terrainBrush') {
+    // Terrain brush/eraser: collect points during drag
+    if (isDrawingTerrainRef.current && (currentTool === 'terrainBrush' || currentTool === 'terrainEraser')) {
       terrainPointsRef.current.push(position.x, position.y)
     }
 
@@ -564,8 +564,8 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       setSelectionRect(null)
     }
 
-    // Terrain brush: create TerrainDrawing on mouse up
-    if (isDrawingTerrainRef.current && currentTool === 'terrainBrush') {
+    // Terrain brush/eraser: create TerrainDrawing on mouse up
+    if (isDrawingTerrainRef.current && (currentTool === 'terrainBrush' || currentTool === 'terrainEraser')) {
       const toolState = useToolStore.getState()
       const mapState = useMapStore.getState()
 
@@ -573,7 +573,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       if (terrainPointsRef.current.length >= 4) {
         const terrainDrawing = {
           id: crypto.randomUUID(),
-          type: 'brush' as const,
+          type: (currentTool === 'terrainEraser' ? 'erase' : 'brush') as const,
           points: [...terrainPointsRef.current],
           color: toolState.terrainColor,
           strokeWidth: toolState.terrainBrushSize,
