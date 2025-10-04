@@ -35,6 +35,7 @@ export interface InteractiveLayerProps {
   readonly opacity: number
   readonly terrainColor: string
   readonly terrainOpacity: number
+  readonly terrainBrushSize: number
 }
 
 export const InteractiveLayer = memo(function InteractiveLayer({
@@ -54,7 +55,8 @@ export const InteractiveLayer = memo(function InteractiveLayer({
   strokeWidth,
   opacity,
   terrainColor,
-  terrainOpacity
+  terrainOpacity,
+  terrainBrushSize
 }: InteractiveLayerProps) {
   const gridSize = gridSettings?.size || 50
   const gridSnap = gridSettings?.snap || false
@@ -192,6 +194,36 @@ export const InteractiveLayer = memo(function InteractiveLayer({
             showSegmentDistances={true}
             showTotalDistance={true}
           />
+        )}
+
+        {/* Terrain brush/eraser preview - show brush size circle at cursor */}
+        {(currentTool === 'terrainBrush' || currentTool === 'terrainEraser') && drawingState.currentPoint && (
+          <>
+            {/* Show the path being drawn */}
+            {drawingState.isDrawing && drawingState.points && drawingState.points.length >= 4 && (
+              <Line
+                points={drawingState.points}
+                stroke={currentTool === 'terrainEraser' ? '#DC2626' : terrainColor}
+                strokeWidth={terrainBrushSize}
+                opacity={currentTool === 'terrainEraser' ? 0.6 : terrainOpacity * 0.8}
+                lineCap="round"
+                lineJoin="round"
+                tension={0.5}
+                listening={false}
+              />
+            )}
+            {/* Show cursor circle */}
+            <Circle
+              x={drawingState.currentPoint.x}
+              y={drawingState.currentPoint.y}
+              radius={terrainBrushSize / 2}
+              stroke={currentTool === 'terrainEraser' ? '#DC2626' : terrainColor}
+              strokeWidth={2}
+              dash={[5, 5]}
+              opacity={0.8}
+              listening={false}
+            />
+          </>
         )}
 
         {/* Background shape drawing preview */}

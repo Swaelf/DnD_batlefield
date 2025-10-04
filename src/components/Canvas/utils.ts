@@ -143,5 +143,5 @@ export function findTokenAtPosition(
  * Check if a tool is a drawing tool
  */
 export function isDrawingTool(tool: string): boolean {
-  return ['rectangle', 'circle', 'polygon', 'line'].includes(tool)
+  return ['rectangle', 'circle', 'polygon', 'line', 'terrainBrush', 'terrainEraser'].includes(tool)
 }

@@ -95,6 +95,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
   const opacity = useToolStore(state => state.opacity)
   const terrainColor = useToolStore(state => state.terrainColor)
   const terrainOpacity = useToolStore(state => state.terrainOpacity)
+  const terrainBrushSize = useToolStore(state => state.terrainBrushSize)
   const tokenTemplate = useToolStore(state => state.tokenTemplate)
   const measurementPoints = useToolStore(state => state.measurementPoints)
   const staticObjectTemplate = useToolStore(state => state.staticObjectTemplate)
@@ -524,6 +525,15 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
     // Terrain brush/eraser: collect points during drag
     if (isDrawingTerrainRef.current && (currentTool === 'terrainBrush' || currentTool === 'terrainEraser')) {
       terrainPointsRef.current.push(position.x, position.y)
+
+      // Update drawing state to show the path preview
+      const toolState = useToolStore.getState()
+      toolState.setDrawingState({
+        isDrawing: true,
+        startPoint: null,
+        currentPoint: position,
+        points: [...terrainPointsRef.current]
+      })
     }
 
     if ((currentTool === 'token' || currentTool === 'staticObject') && !isDrawingRef.current) {
@@ -533,6 +543,17 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         isDrawing: false,
         startPoint: null,
         currentPoint: currentPoint,
+        points: []
+      })
+    }
+
+    // Update brush/eraser preview position
+    if ((currentTool === 'terrainBrush' || currentTool === 'terrainEraser') && !isDrawingTerrainRef.current) {
+      const toolState = useToolStore.getState()
+      toolState.setDrawingState({
+        isDrawing: false,
+        startPoint: null,
+        currentPoint: position,
         points: []
       })
     }
@@ -761,6 +782,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           opacity={opacity}
           terrainColor={terrainColor}
           terrainOpacity={terrainOpacity}
+          terrainBrushSize={terrainBrushSize}
         />
         </Stage>
       </div>

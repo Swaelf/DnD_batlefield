@@ -231,17 +231,19 @@ const ToolButton: FC<{
         padding: '8px',
         backgroundColor: isActive ? 'var(--colors-secondary)' : 'var(--colors-gray800)',
         color: isActive ? 'var(--colors-dndBlack)' : 'var(--colors-gray300)',
-        border: `1px solid ${isActive ? 'var(--colors-secondary)' : 'var(--colors-gray700)'}`,
+        border: `2px solid ${isActive ? 'var(--colors-secondary)' : 'var(--colors-gray700)'}`,
         borderRadius: '4px',
         fontSize: '11px',
-        fontWeight: 500,
+        fontWeight: isActive ? 600 : 500,
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.5 : 1,
         transition: 'all 0.15s',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '4px'
+        gap: '4px',
+        boxShadow: isActive ? '0 0 8px rgba(201, 173, 106, 0.5)' : 'none',
+        transform: isActive ? 'scale(1.05)' : 'scale(1)'
       }}
       onMouseEnter={(e) => {
         if (!disabled && !isActive) {
