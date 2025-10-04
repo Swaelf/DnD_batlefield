@@ -11,6 +11,7 @@ export type ToolType =
   | 'staticObject'
   | 'staticEffect'
   | 'layers'
+  | 'battleLogs'
   | 'pan'
   | 'measure'
   | 'text'
@@ -110,6 +111,13 @@ export const TOOLS: Record<ToolType, Tool> = {
     shortcut: 'Y',
     tooltip: 'Manage layers (Y)'
   },
+  battleLogs: {
+    id: 'battleLogs',
+    name: 'Battle Logs',
+    icon: 'ScrollText',
+    shortcut: 'B',
+    tooltip: 'View battle logs (B)'
+  },
   pan: {
     id: 'pan',
     name: 'Pan',
@@ -196,7 +204,7 @@ export const TOOL_CATEGORIES: Record<ToolCategoryId, Omit<ToolCategory, 'isExpan
     id: 'utilities',
     name: 'Utilities',
     icon: null, // Will use individual tool icons
-    tools: ['layers', 'eraser'],
+    tools: ['layers', 'battleLogs', 'eraser'],
     isExpandable: false,
     showInSidebar: false
   }

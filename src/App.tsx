@@ -11,6 +11,7 @@ const PropertiesPanel = lazy(() => import('./components/Properties/PropertiesPan
 const TokenLibrary = lazy(() => import('./components/Token/TokenLibrary'))
 const StaticObjectLibrary = lazy(() => import('./components/StaticObject/StaticObjectLibrary').then(m => ({ default: m.StaticObjectLibrary })))
 const AdvancedLayerPanel = lazy(() => import('./components/Layers/AdvancedLayerPanel').then(m => ({ default: m.AdvancedLayerPanel })))
+const BattleLogsPanel = lazy(() => import('./components/Properties').then(m => ({ default: m.BattleLogsPanel })))
 const AdvancedSelectionManager = lazy(() => import('./components/Selection/AdvancedSelectionManager').then(m => ({ default: m.AdvancedSelectionManager })))
 const RealTimeCollaborationManager = lazy(() => import('./components/Collaboration/RealTimeCollaborationManager').then(m => ({ default: m.RealTimeCollaborationManager })))
 const UserManagementPanel = lazy(() => import('./components/Collaboration/UserManagementPanel').then(m => ({ default: m.UserManagementPanel })))
@@ -465,6 +466,8 @@ function App() {
                 <StaticEffectsPanel />
               ) : currentTool === 'layers' ? (
                 <AdvancedLayerPanel />
+              ) : currentTool === 'battleLogs' ? (
+                <BattleLogsPanel />
               ) : currentTool === 'select' ? (
                 // For select tool, show PropertiesPanel if something is selected, otherwise AdvancedSelectionManager
                 selectedObjects.length > 0 ? <PropertiesPanel /> : <AdvancedSelectionManager />
