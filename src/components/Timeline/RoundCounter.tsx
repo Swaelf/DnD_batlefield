@@ -1,6 +1,6 @@
 import { memo, type FC } from 'react'
-import { SkipForward } from '@/utils/optimizedIcons'
-import { Text } from '@/components/primitives'
+import { SkipForward, Calendar } from '@/utils/optimizedIcons'
+import { Text, Box } from '@/components/primitives'
 import {
   RoundCounter as RoundCounterContainer,
   NavControls,
@@ -9,21 +9,29 @@ import {
 } from './CombatTracker.styled.tsx'
 
 type RoundCounterProps = {
+  currentRound: number
   currentGroup: number
   onNextGroup: () => void
   onPreviousGroup: () => void
+  onStartNewRound?: () => void
 }
 
 const RoundCounterComponent: FC<RoundCounterProps> = ({
+  currentRound,
   currentGroup,
   onNextGroup,
-  onPreviousGroup
+  onPreviousGroup,
+  onStartNewRound
 }) => {
   return (
     <>
-      {/* Event Counter */}
+      {/* Round and Event Counter */}
       <RoundCounterContainer>
-        <Text size="md" weight="bold" color="text">Event {currentGroup}</Text>
+        <Box display="flex" alignItems="center" gap={2}>
+          <Text size="md" weight="bold" color="primary">Round {currentRound}</Text>
+          <Text size="md" color="textMuted">•</Text>
+          <Text size="md" weight="bold" color="text">Event {currentGroup}</Text>
+        </Box>
       </RoundCounterContainer>
 
       {/* Navigation Controls */}
@@ -42,6 +50,16 @@ const RoundCounterComponent: FC<RoundCounterProps> = ({
         >
           <SkipForward size={20} />
         </NextRoundButton>
+
+        {onStartNewRound && (
+          <NavButton
+            onClick={onStartNewRound}
+            title="Start New Round"
+            style={{ marginLeft: '8px', backgroundColor: 'var(--color-primary)' }}
+          >
+            <Calendar size={18} />
+          </NavButton>
+        )}
       </NavControls>
     </>
   )

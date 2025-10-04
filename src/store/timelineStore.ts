@@ -67,15 +67,15 @@ const useTimelineStore = create<TimelineStore>()(
         state.isInCombat = false
         if (state.timeline) {
           state.timeline.isActive = false
-          // Move all events to history
-          state.timeline.history.push(...state.timeline.events)
-          state.timeline.events = []
+          // Move all completed rounds to history
+          state.timeline.history.push(...state.timeline.rounds.filter(r => r.executed))
+          state.timeline.rounds = state.timeline.rounds.filter(r => !r.executed)
         }
       })
     },
 
     nextEvent: async () => {
-      const { timeline, currentEvent } = get()
+      const { timeline, currentRound, currentEvent } = get()
       if (!timeline || !timeline.isActive) return
 
       // Clean up any lingering event creation state before advancing
@@ -83,6 +83,10 @@ const useTimelineStore = create<TimelineStore>()(
       if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
         eventCreationStore.cancelEventCreation()
       }
+
+      // Get current round data
+      const round = timeline.rounds.find(r => r.number === currentRound)
+      if (!round) return
 
       // Create snapshot before executing actions
       const mapStore = useMapStore.getState()
@@ -104,17 +108,21 @@ const useTimelineStore = create<TimelineStore>()(
 
         // Store snapshot in the next event for undo
         set((state) => {
+          const currentRoundData = state.timeline!.rounds.find(r => r.number === currentRound)
+          if (!currentRoundData) return
+
           const nextEventNumber = currentEvent + 1
-          let nextEvent = state.timeline!.events.find(e => e.number === nextEventNumber)
+          let nextEvent = currentRoundData.events.find(e => e.number === nextEventNumber)
           if (!nextEvent) {
             nextEvent = {
               id: crypto.randomUUID(),
+              roundNumber: currentRound,
               number: nextEventNumber,
               timestamp: Date.now(),
               actions: [],
               executed: false
             }
-            state.timeline!.events.push(nextEvent)
+            currentRoundData.events.push(nextEvent)
           }
           nextEvent.snapshot = snapshot
         })
@@ -136,7 +144,7 @@ const useTimelineStore = create<TimelineStore>()(
     },
 
     previousEvent: () => {
-      const { timeline, currentEvent } = get()
+      const { timeline, currentRound, currentEvent } = get()
       if (!timeline || currentEvent <= 1) return
 
       // Clean up any lingering event creation state before navigating
@@ -145,8 +153,11 @@ const useTimelineStore = create<TimelineStore>()(
         eventCreationStore.cancelEventCreation()
       }
 
-      // Get the snapshot from the current event (which was stored before execution)
-      const currentEventData = timeline.events.find(e => e.number === currentEvent)
+      // Get current round and event snapshot
+      const round = timeline.rounds.find(r => r.number === currentRound)
+      if (!round) return
+
+      const currentEventData = round.events.find(e => e.number === currentEvent)
       const snapshot = currentEventData?.snapshot
 
       set((state) => {
@@ -156,12 +167,15 @@ const useTimelineStore = create<TimelineStore>()(
         }
 
         // Mark the previous event's actions as not executed so they can be re-executed
-        const previousEventIndex = state.timeline!.events.findIndex(e => e.number === state.currentEvent)
+        const currentRoundData = state.timeline!.rounds.find(r => r.number === currentRound)
+        if (!currentRoundData) return
+
+        const previousEventIndex = currentRoundData.events.findIndex(e => e.number === state.currentEvent)
         if (previousEventIndex !== -1) {
-          state.timeline!.events[previousEventIndex].actions.forEach(action => {
+          currentRoundData.events[previousEventIndex].actions.forEach(action => {
             action.executed = false
           })
-          state.timeline!.events[previousEventIndex].executed = false
+          currentRoundData.events[previousEventIndex].executed = false
         }
       })
 
@@ -193,6 +207,8 @@ const useTimelineStore = create<TimelineStore>()(
     },
 
     goToEvent: (eventNumber) => {
+      const { currentRound } = get()
+
       // Clean up any lingering event creation state before jumping
       const eventCreationStore = useEventCreationStore.getState()
       if (eventCreationStore.isCreatingEvent || eventCreationStore.isPicking) {
@@ -204,18 +220,22 @@ const useTimelineStore = create<TimelineStore>()(
         if (state.timeline) {
           state.timeline.currentEvent = eventNumber
 
-          // Ensure the event exists
-          const eventExists = state.timeline.events.find(e => e.number === eventNumber)
+          // Ensure the event exists in the current round
+          const currentRoundData = state.timeline.rounds.find(r => r.number === currentRound)
+          if (!currentRoundData) return
+
+          const eventExists = currentRoundData.events.find(e => e.number === eventNumber)
           if (!eventExists) {
-            state.timeline.events.push({
+            currentRoundData.events.push({
               id: crypto.randomUUID(),
+              roundNumber: currentRound,
               number: eventNumber,
               timestamp: Date.now(),
               actions: [],
               executed: false
             })
             // Sort events by number
-            state.timeline.events.sort((a, b) => a.number - b.number)
+            currentRoundData.events.sort((a, b) => a.number - b.number)
           }
         }
       })
@@ -237,20 +257,27 @@ const useTimelineStore = create<TimelineStore>()(
         }
       }
 
+      const currentRound = state.currentRound
       const targetEvent = eventNumber || state.currentEvent
-      let event = state.timeline.events.find(e => e.number === targetEvent)
+
+      // Find current round
+      const roundData = state.timeline.rounds.find(r => r.number === currentRound)
+      if (!roundData) return
+
+      let event = roundData.events.find(e => e.number === targetEvent)
 
       if (!event) {
         // Create the event if it doesn't exist
         event = {
           id: crypto.randomUUID(),
+          roundNumber: currentRound,
           number: targetEvent,
           timestamp: Date.now(),
           actions: [],
           executed: false
         }
-        state.timeline.events.push(event)
-        state.timeline.events.sort((a, b) => a.number - b.number)
+        roundData.events.push(event)
+        roundData.events.sort((a, b) => a.number - b.number)
       }
 
       const newAction: TimelineAction = {
@@ -263,20 +290,22 @@ const useTimelineStore = create<TimelineStore>()(
         order: event.actions.length
       }
 
-      const eventIndex = state.timeline.events.findIndex(e => e.number === targetEvent)
+      const eventIndex = roundData.events.findIndex(e => e.number === targetEvent)
       if (eventIndex !== -1) {
-        state.timeline.events[eventIndex].actions.push(newAction)
+        roundData.events[eventIndex].actions.push(newAction)
       }
     }),
 
     updateAction: (actionId, updates) => set((state) => {
       if (!state.timeline) return
 
-      for (const event of state.timeline.events) {
-        const actionIndex = event.actions.findIndex(a => a.id === actionId)
-        if (actionIndex !== -1) {
-          Object.assign(event.actions[actionIndex], updates)
-          break
+      for (const round of state.timeline.rounds) {
+        for (const event of round.events) {
+          const actionIndex = event.actions.findIndex(a => a.id === actionId)
+          if (actionIndex !== -1) {
+            Object.assign(event.actions[actionIndex], updates)
+            return
+          }
         }
       }
     }),
@@ -284,20 +313,25 @@ const useTimelineStore = create<TimelineStore>()(
     removeAction: (actionId) => set((state) => {
       if (!state.timeline) return
 
-      for (const event of state.timeline.events) {
-        const actionIndex = event.actions.findIndex(a => a.id === actionId)
-        if (actionIndex !== -1) {
-          event.actions.splice(actionIndex, 1)
-          break
+      for (const round of state.timeline.rounds) {
+        for (const event of round.events) {
+          const actionIndex = event.actions.findIndex(a => a.id === actionId)
+          if (actionIndex !== -1) {
+            event.actions.splice(actionIndex, 1)
+            return
+          }
         }
       }
     }),
 
     executeEventActions: async (eventNumber) => {
-      const { timeline } = get()
+      const { timeline, currentRound } = get()
       if (!timeline) return
 
-      const event = timeline.events.find(e => e.number === eventNumber)
+      const round = timeline.rounds.find(r => r.number === currentRound)
+      if (!round) return
+
+      const event = round.events.find(e => e.number === eventNumber)
       if (!event || event.executed) return
 
       // Execute each action sequentially, waiting for each animation to complete
@@ -474,13 +508,16 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Mark actions as being executed
       set((state) => {
-        const eventIndex = state.timeline!.events.findIndex(e => e.number === eventNumber)
+        const roundData = state.timeline!.rounds.find(r => r.number === currentRound)
+        if (!roundData) return
+
+        const eventIndex = roundData.events.findIndex(e => e.number === eventNumber)
         if (eventIndex !== -1) {
           // Mark each action as executed
-          state.timeline!.events[eventIndex].actions.forEach(action => {
+          roundData.events[eventIndex].actions.forEach(action => {
             action.executed = true
           })
-          state.timeline!.events[eventIndex].executed = true
+          roundData.events[eventIndex].executed = true
         }
       })
 

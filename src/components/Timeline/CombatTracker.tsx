@@ -20,11 +20,13 @@ const CombatTrackerComponent: FC = () => {
 
   // Use specific selectors to prevent unnecessary re-renders
   const timeline = useTimelineStore(state => state.timeline)
+  const currentRound = useTimelineStore(state => state.currentRound)
   const currentEvent = useTimelineStore(state => state.currentEvent)
   const isInCombat = useTimelineStore(state => state.isInCombat)
   const animationSpeed = useTimelineStore(state => state.animationSpeed)
   const startCombat = useTimelineStore(state => state.startCombat)
   const endCombat = useTimelineStore(state => state.endCombat)
+  const startNewRound = useTimelineStore(state => state.startNewRound)
   const nextEvent = useTimelineStore(state => state.nextEvent)
   const previousEvent = useTimelineStore(state => state.previousEvent)
   const setAnimationSpeed = useTimelineStore(state => state.setAnimationSpeed)
@@ -47,7 +49,8 @@ const CombatTrackerComponent: FC = () => {
     cleanupExpiredSpells(updatedEvent)
   }
 
-  const currentEventData = timeline?.events.find(e => e.number === currentEvent)
+  const currentRoundData = timeline?.rounds.find(r => r.number === currentRound)
+  const currentEventData = currentRoundData?.events.find(e => e.number === currentEvent)
   const actionCount = currentEventData?.actions.length || 0
 
   // Count active spell effects
@@ -73,11 +76,13 @@ const CombatTrackerComponent: FC = () => {
         <CombatPanel>
           {/* Main Combat Bar */}
           <CombatBar>
-            {/* Event Counter and Navigation */}
+            {/* Round and Event Counter with Navigation */}
             <EventGroupCounter
+              currentRound={currentRound}
               currentGroup={currentEvent}
               onNextGroup={handleNextEvent}
               onPreviousGroup={previousEvent}
+              onStartNewRound={startNewRound}
             />
 
             {/* Combat Controls */}
