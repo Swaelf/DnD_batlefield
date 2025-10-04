@@ -374,8 +374,9 @@ const useMapStore = create<MapStore>()(
               return true  // Keep instant spells, let animation handle removal
             }
             // Remove persistent spells that have expired
-            // A spell created in round 1 with duration 1 should be active in round 1, removed in round 2
-            // So it expires at roundCreated + duration, meaning we remove it when currentRound >= expiresAtRound
+            // A spell with N-round duration lasts for N events starting from when it was cast
+            // Example: Cast at event 1 with duration 3 → active in events 1,2,3 → removed at event 4
+            // Formula: expiresAtRound = roundCreated + duration, remove when currentRound >= expiresAtRound
             const expiresAtRound = obj.roundCreated + obj.spellDuration
             const shouldKeep = currentRound < expiresAtRound
             console.log('[mapStore.cleanupExpiredSpells] Persistent spell:', {
