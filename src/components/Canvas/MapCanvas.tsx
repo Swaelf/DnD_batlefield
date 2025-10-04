@@ -186,7 +186,9 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         opacity: template.defaultOpacity,
         visible: true,
         locked: false,
-        metadata: { isStatic: true, templateId: template.id, templateName: template.name }
+        metadata: { isStatic: true, templateId: template.id, templateName: template.name },
+        abstractType: template.abstractType,
+        variant: template.variant
       }
       mapState.addObject(staticObject)
       return

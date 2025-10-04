@@ -217,7 +217,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
       width: 200,
       height: 20
     },
-    description: 'Stone or wooden wall'
+    description: 'Stone or wooden wall',
+    abstractType: 'wall',
+    variant: 'stone'
   },
   {
     id: 'door',
@@ -232,7 +234,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
       width: 50,
       height: 50
     },
-    description: 'Wooden door'
+    description: 'Wooden door',
+    abstractType: 'structure',
+    variant: 'door'
   },
   {
     id: 'pillar',
@@ -246,7 +250,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
     sizeProperties: {
       radius: 30
     },
-    description: 'Stone pillar'
+    description: 'Stone pillar',
+    abstractType: 'structure',
+    variant: 'pillar'
   },
   {
     id: 'stairs',
@@ -261,7 +267,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
       width: 100,
       height: 150
     },
-    description: 'Staircase'
+    description: 'Staircase',
+    abstractType: 'structure',
+    variant: 'stairs'
   },
   {
     id: 'spiral-stairs',
@@ -275,7 +283,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
     sizeProperties: {
       radius: 40
     },
-    description: 'Spiral staircase'
+    description: 'Spiral staircase',
+    abstractType: 'structure',
+    variant: 'spiral-stairs'
   },
 
   // Nature
@@ -291,7 +301,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
     sizeProperties: {
       radius: 40
     },
-    description: 'Large tree'
+    description: 'Large tree',
+    abstractType: 'nature',
+    variant: 'tree'
   },
   {
     id: 'bush',
@@ -305,7 +317,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
     sizeProperties: {
       radius: 25
     },
-    description: 'Small bush'
+    description: 'Small bush',
+    abstractType: 'nature',
+    variant: 'bush'
   },
   {
     id: 'rock',
@@ -319,7 +333,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
     sizeProperties: {
       radius: 35
     },
-    description: 'Large boulder'
+    description: 'Large boulder',
+    abstractType: 'nature',
+    variant: 'rock'
   },
   {
     id: 'water',
@@ -334,7 +350,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
       width: 150,
       height: 150
     },
-    description: 'Water area'
+    description: 'Water area',
+    abstractType: 'nature',
+    variant: 'water'
   },
 
   // Furniture
@@ -351,7 +369,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
       width: 100,
       height: 60
     },
-    description: 'Wooden table'
+    description: 'Wooden table',
+    abstractType: 'furniture',
+    variant: 'table'
   },
   {
     id: 'chair',
@@ -366,7 +386,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
       width: 40,
       height: 40
     },
-    description: 'Wooden chair'
+    description: 'Wooden chair',
+    abstractType: 'furniture',
+    variant: 'chair'
   },
   {
     id: 'chest',
@@ -381,7 +403,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
       width: 60,
       height: 50
     },
-    description: 'Treasure chest'
+    description: 'Treasure chest',
+    abstractType: 'furniture',
+    variant: 'chest'
   },
   {
     id: 'barrel',
@@ -395,7 +419,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
     sizeProperties: {
       radius: 25
     },
-    description: 'Wooden barrel'
+    description: 'Wooden barrel',
+    abstractType: 'furniture',
+    variant: 'barrel'
   },
 
   // Dungeon
@@ -412,7 +438,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
       width: 80,
       height: 80
     },
-    description: 'Hidden trap'
+    description: 'Hidden trap',
+    abstractType: 'dungeon',
+    variant: 'trap'
   },
   {
     id: 'altar',
@@ -427,7 +455,9 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
       width: 80,
       height: 100
     },
-    description: 'Stone altar'
+    description: 'Stone altar',
+    abstractType: 'dungeon',
+    variant: 'altar'
   },
   {
     id: 'brazier',
@@ -441,6 +471,8 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
     sizeProperties: {
       radius: 30
     },
-    description: 'Fire brazier'
+    description: 'Fire brazier',
+    abstractType: 'dungeon',
+    variant: 'brazier'
   }
 ]

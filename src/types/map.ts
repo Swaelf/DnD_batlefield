@@ -114,4 +114,7 @@ export type StaticObjectTemplate = {
     length?: number
   }
   description: string
+  // Abstract component system properties for O(1) type detection
+  abstractType?: 'wall' | 'furniture' | 'nature' | 'structure' | 'dungeon'
+  variant?: string
 }
