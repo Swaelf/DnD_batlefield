@@ -128,6 +128,11 @@ export type ToolStore = {
   activeCategory: import('./tools').ToolCategoryId | null
   expandedCategories: Set<import('./tools').ToolCategoryId>
 
+  // Terrain tool state
+  terrainBrushSize: number
+  terrainColor: string
+  terrainOpacity: number
+
   // Actions
   setTool: (tool: ToolType) => void
   setPreviousTool: () => void
@@ -146,6 +151,11 @@ export type ToolStore = {
   // Category actions
   setActiveCategory: (category: import('./tools').ToolCategoryId | null) => void
   toggleCategoryExpanded: (category: import('./tools').ToolCategoryId) => void
+
+  // Terrain tool actions
+  setTerrainBrushSize: (size: number) => void
+  setTerrainColor: (color: string) => void
+  setTerrainOpacity: (opacity: number) => void
 }
 
 // History Store Types
@@ -197,4 +207,7 @@ export type MapStore = {
 
   // Terrain actions
   setFieldColor: (color: string) => void
+  addTerrainDrawing: (drawing: import('./map').TerrainDrawing) => void
+  removeTerrainDrawing: (id: string) => void
+  clearTerrainDrawings: () => void
 }

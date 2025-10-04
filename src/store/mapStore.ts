@@ -256,6 +256,46 @@ const useMapStore = create<MapStore>()(
         }
       }),
 
+    addTerrainDrawing: (drawing) =>
+      set((state) => {
+        if (state.currentMap) {
+          saveToHistory()
+          if (!state.currentMap.terrain) {
+            state.currentMap.terrain = {
+              fieldColor: '#1A1A1A',
+              drawings: [drawing],
+              version: 1
+            }
+          } else {
+            state.currentMap.terrain.drawings.push(drawing)
+            state.currentMap.terrain.version += 1
+          }
+          state.mapVersion += 1
+        }
+      }),
+
+    removeTerrainDrawing: (id) =>
+      set((state) => {
+        if (state.currentMap?.terrain) {
+          saveToHistory()
+          state.currentMap.terrain.drawings = state.currentMap.terrain.drawings.filter(
+            (d) => d.id !== id
+          )
+          state.currentMap.terrain.version += 1
+          state.mapVersion += 1
+        }
+      }),
+
+    clearTerrainDrawings: () =>
+      set((state) => {
+        if (state.currentMap?.terrain) {
+          saveToHistory()
+          state.currentMap.terrain.drawings = []
+          state.currentMap.terrain.version += 1
+          state.mapVersion += 1
+        }
+      }),
+
     updateObjectPosition: (id, position) => {
       saveToHistory()
       set((state) => {
