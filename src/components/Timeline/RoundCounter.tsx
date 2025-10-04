@@ -1,5 +1,5 @@
 import { memo, type FC } from 'react'
-import { SkipForward, CalendarDays } from '@/utils/optimizedIcons'
+import { SkipForward, Clock } from '@/utils/optimizedIcons'
 import { Text, Box } from '@/components/primitives'
 import {
   RoundCounter as RoundCounterContainer,
@@ -57,7 +57,7 @@ const RoundCounterComponent: FC<RoundCounterProps> = ({
             title="Start New Round"
             style={{ marginLeft: '8px', backgroundColor: 'var(--color-primary)' }}
           >
-            <CalendarDays size={18} />
+            <Clock size={18} />
           </NavButton>
         )}
       </NavControls>

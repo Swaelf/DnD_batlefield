@@ -42,7 +42,6 @@ const selectDeleteObject = (state: { deleteObject: (id: string) => void }) => st
 const selectUpdateObjectPosition = (state: { updateObjectPosition: (id: string, position: { x: number; y: number }) => void }) => state.updateObjectPosition
 const selectBatchUpdatePosition = (state: { batchUpdatePosition: (objectIds: string[], deltaPosition: { x: number; y: number }) => void }) => state.batchUpdatePosition
 const selectCurrentTool = (state: { currentTool: string }) => state.currentTool
-const selectCurrentEvent = (state: { currentEvent: number }) => state.currentEvent
 const selectIsPicking = (state: { isPicking: string | null }) => state.isPicking
 const selectSetSelectedToken = (state: { setSelectedToken: (id: string) => void }) => state.setSelectedToken
 const selectActivePaths = (state: { activePaths: any[] }) => state.activePaths ?? EMPTY_ARRAY
@@ -78,7 +77,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   const isPicking = useEventCreationStore(selectIsPicking)
   const setSelectedToken = useEventCreationStore(selectSetSelectedToken)
   const activePaths = useAnimationStore(selectActivePaths)
-  const currentEvent = useTimelineStore(selectCurrentEvent)
   const layers = useLayerStore(selectLayers)
   const getDefaultLayerForObjectType = useLayerStore(selectGetDefaultLayerForObjectType)
   const migrateNumericLayer = useLayerStore(selectMigrateNumericLayer)

@@ -41,7 +41,8 @@ export const Timeline: FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
     setIsAnimating(false)
   }
 
-  const currentEventData = timeline?.events.find(e => e.number === currentEvent)
+  const currentRoundData = timeline?.rounds.find(r => r.number === 1) // Round 1 for now
+  const currentEventData = currentRoundData?.events.find(e => e.number === currentEvent)
   const actionCount = currentEventData?.actions.length || 0
 
   return (
@@ -196,10 +197,10 @@ export const Timeline: FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
           )}
 
           {/* Event Preview (mini timeline) */}
-          {isInCombat && timeline && (
+          {isInCombat && timeline && currentRoundData && (
             <div className={styles.eventPreview}>
               <div className={styles.eventPreviewContent}>
-                {timeline.events.slice(0, 10).map((event) => (
+                {currentRoundData.events.slice(0, 10).map((event) => (
                   <button
                     key={event.id}
                     onClick={() => goToEvent(event.number)}

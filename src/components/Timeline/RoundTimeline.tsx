@@ -22,14 +22,15 @@ const RoundTimelineComponent: FC<RoundTimelineProps> = ({
   currentGroup,
   activeSpells
 }) => {
-  const totalActions = timeline?.events.reduce((sum, e) => sum + e.actions.length, 0) || 0
+  const currentRoundData = timeline?.rounds.find(r => r.number === 1) // Round 1 for now
+  const totalActions = currentRoundData?.events.reduce((sum, e) => sum + e.actions.length, 0) || 0
 
   return (
     <>
       {/* Event Timeline */}
       <TimelineContainer>
         {Array.from({ length: Math.max(10, currentGroup + 2) }, (_, i) => i + 1).map((eventNum) => {
-          const event = timeline?.events.find(e => e.number === eventNum)
+          const event = currentRoundData?.events.find(e => e.number === eventNum)
           const hasActions = event && event.actions.length > 0
           const isExecuted = event?.executed
 
