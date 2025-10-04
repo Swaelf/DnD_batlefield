@@ -6,7 +6,7 @@
 import { useCallback, useMemo, memo, type FC } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
-import { Paintbrush } from '@/utils/optimizedIcons'
+import { Palette } from '@/utils/optimizedIcons'
 import useToolStore from '@store/toolStore'
 import type { ToolType } from '@/types/tools'
 import { TOOLS } from '@/types/tools'
@@ -132,7 +132,7 @@ const Toolbar: FC = () => {
           }}
           title="Edit Background (Toggle terrain drawing mode)"
         >
-          <Paintbrush
+          <Palette
             size={16}
             style={{
               color: isBackgroundEditMode ? 'var(--colors-dndBlack)' : 'var(--colors-gray300)'

@@ -1,5 +1,5 @@
 import { type FC } from 'react'
-import { Paintbrush, PaintBucket, Eraser, Square, Circle } from '@/utils/optimizedIcons'
+import { Pencil, Palette, Eraser, Square, Circle } from '@/utils/optimizedIcons'
 import useToolStore from '@store/toolStore'
 import useMapStore from '@store/mapStore'
 import { Box } from '@/components/primitives/BoxVE'
@@ -65,7 +65,7 @@ export const BackgroundEditingPanel: FC = () => {
     >
       {/* Header */}
       <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-        <Paintbrush size={16} style={{ color: 'var(--colors-secondary)' }} />
+        <Palette size={16} style={{ color: 'var(--colors-secondary)' }} />
         <Text
           variant="heading"
           style={{
@@ -105,7 +105,7 @@ export const BackgroundEditingPanel: FC = () => {
         <Box style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
           {/* Terrain Brush */}
           <ToolButton
-            icon={<Paintbrush size={16} />}
+            icon={<Pencil size={16} />}
             label="Brush"
             isActive={currentTool === 'terrainBrush'}
             onClick={() => setTool('terrainBrush')}
@@ -113,7 +113,7 @@ export const BackgroundEditingPanel: FC = () => {
 
           {/* Terrain Fill */}
           <ToolButton
-            icon={<PaintBucket size={16} />}
+            icon={<Palette size={16} />}
             label="Fill"
             isActive={currentTool === 'terrainFill'}
             onClick={() => setTool('terrainFill')}
