@@ -234,7 +234,7 @@ export type MapStore = {
   toggleGridSnap: () => void
   toggleGridVisibility: () => void
   updateGridSettings: (settings: Partial<BattleMap['grid']>) => void
-  cleanupExpiredSpells: (currentRound: number) => void
+  cleanupExpiredSpells: (currentRound: number, currentEvent?: number) => void
   toggleSpellPreview: () => void
   clearMapObjects: () => void
 

@@ -21,7 +21,9 @@ export type MapObject = {
   // Spell-specific
   isSpellEffect?: boolean
   roundCreated?: number
-  spellDuration?: number // in rounds
+  eventCreated?: number
+  spellDuration?: number // duration value
+  durationType?: 'rounds' | 'events' // how to track duration: rounds for continuous, events for instant
 
   // Attack-specific
   isAttackEffect?: boolean
@@ -34,12 +36,14 @@ export type MapObject = {
   // Persistent area-specific
 }
 
-// Specialized spell object that requires round tracking
+// Specialized spell object that requires round/event tracking
 export type SpellMapObject = MapObject & {
   type: 'spell' | 'persistent-area'
   isSpellEffect: boolean
   roundCreated: number // Required for spells
+  eventCreated: number // Required for spells
   spellDuration: number // Required for spells
+  durationType: 'rounds' | 'events' // Required for spells
   persistentAreaData?: {
     position: Position
     radius: number

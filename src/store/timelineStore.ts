@@ -139,8 +139,8 @@ const useTimelineStore = create<TimelineStore>()(
       })
 
       // Clean up expired spell effects when advancing events
-      const newEvent = get().currentEvent
-      useMapStore.getState().cleanupExpiredSpells(newEvent)
+      const { currentRound: newRound, currentEvent: newEvent } = get()
+      useMapStore.getState().cleanupExpiredSpells(newRound, newEvent)
     },
 
     previousEvent: () => {
@@ -202,8 +202,8 @@ const useTimelineStore = create<TimelineStore>()(
       }
 
       // Clean up spell effects when navigating to previous event
-      const newEvent = get().currentEvent
-      useMapStore.getState().cleanupExpiredSpells(newEvent)
+      const { currentRound: newRound, currentEvent: newEvent } = get()
+      useMapStore.getState().cleanupExpiredSpells(newRound, newEvent)
     },
 
     goToEvent: (eventNumber) => {
@@ -241,7 +241,8 @@ const useTimelineStore = create<TimelineStore>()(
       })
 
       // Clean up spell effects when jumping to a specific event
-      useMapStore.getState().cleanupExpiredSpells(eventNumber)
+      const { currentRound: newRound } = get()
+      useMapStore.getState().cleanupExpiredSpells(newRound, eventNumber)
     },
 
     addAction: (tokenId, type, data, eventNumber) => set((state) => {
@@ -571,7 +572,8 @@ const useTimelineStore = create<TimelineStore>()(
       })
 
       // Clean up expired spells based on rounds
-      useMapStore.getState().cleanupExpiredSpells(get().currentRound)
+      const { currentRound, currentEvent } = get()
+      useMapStore.getState().cleanupExpiredSpells(currentRound, currentEvent)
     },
 
     nextRound: () => {

@@ -43,10 +43,10 @@ const CombatTrackerComponent: FC = () => {
 
   const handleNextEvent = async () => {
     await nextEvent()
-    // Get the updated current event from the store after nextEvent completes
-    const updatedEvent = useTimelineStore.getState().currentEvent
+    // Get the updated round and event from the store after nextEvent completes
+    const { currentRound: updatedRound, currentEvent: updatedEvent } = useTimelineStore.getState()
     // Clean up expired spells after event change
-    cleanupExpiredSpells(updatedEvent)
+    cleanupExpiredSpells(updatedRound, updatedEvent)
   }
 
   const currentRoundData = timeline?.rounds.find(r => r.number === currentRound)

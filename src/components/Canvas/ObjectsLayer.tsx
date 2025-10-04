@@ -625,6 +625,15 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           spellName: spell.spellData.spellName
         })
 
+        // Get current round and event from timeline
+        const { currentRound, currentEvent } = useTimelineStore.getState()
+
+        // Determine duration type based on spell category
+        // Continuous spells (area, ray, cone) use rounds
+        // Instant burst effects (projectile-burst) use events
+        const isContinuousSpell = ['area', 'ray', 'cone'].includes(spell.spellData.category || '')
+        const durationType: 'rounds' | 'events' = isContinuousSpell ? 'rounds' : 'events'
+
         const persistentAreaObject = {
           id: `persistent-area-${Date.now()}-${Math.random()}`,
           type: 'persistent-area' as const,
@@ -638,7 +647,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
             color: spell.spellData.persistColor || spell.spellData.color || '#3D3D2E',
             opacity: spell.spellData.persistOpacity || 0.8,
             spellName: spell.spellData.spellName || 'Area Effect',
-            roundCreated: currentEvent, // Use actual current event number
+            roundCreated: currentRound,
             // Store token tracking information for persistent areas
             trackTarget: spell.spellData.trackTarget || false,
             targetTokenId: spell.spellData.targetTokenId || null,
@@ -648,15 +657,21 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
             toPosition: spell.spellData.toPosition,
             coneAngle: spell.spellData.coneAngle || 60
           },
-          roundCreated: currentEvent, // Use actual current event number
+          roundCreated: currentRound,
+          eventCreated: currentEvent,
           spellDuration: persistDuration,
+          durationType: durationType,
           isSpellEffect: true as const // Mark as spell effect for cleanup
         }
 
         console.log('[ObjectsLayer] ⚠️ PERSISTENT AREA VALUES:', {
-          roundCreated: currentEvent,
+          roundCreated: currentRound,
+          eventCreated: currentEvent,
           spellDuration: persistDuration,
-          expiresAtRound: currentEvent + persistDuration,
+          durationType: durationType,
+          expiresAt: durationType === 'rounds'
+            ? `Round ${currentRound + persistDuration}`
+            : `Event ${currentEvent + persistDuration}`,
           spellName: spell.spellData?.spellName
         })
 
