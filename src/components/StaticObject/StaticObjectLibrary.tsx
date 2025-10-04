@@ -19,7 +19,7 @@ import * as styles from './StaticObjectLibrary.css'
 
 export const StaticObjectLibrary = memo(() => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(['structures', 'nature', 'furniture', 'dungeon'])
+    new Set(['structures', 'nature', 'furniture', 'dungeon', 'drawing'])
   )
   const [selectedTemplate, setSelectedTemplate] = useState<StaticObjectTemplate | null>(null)
   const [objectProperties, setObjectProperties] = useState<EffectProperties>({

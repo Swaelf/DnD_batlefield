@@ -1,5 +1,5 @@
 import { type FC } from 'react'
-import { Pencil, Palette, Eraser, Square, Circle } from '@/utils/optimizedIcons'
+import { Pencil, Palette, Eraser } from '@/utils/optimizedIcons'
 import useToolStore from '@store/toolStore'
 import useMapStore from '@store/mapStore'
 import { Box } from '@/components/primitives/BoxVE'
@@ -40,13 +40,6 @@ export const BackgroundEditingPanel: FC = () => {
   const setTerrainBrushSize = useToolStore(state => state.setTerrainBrushSize)
   const setTerrainColor = useToolStore(state => state.setTerrainColor)
   const setTerrainOpacity = useToolStore(state => state.setTerrainOpacity)
-
-  const fillColor = useToolStore(state => state.fillColor)
-  const strokeColor = useToolStore(state => state.strokeColor)
-  const strokeWidth = useToolStore(state => state.strokeWidth)
-  const setFillColor = useToolStore(state => state.setFillColor)
-  const setStrokeColor = useToolStore(state => state.setStrokeColor)
-  const setStrokeWidth = useToolStore(state => state.setStrokeWidth)
 
   const currentMap = useMapStore(state => state.currentMap)
   const setFieldColor = useMapStore(state => state.setFieldColor)
@@ -128,21 +121,6 @@ export const BackgroundEditingPanel: FC = () => {
             onClick={() => setTool('terrainEraser')}
             disabled
           />
-
-          {/* Drawing Tools */}
-          <ToolButton
-            icon={<Square size={16} />}
-            label="Rectangle"
-            isActive={currentTool === 'rectangle'}
-            onClick={() => setTool('rectangle')}
-          />
-
-          <ToolButton
-            icon={<Circle size={16} />}
-            label="Circle"
-            isActive={currentTool === 'circle'}
-            onClick={() => setTool('circle')}
-          />
         </Box>
       </Box>
 
@@ -178,76 +156,6 @@ export const BackgroundEditingPanel: FC = () => {
               />
             </>
           )}
-        </Box>
-      )}
-
-      {/* Drawing Tool Controls */}
-      {(currentTool === 'rectangle' || currentTool === 'circle') && (
-        <Box style={{ marginBottom: '16px' }}>
-          <Box style={{ marginBottom: '12px' }}>
-            <Text
-              variant="body"
-              size="xs"
-              style={{
-                fontSize: '12px',
-                fontWeight: 500,
-                color: 'var(--colors-gray400)',
-                marginBottom: '8px'
-              }}
-            >
-              Fill Color
-            </Text>
-            <input
-              type="color"
-              value={fillColor}
-              onChange={(e) => setFillColor(e.target.value)}
-              style={{
-                width: '100%',
-                height: '40px',
-                border: '1px solid var(--colors-gray700)',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                backgroundColor: 'transparent'
-              }}
-            />
-          </Box>
-
-          <Box style={{ marginBottom: '12px' }}>
-            <Text
-              variant="body"
-              size="xs"
-              style={{
-                fontSize: '12px',
-                fontWeight: 500,
-                color: 'var(--colors-gray400)',
-                marginBottom: '8px'
-              }}
-            >
-              Stroke Color
-            </Text>
-            <input
-              type="color"
-              value={strokeColor}
-              onChange={(e) => setStrokeColor(e.target.value)}
-              style={{
-                width: '100%',
-                height: '40px',
-                border: '1px solid var(--colors-gray700)',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                backgroundColor: 'transparent'
-              }}
-            />
-          </Box>
-
-          <StyleSliderControl
-            label="Stroke Width"
-            value={strokeWidth}
-            onChange={setStrokeWidth}
-            min={0}
-            max={20}
-            step={1}
-          />
         </Box>
       )}
 

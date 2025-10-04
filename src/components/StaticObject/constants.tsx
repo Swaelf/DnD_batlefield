@@ -212,6 +212,13 @@ const SpiralStairsIcon = () => (
   </svg>
 )
 
+const ShapesIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="2" y="2" width="7" height="7" fill="currentColor" rx="1" />
+    <circle cx="14" cy="14" r="4" fill="currentColor" />
+  </svg>
+)
+
 export const staticObjectCategories: Array<{
   id: StaticObjectCategory
   name: string
@@ -220,7 +227,8 @@ export const staticObjectCategories: Array<{
   { id: 'structures', name: 'Structures', icon: <WallIcon /> },
   { id: 'nature', name: 'Nature', icon: <TreeIcon /> },
   { id: 'furniture', name: 'Furniture', icon: <TableIcon /> },
-  { id: 'dungeon', name: 'Dungeon', icon: <ChestIcon /> }
+  { id: 'dungeon', name: 'Dungeon', icon: <ChestIcon /> },
+  { id: 'drawing', name: 'Drawing Tools', icon: <ShapesIcon /> }
 ]
 
 export const staticObjectTemplates: StaticObjectTemplate[] = [
@@ -512,5 +520,36 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
     description: 'Fire brazier',
     abstractType: 'dungeon',
     variant: 'brazier'
+  },
+
+  // Drawing Tools
+  {
+    id: 'draw-rectangle',
+    name: 'Rectangle',
+    type: 'rectangle',
+    category: 'drawing',
+    icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="10" stroke="currentColor" strokeWidth="2" fill="none" rx="1"/></svg>,
+    defaultColor: '#3B82F6',
+    defaultOpacity: 0.6,
+    rotation: 0,
+    sizeProperties: {
+      width: 100,
+      height: 60
+    },
+    description: 'Basic rectangle shape for custom drawings'
+  },
+  {
+    id: 'draw-circle',
+    name: 'Circle',
+    type: 'circle',
+    category: 'drawing',
+    icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="2" fill="none"/></svg>,
+    defaultColor: '#3B82F6',
+    defaultOpacity: 0.6,
+    rotation: 0,
+    sizeProperties: {
+      radius: 40
+    },
+    description: 'Basic circle shape for custom drawings'
   }
 ]

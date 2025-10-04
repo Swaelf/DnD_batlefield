@@ -6,6 +6,7 @@
 import { useCallback, useMemo, memo, type FC } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
+import { ToolButton as StyledToolButton } from '@/components/primitives'
 import { Palette } from '@/utils/optimizedIcons'
 import useToolStore from '@store/toolStore'
 import type { ToolType } from '@/types/tools'
@@ -115,40 +116,14 @@ const Toolbar: FC = () => {
           marginBottom: '12px'
         }}
       >
-        <Box
+        <StyledToolButton
           onClick={toggleBackgroundEditMode}
-          style={{
-            width: '100%',
-            padding: '8px',
-            backgroundColor: isBackgroundEditMode ? 'var(--colors-secondary)' : 'var(--colors-gray800)',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '6px',
-            transition: 'all 0.2s ease',
-            border: `1px solid ${isBackgroundEditMode ? 'var(--colors-secondary)' : 'var(--colors-gray700)'}`
-          }}
-          title="Edit Background (Toggle terrain drawing mode)"
+          active={isBackgroundEditMode}
+          tooltip="Edit Background (B)"
+          style={{ width: '100%' }}
         >
-          <Palette
-            size={16}
-            style={{
-              color: isBackgroundEditMode ? 'var(--colors-dndBlack)' : 'var(--colors-gray300)'
-            }}
-          />
-          <Text
-            variant="body"
-            size="xs"
-            style={{
-              color: isBackgroundEditMode ? 'var(--colors-dndBlack)' : 'var(--colors-gray300)',
-              fontWeight: 500
-            }}
-          >
-            BG
-          </Text>
-        </Box>
+          <Palette size={20} />
+        </StyledToolButton>
       </Box>
 
       {/* Color indicators */}
