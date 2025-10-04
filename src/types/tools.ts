@@ -114,7 +114,7 @@ export const TOOLS: Record<ToolType, Tool> = {
   battleLogs: {
     id: 'battleLogs',
     name: 'Battle Logs',
-    icon: 'ScrollText',
+    icon: 'FileText',
     shortcut: 'B',
     tooltip: 'View battle logs (B)'
   },
@@ -149,13 +149,13 @@ export const TOOLS: Record<ToolType, Tool> = {
   terrainBrush: {
     id: 'terrainBrush',
     name: 'Terrain Brush',
-    icon: 'Paintbrush',
+    icon: 'Pencil',
     tooltip: 'Paint terrain on background layer'
   },
   terrainFill: {
     id: 'terrainFill',
     name: 'Terrain Fill',
-    icon: 'PaintBucket',
+    icon: 'Droplet',
     tooltip: 'Fill terrain areas'
   },
   terrainEraser: {

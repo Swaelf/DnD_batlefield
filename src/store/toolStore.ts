@@ -30,9 +30,6 @@ const useToolStore = create<ToolStore>()(
     terrainColor: '#6B7280', // Stone gray default
     terrainOpacity: 0.8,
 
-    // Background editing mode
-    isBackgroundEditMode: false,
-
     setTool: (tool) => set((state) => {
       if (tool !== state.currentTool) {
         state.previousTool = state.currentTool
@@ -130,29 +127,6 @@ const useToolStore = create<ToolStore>()(
 
     setTerrainOpacity: (opacity) => set((state) => {
       state.terrainOpacity = Math.max(0, Math.min(1, opacity)) // Clamp to 0-1
-    }),
-
-    // Background editing mode actions
-    toggleBackgroundEditMode: () => set((state) => {
-      state.isBackgroundEditMode = !state.isBackgroundEditMode
-      // When entering background mode, switch to terrainBrush by default
-      if (state.isBackgroundEditMode) {
-        state.previousTool = state.currentTool
-        state.currentTool = 'terrainBrush'
-      } else {
-        // When exiting, restore previous tool
-        state.currentTool = state.previousTool
-      }
-    }),
-
-    setBackgroundEditMode: (enabled) => set((state) => {
-      state.isBackgroundEditMode = enabled
-      if (enabled) {
-        state.previousTool = state.currentTool
-        state.currentTool = 'terrainBrush'
-      } else {
-        state.currentTool = state.previousTool
-      }
     }),
   }))
 )
