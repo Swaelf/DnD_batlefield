@@ -33,7 +33,10 @@ describe('InteractiveLayer', () => {
     fillColor: '#ffffff',
     strokeColor: '#000000',
     strokeWidth: 2,
-    opacity: 1
+    opacity: 1,
+    terrainColor: '#8B7355',
+    terrainOpacity: 0.5,
+    terrainBrushSize: 30
   }
 
   it('should render without crashing', () => {
