@@ -327,6 +327,15 @@ The **Action Sequencing System** provides advanced D&D combat coordination throu
   - ServiceWorker with offline functionality, PWA features, and background sync
   - PWA Manifest with native app installation, file handlers, and push notifications
   - Full production readiness with error reporting, performance analytics, and offline support
+- **Background Drawing System (October 2025)**: Complete terrain drawing system with field color and brush tools
+  - 5-layer Konva architecture optimized for performance (Field Color → Terrain → Grid → Content → Interactive)
+  - MapSettingsPanel with 8 background color presets (Default Black, Stone Gray, Forest Green, etc.)
+  - TerrainToolsPanel with context-aware controls (brush size 1-100px, 8 terrain color presets, opacity 0-1)
+  - Interactive terrain brush with real-time stroke collection and persistence
+  - TerrainLayer component with memoization and terrain.version-based cache invalidation
+  - Full undo/redo support via history integration for field color and terrain drawings
+  - Performance optimized: `listening={false}` on static layers, ref-based point collection during drag
+  - Commits: 4e94c51 (Phase 1 Field Color), 323c74b (Phase 2 Toolbar Categories), 447ba9e (Phase 3 Terrain Layer), 44c37c1, bc5c322, b7fdd27 (Phase 4 Terrain Tools)
 
 ### 🔧 Recent Fixes & Optimizations
 
