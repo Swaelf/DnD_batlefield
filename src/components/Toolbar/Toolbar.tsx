@@ -125,82 +125,8 @@ const Toolbar: FC = () => {
           <Palette size={20} />
         </StyledToolButton>
       </Box>
-
-      {/* Color indicators */}
-      <Box
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-          paddingLeft: '8px',
-          paddingRight: '8px'
-        }}
-      >
-        <ColorIndicatorComponent type="fill" />
-        <ColorIndicatorComponent type="stroke" />
-      </Box>
     </Box>
   )
 }
-
-// Memoize the color indicator to prevent unnecessary re-renders
-const ColorIndicatorComponent: FC<{ type: 'fill' | 'stroke' }> = memo(({ type }) => {
-  // Use specific selectors for better performance
-  const fillColor = useToolStore(state => state.fillColor)
-  const strokeColor = useToolStore(state => state.strokeColor)
-  const color = type === 'fill' ? fillColor : strokeColor
-
-  return (
-    <Box style={{ position: 'relative' }}>
-      <Box
-        style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '6px',
-          border: '2px solid var(--colors-gray700)',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          boxSizing: 'border-box',
-          backgroundColor: type === 'fill' ? color : 'transparent'
-        }}
-        title={type === 'fill' ? 'Fill Color' : 'Stroke Color'}
-      >
-        {type === 'stroke' && (
-          <Box
-            style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: '6px',
-              boxSizing: 'border-box',
-              border: `3px solid ${color}`
-            }}
-          />
-        )}
-      </Box>
-      <Box
-        style={{
-          position: 'absolute',
-          top: '-4px',
-          right: '-4px',
-          width: '12px',
-          height: '12px',
-          backgroundColor: 'var(--colors-gray800)',
-          borderRadius: '50%',
-          fontSize: '10px',
-          color: 'var(--colors-gray400)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '1px solid var(--colors-gray700)'
-        }}
-      >
-        {type === 'fill' ? 'F' : 'S'}
-      </Box>
-    </Box>
-  )
-})
-
-// Add display name for debugging
-ColorIndicatorComponent.displayName = 'ColorIndicatorComponent'
 
 export default memo(Toolbar)

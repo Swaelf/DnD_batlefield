@@ -224,11 +224,11 @@ export const staticObjectCategories: Array<{
   name: string
   icon: ReactNode
 }> = [
+  { id: 'drawing', name: 'Drawing Tools', icon: <ShapesIcon /> },
   { id: 'structures', name: 'Structures', icon: <WallIcon /> },
   { id: 'nature', name: 'Nature', icon: <TreeIcon /> },
   { id: 'furniture', name: 'Furniture', icon: <TableIcon /> },
-  { id: 'dungeon', name: 'Dungeon', icon: <ChestIcon /> },
-  { id: 'drawing', name: 'Drawing Tools', icon: <ShapesIcon /> }
+  { id: 'dungeon', name: 'Dungeon', icon: <ChestIcon /> }
 ]
 
 export const staticObjectTemplates: StaticObjectTemplate[] = [

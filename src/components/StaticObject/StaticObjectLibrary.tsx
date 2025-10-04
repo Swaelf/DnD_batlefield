@@ -1,5 +1,5 @@
 import { useState, memo } from 'react'
-import { ChevronDown, ChevronRight, Package } from '@/utils/optimizedIcons'
+import { ChevronDown, ChevronRight, Package, Palette, Pipette } from '@/utils/optimizedIcons'
 import useToolStore from '@/store/toolStore'
 import {
   Panel,
@@ -34,6 +34,10 @@ export const StaticObjectLibrary = memo(() => {
   })
 
   const setTool = useToolStore(state => state.setTool)
+  const fillColor = useToolStore(state => state.fillColor)
+  const strokeColor = useToolStore(state => state.strokeColor)
+  const setFillColor = useToolStore(state => state.setFillColor)
+  const setStrokeColor = useToolStore(state => state.setStrokeColor)
 
   const toggleCategory = (categoryId: string) => {
     const newExpanded = new Set(expandedCategories)
@@ -104,6 +108,53 @@ export const StaticObjectLibrary = memo(() => {
           Map objects and decorations
         </Text>
       </PanelHeader>
+
+      {/* Color Selectors */}
+      <PanelSection>
+        <Box display="flex" gap={2} style={{ padding: '8px 0' }}>
+          {/* Fill Color */}
+          <Box flexGrow={1}>
+            <Box display="flex" alignItems="center" gap={1} marginBottom={1}>
+              <Palette size={14} color="#9CA3AF" />
+              <Text size="xs" color="gray400" weight="medium">Fill</Text>
+            </Box>
+            <input
+              type="color"
+              value={fillColor}
+              onChange={(e) => setFillColor(e.target.value)}
+              style={{
+                width: '100%',
+                height: '36px',
+                border: '1px solid var(--colors-gray700)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                backgroundColor: fillColor
+              }}
+            />
+          </Box>
+
+          {/* Stroke Color */}
+          <Box flexGrow={1}>
+            <Box display="flex" alignItems="center" gap={1} marginBottom={1}>
+              <Pipette size={14} color="#9CA3AF" />
+              <Text size="xs" color="gray400" weight="medium">Stroke</Text>
+            </Box>
+            <input
+              type="color"
+              value={strokeColor}
+              onChange={(e) => setStrokeColor(e.target.value)}
+              style={{
+                width: '100%',
+                height: '36px',
+                border: '1px solid var(--colors-gray700)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                backgroundColor: strokeColor
+              }}
+            />
+          </Box>
+        </Box>
+      </PanelSection>
 
       <PanelBody>
         {staticObjectCategories.map(category => {
