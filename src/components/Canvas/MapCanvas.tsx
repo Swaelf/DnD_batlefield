@@ -56,6 +56,10 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
   const drawingStartRef = useRef<Point | null>(null)
   const { handleContextMenu } = useContextMenu()
 
+  // Terrain brush state
+  const isDrawingTerrainRef = useRef(false)
+  const terrainPointsRef = useRef<number[]>([])
+
   // Preview position state
   const [previewPosition, setPreviewPosition] = useState<Point | null>(null)
   const staticEffectTemplate = useToolStore(state => state.staticEffectTemplate)
@@ -445,6 +449,10 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         currentPoint: drawingStartRef.current,
         points: []
       })
+    } else if (currentTool === 'terrainBrush') {
+      // Start terrain brush stroke
+      isDrawingTerrainRef.current = true
+      terrainPointsRef.current = [position.x, position.y]
     }
   }, [currentTool, gridSettings, staticEffectTemplate])
 
@@ -494,6 +502,11 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         currentPoint: currentPoint,
         points: []
       })
+    }
+
+    // Terrain brush: collect points during drag
+    if (isDrawingTerrainRef.current && currentTool === 'terrainBrush') {
+      terrainPointsRef.current.push(position.x, position.y)
     }
 
     if ((currentTool === 'token' || currentTool === 'staticObject') && !isDrawingRef.current) {
@@ -607,6 +620,31 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       isDrawingRef.current = false
       drawingStartRef.current = null
       toolState.resetDrawingState()
+    }
+
+    // Terrain brush: create TerrainDrawing on mouse up
+    if (isDrawingTerrainRef.current && currentTool === 'terrainBrush') {
+      const toolState = useToolStore.getState()
+      const mapState = useMapStore.getState()
+
+      // Only create drawing if we have enough points (at least 2 points = 4 values)
+      if (terrainPointsRef.current.length >= 4) {
+        const terrainDrawing = {
+          id: crypto.randomUUID(),
+          type: 'brush' as const,
+          points: [...terrainPointsRef.current],
+          color: toolState.terrainColor,
+          strokeWidth: toolState.terrainBrushSize,
+          opacity: toolState.terrainOpacity,
+          timestamp: Date.now()
+        }
+
+        mapState.addTerrainDrawing(terrainDrawing)
+      }
+
+      // Reset terrain drawing state
+      isDrawingTerrainRef.current = false
+      terrainPointsRef.current = []
     }
   }, [selectionRect, currentTool, currentMap])
 
