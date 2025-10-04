@@ -1,5 +1,5 @@
 import { useState, memo } from 'react'
-import { ChevronDown, ChevronRight, Package, Palette, Pipette } from '@/utils/optimizedIcons'
+import { ChevronDown, ChevronRight, Package, Palette, Pipette, Square, Circle } from '@/utils/optimizedIcons'
 import useToolStore from '@/store/toolStore'
 import {
   Panel,
@@ -34,6 +34,7 @@ export const StaticObjectLibrary = memo(() => {
   })
 
   const setTool = useToolStore(state => state.setTool)
+  const currentTool = useToolStore(state => state.currentTool)
   const fillColor = useToolStore(state => state.fillColor)
   const strokeColor = useToolStore(state => state.strokeColor)
   const setFillColor = useToolStore(state => state.setFillColor)
@@ -153,6 +154,40 @@ export const StaticObjectLibrary = memo(() => {
               }}
             />
           </Box>
+        </Box>
+      </PanelSection>
+
+      {/* Drawing Tools Section */}
+      <PanelSection divider>
+        <Box display="flex" flexDirection="column" gap={2}>
+          <Text size="sm" weight="semibold" color="gray300">
+            Drawing Tools
+          </Text>
+          <Box display="flex" gap={2}>
+            <Button
+              onClick={() => setTool('rectangle')}
+              variant={currentTool === 'rectangle' ? 'primary' : 'ghost'}
+              fullWidth
+            >
+              <Box display="flex" alignItems="center" gap={2}>
+                <Square size={16} />
+                <Text size="sm" weight="medium">Rectangle</Text>
+              </Box>
+            </Button>
+            <Button
+              onClick={() => setTool('circle')}
+              variant={currentTool === 'circle' ? 'primary' : 'ghost'}
+              fullWidth
+            >
+              <Box display="flex" alignItems="center" gap={2}>
+                <Circle size={16} />
+                <Text size="sm" weight="medium">Circle</Text>
+              </Box>
+            </Button>
+          </Box>
+          <Text size="xs" color="gray400">
+            Click and drag on the map to draw shapes
+          </Text>
         </Box>
       </PanelSection>
 
