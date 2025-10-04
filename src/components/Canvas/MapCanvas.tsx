@@ -93,6 +93,8 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
   const strokeColor = useToolStore(state => state.strokeColor)
   const strokeWidth = useToolStore(state => state.strokeWidth)
   const opacity = useToolStore(state => state.opacity)
+  const terrainColor = useToolStore(state => state.terrainColor)
+  const terrainOpacity = useToolStore(state => state.terrainOpacity)
   const tokenTemplate = useToolStore(state => state.tokenTemplate)
   const measurementPoints = useToolStore(state => state.measurementPoints)
   const staticObjectTemplate = useToolStore(state => state.staticObjectTemplate)
