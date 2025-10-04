@@ -20,7 +20,8 @@ const calculateTokenExpectedPosition = (tokenId: string, currentPreview?: { toPo
 
   // First, apply any timeline events if we're in combat mode
   if (roundStore.isInCombat && roundStore.timeline) {
-    const currentEventData = roundStore.timeline.events.find((e: any) => e.number === roundStore.currentEvent)
+    const currentRoundData = roundStore.timeline.rounds.find(r => r.number === roundStore.currentRound)
+    const currentEventData = currentRoundData?.events.find(e => e.number === roundStore.currentEvent)
 
     if (currentEventData) {
       // Find all movement actions for this token in the current event
