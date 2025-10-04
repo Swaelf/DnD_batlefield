@@ -1,5 +1,5 @@
 import { type FC } from 'react'
-import { Pencil, Palette, Eraser, Square, Circle, Minus, Pentagon } from '@/utils/optimizedIcons'
+import { Pencil, Palette, Eraser, Square, Circle, Minus, Hexagon } from '@/utils/optimizedIcons'
 import useToolStore from '@store/toolStore'
 import useMapStore from '@store/mapStore'
 import { Box } from '@/components/primitives/BoxVE'
@@ -130,7 +130,7 @@ export const BackgroundEditingPanel: FC = () => {
 
           {/* Polygon */}
           <ToolButton
-            icon={<Pentagon size={16} />}
+            icon={<Hexagon size={16} />}
             label="Polygon"
             isActive={currentTool === 'polygon'}
             onClick={() => setTool('polygon')}
