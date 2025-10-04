@@ -54,7 +54,6 @@ export interface AnimationTemplate {
   /** Tags for filtering and search */
   tags: string[];
   /** Template factory function */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   template: (...args: any[]) => AbstractProjectileConfig | CompositionConfig;
   /** Additional metadata (D&D stats, etc.) */
   metadata?: Record<string, unknown>;

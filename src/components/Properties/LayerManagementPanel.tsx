@@ -9,33 +9,33 @@ import { LayerList } from './LayerList'
 import { MoveToLayerControl } from './MoveToLayerControl'
 
 export const LayerManagementPanel: FC = () => {
-  try {
-    const {
-      layers,
-      activeLayerId,
-      setActiveLayer,
-      toggleLayerVisibility,
-      toggleLayerLock,
-      createLayer,
-      deleteLayer,
-      moveLayer
-    } = useLayerStore()
+  // Hooks must be called unconditionally
+  const {
+    layers,
+    activeLayerId,
+    setActiveLayer,
+    toggleLayerVisibility,
+    toggleLayerLock,
+    createLayer,
+    deleteLayer,
+    moveLayer
+  } = useLayerStore()
 
-    const selectedObjects = useMapStore(state => state.selectedObjects)
-    const updateObject = useMapStore(state => state.updateObject)
-    const currentMap = useMapStore(state => state.currentMap)
+  const selectedObjects = useMapStore(state => state.selectedObjects)
+  const updateObject = useMapStore(state => state.updateObject)
+  const currentMap = useMapStore(state => state.currentMap)
 
-    const [showCreateLayer, setShowCreateLayer] = useState(false)
+  const [showCreateLayer, setShowCreateLayer] = useState(false)
 
-    // Ensure layers is an array before proceeding
-    if (!Array.isArray(layers)) {
-      console.error('LayerManagementPanel: layers is not an array', layers)
-      return (
-        <Box padding={3}>
-          <Text size="sm" color="gray400">Layer system unavailable</Text>
-        </Box>
-      )
-    }
+  // Ensure layers is an array before proceeding
+  if (!Array.isArray(layers)) {
+    console.error('LayerManagementPanel: layers is not an array', layers)
+    return (
+      <Box padding={3}>
+        <Text size="sm" color="gray400">Layer system unavailable</Text>
+      </Box>
+    )
+  }
 
     const handleCreateLayer = (name: string) => {
       createLayer({ name, type: 'objects' })
@@ -86,12 +86,4 @@ export const LayerManagementPanel: FC = () => {
         />
       </Box>
     )
-  } catch (error) {
-    console.error('LayerManagementPanel error:', error)
-    return (
-      <Box padding={3}>
-        <Text size="sm" color="gray400">Layer panel error</Text>
-      </Box>
-    )
-  }
 }

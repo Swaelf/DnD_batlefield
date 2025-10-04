@@ -627,7 +627,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         const distance = Math.sqrt(width * width + height * height)
 
         if (distance >= minSize || currentTool === 'polygon') {
-          let terrainDrawing: any = {
+          const terrainDrawing: any = {
             id: crypto.randomUUID(),
             type: currentTool as any,
             color: toolState.terrainColor,
