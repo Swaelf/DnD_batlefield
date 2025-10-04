@@ -184,7 +184,9 @@ describe('Spell Persistence - Fireball Burn Area', () => {
           layer: 0,
           isSpellEffect: true,
           roundCreated: test.roundCreated,
+          eventCreated: 1,
           spellDuration: test.spellDuration,
+          durationType: 'events' as const,
           persistentAreaData: {
             position: { x: 100, y: 100 },
             radius: 30,

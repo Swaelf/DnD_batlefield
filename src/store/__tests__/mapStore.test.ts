@@ -381,7 +381,9 @@ describe('mapStore', () => {
         layer: 100,
         isSpellEffect: true,
         roundCreated: 1,
-        spellDuration: 3
+        eventCreated: 1,
+        spellDuration: 3,
+        durationType: 'rounds' as const
       }
 
       act(() => {
@@ -405,7 +407,9 @@ describe('mapStore', () => {
         layer: 100,
         isSpellEffect: true,
         roundCreated: 1,
-        spellDuration: 3
+        eventCreated: 1,
+        spellDuration: 3,
+        durationType: 'rounds' as const
       }
 
       act(() => {
@@ -442,7 +446,9 @@ describe('mapStore', () => {
         layer: 100,
         isSpellEffect: true,
         roundCreated: 1,
-        spellDuration: 0 // Instant spell
+        eventCreated: 1,
+        spellDuration: 0, // Instant spell
+        durationType: 'rounds' as const
       }
 
       act(() => {

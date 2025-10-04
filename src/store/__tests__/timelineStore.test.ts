@@ -84,7 +84,7 @@ describe('roundStore', () => {
         await result.current.nextEvent()
       })
 
-      const roundsBeforeEnd = result.current.timeline?.events.length
+      const roundsBeforeEnd = result.current.timeline?.rounds[0]?.events?.length || 0
 
       act(() => {
         result.current.endCombat()
@@ -190,8 +190,8 @@ describe('roundStore', () => {
         result.current.goToEvent(5)
       })
 
-      const rounds = result.current.timeline?.events || []
-      const eventNumbers = rounds.map(r => r.number).sort((a, b) => a - b)
+      const events = result.current.timeline?.rounds[0]?.events || []
+      const eventNumbers = events.map((e: any) => e.number).sort((a: number, b: number) => a - b)
       expect(eventNumbers).toEqual([1, 3, 5])
     })
   })
@@ -267,9 +267,9 @@ describe('roundStore', () => {
       expect(event10).toBeDefined()
       expect(event10?.actions).toHaveLength(1)
 
-      // Rounds should be sorted
-      const rounds = result.current.timeline?.events || []
-      const eventNumbers = rounds.map(r => r.number)
+      // Events should be sorted
+      const events = result.current.timeline?.rounds[0]?.events || []
+      const eventNumbers = events.map((e: any) => e.number)
       expect(eventNumbers).toEqual([1, 10])
     })
 
@@ -597,7 +597,7 @@ describe('roundStore', () => {
 
       // Reference should be different due to Immer
       expect(newTimeline).not.toBe(originalTimeline)
-      expect(newTimeline?.events).toBeDefined()
+      expect(newTimeline?.rounds).toBeDefined()
     })
   })
 })
