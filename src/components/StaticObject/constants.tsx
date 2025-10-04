@@ -145,6 +145,27 @@ const BarrelIcon = () => (
   </svg>
 )
 
+const BookshelfIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="3" y="2" width="14" height="16" fill="currentColor" rx="1" />
+    <rect x="3.5" y="2.5" width="13" height="2" fill="rgba(0,0,0,0.3)" />
+    <rect x="3.5" y="6.5" width="13" height="0.8" fill="rgba(0,0,0,0.35)" />
+    <rect x="3.5" y="6.5" width="13" height="0.2" fill="rgba(255,255,255,0.15)" />
+    <rect x="3.5" y="11.5" width="13" height="0.8" fill="rgba(0,0,0,0.35)" />
+    <rect x="3.5" y="11.5" width="13" height="0.2" fill="rgba(255,255,255,0.15)" />
+    <rect x="4.5" y="7.5" width="1.8" height="3.5" fill="#8B4513" />
+    <rect x="7" y="8" width="1.5" height="3" fill="#654321" />
+    <rect x="9" y="7.5" width="2" height="3.5" fill="#7B3F00" />
+    <rect x="11.5" y="8" width="1.8" height="3" fill="#8B4513" />
+    <rect x="13.8" y="7.5" width="1.5" height="3.5" fill="#654321" />
+    <rect x="4.5" y="12.5" width="2" height="4" fill="#654321" />
+    <rect x="7" y="13" width="1.5" height="3.5" fill="#8B4513" />
+    <rect x="9" y="12.5" width="1.8" height="4" fill="#7B3F00" />
+    <rect x="11.3" y="13" width="1.8" height="3.5" fill="#654321" />
+    <rect x="13.5" y="12.5" width="1.5" height="4" fill="#8B4513" />
+  </svg>
+)
+
 const TrapIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
     <rect x="5" y="5" width="10" height="10" rx="1" fill="rgba(255,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeDasharray="2,2" />
@@ -422,6 +443,23 @@ export const staticObjectTemplates: StaticObjectTemplate[] = [
     description: 'Wooden barrel',
     abstractType: 'furniture',
     variant: 'barrel'
+  },
+  {
+    id: 'bookshelf',
+    name: 'Bookshelf',
+    type: 'rectangle',
+    category: 'furniture',
+    icon: <BookshelfIcon />,
+    defaultColor: '#92400E',
+    defaultOpacity: 1,
+    rotation: 0,
+    sizeProperties: {
+      width: 60,
+      height: 100
+    },
+    description: 'Wooden bookshelf',
+    abstractType: 'furniture',
+    variant: 'bookshelf'
   },
 
   // Dungeon

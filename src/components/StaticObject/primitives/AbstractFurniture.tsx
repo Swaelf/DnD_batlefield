@@ -97,6 +97,34 @@ export const AbstractFurniture = memo(({
     )
   }
 
+  if (variant === 'bookshelf' && isRectangleSize(size)) {
+    return (
+      <Group {...commonProps} x={position.x} y={position.y} rotation={rotation}>
+        <Rect width={size.width} height={size.height} fill={variantConfig.color} {...strokeConfig} cornerRadius={2} {...shadowConfig} />
+        <Rect x={size.width * 0.05} y={size.height * 0.02} width={size.width * 0.9} height={size.height * 0.12} fill="rgba(0,0,0,0.3)" listening={false} />
+        <Rect x={size.width * 0.05} y={size.height * 0.32} width={size.width * 0.9} height={size.height * 0.05} fill="rgba(0,0,0,0.35)" listening={false} />
+        <Rect x={size.width * 0.05} y={size.height * 0.32} width={size.width * 0.9} height={size.height * 0.01} fill="rgba(255,255,255,0.15)" listening={false} />
+        <Rect x={size.width * 0.05} y={size.height * 0.62} width={size.width * 0.9} height={size.height * 0.05} fill="rgba(0,0,0,0.35)" listening={false} />
+        <Rect x={size.width * 0.05} y={size.height * 0.62} width={size.width * 0.9} height={size.height * 0.01} fill="rgba(255,255,255,0.15)" listening={false} />
+        <Rect x={size.width * 0.1} y={size.height * 0.16} width={size.width * 0.12} height={size.height * 0.14} fill="#8B4513" listening={false} />
+        <Rect x={size.width * 0.25} y={size.height * 0.18} width={size.width * 0.1} height={size.height * 0.12} fill="#654321" listening={false} />
+        <Rect x={size.width * 0.38} y={size.height * 0.16} width={size.width * 0.14} height={size.height * 0.14} fill="#7B3F00" listening={false} />
+        <Rect x={size.width * 0.55} y={size.height * 0.18} width={size.width * 0.12} height={size.height * 0.12} fill="#8B4513" listening={false} />
+        <Rect x={size.width * 0.7} y={size.height * 0.16} width={size.width * 0.1} height={size.height * 0.14} fill="#654321" listening={false} />
+        <Rect x={size.width * 0.12} y={size.height * 0.42} width={size.width * 0.14} height={size.height * 0.18} fill="#654321" listening={false} />
+        <Rect x={size.width * 0.3} y={size.height * 0.44} width={size.width * 0.12} height={size.height * 0.16} fill="#8B4513" listening={false} />
+        <Rect x={size.width * 0.46} y={size.height * 0.42} width={size.width * 0.1} height={size.height * 0.18} fill="#7B3F00" listening={false} />
+        <Rect x={size.width * 0.6} y={size.height * 0.44} width={size.width * 0.12} height={size.height * 0.16} fill="#654321" listening={false} />
+        <Rect x={size.width * 0.75} y={size.height * 0.42} width={size.width * 0.1} height={size.height * 0.18} fill="#8B4513" listening={false} />
+        <Rect x={size.width * 0.1} y={size.height * 0.7} width={size.width * 0.12} height={size.height * 0.22} fill="#7B3F00" listening={false} />
+        <Rect x={size.width * 0.25} y={size.height * 0.72} width={size.width * 0.1} height={size.height * 0.2} fill="#654321" listening={false} />
+        <Rect x={size.width * 0.38} y={size.height * 0.7} width={size.width * 0.14} height={size.height * 0.22} fill="#8B4513" listening={false} />
+        <Rect x={size.width * 0.55} y={size.height * 0.72} width={size.width * 0.12} height={size.height * 0.2} fill="#7B3F00" listening={false} />
+        <Rect x={size.width * 0.7} y={size.height * 0.7} width={size.width * 0.1} height={size.height * 0.22} fill="#654321" listening={false} />
+      </Group>
+    )
+  }
+
   return null
 })
 
