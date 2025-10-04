@@ -13,6 +13,7 @@ import useToolStore from '@store/toolStore'
 import useEventCreationStore from '@store/eventCreationStore'
 import { ObjectsLayer } from './ObjectsLayer'
 import { BackgroundLayer } from './BackgroundLayer'
+import { TerrainLayer } from './TerrainLayer'
 import { InteractiveLayer } from './InteractiveLayer'
 import { useContextMenu } from '@hooks/useContextMenu'
 import { snapToGrid } from '@/utils/grid'
@@ -664,7 +665,14 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           />
         </Layer>
 
-        {/* Layer 1: Background (Grid) */}
+        {/* Layer 1: Terrain (Background drawings) */}
+        <TerrainLayer
+          terrain={currentMap?.terrain}
+          width={width}
+          height={height}
+        />
+
+        {/* Layer 2: Grid */}
         <BackgroundLayer
           gridSettings={gridSettings}
           stageRef={stageRef || { current: null }}
@@ -673,7 +681,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           updateTrigger={stageTransform}
         />
 
-        {/* Layer 2: Content (Objects + Effects) */}
+        {/* Layer 3: Content (Objects + Effects) */}
         <Layer name="content">
           <Group name="objects">
             <ObjectsLayer
@@ -682,7 +690,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           </Group>
         </Layer>
 
-        {/* Layer 3: Interactive (Selection + Drawing + Preview) */}
+        {/* Layer 4: Interactive (Selection + Drawing + Preview) */}
         <InteractiveLayer
           currentTool={currentTool}
           gridSettings={gridSettings}
