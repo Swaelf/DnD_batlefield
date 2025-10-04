@@ -1,5 +1,5 @@
 import { type FC } from 'react'
-import { Pencil, Palette, Eraser } from '@/utils/optimizedIcons'
+import { Pencil, Palette, Eraser, Square, Circle, Minus, Pentagon } from '@/utils/optimizedIcons'
 import useToolStore from '@store/toolStore'
 import useMapStore from '@store/mapStore'
 import { Box } from '@/components/primitives/BoxVE'
@@ -104,13 +104,36 @@ export const BackgroundEditingPanel: FC = () => {
             onClick={() => setTool('terrainBrush')}
           />
 
-          {/* Terrain Fill */}
+          {/* Rectangle */}
           <ToolButton
-            icon={<Palette size={16} />}
-            label="Fill"
-            isActive={currentTool === 'terrainFill'}
-            onClick={() => setTool('terrainFill')}
-            disabled
+            icon={<Square size={16} />}
+            label="Rectangle"
+            isActive={currentTool === 'rectangle'}
+            onClick={() => setTool('rectangle')}
+          />
+
+          {/* Circle */}
+          <ToolButton
+            icon={<Circle size={16} />}
+            label="Circle"
+            isActive={currentTool === 'circle'}
+            onClick={() => setTool('circle')}
+          />
+
+          {/* Line */}
+          <ToolButton
+            icon={<Minus size={16} />}
+            label="Line"
+            isActive={currentTool === 'line'}
+            onClick={() => setTool('line')}
+          />
+
+          {/* Polygon */}
+          <ToolButton
+            icon={<Pentagon size={16} />}
+            label="Polygon"
+            isActive={currentTool === 'polygon'}
+            onClick={() => setTool('polygon')}
           />
 
           {/* Terrain Eraser */}
@@ -125,7 +148,8 @@ export const BackgroundEditingPanel: FC = () => {
       </Box>
 
       {/* Terrain Tool Controls */}
-      {(currentTool === 'terrainBrush' || currentTool === 'terrainFill' || currentTool === 'terrainEraser') && (
+      {(currentTool === 'terrainBrush' || currentTool === 'terrainFill' || currentTool === 'terrainEraser' ||
+        currentTool === 'rectangle' || currentTool === 'circle' || currentTool === 'line' || currentTool === 'polygon') && (
         <Box style={{ marginBottom: '16px' }}>
           {currentTool === 'terrainBrush' && (
             <StyleSliderControl
@@ -138,7 +162,8 @@ export const BackgroundEditingPanel: FC = () => {
             />
           )}
 
-          {(currentTool === 'terrainBrush' || currentTool === 'terrainFill') && (
+          {(currentTool === 'terrainBrush' || currentTool === 'terrainFill' ||
+            currentTool === 'rectangle' || currentTool === 'circle' || currentTool === 'line' || currentTool === 'polygon') && (
             <>
               <ColorPaletteSelector
                 label="Terrain Color"

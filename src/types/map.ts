@@ -84,9 +84,15 @@ import type { GridSettings } from './grid'
 // Terrain drawing data for background layer
 export type TerrainDrawing = {
   id: string
-  type: 'brush' | 'fill' | 'erase'
-  points?: number[]                       // For brush strokes
+  type: 'brush' | 'fill' | 'erase' | 'rectangle' | 'circle' | 'line' | 'polygon'
+  points?: number[]                       // For brush strokes, lines, and polygons
   fillArea?: { x: number; y: number }     // For fill bucket
+  // Shape properties
+  position?: { x: number; y: number }     // Top-left for rectangle, center for circle
+  width?: number                          // For rectangle
+  height?: number                         // For rectangle
+  radius?: number                         // For circle
+  // Common properties
   color: string
   strokeWidth?: number
   opacity?: number

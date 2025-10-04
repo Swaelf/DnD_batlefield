@@ -6,7 +6,7 @@
  */
 
 import { memo, type FC } from 'react'
-import { Layer, Line } from 'react-konva'
+import { Layer, Line, Rect, Circle } from 'react-konva'
 import type { BattleMap } from '@/types'
 
 export type TerrainLayerProps = {
@@ -58,6 +58,48 @@ export const TerrainLayer: FC<TerrainLayerProps> = memo(({
             // Erase - handled by removing drawings from array
             // No rendering needed
             return null
+
+          case 'rectangle':
+            return (
+              <Rect
+                key={drawing.id}
+                x={drawing.position?.x || 0}
+                y={drawing.position?.y || 0}
+                width={drawing.width || 0}
+                height={drawing.height || 0}
+                fill={drawing.color}
+                opacity={drawing.opacity || 1}
+                listening={false}
+              />
+            )
+
+          case 'circle':
+            return (
+              <Circle
+                key={drawing.id}
+                x={drawing.position?.x || 0}
+                y={drawing.position?.y || 0}
+                radius={drawing.radius || 0}
+                fill={drawing.color}
+                opacity={drawing.opacity || 1}
+                listening={false}
+              />
+            )
+
+          case 'line':
+          case 'polygon':
+            return (
+              <Line
+                key={drawing.id}
+                points={drawing.points || []}
+                stroke={drawing.color}
+                strokeWidth={drawing.strokeWidth || 3}
+                opacity={drawing.opacity || 1}
+                lineCap="round"
+                lineJoin="round"
+                listening={false}
+              />
+            )
 
           default:
             return null

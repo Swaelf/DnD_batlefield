@@ -442,6 +442,18 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       // Start terrain brush stroke
       isDrawingTerrainRef.current = true
       terrainPointsRef.current = [position.x, position.y]
+    } else if (['rectangle', 'circle', 'line', 'polygon'].includes(currentTool)) {
+      // Start background shape drawing
+      isDrawingRef.current = true
+      drawingStartRef.current = snapToGrid(position, gridSettings?.size || 50, gridSettings?.snap || false)
+
+      const toolState = useToolStore.getState()
+      toolState.setDrawingState({
+        isDrawing: true,
+        startPoint: drawingStartRef.current,
+        currentPoint: drawingStartRef.current,
+        points: currentTool === 'polygon' ? [drawingStartRef.current.x, drawingStartRef.current.y] : []
+      })
     }
   }, [currentTool, gridSettings, staticEffectTemplate])
 
@@ -467,6 +479,32 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         height: Math.abs(position.y - startPos.y),
         visible: true
       })
+    }
+
+    // Background shape drawing: update drawing state
+    if (isDrawingRef.current && drawingStartRef.current && ['rectangle', 'circle', 'line', 'polygon'].includes(currentTool)) {
+      const currentPoint = snapToGrid(position, gridSettings?.size || 50, gridSettings?.snap || false)
+
+      const toolState = useToolStore.getState()
+      const currentState = toolState.drawingState
+
+      if (currentTool === 'polygon') {
+        // For polygon, accumulate points on click
+        toolState.setDrawingState({
+          isDrawing: true,
+          startPoint: drawingStartRef.current,
+          currentPoint: currentPoint,
+          points: currentState.points
+        })
+      } else {
+        // For other shapes, update current point
+        toolState.setDrawingState({
+          isDrawing: true,
+          startPoint: drawingStartRef.current,
+          currentPoint: currentPoint,
+          points: []
+        })
+      }
     }
 
     if (currentTool === 'measure') {
@@ -547,6 +585,78 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       // Reset terrain drawing state
       isDrawingTerrainRef.current = false
       terrainPointsRef.current = []
+    }
+
+    // Background shape drawing: create TerrainDrawing on mouse up
+    if (isDrawingRef.current && drawingStartRef.current && ['rectangle', 'circle', 'line', 'polygon'].includes(currentTool)) {
+      const toolState = useToolStore.getState()
+      const mapState = useMapStore.getState()
+      const drawingState = toolState.drawingState
+
+      if (drawingState.startPoint && drawingState.currentPoint) {
+        const startPoint = drawingState.startPoint
+        const endPoint = drawingState.currentPoint
+
+        const minSize = 5
+        const width = Math.abs(endPoint.x - startPoint.x)
+        const height = Math.abs(endPoint.y - startPoint.y)
+        const distance = Math.sqrt(width * width + height * height)
+
+        if (distance >= minSize || currentTool === 'polygon') {
+          let terrainDrawing: any = {
+            id: crypto.randomUUID(),
+            type: currentTool as any,
+            color: toolState.terrainColor,
+            strokeWidth: 3,
+            opacity: toolState.terrainOpacity,
+            timestamp: Date.now()
+          }
+
+          switch (currentTool) {
+            case 'rectangle':
+              terrainDrawing.position = {
+                x: Math.min(startPoint.x, endPoint.x),
+                y: Math.min(startPoint.y, endPoint.y)
+              }
+              terrainDrawing.width = width
+              terrainDrawing.height = height
+              break
+            case 'circle': {
+              const radius = distance / 2
+              terrainDrawing.position = {
+                x: (startPoint.x + endPoint.x) / 2,
+                y: (startPoint.y + endPoint.y) / 2
+              }
+              terrainDrawing.radius = radius
+              break
+            }
+            case 'line':
+              terrainDrawing.points = [
+                startPoint.x,
+                startPoint.y,
+                endPoint.x,
+                endPoint.y
+              ]
+              break
+            case 'polygon':
+              // For polygon, we would need click-to-add-point functionality
+              // For now, treat it like a line
+              terrainDrawing.points = [
+                startPoint.x,
+                startPoint.y,
+                endPoint.x,
+                endPoint.y
+              ]
+              break
+          }
+
+          mapState.addTerrainDrawing(terrainDrawing)
+        }
+      }
+
+      isDrawingRef.current = false
+      drawingStartRef.current = null
+      toolState.resetDrawingState()
     }
   }, [selectionRect, currentTool, currentMap])
 
@@ -647,6 +757,8 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           strokeColor={strokeColor}
           strokeWidth={strokeWidth}
           opacity={opacity}
+          terrainColor={terrainColor}
+          terrainOpacity={terrainOpacity}
         />
         </Stage>
       </div>
