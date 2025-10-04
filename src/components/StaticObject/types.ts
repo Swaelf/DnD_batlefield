@@ -3,7 +3,7 @@ import type { Point } from '@/types/geometry'
 
 export type StaticObjectType = 'circle' | 'rectangle' | 'line' | 'polygon'
 
-export type StaticObjectCategory = 'structures' | 'nature' | 'furniture' | 'dungeon' | 'drawing'
+export type StaticObjectCategory = 'structures' | 'nature' | 'furniture' | 'dungeon'
 
 export type StaticObjectTemplate = {
   id: string
