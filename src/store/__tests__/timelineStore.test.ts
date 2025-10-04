@@ -44,8 +44,8 @@ describe('roundStore', () => {
       expect(result.current.timeline).toBeDefined()
       expect(result.current.timeline?.mapId).toBe('map-123')
       expect(result.current.timeline?.isActive).toBe(true)
-      expect(result.current.timeline?.events).toHaveLength(1)
-      expect(result.current.timeline?.events[0].number).toBe(1)
+      expect(result.current.timeline?.rounds[0]?.events || []).toHaveLength(1)
+      expect(result.current.timeline?.rounds[0]?.events[0].number).toBe(1)
     })
 
     it('should reactivate existing timeline when starting combat', () => {
@@ -92,7 +92,7 @@ describe('roundStore', () => {
 
       expect(result.current.isInCombat).toBe(false)
       expect(result.current.timeline?.isActive).toBe(false)
-      expect(result.current.timeline?.events).toHaveLength(0)
+      expect(result.current.timeline?.rounds[0]?.events || []).toHaveLength(0)
       expect(result.current.timeline?.history).toHaveLength(roundsBeforeEnd || 0)
     })
   })
@@ -114,9 +114,9 @@ describe('roundStore', () => {
 
       expect(result.current.currentEvent).toBe(2)
       expect(result.current.timeline?.currentEvent).toBe(2)
-      expect(result.current.timeline?.events).toHaveLength(2)
+      expect(result.current.timeline?.rounds[0]?.events || []).toHaveLength(2)
 
-      const event2 = result.current.timeline?.events.find(e => e.number === 2)
+      const event2 = result.current.timeline?.rounds[0]?.events?.find(e => e.number === 2)
       expect(event2).toBeDefined()
       expect(event2?.actions).toEqual([])
     })
@@ -176,7 +176,7 @@ describe('roundStore', () => {
       expect(result.current.currentEvent).toBe(5)
       expect(result.current.timeline?.currentEvent).toBe(5)
 
-      const round5 = result.current.timeline?.events.find(r => r.number === 5)
+      const round5 = result.current.timeline?.rounds[0]?.events?.find(r => r.number === 5)
       expect(round5).toBeDefined()
       expect(round5?.number).toBe(5)
     })
@@ -218,7 +218,7 @@ describe('roundStore', () => {
         result.current.addAction('token-1', 'move', eventData)
       })
 
-      const event1 = result.current.timeline?.events.find(r => r.number === 1)
+      const event1 = result.current.timeline?.rounds[0]?.events?.find(r => r.number === 1)
       expect(event1?.actions).toHaveLength(1)
       expect(event1?.actions[0].tokenId).toBe('token-1')
       expect(event1?.actions[0].type).toBe('move')
@@ -244,7 +244,7 @@ describe('roundStore', () => {
         result.current.addAction('token-2', 'spell', eventData, 3)
       })
 
-      const event3 = result.current.timeline?.events.find(r => r.number === 3)
+      const event3 = result.current.timeline?.rounds[0]?.events?.find(r => r.number === 3)
       expect(event3).toBeDefined()
       expect(event3?.actions).toHaveLength(1)
       expect(event3?.actions[0].eventNumber).toBe(3)
@@ -263,7 +263,7 @@ describe('roundStore', () => {
         result.current.addAction('token-1', 'move', eventData, 10)
       })
 
-      const event10 = result.current.timeline?.events.find(r => r.number === 10)
+      const event10 = result.current.timeline?.rounds[0]?.events?.find(r => r.number === 10)
       expect(event10).toBeDefined()
       expect(event10?.actions).toHaveLength(1)
 
@@ -282,7 +282,7 @@ describe('roundStore', () => {
         result.current.addAction('token-3', 'move', { type: 'move', fromPosition: { x: 200, y: 200 }, toPosition: { x: 300, y: 300 } })
       })
 
-      const event1 = result.current.timeline?.events.find(r => r.number === 1)
+      const event1 = result.current.timeline?.rounds[0]?.events?.find(r => r.number === 1)
       expect(event1?.actions[0].order).toBe(0)
       expect(event1?.actions[1].order).toBe(1)
       expect(event1?.actions[2].order).toBe(2)
@@ -301,7 +301,7 @@ describe('roundStore', () => {
         })
       })
 
-      const eventId = result.current.timeline?.events[0].actions[0].id
+      const eventId = result.current.timeline?.rounds[0]?.events[0].actions[0].id
       expect(eventId).toBeDefined()
 
       // Update the action
@@ -309,7 +309,7 @@ describe('roundStore', () => {
         result.current.updateAction(eventId!, { executed: true })
       })
 
-      const updatedAction = result.current.timeline?.events[0].actions[0]
+      const updatedAction = result.current.timeline?.rounds[0]?.events[0].actions[0]
       expect(updatedAction?.executed).toBe(true)
     })
 
@@ -322,16 +322,16 @@ describe('roundStore', () => {
         result.current.addAction('token-2', 'spell', { type: 'spell', spellName: 'Magic Missile', category: 'projectile' as const, fromPosition: { x: 50, y: 50 }, toPosition: { x: 150, y: 150 }, color: '#0000ff', size: 10, duration: 500 })
       })
 
-      const eventId = result.current.timeline?.events[0].actions[0].id
-      expect(result.current.timeline?.events[0].actions).toHaveLength(2)
+      const eventId = result.current.timeline?.rounds[0]?.events[0].actions[0].id
+      expect(result.current.timeline?.rounds[0]?.events[0].actions).toHaveLength(2)
 
       // Remove first action
       act(() => {
         result.current.removeAction(eventId!)
       })
 
-      expect(result.current.timeline?.events[0].actions).toHaveLength(1)
-      expect(result.current.timeline?.events[0].actions[0].tokenId).toBe('token-2')
+      expect(result.current.timeline?.rounds[0]?.events[0].actions).toHaveLength(1)
+      expect(result.current.timeline?.rounds[0]?.events[0].actions[0].tokenId).toBe('token-2')
     })
 
     it('should not crash when updating non-existent event', () => {
@@ -390,7 +390,7 @@ describe('roundStore', () => {
         await result.current.executeEventActions(1)
       })
 
-      const event1 = result.current.timeline?.events.find(r => r.number === 1)
+      const event1 = result.current.timeline?.rounds[0]?.events?.find(r => r.number === 1)
       expect(event1?.executed).toBe(true)
       expect(event1?.actions[0].executed).toBe(true)
       expect(event1?.actions[1].executed).toBe(true)
@@ -424,7 +424,7 @@ describe('roundStore', () => {
         await result.current.executeEventActions(1)
       })
 
-      const event1 = result.current.timeline?.events.find(r => r.number === 1)
+      const event1 = result.current.timeline?.rounds[0]?.events?.find(r => r.number === 1)
       expect(event1?.executed).toBe(true)
       expect(event1?.actions).toHaveLength(0)
     })
