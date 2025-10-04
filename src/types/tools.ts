@@ -1,4 +1,5 @@
 import type { Point } from './geometry'
+import type { ReactNode } from 'react'
 
 export type ToolType =
   | 'select'
@@ -14,6 +15,21 @@ export type ToolType =
   | 'measure'
   | 'text'
   | 'eraser'
+  | 'terrainBrush'
+  | 'terrainFill'
+  | 'terrainEraser'
+
+export type ToolCategoryId = 'basic' | 'terrain' | 'drawing' | 'objects' | 'utilities'
+
+export type ToolCategory = {
+  id: ToolCategoryId
+  name: string
+  icon: ReactNode
+  tools: ToolType[]
+  isExpandable: boolean
+  isExpanded: boolean
+  showInSidebar?: boolean
+}
 
 export type Tool = {
   id: ToolType
@@ -121,5 +137,67 @@ export const TOOLS: Record<ToolType, Tool> = {
     icon: 'Eraser',
     shortcut: 'E',
     tooltip: 'Erase objects (E)'
+  },
+  terrainBrush: {
+    id: 'terrainBrush',
+    name: 'Terrain Brush',
+    icon: 'Paintbrush',
+    tooltip: 'Paint terrain on background layer'
+  },
+  terrainFill: {
+    id: 'terrainFill',
+    name: 'Terrain Fill',
+    icon: 'PaintBucket',
+    tooltip: 'Fill terrain areas'
+  },
+  terrainEraser: {
+    id: 'terrainEraser',
+    name: 'Terrain Eraser',
+    icon: 'Eraser',
+    tooltip: 'Erase terrain drawings'
+  }
+}
+
+// Tool categories configuration
+export const TOOL_CATEGORIES: Record<ToolCategoryId, Omit<ToolCategory, 'isExpanded'>> = {
+  basic: {
+    id: 'basic',
+    name: 'Basic Tools',
+    icon: null, // Will use individual tool icons
+    tools: ['select', 'pan', 'measure'],
+    isExpandable: false,
+    showInSidebar: false
+  },
+  terrain: {
+    id: 'terrain',
+    name: 'Terrain',
+    icon: null, // Will use Paintbrush icon in component
+    tools: ['terrainBrush', 'terrainFill', 'terrainEraser'],
+    isExpandable: true,
+    showInSidebar: true
+  },
+  drawing: {
+    id: 'drawing',
+    name: 'Drawing',
+    icon: null, // Will use Square icon in component
+    tools: ['rectangle', 'circle', 'line', 'polygon', 'text'],
+    isExpandable: true,
+    showInSidebar: false
+  },
+  objects: {
+    id: 'objects',
+    name: 'Objects',
+    icon: null, // Will use Home icon in component
+    tools: ['token', 'staticObject', 'staticEffect'],
+    isExpandable: true,
+    showInSidebar: true
+  },
+  utilities: {
+    id: 'utilities',
+    name: 'Utilities',
+    icon: null, // Will use individual tool icons
+    tools: ['layers', 'eraser'],
+    isExpandable: false,
+    showInSidebar: false
   }
 }

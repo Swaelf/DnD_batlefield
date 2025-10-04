@@ -21,6 +21,10 @@ const useToolStore = create<ToolStore>()(
     staticEffectTemplate: null,
     measurementPoints: [],
 
+    // Category state
+    activeCategory: null,
+    expandedCategories: new Set(['drawing', 'objects']), // Start with drawing and objects expanded
+
     setTool: (tool) => set((state) => {
       if (tool !== state.currentTool) {
         state.previousTool = state.currentTool
@@ -92,6 +96,19 @@ const useToolStore = create<ToolStore>()(
 
     clearMeasurementPoints: () => set((state) => {
       state.measurementPoints = []
+    }),
+
+    // Category actions
+    setActiveCategory: (category) => set((state) => {
+      state.activeCategory = category
+    }),
+
+    toggleCategoryExpanded: (category) => set((state) => {
+      if (state.expandedCategories.has(category)) {
+        state.expandedCategories.delete(category)
+      } else {
+        state.expandedCategories.add(category)
+      }
     }),
   }))
 )

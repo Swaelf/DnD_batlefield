@@ -124,6 +124,10 @@ export type ToolStore = {
   staticEffectTemplate: StaticEffectTemplate | null
   measurementPoints: Position[]
 
+  // Category state
+  activeCategory: import('./tools').ToolCategoryId | null
+  expandedCategories: Set<import('./tools').ToolCategoryId>
+
   // Actions
   setTool: (tool: ToolType) => void
   setPreviousTool: () => void
@@ -138,6 +142,10 @@ export type ToolStore = {
   setStaticEffectTemplate: (template: StaticEffectTemplate | null) => void
   addMeasurementPoint: (point: Position) => void
   clearMeasurementPoints: () => void
+
+  // Category actions
+  setActiveCategory: (category: import('./tools').ToolCategoryId | null) => void
+  toggleCategoryExpanded: (category: import('./tools').ToolCategoryId) => void
 }
 
 // History Store Types
