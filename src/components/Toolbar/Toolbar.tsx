@@ -24,8 +24,6 @@ const Toolbar: FC = () => {
   // Memoize the tools list since it never changes
   const visibleTools = useMemo<ToolType[]>(() => [
     'select',
-    'rectangle',
-    'circle',
     'token',
     'staticObject',
     'staticEffect',

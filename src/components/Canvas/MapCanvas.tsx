@@ -438,17 +438,6 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         height: 0,
         visible: true
       })
-    } else if (['rectangle', 'circle', 'line'].includes(currentTool)) {
-      isDrawingRef.current = true
-      drawingStartRef.current = snapToGrid(position, gridSettings?.size || 50, gridSettings?.snap || false)
-
-      const toolState = useToolStore.getState()
-      toolState.setDrawingState({
-        isDrawing: true,
-        startPoint: drawingStartRef.current,
-        currentPoint: drawingStartRef.current,
-        points: []
-      })
     } else if (currentTool === 'terrainBrush') {
       // Start terrain brush stroke
       isDrawingTerrainRef.current = true
@@ -477,18 +466,6 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         width: Math.abs(position.x - startPos.x),
         height: Math.abs(position.y - startPos.y),
         visible: true
-      })
-    }
-
-    if (isDrawingRef.current && drawingStartRef.current && ['rectangle', 'circle', 'line'].includes(currentTool)) {
-      const currentPoint = snapToGrid(position, gridSettings?.size || 50, gridSettings?.snap || false)
-
-      const toolState = useToolStore.getState()
-      toolState.setDrawingState({
-        isDrawing: true,
-        startPoint: drawingStartRef.current,
-        currentPoint: currentPoint,
-        points: []
       })
     }
 
@@ -545,81 +522,6 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       isSelectingRef.current = false
       selectionStartRef.current = null
       setSelectionRect(null)
-    }
-
-    if (isDrawingRef.current && drawingStartRef.current && ['rectangle', 'circle', 'line'].includes(currentTool)) {
-      const toolState = useToolStore.getState()
-      const mapState = useMapStore.getState()
-      const drawingState = toolState.drawingState
-
-      if (drawingState.startPoint && drawingState.currentPoint) {
-        const startPoint = drawingState.startPoint
-        const endPoint = drawingState.currentPoint
-
-        const minSize = 5
-        const width = Math.abs(endPoint.x - startPoint.x)
-        const height = Math.abs(endPoint.y - startPoint.y)
-        const distance = Math.sqrt(width * width + height * height)
-
-        if (distance >= minSize) {
-          let shapeObject: any = {
-            id: crypto.randomUUID(),
-            type: 'shape' as const,
-            position: {
-              x: Math.min(startPoint.x, endPoint.x),
-              y: Math.min(startPoint.y, endPoint.y)
-            },
-            rotation: 0,
-            layer: 4,
-            fill: toolState.fillColor,
-            fillColor: toolState.fillColor,
-            stroke: toolState.strokeColor,
-            strokeColor: toolState.strokeColor,
-            strokeWidth: toolState.strokeWidth,
-            opacity: toolState.opacity,
-            visible: true,
-            locked: false
-          }
-
-          switch (currentTool) {
-            case 'rectangle':
-              shapeObject = {
-                ...shapeObject,
-                shapeType: 'rectangle',
-                width: width,
-                height: height
-              }
-              break
-            case 'circle': {
-              const radius = distance / 2
-              shapeObject = {
-                ...shapeObject,
-                shapeType: 'circle',
-                position: {
-                  x: (startPoint.x + endPoint.x) / 2,
-                  y: (startPoint.y + endPoint.y) / 2
-                },
-                radius: radius
-              }
-              break
-            }
-            case 'line':
-              shapeObject = {
-                ...shapeObject,
-                shapeType: 'line',
-                position: startPoint,
-                points: [0, 0, endPoint.x - startPoint.x, endPoint.y - startPoint.y]
-              }
-              break
-          }
-
-          mapState.addObject(shapeObject)
-        }
-      }
-
-      isDrawingRef.current = false
-      drawingStartRef.current = null
-      toolState.resetDrawingState()
     }
 
     // Terrain brush: create TerrainDrawing on mouse up

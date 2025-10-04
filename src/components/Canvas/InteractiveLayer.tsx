@@ -164,55 +164,6 @@ export const InteractiveLayer = memo(function InteractiveLayer({
           )
         })()}
 
-        {/* Drawing tool preview (rectangle, circle, line) */}
-        {drawingState.isDrawing && drawingState.startPoint && drawingState.currentPoint && (
-          <>
-            {currentTool === 'rectangle' && (
-              <Rect
-                x={Math.min(drawingState.startPoint.x, drawingState.currentPoint.x)}
-                y={Math.min(drawingState.startPoint.y, drawingState.currentPoint.y)}
-                width={Math.abs(drawingState.currentPoint.x - drawingState.startPoint.x)}
-                height={Math.abs(drawingState.currentPoint.y - drawingState.startPoint.y)}
-                fill={fillColor}
-                stroke={strokeColor}
-                strokeWidth={strokeWidth}
-                opacity={opacity * 0.7}
-                listening={false}
-              />
-            )}
-            {currentTool === 'circle' && (
-              <Circle
-                x={drawingState.startPoint.x}
-                y={drawingState.startPoint.y}
-                radius={Math.sqrt(
-                  Math.pow(drawingState.currentPoint.x - drawingState.startPoint.x, 2) +
-                  Math.pow(drawingState.currentPoint.y - drawingState.startPoint.y, 2)
-                )}
-                fill={fillColor}
-                stroke={strokeColor}
-                strokeWidth={strokeWidth}
-                opacity={opacity * 0.7}
-                listening={false}
-              />
-            )}
-            {currentTool === 'line' && (
-              <Line
-                points={[
-                  drawingState.startPoint.x,
-                  drawingState.startPoint.y,
-                  drawingState.currentPoint.x,
-                  drawingState.currentPoint.y
-                ]}
-                fill={fillColor}
-                stroke={strokeColor}
-                strokeWidth={strokeWidth}
-                opacity={opacity * 0.7}
-                listening={false}
-              />
-            )}
-          </>
-        )}
-
         {/* Selection rectangle preview */}
         {currentTool === 'select' && selectionRect && selectionRect.visible && (
           <Rect
