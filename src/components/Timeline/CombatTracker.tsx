@@ -1,5 +1,5 @@
 import { useState, memo, type FC } from 'react'
-import { Shield } from '@/utils/optimizedIcons'
+import { Shield, ArrowLeft, ArrowRight } from '@/utils/optimizedIcons'
 import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
 import { UnifiedEventEditor } from './UnifiedEventEditor'
@@ -11,7 +11,8 @@ import {
   StartCombatButton,
   CombatPanel,
   CombatBar,
-  ExpandedSection
+  ExpandedSection,
+  NavButton
 } from './CombatTracker.styled.tsx'
 
 const CombatTrackerComponent: FC = () => {
@@ -74,8 +75,18 @@ const CombatTrackerComponent: FC = () => {
     <>
       <TrackerContainer>
         <CombatPanel>
-          {/* Main Combat Bar */}
+          {/* Main Combat Bar with Side Arrows */}
           <CombatBar>
+            {/* Left Arrow - Previous Event */}
+            <NavButton
+              onClick={previousEvent}
+              disabled={currentEvent <= 1}
+              title="Previous Event (←)"
+              style={{ marginRight: 'auto' }}
+            >
+              <ArrowLeft size={24} />
+            </NavButton>
+
             {/* Round and Event Counter with Navigation */}
             <EventGroupCounter
               currentRound={currentRound}
@@ -96,6 +107,15 @@ const CombatTrackerComponent: FC = () => {
               onToggleExpanded={() => setIsExpanded(!isExpanded)}
               onSetAnimationSpeed={setAnimationSpeed}
             />
+
+            {/* Right Arrow - Next Event */}
+            <NavButton
+              onClick={handleNextEvent}
+              title="Next Event (→)"
+              style={{ marginLeft: 'auto' }}
+            >
+              <ArrowRight size={24} />
+            </NavButton>
           </CombatBar>
 
           {/* Expanded Section */}

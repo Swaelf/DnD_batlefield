@@ -20,30 +20,24 @@ const RoundCounterComponent: FC<RoundCounterProps> = ({
   currentRound,
   currentGroup,
   onNextGroup,
-  onPreviousGroup,
   onStartNewRound
 }) => {
   return (
     <>
-      {/* Round and Event Counter */}
+      {/* Round and Event Counter - Display in column */}
       <RoundCounterContainer>
-        <Box display="flex" alignItems="center" gap={2}>
-          <Text size="md" weight="bold" color="primary">Round {currentRound}</Text>
-          <Text size="md" color="textSecondary">•</Text>
-          <Text size="md" weight="bold" color="text">Event {currentGroup}</Text>
+        <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+          <Text size="sm" weight="bold" color="primary" style={{ whiteSpace: 'nowrap' }}>
+            Round {currentRound}
+          </Text>
+          <Text size="sm" weight="bold" color="text" style={{ whiteSpace: 'nowrap' }}>
+            Event {currentGroup}
+          </Text>
         </Box>
       </RoundCounterContainer>
 
-      {/* Navigation Controls */}
+      {/* Navigation Controls - Center */}
       <NavControls>
-        <NavButton
-          onClick={onPreviousGroup}
-          disabled={currentGroup <= 1}
-          title="Previous Event (←)"
-        >
-          <SkipForward size={20} style={{ transform: 'rotate(180deg)' }} />
-        </NavButton>
-
         <NextRoundButton
           onClick={onNextGroup}
           title="Next Event (Space)"

@@ -40,7 +40,7 @@ export const combatPanel = style({
   border: `1px solid rgba(201, 173, 106, 0.2)`,
   boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)',
   padding: vars.space[5],
-  minWidth: '600px'
+  minWidth: '800px'
 })
 
 export const combatBar = style({
