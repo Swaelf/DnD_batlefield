@@ -14,7 +14,7 @@ import { Token } from '../Token/Token'
 import { snapToGrid } from '@/utils/grid'
 import { PersistentArea } from '../Spells'
 import { AttackRenderer } from '../Actions/ActionRenderer/AttackRenderer'
-import { SimpleSpellComponent } from '../Spells/SimpleSpellComponent'
+import { SpellRenderer } from '../Spells/SpellRenderer'
 import { StaticObjectRenderer } from '../StaticObject/StaticObjectRenderer'
 import { TreeRenderer } from './TreeRenderer'
 import { isToken, isShape, isText, isSpell, isAttack, isPersistentArea } from './objectUtils'
@@ -678,9 +678,9 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       }
     }
 
-    // Use SimpleSpellComponent for now
+    // Use SpellRenderer with O(1) category detection
     return (
-      <SimpleSpellComponent
+      <SpellRenderer
         key={spell.id}
         spell={spell.spellData}
         isAnimating={true}
