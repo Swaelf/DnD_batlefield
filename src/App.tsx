@@ -471,6 +471,9 @@ function App() {
                 <BattleLogsPanel />
               ) : currentTool === 'terrainBrush' || currentTool === 'terrainFill' || currentTool === 'terrainEraser' ? (
                 <BackgroundEditingPanel />
+              ) : currentTool === 'pan' || currentTool === 'measure' ? (
+                // Empty sidebar for pan and measure tools
+                <Box style={{ width: '100%', height: '100%', backgroundColor: vars.colors.dndBlack }} />
               ) : currentTool === 'select' ? (
                 // For select tool, show PropertiesPanel if something is selected, otherwise AdvancedSelectionManager
                 selectedObjects.length > 0 ? <PropertiesPanel /> : <AdvancedSelectionManager />

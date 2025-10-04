@@ -694,6 +694,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           width={width}
           height={height}
           ref={handleStageRef}
+          draggable={currentTool === 'pan'}
           onClick={handleStageClick}
           onContextMenu={handleStageRightClick}
           onDragEnd={() => {
