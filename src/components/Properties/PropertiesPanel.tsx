@@ -10,6 +10,7 @@ import { ActionButtons } from './ActionButtons'
 import { LayerControls } from './LayerControls'
 import { LayerManagementPanel } from './LayerManagementPanel'
 import { ShapeStylePanel } from './ShapeStylePanel'
+import { MapSettingsPanel } from './MapSettingsPanel'
 import { MultiSelectProperties } from './MultiSelectProperties'
 import { ComponentErrorBoundary } from '../ErrorBoundary/ErrorBoundary'
 import {
@@ -120,6 +121,14 @@ const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) =>
             <Text style={{ fontSize: '14px', color: 'var(--gray400)', marginBottom: '16px' }}>
               Select an object to edit its properties
             </Text>
+
+            {/* Map Settings - Always Available */}
+            <ComponentErrorBoundary
+              name="MapSettingsPanel"
+              fallback={<Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Map settings unavailable</Text>}
+            >
+              <MapSettingsPanel />
+            </ComponentErrorBoundary>
 
             {/* Shape Style Panel for Drawing Tools */}
             <ComponentErrorBoundary

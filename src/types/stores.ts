@@ -186,4 +186,7 @@ export type MapStore = {
   cleanupExpiredSpells: (currentRound: number) => void
   toggleSpellPreview: () => void
   clearMapObjects: () => void
+
+  // Terrain actions
+  setFieldColor: (color: string) => void
 }

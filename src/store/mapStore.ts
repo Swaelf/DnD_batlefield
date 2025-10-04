@@ -237,6 +237,25 @@ const useMapStore = create<MapStore>()(
       })
     },
 
+    // Terrain management actions
+    setFieldColor: (color) =>
+      set((state) => {
+        if (state.currentMap) {
+          saveToHistory()
+          if (!state.currentMap.terrain) {
+            state.currentMap.terrain = {
+              fieldColor: color,
+              drawings: [],
+              version: 1
+            }
+          } else {
+            state.currentMap.terrain.fieldColor = color
+            state.currentMap.terrain.version += 1
+          }
+          state.mapVersion += 1
+        }
+      }),
+
     updateObjectPosition: (id, position) => {
       saveToHistory()
       set((state) => {

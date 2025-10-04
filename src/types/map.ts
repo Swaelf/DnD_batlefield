@@ -81,6 +81,25 @@ export type Text = MapObject & {
 
 import type { GridSettings } from './grid'
 
+// Terrain drawing data for background layer
+export type TerrainDrawing = {
+  id: string
+  type: 'brush' | 'fill' | 'erase'
+  points?: number[]                       // For brush strokes
+  fillArea?: { x: number; y: number }     // For fill bucket
+  color: string
+  strokeWidth?: number
+  opacity?: number
+  timestamp: number
+}
+
+export type TerrainData = {
+  fieldColor: string                      // Background field color (#hex)
+  drawings: TerrainDrawing[]              // Vector drawings
+  consolidatedImage?: string              // Base64 bitmap (optional optimization)
+  version: number                         // For cache invalidation
+}
+
 export type BattleMap = {
   id: string
   name: string
@@ -88,6 +107,7 @@ export type BattleMap = {
   height: number
   grid: GridSettings
   objects: MapObject[]
+  terrain?: TerrainData                   // Background layer data
 }
 
 // Runtime state for managing animations (not persisted)

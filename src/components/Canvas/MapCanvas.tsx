@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useState, useRef, useEffect, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
-import { Stage, Layer, Group } from 'react-konva'
+import { Stage, Layer, Group, Rect } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
@@ -653,7 +653,18 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           }
         }}
       >
-        {/* Layer 1: Background (Static) */}
+        {/* Layer 0: Field Color (Static background color) */}
+        <Layer name="field" listening={false}>
+          <Rect
+            x={0}
+            y={0}
+            width={width}
+            height={height}
+            fill={currentMap?.terrain?.fieldColor || '#1A1A1A'}
+          />
+        </Layer>
+
+        {/* Layer 1: Background (Grid) */}
         <BackgroundLayer
           gridSettings={gridSettings}
           stageRef={stageRef || { current: null }}
