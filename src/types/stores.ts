@@ -133,6 +133,9 @@ export type ToolStore = {
   terrainColor: string
   terrainOpacity: number
 
+  // Background editing mode
+  isBackgroundEditMode: boolean
+
   // Actions
   setTool: (tool: ToolType) => void
   setPreviousTool: () => void
@@ -156,6 +159,10 @@ export type ToolStore = {
   setTerrainBrushSize: (size: number) => void
   setTerrainColor: (color: string) => void
   setTerrainOpacity: (opacity: number) => void
+
+  // Background editing mode actions
+  toggleBackgroundEditMode: () => void
+  setBackgroundEditMode: (enabled: boolean) => void
 }
 
 // History Store Types

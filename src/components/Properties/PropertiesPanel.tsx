@@ -12,6 +12,8 @@ import { LayerManagementPanel } from './LayerManagementPanel'
 import { ShapeStylePanel } from './ShapeStylePanel'
 import { MapSettingsPanel } from './MapSettingsPanel'
 import { TerrainToolsPanel } from './TerrainToolsPanel'
+import { BackgroundEditingPanel } from './BackgroundEditingPanel'
+import useToolStore from '@/store/toolStore'
 import { MultiSelectProperties } from './MultiSelectProperties'
 import { ComponentErrorBoundary } from '../ErrorBoundary/ErrorBoundary'
 import {
@@ -36,6 +38,7 @@ const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) =>
   const updateObject = useMapStore((state: any) => state.updateObject)
   const deleteSelected = useMapStore((state: any) => state.deleteSelected)
   const addObject = useMapStore((state: any) => state.addObject)
+  const isBackgroundEditMode = useToolStore((state: any) => state.isBackgroundEditMode)
 
   // Ensure selectedObjects is always an array
   const safeSelectedObjects = Array.isArray(selectedObjects) ? selectedObjects : []
@@ -119,50 +122,54 @@ const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) =>
             <PanelTitle>Properties</PanelTitle>
           </PanelHeader>
           <PanelBody scrollable={true} style={{ maxHeight: 'calc(100vh - 80px)', overflowY: 'auto' }} className="custom-scrollbar">
-            <Text style={{ fontSize: '14px', color: 'var(--gray400)', marginBottom: '16px' }}>
-              Select an object to edit its properties
-            </Text>
-
-            {/* Map Settings - Always Available */}
-            <ComponentErrorBoundary
-              name="MapSettingsPanel"
-              fallback={<Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Map settings unavailable</Text>}
-            >
-              <MapSettingsPanel />
-            </ComponentErrorBoundary>
-
-            {/* Terrain Tools Panel */}
-            <ComponentErrorBoundary
-              name="TerrainToolsPanel"
-              fallback={<Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Terrain tools unavailable</Text>}
-            >
-              <TerrainToolsPanel />
-            </ComponentErrorBoundary>
-
-            {/* Shape Style Panel for Drawing Tools */}
-            <ComponentErrorBoundary
-              name="ShapeStylePanel"
-              fallback={<Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Shape styles unavailable</Text>}
-            >
-              <ShapeStylePanel />
-            </ComponentErrorBoundary>
-
-            {/* Layer Management - Always Available */}
-            <PanelSection>
+            {/* Background Editing Panel - Show when in background edit mode */}
+            {isBackgroundEditMode ? (
               <ComponentErrorBoundary
-                name="LayerManagementPanel"
-                fallback={
-                  <Box style={{ padding: '12px' }}>
-                    <Text style={{ fontSize: '14px', color: 'var(--gray400)' }}>Layer management unavailable</Text>
-                    <Text style={{ fontSize: '12px', color: 'var(--gray500)', marginTop: '8px' }}>
-                      Try refreshing the page
-                    </Text>
-                  </Box>
-                }
+                name="BackgroundEditingPanel"
+                fallback={<Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Background editing unavailable</Text>}
               >
-                <LayerManagementPanel />
+                <BackgroundEditingPanel />
               </ComponentErrorBoundary>
-            </PanelSection>
+            ) : (
+              <>
+                <Text style={{ fontSize: '14px', color: 'var(--gray400)', marginBottom: '16px' }}>
+                  Select an object to edit its properties
+                </Text>
+
+                {/* Map Settings - Always Available */}
+                <ComponentErrorBoundary
+                  name="MapSettingsPanel"
+                  fallback={<Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Map settings unavailable</Text>}
+                >
+                  <MapSettingsPanel />
+                </ComponentErrorBoundary>
+
+                {/* Shape Style Panel for Drawing Tools */}
+                <ComponentErrorBoundary
+                  name="ShapeStylePanel"
+                  fallback={<Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Shape styles unavailable</Text>}
+                >
+                  <ShapeStylePanel />
+                </ComponentErrorBoundary>
+
+                {/* Layer Management - Always Available */}
+                <PanelSection>
+                  <ComponentErrorBoundary
+                    name="LayerManagementPanel"
+                    fallback={
+                      <Box style={{ padding: '12px' }}>
+                        <Text style={{ fontSize: '14px', color: 'var(--gray400)' }}>Layer management unavailable</Text>
+                        <Text style={{ fontSize: '12px', color: 'var(--gray500)', marginTop: '8px' }}>
+                          Try refreshing the page
+                        </Text>
+                      </Box>
+                    }
+                  >
+                    <LayerManagementPanel />
+                  </ComponentErrorBoundary>
+                </PanelSection>
+              </>
+            )}
         </PanelBody>
       </Panel>
     )

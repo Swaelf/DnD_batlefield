@@ -6,6 +6,7 @@
 import { useCallback, useMemo, memo, type FC } from 'react'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
+import { Paintbrush } from '@/utils/optimizedIcons'
 import useToolStore from '@store/toolStore'
 import type { ToolType } from '@/types/tools'
 import { TOOLS } from '@/types/tools'
@@ -16,18 +17,15 @@ const Toolbar: FC = () => {
   // Use specific selectors to prevent unnecessary re-renders
   const currentTool = useToolStore(state => state.currentTool)
   const setTool = useToolStore(state => state.setTool)
+  const isBackgroundEditMode = useToolStore(state => state.isBackgroundEditMode)
+  const toggleBackgroundEditMode = useToolStore(state => state.toggleBackgroundEditMode)
 
-  // Memoize the tools list since it never changes
+  // Memoize the tools list since it never changes (removed drawing and terrain tools)
   const visibleTools = useMemo<ToolType[]>(() => [
     'select',
-    'rectangle',
-    'circle',
     'token',
     'staticObject',
     'staticEffect',
-    'terrainBrush',
-    'terrainFill',
-    'terrainEraser',
     'pan',
     'measure',
     'text',
@@ -106,6 +104,51 @@ const Toolbar: FC = () => {
             width: '100%'
           }}
         />
+      </Box>
+
+      {/* Edit Background Toggle Button */}
+      <Box
+        style={{
+          width: '100%',
+          paddingLeft: '8px',
+          paddingRight: '8px',
+          marginBottom: '12px'
+        }}
+      >
+        <Box
+          onClick={toggleBackgroundEditMode}
+          style={{
+            width: '100%',
+            padding: '8px',
+            backgroundColor: isBackgroundEditMode ? 'var(--colors-secondary)' : 'var(--colors-gray800)',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+            transition: 'all 0.2s ease',
+            border: `1px solid ${isBackgroundEditMode ? 'var(--colors-secondary)' : 'var(--colors-gray700)'}`
+          }}
+          title="Edit Background (Toggle terrain drawing mode)"
+        >
+          <Paintbrush
+            size={16}
+            style={{
+              color: isBackgroundEditMode ? 'var(--colors-dndBlack)' : 'var(--colors-gray300)'
+            }}
+          />
+          <Text
+            variant="body"
+            size="xs"
+            style={{
+              color: isBackgroundEditMode ? 'var(--colors-dndBlack)' : 'var(--colors-gray300)',
+              fontWeight: 500
+            }}
+          >
+            BG
+          </Text>
+        </Box>
       </Box>
 
       {/* Color indicators */}
