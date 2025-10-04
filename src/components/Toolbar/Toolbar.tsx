@@ -21,9 +21,11 @@ const Toolbar: FC = () => {
   const isBackgroundEditMode = useToolStore(state => state.isBackgroundEditMode)
   const toggleBackgroundEditMode = useToolStore(state => state.toggleBackgroundEditMode)
 
-  // Memoize the tools list since it never changes (removed drawing and terrain tools)
+  // Memoize the tools list since it never changes
   const visibleTools = useMemo<ToolType[]>(() => [
     'select',
+    'rectangle',
+    'circle',
     'token',
     'staticObject',
     'staticEffect',
