@@ -91,7 +91,7 @@ const BattleLogsPanelComponent: FC = () => {
             <Text size="sm" weight="bold" color="primary">
               Round {currentRound} • Event {currentEvent}
             </Text>
-            <Text size="xs" color="textMuted" style={{ marginTop: '4px' }}>
+            <Text size="xs" color="textSecondary" style={{ marginTop: '4px' }}>
               {entries.length} total log {entries.length === 1 ? 'entry' : 'entries'}
             </Text>
           </Box>
@@ -107,7 +107,7 @@ const BattleLogsPanelComponent: FC = () => {
 
             {/* Type Filter */}
             <Box display="flex" flexDirection="column" gap={1}>
-              <Text size="xs" color="textMuted">Type:</Text>
+              <Text size="xs" color="textSecondary">Type:</Text>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value as typeof filterType)}
@@ -134,7 +134,7 @@ const BattleLogsPanelComponent: FC = () => {
 
             {/* Round Filter */}
             <Box display="flex" flexDirection="column" gap={1}>
-              <Text size="xs" color="textMuted">Round:</Text>
+              <Text size="xs" color="textSecondary">Round:</Text>
               <select
                 value={filterRound}
                 onChange={(e) => setFilterRound(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
@@ -185,7 +185,7 @@ const BattleLogsPanelComponent: FC = () => {
         <PanelSection>
           {filteredEntries.length === 0 ? (
             <Box padding={4} style={{ textAlign: 'center' }}>
-              <Text size="sm" color="textMuted">
+              <Text size="sm" color="textSecondary">
                 No battle log entries
                 {filterType !== 'all' || filterRound !== 'all' ? ' matching filters' : ''}
               </Text>
@@ -205,7 +205,7 @@ const BattleLogsPanelComponent: FC = () => {
                 >
                   {/* Header: Round/Event + Type Badge */}
                   <Box display="flex" alignItems="center" justifyContent="space-between" style={{ marginBottom: '6px' }}>
-                    <Text size="xs" color="textMuted">
+                    <Text size="xs" color="textSecondary">
                       R{entry.roundNumber} • E{entry.eventNumber}
                     </Text>
                     <Box
@@ -239,7 +239,7 @@ const BattleLogsPanelComponent: FC = () => {
 
                   {/* Token Name (if present) */}
                   {entry.tokenName && (
-                    <Text size="xs" color="textMuted">
+                    <Text size="xs" color="textSecondary">
                       {entry.tokenName}
                     </Text>
                   )}

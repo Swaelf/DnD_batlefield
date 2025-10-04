@@ -401,8 +401,10 @@ const useTimelineStore = create<TimelineStore>()(
                 rotation: 0,
                 layer: 10,
                 isSpellEffect: true,
-                roundCreated: get().currentEvent,
+                roundCreated: get().currentRound,
+                eventCreated: get().currentEvent,
                 spellDuration: updatedSpellData.duration || 1,
+                durationType: 'rounds' as const,
                 spellData: updatedSpellData
               }
               mapStore.addSpellEffect(spellObject)
@@ -534,11 +536,11 @@ const useTimelineStore = create<TimelineStore>()(
 
     // Round Management
     startNewRound: () => {
-      const { timeline, currentRound } = get()
+      const { timeline, currentRound: activeRound } = get()
       if (!timeline) return
 
       set((state) => {
-        const currentRoundData = state.timeline!.rounds.find(r => r.number === currentRound)
+        const currentRoundData = state.timeline!.rounds.find(r => r.number === activeRound)
         if (currentRoundData) {
           // Merge all event actions into allActions
           currentRoundData.allActions = currentRoundData.events.flatMap(e => e.actions)
@@ -546,7 +548,7 @@ const useTimelineStore = create<TimelineStore>()(
         }
 
         // Create new round
-        const newRoundNumber = currentRound + 1
+        const newRoundNumber = activeRound + 1
         const newRound = {
           id: crypto.randomUUID(),
           number: newRoundNumber,
@@ -572,8 +574,8 @@ const useTimelineStore = create<TimelineStore>()(
       })
 
       // Clean up expired spells based on rounds
-      const { currentRound, currentEvent } = get()
-      useMapStore.getState().cleanupExpiredSpells(currentRound, currentEvent)
+      const state = get()
+      useMapStore.getState().cleanupExpiredSpells(state.currentRound, state.currentEvent)
     },
 
     nextRound: () => {

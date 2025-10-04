@@ -1,5 +1,5 @@
 import { memo, type FC } from 'react'
-import { SkipForward, Calendar } from '@/utils/optimizedIcons'
+import { SkipForward, CalendarDays } from '@/utils/optimizedIcons'
 import { Text, Box } from '@/components/primitives'
 import {
   RoundCounter as RoundCounterContainer,
@@ -29,7 +29,7 @@ const RoundCounterComponent: FC<RoundCounterProps> = ({
       <RoundCounterContainer>
         <Box display="flex" alignItems="center" gap={2}>
           <Text size="md" weight="bold" color="primary">Round {currentRound}</Text>
-          <Text size="md" color="textMuted">•</Text>
+          <Text size="md" color="textSecondary">•</Text>
           <Text size="md" weight="bold" color="text">Event {currentGroup}</Text>
         </Box>
       </RoundCounterContainer>
@@ -57,7 +57,7 @@ const RoundCounterComponent: FC<RoundCounterProps> = ({
             title="Start New Round"
             style={{ marginLeft: '8px', backgroundColor: 'var(--color-primary)' }}
           >
-            <Calendar size={18} />
+            <CalendarDays size={18} />
           </NavButton>
         )}
       </NavControls>
