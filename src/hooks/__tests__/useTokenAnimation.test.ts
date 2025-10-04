@@ -521,7 +521,7 @@ describe('useTokenAnimation', () => {
 
     it('should handle round with no events', async () => {
       const mockTimelineStore = vi.mocked(useTimelineStore).getState()
-      mockTimelineStore.timeline!.events[1].actions = []
+      mockTimelineStore.timeline!.rounds[0].events[1].actions = []
 
       const stageRef = { current: mockStage }
       const { result } = renderHook(() => useTokenAnimation(stageRef as any))
