@@ -9,6 +9,7 @@ import { tokenTransformationTests } from './TestTokenTransformations'
 import { allSpellDurationTests } from './TestSpellDurations'
 import { allPostEffectCleanupTests } from './TestPostEffectCleanup'
 import { allAnimationPrimitiveTests } from './TestAnimationPrimitives'
+import { staticLayerPerformanceTests } from './TestStaticLayerPerformance'
 
 export interface TestStep {
   type: 'action' | 'wait' | 'assert' | 'capture'
@@ -20,7 +21,7 @@ export interface TestStep {
 }
 
 export interface TestAction {
-  type: 'addToken' | 'moveToken' | 'selectToken' | 'castSpell' | 'startCombat' | 'nextRound' | 'selectTool' | 'custom'
+  type: 'addToken' | 'moveToken' | 'selectToken' | 'castSpell' | 'startCombat' | 'nextRound' | 'selectTool' | 'addStaticObject' | 'custom'
   params: any
 }
 
@@ -1615,7 +1616,17 @@ export const testScenarios: TestScenario[] = [
   // Motion Generators: Linear, Curved, Bounce, Wave, Orbit (5 tests)
   // Effect Primitives: Trail, Glow, Pulse, Flash, Particles (5 tests)
   // Total tests: 14 animation primitive tests
-  ...allAnimationPrimitiveTests
+  ...allAnimationPrimitiveTests,
+
+  // ============================================================================
+  // STATIC LAYER PERFORMANCE TESTS - Visual performance tests with many objects
+  // ============================================================================
+  // Tests the performance optimization of StaticObjectsLayer and StaticEffectsLayer
+  // Test 1: Static Objects (30 objects: 15 trees + 10 walls + 5 furniture) + 2 tokens + animations
+  // Test 2: Static Effects (5 persistent spell zones) + 2 tokens + animations
+  // Expected gains: 22-50% FPS improvement (static objects), 20-40% FPS improvement (static effects)
+  // Total tests: 2 performance tests
+  ...staticLayerPerformanceTests
 ]
 
 export function getScenarioById(id: string): TestScenario | undefined {

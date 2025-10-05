@@ -250,6 +250,34 @@ export class TestRunner {
         toolStore.setTool(action.params.tool)
         break
 
+      case 'addStaticObject':
+        // Add static object (wall, tree, furniture, etc.)
+        const staticObject: any = {
+          id: action.params.id || nanoid(),
+          type: 'shape',
+          shapeType: action.params.type === 'circle' ? 'circle' : 'rectangle',
+          position: action.params.position,
+          rotation: 0,
+          layer: 5,
+          fill: action.params.color,
+          fillColor: action.params.color,
+          stroke: action.params.color,
+          strokeColor: action.params.color,
+          strokeWidth: 2,
+          opacity: 1,
+          name: action.params.name,
+          // Circle properties
+          radius: action.params.radius,
+          // Rectangle properties
+          width: action.params.width,
+          height: action.params.height,
+          metadata: {
+            isStatic: true
+          }
+        }
+        mapStore.addObject(staticObject)
+        break
+
       case 'custom':
         // Execute custom function if provided
         if (action.params.execute && typeof action.params.execute === 'function') {
