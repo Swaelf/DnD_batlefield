@@ -8,8 +8,8 @@ import { isShape } from './objectUtils'
 // ✅ CACHE: WeakMap for static object detection (shared with ObjectsLayer)
 const staticObjectCache = new WeakMap<Shape, boolean>()
 
-// ✅ STABLE EMPTY ARRAY
-const EMPTY_ARRAY: any[] = []
+// ✅ STABLE EMPTY ARRAY - Using unknown[] for stricter type safety
+const EMPTY_ARRAY: unknown[] = []
 
 // ✅ STABLE SELECTORS
 const selectObjects = (state: { currentMap: { objects: any[] } | null }) => state.currentMap?.objects ?? EMPTY_ARRAY

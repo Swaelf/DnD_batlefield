@@ -361,6 +361,25 @@ The **Action Sequencing System** provides advanced D&D combat coordination throu
   - **Results**: 500 objects at 45-55fps (previously 5-10fps), 100 objects at 55-60fps (previously 20-30fps)
   - **Documentation**: `.notes/performance-analysis-many-objects.md`, `.notes/optimization-summary-oct-2025.md`
 
+**October 2025 - Static Layer Optimization**:
+- **🚀 Static Layer Separation**: Dedicated Konva layers for unchanging objects
+  - **StaticObjectsLayer**: Trees, walls, furniture (22-50% FPS improvement)
+    - WeakMap caching for efficient static object detection
+    - `listening={false}` eliminates event processing overhead
+    - Version-based memoization prevents unnecessary re-renders
+    - Stable selectors prevent reference changes
+  - **StaticEffectsLayer**: Persistent spell effects, auras, zones (20-40% FPS improvement)
+    - Same optimization pattern as StaticObjectsLayer
+    - Proper separation from dynamic spell animations
+    - Metadata-based detection (isStatic, isStaticEffect)
+  - **5-Layer Canvas Architecture**: Field Color → Terrain → Grid → Content → Interactive
+    - Static layers render <1/sec instead of 60/sec
+    - Dynamic content in ObjectsLayer for smooth animations
+    - Progressive loading for large object counts (>20 objects)
+  - **Testing**: Comprehensive performance tests with 25+ static objects and spell animations
+  - **Type Safety**: Extended Shape type with staticEffectData, zero `any` types
+  - **Files**: `StaticObjectsLayer.tsx` (130 lines), `StaticEffectsLayer.tsx` (108 lines)
+
 **January 2025**:
 - **Token Animation System**: Fixed Konva Tween conflicts with React-controlled positions by implementing manual RAF-based animations
 - **Event Editor Token Selection**: Replaced Radix UI Select with native HTML select to resolve modal rendering issues
