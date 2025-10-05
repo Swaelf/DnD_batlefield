@@ -865,14 +865,15 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       })
       .map(({ obj }) => obj)
 
-    // 🚀 PERFORMANCE: Filter OUT static objects - they're rendered in StaticObjectsLayer
+    // 🚀 PERFORMANCE: Filter OUT static objects and static effects - they're rendered in separate layers
     // Only return dynamic objects (tokens, spells, animations, non-static shapes)
     return visibleObjects.filter(obj => {
       // Keep all non-shape objects (tokens, spells, etc.)
       if (!isShape(obj)) return true
 
-      // For shapes, only keep non-static ones
-      return !checkIsStaticObject(obj)
+      // For shapes, exclude both static objects AND static effects
+      const isStaticEffect = obj.metadata?.isStaticEffect === true
+      return !checkIsStaticObject(obj) && !isStaticEffect
     })
   }, [progressiveObjects, mapVersion, layers, migrateNumericLayer, getDefaultLayerForObjectType, checkIsStaticObject]) // Re-compute when progressively loaded objects change OR mapVersion increments
 

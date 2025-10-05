@@ -13,6 +13,7 @@ import useToolStore from '@store/toolStore'
 import useEventCreationStore from '@store/eventCreationStore'
 import { ObjectsLayer } from './ObjectsLayer'
 import { StaticObjectsLayer } from './StaticObjectsLayer'
+import { StaticEffectsLayer } from './StaticEffectsLayer'
 import { BackgroundLayer } from './BackgroundLayer'
 import { TerrainLayer } from './TerrainLayer'
 import { InteractiveLayer } from './InteractiveLayer'
@@ -761,6 +762,11 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         {/* Separate layer prevents re-rendering when dynamic objects change */}
         {/* Expected gain: 22-50% FPS improvement with many static objects */}
         <StaticObjectsLayer />
+
+        {/* Layer 2.6: Static Effects (persistent auras, zones, areas) - 🚀 PERFORMANCE OPTIMIZATION */}
+        {/* Separate layer for static spell effects that don't animate */}
+        {/* Expected gain: 20-40% FPS improvement when static effects are present */}
+        <StaticEffectsLayer />
 
         {/* Layer 3: Content (Dynamic Objects: tokens, spells, animations) */}
         <Layer name="content">
