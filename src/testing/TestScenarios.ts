@@ -6,6 +6,7 @@ import { runTimelineNavigationTest } from './TestTimelineNavigation'
 import { runRoundReplayTest } from './TestRoundReplay'
 import { allSpellDurationTests } from './TestSpellDurations'
 import { allPostEffectCleanupTests } from './TestPostEffectCleanup'
+import { allAnimationPrimitiveTests } from './TestAnimationPrimitives'
 
 export interface TestStep {
   type: 'action' | 'wait' | 'assert' | 'capture'
@@ -1514,7 +1515,17 @@ export const testScenarios: TestScenario[] = [
   // Each test validates: movement + attack animations for melee and ranged weapons
   // Covers slashing, piercing, and bludgeoning damage types
   // Total tests: ~12 weapon types (6 melee + 6 ranged)
-  ...allAttackTestScenarios
+  ...allAttackTestScenarios,
+
+  // ============================================================================
+  // ANIMATION PRIMITIVE TESTS - Isolated animation library testing
+  // ============================================================================
+  // Tests individual animation primitives and motion generators from animation-effects library
+  // Motion Primitives: Move, Rotate, Scale, Fade (4 tests)
+  // Motion Generators: Linear, Curved, Bounce, Wave, Orbit (5 tests)
+  // Effect Primitives: Trail, Glow, Pulse, Flash, Particles (5 tests)
+  // Total tests: 14 animation primitive tests
+  ...allAnimationPrimitiveTests
 ]
 
 export function getScenarioById(id: string): TestScenario | undefined {
