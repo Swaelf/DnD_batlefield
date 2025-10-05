@@ -292,16 +292,44 @@ export const runRoundReplayTest = () => {
     await wait(10000)
 
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('✅ REPLAY COMPLETE')
+    console.log('✅ REPLAY COMPLETE - VERIFYING RESULTS')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
 
+    // Verify final token positions after replay
+    const currentMapStore = useMapStore.getState()
+    const warriorToken = currentMapStore.currentMap?.objects.find(obj => obj.id === 'replay-warrior')
+    const mageToken = currentMapStore.currentMap?.objects.find(obj => obj.id === 'replay-mage')
+    const rogueToken = currentMapStore.currentMap?.objects.find(obj => obj.id === 'replay-rogue')
+    const clericToken = currentMapStore.currentMap?.objects.find(obj => obj.id === 'replay-cleric')
+
+    console.log('📍 VERIFYING TOKEN POSITIONS:')
+
+    const warriorCorrect = warriorToken?.position.x === 200 && warriorToken?.position.y === 350
+    const mageCorrect = mageToken?.position.x === 300 && mageToken?.position.y === 200
+    const rogueCorrect = rogueToken?.position.x === 550 && rogueToken?.position.y === 350
+    const clericCorrect = clericToken?.position.x === 500 && clericToken?.position.y === 200
+
+    console.log(`   ${warriorCorrect ? '✅' : '❌'} Warrior at (200, 350) - Actual: (${warriorToken?.position.x}, ${warriorToken?.position.y})`)
+    console.log(`   ${mageCorrect ? '✅' : '❌'} Mage at (300, 200) - Actual: (${mageToken?.position.x}, ${mageToken?.position.y})`)
+    console.log(`   ${rogueCorrect ? '✅' : '❌'} Rogue at (550, 350) - Actual: (${rogueToken?.position.x}, ${rogueToken?.position.y})`)
+    console.log(`   ${clericCorrect ? '✅' : '❌'} Cleric at (500, 200) - Actual: (${clericToken?.position.x}, ${clericToken?.position.y})\n`)
+
+    const allPositionsCorrect = warriorCorrect && mageCorrect && rogueCorrect && clericCorrect
+
     console.log('📊 VERIFICATION CHECKLIST:')
+    console.log(`   ${allPositionsCorrect ? '✅' : '❌'} All token positions correct after replay`)
     console.log('   ✓ Did Warrior animate forward?')
     console.log('   ✓ Did Fireball projectile fly and explode?')
     console.log('   ✓ Did Rogue animate to flank?')
     console.log('   ✓ Did Cure Wounds healing effect appear?')
     console.log('   ✓ Are all animations smooth and sequential?')
     console.log('   ✓ Is the timeline now at Round 2, Event 1?\n')
+
+    if (!allPositionsCorrect) {
+      console.error('❌ POSITION VERIFICATION FAILED!')
+      console.error('   Some tokens are not in their expected positions after replay.')
+      console.error('   This indicates the replay system did not properly execute all animations.\n')
+    }
 
     // Final Summary
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
