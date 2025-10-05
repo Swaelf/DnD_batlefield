@@ -589,25 +589,25 @@ const useTimelineStore = create<TimelineStore>()(
 
     // Round Management
     startNewRound: () => {
-      const { timeline, currentRound: activeRound } = get()
+      const { timeline, currentRound: activeRound, currentEvent: activeEvent } = get()
       if (!timeline) return
+
+      // First, execute the current event's actions (like nextEvent does)
+      get().executeEventActions(activeEvent)
 
       set((state) => {
         const currentRoundData = state.timeline!.rounds.find(r => r.number === activeRound)
         if (currentRoundData) {
-          // Merge all event actions into allActions for battle logs
-          currentRoundData.allActions = currentRoundData.events.flatMap(e => e.actions)
+          // Mark all events in this round as executed
+          currentRoundData.events.forEach(event => {
+            event.executed = true
+          })
+
+          // Mark round as executed (ended)
           currentRoundData.executed = true
 
-          // Clear events in the current round (keep only event 1 structure but empty)
-          currentRoundData.events = [{
-            id: crypto.randomUUID(),
-            roundNumber: activeRound,
-            number: 1,
-            timestamp: Date.now(),
-            actions: [],
-            executed: false
-          }]
+          // Keep all events and actions intact - no merging, no clearing
+          // This preserves the full event structure for historical review
         }
 
         // Create new round
@@ -636,6 +636,15 @@ const useTimelineStore = create<TimelineStore>()(
         state.timeline!.currentEvent = 1
       })
 
+      // Add battle log entry for round ending
+      useBattleLogStore.getState().addEntry({
+        roundNumber: activeRound,
+        eventNumber: activeEvent,
+        type: 'round',
+        message: `Round ${activeRound} ended`,
+        severity: 'high'
+      })
+
       // Clean up expired spells based on rounds
       const state = get()
       useMapStore.getState().cleanupExpiredSpells(state.currentRound, state.currentEvent)
@@ -652,19 +661,15 @@ const useTimelineStore = create<TimelineStore>()(
         return
       }
 
-      // Check if current round is executed (only required if next round has never been visited)
+      // Check if current round is executed
       const currentRoundData = timeline.rounds.find(r => r.number === currentRound)
-
-      // If next round was previously created (has allActions), we're just navigating back
-      // Otherwise, we need the current round to be executed first
-      const isNavigatingBack = nextRoundData.allActions && nextRoundData.allActions.length > 0
-
-      if (!isNavigatingBack && (!currentRoundData || !currentRoundData.executed)) {
+      if (!currentRoundData || !currentRoundData.executed) {
         console.warn('Cannot go to next round: current round not ended yet')
         return
       }
 
-      // Move to next round
+      // Simply navigate to next round - don't execute anything
+      // Events remain as they were historically
       set((state) => {
         state.currentRound = currentRound + 1
         state.currentEvent = 1
@@ -673,13 +678,6 @@ const useTimelineStore = create<TimelineStore>()(
           state.timeline.currentEvent = 1
         }
       })
-
-      // Execute all merged actions from the next round if it has any (only when navigating back)
-      if (isNavigatingBack) {
-        nextRoundData.allActions.forEach(action => {
-          get().executeEventActions(action.eventNumber || 1)
-        })
-      }
     },
 
     previousRound: () => {
@@ -688,25 +686,9 @@ const useTimelineStore = create<TimelineStore>()(
 
       const previousRoundNumber = currentRound - 1
 
+      // Simply navigate to previous round - no restoration needed
+      // Events are already preserved as they were historically
       set((state) => {
-        const previousRoundData = state.timeline?.rounds.find(r => r.number === previousRoundNumber)
-        if (!previousRoundData) return
-
-        // If previous round has merged actions, restore them to event 1
-        if (previousRoundData.allActions && previousRoundData.allActions.length > 0) {
-          previousRoundData.events = [{
-            id: crypto.randomUUID(),
-            roundNumber: previousRoundNumber,
-            number: 1,
-            timestamp: Date.now(),
-            actions: previousRoundData.allActions,
-            executed: false
-          }]
-          // Keep round marked as executed since it was already completed
-          // This allows navigation forward again via nextRound button
-          // allActions is kept for re-execution when going forward
-        }
-
         state.currentRound = previousRoundNumber
         state.currentEvent = 1
         if (state.timeline) {

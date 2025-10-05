@@ -97,6 +97,9 @@ const UnifiedEventEditorComponent = ({
   const currentRoundData = timeline?.rounds.find(r => r.number === currentRound)
   const eventActions = currentRoundData?.events.find(e => e.number === currentEvent)?.actions || []
 
+  // Check if current round is read-only (already executed/ended)
+  const isReadOnly = currentRoundData?.executed || false
+
   useEffect(() => {
     if (selectedToken && currentMap) {
       const token = currentMap.objects.find(obj => obj.id === selectedToken)
@@ -452,69 +455,73 @@ const UnifiedEventEditorComponent = ({
                       marginBottom: '4px'
                     }}
                   >
-                    Create Action Event
+                    {isReadOnly ? 'Historical Round (Read-Only)' : 'Create Action Event'}
                   </Text>
                   <Text
                     variant="body"
                     size="sm"
-                    style={{ color: '#9CA3AF' }}
+                    style={{ color: isReadOnly ? '#EF4444' : '#9CA3AF' }}
                   >
-                    Schedule actions for Event {targetEvent}
+                    {isReadOnly ? `Round ${currentRound} has ended - viewing only` : `Schedule actions for Event {targetEvent}`}
                   </Text>
                 </Box>
 
-                <Button
-                  variant="primary"
-                  onClick={handleAddEvent}
-                  disabled={!canAddEvent()}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    backgroundColor: '#C9AD6A',
-                    color: '#000000',
-                    border: 'none',
-                    borderRadius: '6px',
-                    padding: '10px 16px',
-                    fontWeight: '500'
+                {!isReadOnly && (
+                  <Button
+                    variant="primary"
+                    onClick={handleAddEvent}
+                    disabled={!canAddEvent()}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      backgroundColor: '#C9AD6A',
+                      color: '#000000',
+                      border: 'none',
+                      borderRadius: '6px',
+                      padding: '10px 16px',
+                      fontWeight: '500'
                   }}
                 >
-                  <Plus size={16} />
-                  Add Event
-                </Button>
+                    <Plus size={16} />
+                    Add Event
+                  </Button>
+                )}
               </Box>
 
-                <Box style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  {/* Token Selection */}
-                  <SelectToken
-                    selectedToken={selectedToken}
-                    setSelectedToken={setSelectedToken}
-                    tokens={tokens}
-                    isPicking={isPicking}
-                    onTokenPick={handleTokenPick}
-                    useEnvironmentToken={useEnvironmentToken}
-                    onUseEnvironmentTokenChange={setUseEnvironmentToken}
-                  />
+                {!isReadOnly && (
+                  <Box style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {/* Token Selection */}
+                    <SelectToken
+                      selectedToken={selectedToken}
+                      setSelectedToken={setSelectedToken}
+                      tokens={tokens}
+                      isPicking={isPicking}
+                      onTokenPick={handleTokenPick}
+                      useEnvironmentToken={useEnvironmentToken}
+                      onUseEnvironmentTokenChange={setUseEnvironmentToken}
+                    />
 
-                  {/* Target Position */}
-                  <SelectTarget
-                    targetPosition={targetPosition}
-                    targetTokenId={targetTokenId}
-                    tokens={tokens}
-                    onPositionPick={handlePositionPick}
-                    onTargetTokenPick={handleTargetTokenPick}
-                    isPicking={isPicking}
-                  />
+                    {/* Target Position */}
+                    <SelectTarget
+                      targetPosition={targetPosition}
+                      targetTokenId={targetTokenId}
+                      tokens={tokens}
+                      onPositionPick={handlePositionPick}
+                      onTargetTokenPick={handleTargetTokenPick}
+                      isPicking={isPicking}
+                    />
 
-                  {/* Action Selection */}
-                  <SelectAction
-                    selectedAction={selectedAction}
-                    onSelectAction={() => setIsActionModalOpen(true)}
-                  />
+                    {/* Action Selection */}
+                    <SelectAction
+                      selectedAction={selectedAction}
+                      onSelectAction={() => setIsActionModalOpen(true)}
+                    />
 
-                  {/* Action Preview */}
-                  <ActionPreview selectedAction={selectedAction} targetTokenId={targetTokenId} />
-                </Box>
+                    {/* Action Preview */}
+                    <ActionPreview selectedAction={selectedAction} targetTokenId={targetTokenId} />
+                  </Box>
+                )}
             </Box>
           </Box>
 
