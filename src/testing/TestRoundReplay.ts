@@ -28,6 +28,7 @@
 
 import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
+import useAnimationStore from '@/store/animationStore'
 import type { Token } from '@/types/token'
 import type { Position } from '@/types/map'
 
@@ -287,8 +288,7 @@ export const runRoundReplayTest = () => {
     console.log('⏳ REPLAYING ROUND 1 EVENTS...')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
 
-    // Wait for all animations to complete
-    // Monitor token positions to detect when animations finish
+    // Wait for all animations to complete by monitoring animationStore
     let animationCheckCount = 0
     const maxChecks = 50 // 50 checks × 300ms = 15 seconds max
     let animationsComplete = false
@@ -299,18 +299,25 @@ export const runRoundReplayTest = () => {
       await wait(300) // Check every 300ms
       animationCheckCount++
 
+      const animationState = useAnimationStore.getState()
+      const activeAnimations = animationState.activePaths.length
+
       const currentMapState = useMapStore.getState()
       const currentWarrior = currentMapState.currentMap?.objects.find(obj => obj.id === 'replay-warrior')
       const currentRogue = currentMapState.currentMap?.objects.find(obj => obj.id === 'replay-rogue')
 
-      // Check if tokens have reached their final positions
+      // Check if all animations have completed (no active paths)
+      // AND tokens have reached their final positions
       const warriorAtFinal = currentWarrior?.position.x === 200 && currentWarrior?.position.y === 350
       const rogueAtFinal = currentRogue?.position.x === 550 && currentRogue?.position.y === 350
+      const noActiveAnimations = activeAnimations === 0
 
-      if (warriorAtFinal && rogueAtFinal) {
-        // Wait an additional 2 seconds to ensure spell animations also complete
-        console.log(`⏱️  Tokens reached final positions after ${(animationCheckCount * 300 / 1000).toFixed(1)}s`)
-        console.log('⏳ Waiting 2 more seconds for spell animations...\n')
+      if (noActiveAnimations && warriorAtFinal && rogueAtFinal) {
+        // All movement animations complete, wait additional time for spell animations
+        console.log(`⏱️  All animations completed after ${(animationCheckCount * 300 / 1000).toFixed(1)}s`)
+        console.log('   ✅ No active animation paths')
+        console.log('   ✅ All tokens at final positions')
+        console.log('⏳ Waiting 2 more seconds for spell visual effects...\n')
         await wait(2000)
         animationsComplete = true
       }
@@ -318,13 +325,16 @@ export const runRoundReplayTest = () => {
       // Log progress every 3 seconds
       if (animationCheckCount % 10 === 0) {
         console.log(`   ⏳ Still waiting... (${animationCheckCount * 300 / 1000}s elapsed)`)
+        console.log(`      Active animations: ${activeAnimations}`)
         console.log(`      Warrior: (${currentWarrior?.position.x}, ${currentWarrior?.position.y}) → Target: (200, 350)`)
         console.log(`      Rogue: (${currentRogue?.position.x}, ${currentRogue?.position.y}) → Target: (550, 350)\n`)
       }
     }
 
     if (!animationsComplete) {
+      const finalAnimationState = useAnimationStore.getState()
       console.warn('⚠️  Animation timeout reached (15 seconds)')
+      console.warn(`   Active animations remaining: ${finalAnimationState.activePaths.length}`)
       console.warn('   Proceeding with verification anyway...\n')
     }
 
