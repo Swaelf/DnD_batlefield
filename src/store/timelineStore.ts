@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import type { TimelineStore } from '../types'
-import type { TimelineAction } from '../types'
+import type { TimelineAction, Position } from '../types'
 import useMapStore from './mapStore'
 import useEventCreationStore from './eventCreationStore'
 import useBattleLogStore from './battleLogStore'
@@ -336,6 +336,32 @@ const useTimelineStore = create<TimelineStore>()(
       const event = round.events.find(e => e.number === eventNumber)
       if (!event || event.executed) return
 
+      // Save snapshot before executing event (for undo/navigation)
+      if (!event.snapshot) {
+        const mapStore = (await import('./mapStore')).default.getState()
+        const tokenPositions: Record<string, Position> = {}
+        const spellEffects: string[] = []
+
+        mapStore.currentMap?.objects.forEach(obj => {
+          if (obj.type === 'token') {
+            tokenPositions[obj.id] = { ...obj.position }
+          }
+          if (obj.isSpellEffect) {
+            spellEffects.push(obj.id)
+          }
+        })
+
+        set((state) => {
+          const roundData = state.timeline?.rounds.find(r => r.number === currentRound)
+          if (!roundData) return
+
+          const eventToUpdate = roundData.events.find(e => e.number === eventNumber)
+          if (eventToUpdate) {
+            eventToUpdate.snapshot = { tokenPositions, spellEffects }
+          }
+        })
+      }
+
       // Execute each action sequentially, waiting for each animation to complete
       for (const action of event.actions) {
         // Get mapStore methods - we'll need to import this properly
@@ -636,6 +662,18 @@ const useTimelineStore = create<TimelineStore>()(
         state.timeline!.currentEvent = 1
       })
 
+      // Remove post effects (durationType='events') from previous round
+      const mapStore = useMapStore.getState()
+      if (mapStore.currentMap) {
+        const postEffects = mapStore.currentMap.objects.filter(obj =>
+          obj.isSpellEffect && obj.durationType === 'events'
+        )
+        postEffects.forEach(effect => {
+          mapStore.deleteObject(effect.id)
+        })
+        console.log(`🧹 Removed ${postEffects.length} post effects from Round ${activeRound}`)
+      }
+
       // Add battle log entry for round ending
       useBattleLogStore.getState().addEntry({
         roundNumber: activeRound,
@@ -686,8 +724,12 @@ const useTimelineStore = create<TimelineStore>()(
 
       const previousRoundNumber = currentRound - 1
 
-      // Simply navigate to previous round - no restoration needed
-      // Events are already preserved as they were historically
+      // Get the first event of the previous round for snapshot
+      const previousRound = timeline.rounds.find(r => r.number === previousRoundNumber)
+      const firstEvent = previousRound?.events.find(e => e.number === 1)
+      const snapshot = firstEvent?.snapshot
+
+      // Navigate to previous round
       set((state) => {
         state.currentRound = previousRoundNumber
         state.currentEvent = 1
@@ -697,8 +739,29 @@ const useTimelineStore = create<TimelineStore>()(
         }
       })
 
-      // TODO: Restore token positions to initial state for this round
-      // This would require saving snapshots when round starts
+      // Restore token positions and spell effects from snapshot
+      if (snapshot) {
+        const mapStore = useMapStore.getState()
+
+        // Restore token positions
+        Object.entries(snapshot.tokenPositions).forEach(([tokenId, position]) => {
+          mapStore.updateObjectPosition(tokenId, position)
+        })
+
+        // Remove spell effects that were created after this snapshot
+        const currentMap = mapStore.currentMap
+        if (currentMap) {
+          const spellEffectsToRemove = currentMap.objects
+            .filter(obj => obj.isSpellEffect && !snapshot.spellEffects.includes(obj.id))
+            .map(obj => obj.id)
+
+          spellEffectsToRemove.forEach(id => {
+            mapStore.deleteObject(id)
+          })
+
+          console.log(`🔙 Restored Round ${previousRoundNumber}: ${Object.keys(snapshot.tokenPositions).length} tokens, removed ${spellEffectsToRemove.length} spell effects`)
+        }
+      }
     },
 
     goToRound: (roundNumber) => {
