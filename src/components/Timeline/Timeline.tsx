@@ -24,10 +24,14 @@ export const Timeline: FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
   const previousEvent = useTimelineStore(state => state.previousEvent)
   const goToEvent = useTimelineStore(state => state.goToEvent)
   const setAnimationSpeed = useTimelineStore(state => state.setAnimationSpeed)
+  const isCurrentRoundEditable = useTimelineStore(state => state.isCurrentRoundEditable)
 
   // Use specific selectors to prevent unnecessary re-renders
   const currentMap = useMapStore(state => state.currentMap)
   const [isAnimating, setIsAnimating] = useState(false)
+
+  // Check if current round is editable (not a historical/executed round)
+  const roundEditable = isCurrentRoundEditable()
 
   const handleStartCombat = () => {
     if (currentMap) {
@@ -41,7 +45,8 @@ export const Timeline: FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
     setIsAnimating(false)
   }
 
-  const currentEventData = timeline?.events.find(e => e.number === currentEvent)
+  const currentRoundData = timeline?.rounds.find(r => r.number === 1) // Round 1 for now
+  const currentEventData = currentRoundData?.events.find(e => e.number === currentEvent)
   const actionCount = currentEventData?.actions.length || 0
 
   return (
@@ -92,18 +97,18 @@ export const Timeline: FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
               <div className={styles.roundControls}>
                 <button
                   onClick={previousEvent}
-                  disabled={currentEvent <= 1 || isAnimating}
+                  disabled={currentEvent <= 1 || isAnimating || !roundEditable}
                   className={styles.roundButton}
-                  title="Previous Event"
+                  title={!roundEditable ? "Cannot navigate in historical rounds" : "Previous Event"}
                 >
                   <SkipBack className={styles.icon} />
                 </button>
 
                 <button
                   onClick={handleNextEvent}
-                  disabled={isAnimating}
+                  disabled={isAnimating || !roundEditable}
                   className={styles.nextRoundButton}
-                  title="Next Event"
+                  title={!roundEditable ? "Cannot navigate in historical rounds" : "Next Event"}
                 >
                   {isAnimating ? (
                     <span className={clsx(styles.flex, styles.itemsCenter, styles.gap2)}>
@@ -125,7 +130,8 @@ export const Timeline: FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
                   onChange={(e: ChangeEvent<HTMLInputElement>) => goToEvent(parseInt(e.target.value) || 1)}
                   className={styles.roundInput}
                   min="1"
-                  disabled={isAnimating}
+                  disabled={isAnimating || !roundEditable}
+                  title={!roundEditable ? "Cannot navigate in historical rounds" : "Jump to event"}
                 />
               </div>
             )}
@@ -196,10 +202,10 @@ export const Timeline: FC<TimelineProps> = ({ onAddEvent, onEditEvents }) => {
           )}
 
           {/* Event Preview (mini timeline) */}
-          {isInCombat && timeline && (
+          {isInCombat && timeline && currentRoundData && (
             <div className={styles.eventPreview}>
               <div className={styles.eventPreviewContent}>
-                {timeline.events.slice(0, 10).map((event) => (
+                {currentRoundData.events.slice(0, 10).map((event) => (
                   <button
                     key={event.id}
                     onClick={() => goToEvent(event.number)}

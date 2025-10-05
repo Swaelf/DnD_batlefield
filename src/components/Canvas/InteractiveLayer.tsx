@@ -13,6 +13,11 @@ import { snapToGrid } from '@/utils/grid'
 import { isDrawingTool } from './utils'
 import type { GridSettings, DrawingState, StaticObjectTemplate } from '@/types'
 import type { Point } from '@/types/geometry'
+
+// Helper function to convert Point[] to number[] for Konva Line
+const pointsToArray = (points: Point[]): number[] => {
+  return points.flatMap(p => [p.x, p.y])
+}
 import type { TokenTemplate } from '@/types/token'
 import type { SelectionRectangle } from './types'
 import type { StaticEffectTemplate } from '../StaticEffect/types'
@@ -33,6 +38,9 @@ export interface InteractiveLayerProps {
   readonly strokeColor: string
   readonly strokeWidth: number
   readonly opacity: number
+  readonly terrainColor: string
+  readonly terrainOpacity: number
+  readonly terrainBrushSize: number
 }
 
 export const InteractiveLayer = memo(function InteractiveLayer({
@@ -47,10 +55,9 @@ export const InteractiveLayer = memo(function InteractiveLayer({
   staticEffectTemplate,
   previewPosition,
   measurementPoints,
-  fillColor,
-  strokeColor,
-  strokeWidth,
-  opacity
+  terrainColor,
+  terrainOpacity,
+  terrainBrushSize
 }: InteractiveLayerProps) {
   const gridSize = gridSettings?.size || 50
   const gridSnap = gridSettings?.snap || false
@@ -164,55 +171,6 @@ export const InteractiveLayer = memo(function InteractiveLayer({
           )
         })()}
 
-        {/* Drawing tool preview (rectangle, circle, line) */}
-        {drawingState.isDrawing && drawingState.startPoint && drawingState.currentPoint && (
-          <>
-            {currentTool === 'rectangle' && (
-              <Rect
-                x={Math.min(drawingState.startPoint.x, drawingState.currentPoint.x)}
-                y={Math.min(drawingState.startPoint.y, drawingState.currentPoint.y)}
-                width={Math.abs(drawingState.currentPoint.x - drawingState.startPoint.x)}
-                height={Math.abs(drawingState.currentPoint.y - drawingState.startPoint.y)}
-                fill={fillColor}
-                stroke={strokeColor}
-                strokeWidth={strokeWidth}
-                opacity={opacity * 0.7}
-                listening={false}
-              />
-            )}
-            {currentTool === 'circle' && (
-              <Circle
-                x={drawingState.startPoint.x}
-                y={drawingState.startPoint.y}
-                radius={Math.sqrt(
-                  Math.pow(drawingState.currentPoint.x - drawingState.startPoint.x, 2) +
-                  Math.pow(drawingState.currentPoint.y - drawingState.startPoint.y, 2)
-                )}
-                fill={fillColor}
-                stroke={strokeColor}
-                strokeWidth={strokeWidth}
-                opacity={opacity * 0.7}
-                listening={false}
-              />
-            )}
-            {currentTool === 'line' && (
-              <Line
-                points={[
-                  drawingState.startPoint.x,
-                  drawingState.startPoint.y,
-                  drawingState.currentPoint.x,
-                  drawingState.currentPoint.y
-                ]}
-                fill={fillColor}
-                stroke={strokeColor}
-                strokeWidth={strokeWidth}
-                opacity={opacity * 0.7}
-                listening={false}
-              />
-            )}
-          </>
-        )}
-
         {/* Selection rectangle preview */}
         {currentTool === 'select' && selectionRect && selectionRect.visible && (
           <Rect
@@ -237,6 +195,80 @@ export const InteractiveLayer = memo(function InteractiveLayer({
             showSegmentDistances={true}
             showTotalDistance={true}
           />
+        )}
+
+        {/* Terrain brush/eraser preview - show brush size circle at cursor */}
+        {(currentTool === 'terrainBrush' || currentTool === 'terrainEraser') && drawingState.currentPoint && (
+          <>
+            {/* Show the path being drawn */}
+            {drawingState.isDrawing && drawingState.points && drawingState.points.length >= 2 && (
+              <Line
+                points={pointsToArray(drawingState.points)}
+                stroke={currentTool === 'terrainEraser' ? '#DC2626' : terrainColor}
+                strokeWidth={terrainBrushSize}
+                opacity={currentTool === 'terrainEraser' ? 0.6 : terrainOpacity * 0.8}
+                lineCap="round"
+                lineJoin="round"
+                tension={0.5}
+                listening={false}
+              />
+            )}
+            {/* Show cursor circle */}
+            <Circle
+              x={drawingState.currentPoint.x}
+              y={drawingState.currentPoint.y}
+              radius={terrainBrushSize / 2}
+              stroke={currentTool === 'terrainEraser' ? '#DC2626' : terrainColor}
+              strokeWidth={2}
+              dash={[5, 5]}
+              opacity={0.8}
+              listening={false}
+            />
+          </>
+        )}
+
+        {/* Background shape drawing preview */}
+        {drawingState.isDrawing && drawingState.startPoint && drawingState.currentPoint && (
+          <>
+            {currentTool === 'rectangle' && (
+              <Rect
+                x={Math.min(drawingState.startPoint.x, drawingState.currentPoint.x)}
+                y={Math.min(drawingState.startPoint.y, drawingState.currentPoint.y)}
+                width={Math.abs(drawingState.currentPoint.x - drawingState.startPoint.x)}
+                height={Math.abs(drawingState.currentPoint.y - drawingState.startPoint.y)}
+                fill={terrainColor}
+                opacity={terrainOpacity * 0.7}
+                listening={false}
+              />
+            )}
+            {currentTool === 'circle' && (
+              <Circle
+                x={(drawingState.startPoint.x + drawingState.currentPoint.x) / 2}
+                y={(drawingState.startPoint.y + drawingState.currentPoint.y) / 2}
+                radius={Math.sqrt(
+                  Math.pow(drawingState.currentPoint.x - drawingState.startPoint.x, 2) +
+                  Math.pow(drawingState.currentPoint.y - drawingState.startPoint.y, 2)
+                ) / 2}
+                fill={terrainColor}
+                opacity={terrainOpacity * 0.7}
+                listening={false}
+              />
+            )}
+            {(currentTool === 'line' || currentTool === 'polygon') && (
+              <Line
+                points={[
+                  drawingState.startPoint.x,
+                  drawingState.startPoint.y,
+                  drawingState.currentPoint.x,
+                  drawingState.currentPoint.y
+                ]}
+                stroke={terrainColor}
+                strokeWidth={3}
+                opacity={terrainOpacity * 0.7}
+                listening={false}
+              />
+            )}
+          </>
         )}
       </Group>
 

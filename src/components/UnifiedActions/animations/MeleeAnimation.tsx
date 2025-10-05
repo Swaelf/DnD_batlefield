@@ -1,6 +1,7 @@
-import { memo, useRef, useEffect } from 'react'
-import { Group, Arc, Circle } from 'react-konva'
+import { memo, useMemo, useRef, useEffect, useState } from 'react'
+import { Group, Arc, Line, Circle } from 'react-konva'
 import Konva from 'konva'
+import { EASING } from '@/lib/animation-effects'
 import type { UnifiedAction } from '@/types/unifiedAction'
 import type { Point } from '@/types/geometry'
 
@@ -10,187 +11,162 @@ type MeleeAnimationProps = {
 }
 
 const MeleeAnimationComponent = ({ action, onComplete }: MeleeAnimationProps) => {
-  const groupRef = useRef<Konva.Group>(null)
-  const slashRef = useRef<Konva.Arc | null>(null)
-  const impactRef = useRef<Konva.Circle | null>(null)
-  const animationRef = useRef<Konva.Animation | null>(null)
-  const hasStartedRef = useRef(false)
+  const slashRef = useRef<Konva.Arc>(null)
+  const slashLinesRef = useRef<Konva.Line[]>([])
+  const impactRef = useRef<Konva.Circle>(null)
+  const startTimeRef = useRef<number>(Date.now())
+  const rafRef = useRef<number | undefined>(undefined)
 
-  useEffect(() => {
-    if (!groupRef.current || hasStartedRef.current) return
-    hasStartedRef.current = true
+  const [progress, setProgress] = useState(0)
 
-    const group = groupRef.current
-    const slash = slashRef.current
-    const impact = impactRef.current
-
-    // Parse source position
+  // Parse positions and calculate parameters
+  const params = useMemo(() => {
     const source = typeof action.source === 'object' && !Array.isArray(action.source)
       ? action.source as Point
       : { x: 0, y: 0 }
 
-    // Parse target position
     const target = Array.isArray(action.target)
-      ? { x: source.x + 50, y: source.y } // Default offset for token array target
+      ? { x: source.x + 50, y: source.y }
       : action.target as Point
 
     const targetPoint = target as Point
-
-    // Calculate angle to target
     const dx = targetPoint.x - source.x
     const dy = targetPoint.y - source.y
     const angle = Math.atan2(dy, dx) * 180 / Math.PI
 
-    // Position at source
-    group.position(source)
-    group.visible(true)
-
-    const duration = action.animation.duration || 600
-    const color = action.animation.color || '#FFFFFF'
-    const size = action.animation.size || 30
-
-    // Create animation based on type
-    if (action.animation.type === 'melee_swing' && slash) {
-      // Swing animation (arc)
-      slash.visible(true)
-      slash.rotation(angle - 45) // Offset for swing arc
-
-      const startTime = Date.now()
-
-      const anim = new Konva.Animation((frame) => {
-        if (!frame) return
-
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / duration, 1)
-
-        // Eased progress for smooth animation
-        const easedProgress = 1 - Math.pow(1 - progress, 3)
-
-        // Animate the arc sweep
-        slash.angle(easedProgress * 90) // Sweep 90 degrees
-        slash.opacity(1 - progress * 0.5) // Fade out
-
-        // Scale effect
-        const scale = 1 + easedProgress * 0.3
-        slash.scaleX(scale)
-        slash.scaleY(scale)
-
-        // Add impact flash at end
-        if (progress > 0.7 && impact) {
-          impact.visible(true)
-          impact.opacity((1 - progress) * 3)
-          impact.scaleX(1 + (progress - 0.7) * 3)
-          impact.scaleY(1 + (progress - 0.7) * 3)
-        }
-
-        if (progress >= 1) {
-          anim.stop()
-          group.visible(false)
-          onComplete?.()
-        }
-      })
-
-      animationRef.current = anim
-      anim.start()
-
-    } else {
-      // Slash animation (straight lines)
-      const slashLines: Konva.Line[] = []
-      const slashGroup = new Konva.Group()
-      group.add(slashGroup)
-
-      // Create multiple slash lines for effect
-      for (let i = 0; i < 3; i++) {
-        const line = new Konva.Line({
-          points: [0, 0, 0, 0],
-          stroke: color,
-          strokeWidth: 3 - i,
-          lineCap: 'round',
-          opacity: 0,
-          shadowColor: color,
-          shadowBlur: 10,
-          shadowOpacity: 0.5
-        })
-        slashGroup.add(line)
-        slashLines.push(line)
-      }
-
-      const startTime = Date.now()
-
-      const anim = new Konva.Animation((frame) => {
-        if (!frame) return
-
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / duration, 1)
-
-        // Create slash effect
-        slashLines.forEach((line, index) => {
-          const delay = index * 0.05
-          const lineProgress = Math.max(0, Math.min(1, (progress - delay) / (1 - delay)))
-
-          if (lineProgress > 0) {
-            line.opacity(1 - lineProgress * 0.7)
-
-            // Calculate slash endpoints
-            const slashLength = size * 2
-            const offsetAngle = angle + (index - 1) * 15 // Spread the slashes
-            const startX = Math.cos(offsetAngle * Math.PI / 180) * slashLength * 0.2
-            const startY = Math.sin(offsetAngle * Math.PI / 180) * slashLength * 0.2
-            const endX = Math.cos(offsetAngle * Math.PI / 180) * slashLength * lineProgress
-            const endY = Math.sin(offsetAngle * Math.PI / 180) * slashLength * lineProgress
-
-            line.points([startX, startY, endX, endY])
-          }
-        })
-
-        // Add impact effect
-        if (progress > 0.5 && impact) {
-          impact.visible(true)
-          impact.x(dx * 0.7)
-          impact.y(dy * 0.7)
-          impact.opacity((1 - progress) * 2)
-          impact.scaleX(1 + (progress - 0.5) * 4)
-          impact.scaleY(1 + (progress - 0.5) * 4)
-        }
-
-        if (progress >= 1) {
-          anim.stop()
-          group.visible(false)
-          onComplete?.()
-        }
-      })
-
-      animationRef.current = anim
-      anim.start()
+    return {
+      source,
+      angle,
+      duration: action.animation.duration || 600,
+      color: action.animation.color || '#FFFFFF',
+      size: action.animation.size || 30,
+      dx,
+      dy
     }
+  }, [action])
+
+  // Animation loop using RAF
+  useEffect(() => {
+    const animate = () => {
+      const elapsed = Date.now() - startTimeRef.current
+      const newProgress = Math.min(elapsed / params.duration, 1)
+
+      setProgress(newProgress)
+
+      if (newProgress < 1) {
+        rafRef.current = requestAnimationFrame(animate)
+      } else {
+        onComplete?.()
+      }
+    }
+
+    rafRef.current = requestAnimationFrame(animate)
 
     return () => {
-      if (animationRef.current) {
-        animationRef.current.stop()
-        animationRef.current = null
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
       }
     }
-  }, [action, onComplete])
+  }, [params.duration, onComplete])
 
-  const color = action.animation.color || '#FFFFFF'
-  const size = action.animation.size || 30
+  // Swing animation rendering
+  useEffect(() => {
+    if (action.animation.type !== 'melee_swing') return
+
+    const slash = slashRef.current
+    const impact = impactRef.current
+    if (!slash) return
+
+    const easedProgress = EASING.easeOutCubic(progress)
+
+    slash.angle(easedProgress * 90)
+    slash.opacity(1 - progress * 0.5)
+    slash.scaleX(1 + easedProgress * 0.3)
+    slash.scaleY(1 + easedProgress * 0.3)
+
+    if (progress > 0.7 && impact) {
+      impact.visible(true)
+      const flashProgress = (progress - 0.7) / 0.3
+      impact.opacity((1 - flashProgress) * 0.8)
+      impact.scaleX(1 + flashProgress * 3)
+      impact.scaleY(1 + flashProgress * 3)
+    }
+  }, [progress, action.animation.type])
+
+  // Slash animation rendering
+  useEffect(() => {
+    if (action.animation.type !== 'melee_slash') return
+
+    const impact = impactRef.current
+    const { angle, size, dx, dy } = params
+
+    slashLinesRef.current.forEach((line, index) => {
+      const delay = index * 0.05
+      const lineProgress = Math.max(0, Math.min(1, (progress - delay) / (1 - delay)))
+
+      if (lineProgress > 0) {
+        line.opacity(1 - lineProgress * 0.7)
+
+        const slashLength = size * 2
+        const offsetAngle = angle + (index - 1) * 15
+        const radians = offsetAngle * Math.PI / 180
+        const startX = Math.cos(radians) * slashLength * 0.2
+        const startY = Math.sin(radians) * slashLength * 0.2
+        const endX = Math.cos(radians) * slashLength * lineProgress
+        const endY = Math.sin(radians) * slashLength * lineProgress
+
+        line.points([startX, startY, endX, endY])
+      }
+    })
+
+    if (progress > 0.5 && impact) {
+      impact.visible(true)
+      impact.x(dx * 0.7)
+      impact.y(dy * 0.7)
+      const flashProgress = (progress - 0.5) / 0.5
+      impact.opacity((1 - flashProgress) * 0.8)
+      impact.scaleX(1 + flashProgress * 4)
+      impact.scaleY(1 + flashProgress * 4)
+    }
+  }, [progress, action.animation.type, params])
+
+  const { source, angle, color, size } = params
 
   return (
-    <Group ref={groupRef} visible={false}>
-      {/* Swing arc for melee_swing */}
+    <Group x={source.x} y={source.y}>
       {action.animation.type === 'melee_swing' && (
         <Arc
           ref={slashRef}
           innerRadius={size}
           outerRadius={size * 2}
           angle={0}
+          rotation={angle - 45}
           fill={color}
           opacity={0.7}
-          visible={false}
         />
       )}
 
-      {/* Impact flash */}
+      {action.animation.type === 'melee_slash' && (
+        <>
+          {[0, 1, 2].map((i) => (
+            <Line
+              key={i}
+              ref={(ref) => {
+                if (ref) slashLinesRef.current[i] = ref
+              }}
+              points={[0, 0, 0, 0]}
+              stroke={color}
+              strokeWidth={3 - i}
+              lineCap="round"
+              opacity={0}
+              shadowColor={color}
+              shadowBlur={10}
+              shadowOpacity={0.5}
+            />
+          ))}
+        </>
+      )}
+
       <Circle
         ref={impactRef}
         radius={size * 0.5}

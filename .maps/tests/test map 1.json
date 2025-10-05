@@ -1,0 +1,1124 @@
+{
+  "version": "1.0.0",
+  "exportDate": "2025-10-03T10:13:24.362Z",
+  "map": {
+    "id": "71ec1113-51ce-4182-8130-ae2f42d0f546",
+    "name": "Untitled Map",
+    "width": 1920,
+    "height": 1080,
+    "grid": {
+      "size": 50,
+      "type": "square",
+      "visible": true,
+      "snap": true,
+      "color": "#cccccc"
+    },
+    "objects": [
+      {
+        "id": "void-token",
+        "type": "token",
+        "name": "Environment",
+        "position": {
+          "x": -10000,
+          "y": -10000
+        },
+        "rotation": 0,
+        "layer": -999,
+        "size": "medium",
+        "color": "transparent",
+        "shape": "circle",
+        "opacity": 0,
+        "isVoid": true,
+        "visible": false,
+        "locked": true,
+        "allowedEvents": [
+          "spell"
+        ],
+        "showLabel": false,
+        "labelColor": "#E0E0E0"
+      },
+      {
+        "id": "4d1a814f-5916-4d7a-8051-d06957432c31",
+        "type": "token",
+        "position": {
+          "x": 425,
+          "y": 275
+        },
+        "rotation": 0,
+        "layer": 40,
+        "name": "Wizard",
+        "size": "medium",
+        "color": "#7C3AED",
+        "shape": "circle",
+        "category": "player",
+        "showLabel": true,
+        "labelPosition": "bottom",
+        "labelColor": "#E0E0E0",
+        "opacity": 1,
+        "borderColor": "#000000",
+        "borderWidth": 2,
+        "currentHP": 30,
+        "maxHP": 30,
+        "showHP": true,
+        "locked": false,
+        "visible": true,
+        "layerId": "tokens"
+      },
+      {
+        "id": "f055d67c-03d2-4445-8e0e-704df5cf2792",
+        "type": "token",
+        "position": {
+          "x": 775,
+          "y": 275
+        },
+        "rotation": 0,
+        "layer": 40,
+        "name": "Fighter",
+        "size": "medium",
+        "color": "#1E40AF",
+        "shape": "circle",
+        "category": "player",
+        "showLabel": true,
+        "labelPosition": "bottom",
+        "labelColor": "#E0E0E0",
+        "opacity": 1,
+        "borderColor": "#000000",
+        "borderWidth": 2,
+        "currentHP": 30,
+        "maxHP": 30,
+        "showHP": true,
+        "locked": false,
+        "visible": true,
+        "layerId": "tokens"
+      },
+      {
+        "id": "8c79123d-fb9c-4766-a15c-c1b7671a015d",
+        "type": "shape",
+        "shapeType": "rectangle",
+        "position": {
+          "x": 175,
+          "y": 365
+        },
+        "rotation": 90,
+        "layer": 40,
+        "width": 300,
+        "height": 20,
+        "fill": "#6B7280",
+        "fillColor": "#6B7280",
+        "stroke": "#6B7280",
+        "strokeColor": "#6B7280",
+        "strokeWidth": 2,
+        "opacity": 1,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "wall",
+          "templateName": "Wall"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "2c617833-c700-4934-ba97-62a136970199",
+        "type": "shape",
+        "position": {
+          "x": 575,
+          "y": 325
+        },
+        "rotation": 90,
+        "layer": 40,
+        "fillColor": "#EF4444",
+        "fill": "#EF4444",
+        "strokeColor": "#EF4444",
+        "stroke": "#EF4444",
+        "strokeWidth": 10,
+        "opacity": 0.4,
+        "name": "Line Area",
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStaticEffect": true,
+          "effectType": "line"
+        },
+        "shapeType": "line",
+        "points": [
+          0,
+          0,
+          100,
+          0
+        ],
+        "layerId": "tokens"
+      },
+      {
+        "id": "39197a2a-a808-4d06-abe8-0969132684b1",
+        "type": "token",
+        "position": {
+          "x": 1125,
+          "y": 575
+        },
+        "rotation": 0,
+        "layer": 40,
+        "name": "Dragon",
+        "size": "gargantuan",
+        "color": "#DC2626",
+        "shape": "circle",
+        "category": "enemy",
+        "showLabel": true,
+        "labelPosition": "bottom",
+        "labelColor": "#E0E0E0",
+        "opacity": 1,
+        "borderColor": "#000000",
+        "borderWidth": 2,
+        "currentHP": 200,
+        "maxHP": 200,
+        "showHP": true,
+        "locked": false,
+        "visible": true,
+        "layerId": "tokens"
+      },
+      {
+        "id": "a97a75f5-1007-49a2-9b27-ff9e4439e3fa",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 275,
+          "y": 75
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "b4ad78ae-4c52-4218-9708-5bf3b8573c5f",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 875,
+          "y": 75
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "2bc76751-8326-4b54-88d9-e9b2969aca21",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 1225,
+          "y": 275
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "c1bd6005-6a81-4db8-a827-922194b0282d",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 125,
+          "y": 325
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "7336a00c-3521-40ac-9ccf-f05a767bdabd",
+        "type": "shape",
+        "shapeType": "rectangle",
+        "position": {
+          "x": 250,
+          "y": 550
+        },
+        "rotation": 0,
+        "layer": 40,
+        "width": 150,
+        "height": 150,
+        "fill": "#3B82F6",
+        "fillColor": "#3B82F6",
+        "stroke": "#3B82F6",
+        "strokeColor": "#3B82F6",
+        "strokeWidth": 2,
+        "opacity": 0.6,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "water",
+          "templateName": "Water"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "b1728cc7-b04e-465b-8ab3-9b1070b489b0",
+        "type": "shape",
+        "shapeType": "rectangle",
+        "position": {
+          "x": 725,
+          "y": 395
+        },
+        "rotation": 0,
+        "layer": 40,
+        "width": 100,
+        "height": 60,
+        "fill": "#92400E",
+        "fillColor": "#92400E",
+        "stroke": "#92400E",
+        "strokeColor": "#92400E",
+        "strokeWidth": 2,
+        "opacity": 1,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "table",
+          "templateName": "Table"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "91c0552f-e9ca-41a2-8e97-b67f02f36f70",
+        "type": "shape",
+        "shapeType": "rectangle",
+        "position": {
+          "x": 325,
+          "y": 215
+        },
+        "rotation": 0,
+        "layer": 40,
+        "width": 500,
+        "height": 20,
+        "fill": "#6B7280",
+        "fillColor": "#6B7280",
+        "stroke": "#6B7280",
+        "strokeColor": "#6B7280",
+        "strokeWidth": 2,
+        "opacity": 1,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "wall",
+          "templateName": "Wall"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "e8d57cd3-c8e4-41a9-a976-3abfb3a5499a",
+        "type": "shape",
+        "shapeType": "rectangle",
+        "position": {
+          "x": 325,
+          "y": 515
+        },
+        "rotation": 0,
+        "layer": 40,
+        "width": 500,
+        "height": 20,
+        "fill": "#6B7280",
+        "fillColor": "#6B7280",
+        "stroke": "#6B7280",
+        "strokeColor": "#6B7280",
+        "strokeWidth": 2,
+        "opacity": 1,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "wall",
+          "templateName": "Wall"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "d9713c18-3658-4c1a-bb5e-c718db95183f",
+        "type": "shape",
+        "shapeType": "rectangle",
+        "position": {
+          "x": 775,
+          "y": 165
+        },
+        "rotation": 90,
+        "layer": 40,
+        "width": 100,
+        "height": 20,
+        "fill": "#6B7280",
+        "fillColor": "#6B7280",
+        "stroke": "#6B7280",
+        "strokeColor": "#6B7280",
+        "strokeWidth": 2,
+        "opacity": 1,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "wall",
+          "templateName": "Wall"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "dd695115-37b2-4a1a-adc1-ee5c5dcf1076",
+        "type": "shape",
+        "shapeType": "rectangle",
+        "position": {
+          "x": 775,
+          "y": 565
+        },
+        "rotation": 90,
+        "layer": 40,
+        "width": 100,
+        "height": 20,
+        "fill": "#6B7280",
+        "fillColor": "#6B7280",
+        "stroke": "#6B7280",
+        "strokeColor": "#6B7280",
+        "strokeWidth": 2,
+        "opacity": 1,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "wall",
+          "templateName": "Wall"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "70c4cc70-1c92-4cea-8cc0-e7e68e4e538a",
+        "type": "shape",
+        "shapeType": "rectangle",
+        "position": {
+          "x": 575,
+          "y": 365
+        },
+        "rotation": 90,
+        "layer": 40,
+        "width": 800,
+        "height": 20,
+        "fill": "#6B7280",
+        "fillColor": "#6B7280",
+        "stroke": "#6B7280",
+        "strokeColor": "#6B7280",
+        "strokeWidth": 2,
+        "opacity": 1,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "wall",
+          "templateName": "Wall"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "a335b9ba-46f0-4279-9f91-b26b137934f7",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 425,
+          "y": 425
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 30,
+        "fill": "#9CA3AF",
+        "fillColor": "#9CA3AF",
+        "stroke": "#9CA3AF",
+        "strokeColor": "#9CA3AF",
+        "strokeWidth": 2,
+        "opacity": 1,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "pillar",
+          "templateName": "Pillar"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "69cad150-9135-4914-ac2d-a4b463542c46",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 1125,
+          "y": 175
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "6c186621-11a0-42e1-b0ee-89316535a089",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 1275,
+          "y": 125
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "56f619c3-38b7-4f70-8817-722bda0e4a56",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 1325,
+          "y": 375
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "f0cb0549-2271-4f38-a07f-d5cbc540dc60",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 1375,
+          "y": 225
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "545665fb-6273-458d-8276-6a451296dc41",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 1425,
+          "y": 75
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "959fcb30-4c00-48fd-b79c-3454668b0d9c",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 675,
+          "y": 75
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "c855e8dd-526e-4a54-beab-fb49eac06719",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 525,
+          "y": 75
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "66d786a3-d50f-4581-a25a-d7ef2a43476e",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 425,
+          "y": 75
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#10B981",
+        "fillColor": "#10B981",
+        "stroke": "#10B981",
+        "strokeColor": "#10B981",
+        "strokeWidth": 2,
+        "opacity": 0.8,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "tree",
+          "templateName": "Tree"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "a0cedc65-ac24-459f-953e-c44815738af2",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 425,
+          "y": 625
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "732bf38b-ae66-452e-af00-24e9ca2c6379",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 425,
+          "y": 675
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "e03e525b-f6cd-4303-aadf-3b1cac1586cb",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 325,
+          "y": 725
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "87b47e1b-2993-4c75-adc2-ad32a9d9755a",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 225,
+          "y": 575
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "5d623364-4e35-4f1c-abdb-66381fded60e",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 225,
+          "y": 625
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "5ac809d8-4548-4a07-b944-c933404ffb99",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 225,
+          "y": 675
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "1d06edfb-3b36-48e6-a988-f4bf88ca28d5",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 225,
+          "y": 725
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "86944c24-c0a4-401e-a8ec-497e30df5167",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 275,
+          "y": 725
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "ed2d576e-56a7-4292-b943-cf99b8b9fefd",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 375,
+          "y": 725
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "e4918a61-d948-425e-99bf-8d72b87d4940",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 425,
+          "y": 725
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "851afd42-381d-4ca1-8b71-c87ea12449c8",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 425,
+          "y": 575
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "efaa3191-731f-4e85-84ea-22b0e4eaef67",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 225,
+          "y": 525
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "445e55dc-8554-40c5-9819-0e935f79def3",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 275,
+          "y": 525
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 25,
+        "fill": "#059669",
+        "fillColor": "#059669",
+        "stroke": "#059669",
+        "strokeColor": "#059669",
+        "strokeWidth": 2,
+        "opacity": 0.7,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "bush",
+          "templateName": "Bush"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "ce8e571e-4672-4f89-93ce-4ef9e6e20c29",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 175,
+          "y": 175
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 35,
+        "fill": "#78716C",
+        "fillColor": "#78716C",
+        "stroke": "#78716C",
+        "strokeColor": "#78716C",
+        "strokeWidth": 2,
+        "opacity": 1,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "rock",
+          "templateName": "Rock"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "8381e7b0-008d-4ed8-9359-be2ed40b0dd7",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 875,
+          "y": 725
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 40,
+        "fill": "#5A5A5A",
+        "fillColor": "#5A5A5A",
+        "stroke": "#5A5A5A",
+        "strokeColor": "#5A5A5A",
+        "strokeWidth": 2,
+        "opacity": 1,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "spiral-stairs",
+          "templateName": "Spiral Stairs"
+        },
+        "layerId": "tokens"
+      },
+      {
+        "id": "39dcacee-2735-4719-aea4-ebc08cbb6e9a",
+        "type": "shape",
+        "shapeType": "circle",
+        "position": {
+          "x": 625,
+          "y": 725
+        },
+        "rotation": 0,
+        "layer": 40,
+        "radius": 30,
+        "fill": "#EA580C",
+        "fillColor": "#EA580C",
+        "stroke": "#EA580C",
+        "strokeColor": "#EA580C",
+        "strokeWidth": 2,
+        "opacity": 1,
+        "visible": true,
+        "locked": false,
+        "metadata": {
+          "isStatic": true,
+          "templateId": "brazier",
+          "templateName": "Brazier"
+        },
+        "layerId": "tokens"
+      }
+    ]
+  }
+}

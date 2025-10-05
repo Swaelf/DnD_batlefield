@@ -13,6 +13,8 @@ export interface MapCanvasProps {
   readonly stageRef?: MutableRefObject<import('konva').default.Stage | null>
   readonly onMouseMove?: (position: { x: number; y: number }) => void
   readonly onZoomChange?: (zoom: number) => void
+  readonly onTransformChange?: () => void  // Callback when stage transform changes (pan/zoom)
+  readonly externalTransformVersion?: number  // External transform version from parent
 }
 
 export interface SelectionRectangle {

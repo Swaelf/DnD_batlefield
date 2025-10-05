@@ -61,9 +61,10 @@ describe('Spell System', () => {
     // Check event was added
     const timeline = roundResult.current.timeline
     expect(timeline).toBeDefined()
-    expect(timeline?.events.length).toBeGreaterThan(0)
+    expect(timeline?.rounds.length).toBeGreaterThan(0)
 
-    const event2 = timeline?.events.find(e => e.number === 2)
+    const currentRound = timeline?.rounds.find(r => r.number === 1)
+    const event2 = currentRound?.events.find(e => e.number === 2)
     expect(event2).toBeDefined()
     expect(event2?.actions.length).toBe(1)
     expect(event2?.actions[0].type).toBe('spell')

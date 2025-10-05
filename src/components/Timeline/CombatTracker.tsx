@@ -1,5 +1,5 @@
 import { useState, memo, type FC } from 'react'
-import { Shield } from '@/utils/optimizedIcons'
+import { Shield, ArrowLeft, ArrowRight } from '@/utils/optimizedIcons'
 import useTimelineStore from '@/store/timelineStore'
 import useMapStore from '@/store/mapStore'
 import { UnifiedEventEditor } from './UnifiedEventEditor'
@@ -11,7 +11,8 @@ import {
   StartCombatButton,
   CombatPanel,
   CombatBar,
-  ExpandedSection
+  ExpandedSection,
+  NavButton
 } from './CombatTracker.styled.tsx'
 
 const CombatTrackerComponent: FC = () => {
@@ -20,13 +21,17 @@ const CombatTrackerComponent: FC = () => {
 
   // Use specific selectors to prevent unnecessary re-renders
   const timeline = useTimelineStore(state => state.timeline)
+  const currentRound = useTimelineStore(state => state.currentRound)
   const currentEvent = useTimelineStore(state => state.currentEvent)
   const isInCombat = useTimelineStore(state => state.isInCombat)
   const animationSpeed = useTimelineStore(state => state.animationSpeed)
   const startCombat = useTimelineStore(state => state.startCombat)
   const endCombat = useTimelineStore(state => state.endCombat)
+  const startNewRound = useTimelineStore(state => state.startNewRound)
   const nextEvent = useTimelineStore(state => state.nextEvent)
   const previousEvent = useTimelineStore(state => state.previousEvent)
+  const nextRound = useTimelineStore(state => state.nextRound)
+  const previousRound = useTimelineStore(state => state.previousRound)
   const setAnimationSpeed = useTimelineStore(state => state.setAnimationSpeed)
 
   // Use specific selectors to prevent unnecessary re-renders
@@ -41,17 +46,32 @@ const CombatTrackerComponent: FC = () => {
 
   const handleNextEvent = async () => {
     await nextEvent()
-    // Get the updated current event from the store after nextEvent completes
-    const updatedEvent = useTimelineStore.getState().currentEvent
+    // Get the updated round and event from the store after nextEvent completes
+    const { currentRound: updatedRound, currentEvent: updatedEvent } = useTimelineStore.getState()
     // Clean up expired spells after event change
-    cleanupExpiredSpells(updatedEvent)
+    cleanupExpiredSpells(updatedRound, updatedEvent)
   }
 
-  const currentEventData = timeline?.events.find(e => e.number === currentEvent)
+  const currentRoundData = timeline?.rounds.find(r => r.number === currentRound)
+  const currentEventData = currentRoundData?.events.find(e => e.number === currentEvent)
   const actionCount = currentEventData?.actions.length || 0
 
   // Count active spell effects
   const activeSpells = currentMap?.objects.filter(obj => obj.isSpellEffect).length || 0
+
+  // Check if current round is executed (ended)
+  const isCurrentRoundExecuted = currentRoundData?.executed || false
+
+  // Check if next round exists
+  const nextRoundExists = timeline?.rounds.some(r => r.number === currentRound + 1) || false
+
+  // Disable navigation logic:
+  // - Next Round: disabled if current round not executed OR next round doesn't exist
+  // - Previous Round: disabled if on round 1
+  // - Start New Round: disabled if next round exists (viewing historical round)
+  const canGoToNextRound = isCurrentRoundExecuted && nextRoundExists
+  const canGoToPreviousRound = currentRound > 1
+  const canStartNewRound = !nextRoundExists
 
   if (!isInCombat) {
     return (
@@ -71,13 +91,26 @@ const CombatTrackerComponent: FC = () => {
     <>
       <TrackerContainer>
         <CombatPanel>
-          {/* Main Combat Bar */}
+          {/* Main Combat Bar with Side Arrows */}
           <CombatBar>
-            {/* Event Counter and Navigation */}
+            {/* Left Arrow - Previous Round */}
+            <NavButton
+              onClick={previousRound}
+              disabled={!canGoToPreviousRound}
+              title="Previous Round (←)"
+              style={{ marginRight: 'auto' }}
+            >
+              <ArrowLeft size={24} />
+            </NavButton>
+
+            {/* Round and Event Counter with Navigation */}
             <EventGroupCounter
+              currentRound={currentRound}
               currentGroup={currentEvent}
               onNextGroup={handleNextEvent}
               onPreviousGroup={previousEvent}
+              onStartNewRound={startNewRound}
+              canStartNewRound={canStartNewRound}
             />
 
             {/* Combat Controls */}
@@ -91,6 +124,16 @@ const CombatTrackerComponent: FC = () => {
               onToggleExpanded={() => setIsExpanded(!isExpanded)}
               onSetAnimationSpeed={setAnimationSpeed}
             />
+
+            {/* Right Arrow - Next Round */}
+            <NavButton
+              onClick={nextRound}
+              disabled={!canGoToNextRound}
+              title="Next Round (→)"
+              style={{ marginLeft: 'auto' }}
+            >
+              <ArrowRight size={24} />
+            </NavButton>
           </CombatBar>
 
           {/* Expanded Section */}

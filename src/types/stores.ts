@@ -83,17 +83,27 @@ export type EventCreationState = {
   getTokenExpectedPosition: (tokenId?: string | null) => Position | null
 }
 
-// Timeline Store Types
+// Timeline Store Types - Round-based system
 export type TimelineStore = {
   // State
   timeline: Timeline | null
-  currentEvent: number
+  currentRound: number // Current round number
+  currentEvent: number // Event within current round
   isInCombat: boolean
   animationSpeed: number // Multiplier for animation speed
 
-  // Actions
+  // Combat actions
   startCombat: (mapId: string) => void
   endCombat: () => void
+
+  // Round management
+  startNewRound: () => void // Start new round, merge events
+  nextRound: () => void // Advance to next round
+  previousRound: () => void // Go back one round
+  goToRound: (roundNumber: number) => void // Jump to specific round
+  replayRound: (roundNumber: number) => Promise<void> // Replay all actions in round
+
+  // Event management (within round)
   nextEvent: () => Promise<void>
   previousEvent: () => void
   goToEvent: (eventNumber: number) => void
@@ -108,6 +118,25 @@ export type TimelineStore = {
   // Configuration
   setAnimationSpeed: (speed: number) => void
   clearTimeline: () => void
+
+  // Helper functions
+  isCurrentRoundEditable: () => boolean
+}
+
+// Battle Log Store Types
+export type BattleLogStore = {
+  // State
+  entries: import('./timeline').BattleLogEntry[]
+
+  // Actions
+  addEntry: (entry: Omit<import('./timeline').BattleLogEntry, 'id' | 'timestamp'>) => void
+  clearRound: (roundNumber: number) => void
+  clearAll: () => void
+
+  // Queries
+  getEntriesForRound: (roundNumber: number) => import('./timeline').BattleLogEntry[]
+  getEntriesForEvent: (roundNumber: number, eventNumber: number) => import('./timeline').BattleLogEntry[]
+  filterEntries: (filter: import('./timeline').BattleLogFilter) => import('./timeline').BattleLogEntry[]
 }
 
 // Tool Store Types
@@ -124,6 +153,15 @@ export type ToolStore = {
   staticEffectTemplate: StaticEffectTemplate | null
   measurementPoints: Position[]
 
+  // Category state
+  activeCategory: import('./tools').ToolCategoryId | null
+  expandedCategories: Set<import('./tools').ToolCategoryId>
+
+  // Terrain tool state
+  terrainBrushSize: number
+  terrainColor: string
+  terrainOpacity: number
+
   // Actions
   setTool: (tool: ToolType) => void
   setPreviousTool: () => void
@@ -138,6 +176,15 @@ export type ToolStore = {
   setStaticEffectTemplate: (template: StaticEffectTemplate | null) => void
   addMeasurementPoint: (point: Position) => void
   clearMeasurementPoints: () => void
+
+  // Category actions
+  setActiveCategory: (category: import('./tools').ToolCategoryId | null) => void
+  toggleCategoryExpanded: (category: import('./tools').ToolCategoryId) => void
+
+  // Terrain tool actions
+  setTerrainBrushSize: (size: number) => void
+  setTerrainColor: (color: string) => void
+  setTerrainOpacity: (opacity: number) => void
 }
 
 // History Store Types
@@ -183,7 +230,13 @@ export type MapStore = {
   toggleGridSnap: () => void
   toggleGridVisibility: () => void
   updateGridSettings: (settings: Partial<BattleMap['grid']>) => void
-  cleanupExpiredSpells: (currentRound: number) => void
+  cleanupExpiredSpells: (currentRound: number, currentEvent?: number) => void
   toggleSpellPreview: () => void
   clearMapObjects: () => void
+
+  // Terrain actions
+  setFieldColor: (color: string) => void
+  addTerrainDrawing: (drawing: import('./map').TerrainDrawing) => void
+  removeTerrainDrawing: (id: string) => void
+  clearTerrainDrawings: () => void
 }

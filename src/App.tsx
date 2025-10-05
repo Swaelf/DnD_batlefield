@@ -11,6 +11,8 @@ const PropertiesPanel = lazy(() => import('./components/Properties/PropertiesPan
 const TokenLibrary = lazy(() => import('./components/Token/TokenLibrary'))
 const StaticObjectLibrary = lazy(() => import('./components/StaticObject/StaticObjectLibrary').then(m => ({ default: m.StaticObjectLibrary })))
 const AdvancedLayerPanel = lazy(() => import('./components/Layers/AdvancedLayerPanel').then(m => ({ default: m.AdvancedLayerPanel })))
+const BattleLogsPanel = lazy(() => import('./components/Properties').then(m => ({ default: m.BattleLogsPanel })))
+const BackgroundEditingPanel = lazy(() => import('./components/Properties').then(m => ({ default: m.BackgroundEditingPanel })))
 const AdvancedSelectionManager = lazy(() => import('./components/Selection/AdvancedSelectionManager').then(m => ({ default: m.AdvancedSelectionManager })))
 const RealTimeCollaborationManager = lazy(() => import('./components/Collaboration/RealTimeCollaborationManager').then(m => ({ default: m.RealTimeCollaborationManager })))
 const UserManagementPanel = lazy(() => import('./components/Collaboration/UserManagementPanel').then(m => ({ default: m.UserManagementPanel })))
@@ -67,13 +69,15 @@ function App() {
   const [showAccessibility, setShowAccessibility] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
+  const [canvasTransformVersion, setCanvasTransformVersion] = useState(0)
 
   // Collaboration state
   const { currentSession, isHost, connectedUsers, connectionStatus } = useCollaborationStore()
   const isCollaborating = currentSession && connectionStatus === 'connected'
 
   // Performance and accessibility
-  const { score: performanceScore, warnings } = usePerformanceMonitor()
+  // 🚀 OPTIMIZATION: Only monitor performance when dashboard is actually open
+  const { score: performanceScore, warnings } = usePerformanceMonitor(showPerformance)
   const { preferences } = useAccessibility()
   useKeyboardShortcuts()
 
@@ -85,6 +89,7 @@ function App() {
     const newZoom = Math.min(zoom * 1.2, 3)
     stageRef.current.scale({ x: newZoom, y: newZoom })
     setZoom(newZoom)
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handleZoomOut = () => {
@@ -92,6 +97,7 @@ function App() {
     const newZoom = Math.max(zoom / 1.2, 0.1)
     stageRef.current.scale({ x: newZoom, y: newZoom })
     setZoom(newZoom)
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handleZoomReset = () => {
@@ -99,30 +105,35 @@ function App() {
     stageRef.current.scale({ x: 1, y: 1 })
     stageRef.current.position({ x: 0, y: 0 })
     setZoom(1)
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handlePanUp = () => {
     if (!stageRef.current) return
     const pos = stageRef.current.position()
     stageRef.current.position({ x: pos.x, y: pos.y + PAN_AMOUNT })
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handlePanDown = () => {
     if (!stageRef.current) return
     const pos = stageRef.current.position()
     stageRef.current.position({ x: pos.x, y: pos.y - PAN_AMOUNT })
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handlePanLeft = () => {
     if (!stageRef.current) return
     const pos = stageRef.current.position()
     stageRef.current.position({ x: pos.x + PAN_AMOUNT, y: pos.y })
+    setCanvasTransformVersion(v => v + 1)
   }
 
   const handlePanRight = () => {
     if (!stageRef.current) return
     const pos = stageRef.current.position()
     stageRef.current.position({ x: pos.x - PAN_AMOUNT, y: pos.y })
+    setCanvasTransformVersion(v => v + 1)
   }
 
   // Smart preloading: Load commonly used components after initial render
@@ -400,6 +411,8 @@ function App() {
             stageRef={stageRef}
             onMouseMove={(pos) => setMousePosition(pos)}
             onZoomChange={(z) => setZoom(z)}
+            onTransformChange={() => setCanvasTransformVersion(v => v + 1)}
+            externalTransformVersion={canvasTransformVersion}
           />
 
           {/* Navigation Pad */}
@@ -454,6 +467,13 @@ function App() {
                 <StaticEffectsPanel />
               ) : currentTool === 'layers' ? (
                 <AdvancedLayerPanel />
+              ) : currentTool === 'battleLogs' ? (
+                <BattleLogsPanel />
+              ) : currentTool === 'terrainBrush' || currentTool === 'terrainFill' || currentTool === 'terrainEraser' ? (
+                <BackgroundEditingPanel />
+              ) : currentTool === 'pan' || currentTool === 'measure' ? (
+                // Empty sidebar for pan and measure tools
+                <Box style={{ width: '100%', height: '100%', backgroundColor: vars.colors.dndBlack }} />
               ) : currentTool === 'select' ? (
                 // For select tool, show PropertiesPanel if something is selected, otherwise AdvancedSelectionManager
                 selectedObjects.length > 0 ? <PropertiesPanel /> : <AdvancedSelectionManager />

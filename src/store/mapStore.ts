@@ -237,6 +237,65 @@ const useMapStore = create<MapStore>()(
       })
     },
 
+    // Terrain management actions
+    setFieldColor: (color) =>
+      set((state) => {
+        if (state.currentMap) {
+          saveToHistory()
+          if (!state.currentMap.terrain) {
+            state.currentMap.terrain = {
+              fieldColor: color,
+              drawings: [],
+              version: 1
+            }
+          } else {
+            state.currentMap.terrain.fieldColor = color
+            state.currentMap.terrain.version += 1
+          }
+          state.mapVersion += 1
+        }
+      }),
+
+    addTerrainDrawing: (drawing) =>
+      set((state) => {
+        if (state.currentMap) {
+          saveToHistory()
+          if (!state.currentMap.terrain) {
+            state.currentMap.terrain = {
+              fieldColor: '#1A1A1A',
+              drawings: [drawing],
+              version: 1
+            }
+          } else {
+            state.currentMap.terrain.drawings.push(drawing)
+            state.currentMap.terrain.version += 1
+          }
+          state.mapVersion += 1
+        }
+      }),
+
+    removeTerrainDrawing: (id) =>
+      set((state) => {
+        if (state.currentMap?.terrain) {
+          saveToHistory()
+          state.currentMap.terrain.drawings = state.currentMap.terrain.drawings.filter(
+            (d) => d.id !== id
+          )
+          state.currentMap.terrain.version += 1
+          state.mapVersion += 1
+        }
+      }),
+
+    clearTerrainDrawings: () =>
+      set((state) => {
+        if (state.currentMap?.terrain) {
+          saveToHistory()
+          state.currentMap.terrain.drawings = []
+          state.currentMap.terrain.version += 1
+          state.mapVersion += 1
+        }
+      }),
+
     updateObjectPosition: (id, position) => {
       saveToHistory()
       set((state) => {
@@ -304,29 +363,48 @@ const useMapStore = create<MapStore>()(
       }
     }),
 
-    cleanupExpiredSpells: (currentRound) => set((state) => {
-      console.log('[mapStore.cleanupExpiredSpells] Called with currentRound:', currentRound)
+    cleanupExpiredSpells: (currentRound, currentEvent) => set((state) => {
+      console.log('[mapStore.cleanupExpiredSpells] Called with round/event:', currentRound, currentEvent)
       if (state.currentMap) {
         state.currentMap.objects = state.currentMap.objects.filter(obj => {
-          if (obj.isSpellEffect && obj.spellDuration !== undefined && obj.roundCreated !== undefined) {
+          if (obj.isSpellEffect && obj.spellDuration !== undefined) {
             // Don't remove instant spells (duration 0) - they're handled by animation timeout
             if (obj.spellDuration === 0) {
               console.log('[mapStore.cleanupExpiredSpells] Keeping instant spell:', obj.id)
               return true  // Keep instant spells, let animation handle removal
             }
-            // Remove persistent spells that have expired
-            // A spell created in round 1 with duration 1 should persist through round 2
-            // So it expires AFTER round 2, meaning we remove it when currentRound > expiresAtRound
-            const expiresAtRound = obj.roundCreated + obj.spellDuration
-            const shouldKeep = currentRound <= expiresAtRound
-            console.log('[mapStore.cleanupExpiredSpells] Persistent spell:', {
-              id: obj.id,
-              roundCreated: obj.roundCreated,
-              spellDuration: obj.spellDuration,
-              expiresAtRound,
-              currentRound,
-              shouldKeep
-            })
+
+            // Determine expiration based on durationType
+            const durationType = obj.durationType || 'rounds' // Default to rounds for backward compatibility
+            let shouldKeep = true
+
+            if (durationType === 'rounds' && obj.roundCreated !== undefined) {
+              // Round-based duration (continuous spells like Web, Darkness)
+              // Lasts for N rounds starting from when cast
+              const expiresAtRound = obj.roundCreated + obj.spellDuration
+              shouldKeep = currentRound < expiresAtRound
+              console.log('[mapStore.cleanupExpiredSpells] Round-based spell:', {
+                id: obj.id,
+                roundCreated: obj.roundCreated,
+                spellDuration: obj.spellDuration,
+                expiresAtRound,
+                currentRound,
+                shouldKeep
+              })
+            } else if (durationType === 'events' && obj.eventCreated !== undefined && currentEvent !== undefined) {
+              // Event-based duration (instant area effects like Fireball burn)
+              // Lasts for N events starting from when cast
+              const expiresAtEvent = obj.eventCreated + obj.spellDuration
+              shouldKeep = currentEvent < expiresAtEvent
+              console.log('[mapStore.cleanupExpiredSpells] Event-based spell:', {
+                id: obj.id,
+                eventCreated: obj.eventCreated,
+                spellDuration: obj.spellDuration,
+                expiresAtEvent,
+                currentEvent,
+                shouldKeep
+              })
+            }
 
             return shouldKeep
           }

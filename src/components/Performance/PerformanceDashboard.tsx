@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
@@ -13,8 +13,16 @@ import {
   AlertTriangle,
   Download,
   Play,
-  Square
+  Square,
+  Camera,
+  Zap
 } from '@/utils/optimizedIcons'
+import {
+  TEST_SCENARIOS,
+  ConsoleCapture,
+  ScreenshotCapture,
+  TestScenarioRunner
+} from '@/utils/performanceTestScenario'
 
 type PerformanceDashboardProps = {
   isOpen: boolean
@@ -25,6 +33,7 @@ export const PerformanceDashboard = ({
   isOpen,
   onClose
 }: PerformanceDashboardProps) => {
+  const performanceMonitor = usePerformanceMonitor(isOpen)
   const {
     metrics,
     history,
@@ -34,9 +43,16 @@ export const PerformanceDashboard = ({
     startRecording,
     stopRecording,
     exportMetrics
-  } = usePerformanceMonitor(isOpen)
+  } = performanceMonitor
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const consoleCapture = useRef<any>(null)
+  const [isRunningTest, setIsRunningTest] = useState(false)
+  const [testProgress, setTestProgress] = useState(0)
+  const [currentTest, setCurrentTest] = useState<string | null>(null)
+  const [capturedLogs, setCapturedLogs] = useState<any[]>([])
+  const [capturedScreenshots, setCapturedScreenshots] = useState<string[]>([])
+  const [isCapturingLogs, setIsCapturingLogs] = useState(false)
 
   // Performance Chart Rendering
   useEffect(() => {
@@ -118,11 +134,112 @@ export const PerformanceDashboard = ({
     return 'Critical'
   }, [])
 
+  // Run automated test scenario
+  const runTestScenario = useCallback(async (scenarioId: string) => {
+    const scenario = TEST_SCENARIOS[scenarioId]
+    if (!scenario) return
+
+    setIsRunningTest(true)
+    setCurrentTest(scenarioId)
+    setTestProgress(0)
+    setCapturedLogs([])
+    setCapturedScreenshots([])
+
+    const runner = new TestScenarioRunner()
+
+    try {
+      const result = await runner.run(
+        scenario,
+        performanceMonitor,
+        (progress) => {
+          setTestProgress(progress)
+        }
+      )
+
+      // Store captured data
+      setCapturedLogs(result.consoleLogs)
+      setCapturedScreenshots(result.screenshots)
+
+      console.info('[Test Complete] Results ready for export')
+    } catch (error) {
+      console.error('[Test Error]', error)
+    } finally {
+      setIsRunningTest(false)
+      setCurrentTest(null)
+      setTestProgress(0)
+    }
+  }, [performanceMonitor])
+
+  // Start/stop console capture with recording
+  const handleStartRecording = useCallback(() => {
+    if (!consoleCapture.current) {
+      consoleCapture.current = new ConsoleCapture()
+    }
+    consoleCapture.current.clear()
+    consoleCapture.current.start()
+    setIsCapturingLogs(true)
+    setCapturedLogs([])
+    setCapturedScreenshots([])
+    startRecording()
+  }, [startRecording])
+
+  const handleStopRecording = useCallback(() => {
+    stopRecording()
+
+    if (consoleCapture.current && isCapturingLogs) {
+      consoleCapture.current.stop()
+      const logs = consoleCapture.current.getLogs()
+      setCapturedLogs(logs)
+      setIsCapturingLogs(false)
+      console.info(`[Console Capture] Captured ${logs.length} log entries`)
+    }
+  }, [stopRecording, isCapturingLogs])
+
+  // Enhanced export with console logs and screenshots
+  const handleEnhancedExport = useCallback(async () => {
+    // Capture screenshots
+    const screenshots: string[] = []
+
+    try {
+      // Capture dashboard
+      const dashboardEl = document.querySelector('[data-performance-dashboard]') as HTMLElement
+      if (dashboardEl) {
+        const dashboardScreenshot = await ScreenshotCapture.captureElement(dashboardEl)
+        if (dashboardScreenshot) {
+          screenshots.push(dashboardScreenshot)
+          console.info('[Screenshot] Dashboard captured')
+        }
+      }
+
+      // Capture canvas
+      const canvasEl = document.querySelector('canvas') as HTMLCanvasElement
+      if (canvasEl) {
+        const canvasScreenshot = await ScreenshotCapture.captureElement(canvasEl)
+        if (canvasScreenshot) {
+          screenshots.push(canvasScreenshot)
+          console.info('[Screenshot] Canvas captured')
+        }
+      }
+    } catch (error) {
+      console.warn('Screenshot capture failed:', error)
+    }
+
+    console.info(`[Enhanced Export] Exporting with ${capturedLogs.length} logs and ${screenshots.length} screenshots`)
+
+    await exportMetrics({
+      includeConsoleLogs: true,
+      includeScreenshots: true,
+      consoleLogs: capturedLogs.length > 0 ? capturedLogs : undefined,
+      screenshots: screenshots.length > 0 ? screenshots : undefined
+    })
+  }, [exportMetrics, capturedLogs])
+
   if (!isOpen) return null
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <Box
+        data-performance-dashboard
         padding={4}
         style={{
           display: 'flex',
@@ -460,19 +577,99 @@ export const PerformanceDashboard = ({
           </Box>
         )}
 
+        {/* Automated Test Scenarios */}
+        <Box
+          padding={3}
+          style={{
+            backgroundColor: vars.colors.gray900,
+            borderRadius: '8px',
+            border: `1px solid ${vars.colors.gray700}`
+          }}
+        >
+          <Text
+            variant="body"
+            size="sm"
+            style={{
+              fontWeight: '500',
+              marginBottom: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <Zap size={16} color="#C9AD6A" />
+            Automated Test Scenarios
+          </Text>
+
+          {isRunningTest && (
+            <Box style={{ marginBottom: '12px' }}>
+              <Text variant="body" size="xs" style={{ color: vars.colors.gray400, marginBottom: '4px' }}>
+                Running: {TEST_SCENARIOS[currentTest!]?.name}
+              </Text>
+              <Box
+                style={{
+                  width: '100%',
+                  height: '4px',
+                  backgroundColor: vars.colors.gray700,
+                  borderRadius: '2px',
+                  overflow: 'hidden'
+                }}
+              >
+                <Box
+                  style={{
+                    width: `${testProgress}%`,
+                    height: '100%',
+                    backgroundColor: vars.colors.primary,
+                    transition: 'width 0.3s ease'
+                  }}
+                />
+              </Box>
+            </Box>
+          )}
+
+          <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+            {Object.keys(TEST_SCENARIOS).map(scenarioId => (
+              <Button
+                key={scenarioId}
+                variant="ghost"
+                size="sm"
+                onClick={() => runTestScenario(scenarioId)}
+                disabled={isRunningTest || isRecording}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  padding: '8px',
+                  height: 'auto'
+                }}
+              >
+                <Text variant="body" size="xs" style={{ fontWeight: '500' }}>
+                  {TEST_SCENARIOS[scenarioId].name}
+                </Text>
+                <Text variant="body" size="xs" style={{ color: vars.colors.gray500, marginTop: '2px' }}>
+                  {TEST_SCENARIOS[scenarioId].duration}s
+                </Text>
+              </Button>
+            ))}
+          </Box>
+        </Box>
+
         {/* Controls */}
         <Box
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '8px'
           }}
         >
-          <Box style={{ display: 'flex', gap: '8px' }}>
+          <Box style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <Button
               variant={isRecording ? 'destructive' : 'primary'}
               size="sm"
-              onClick={isRecording ? stopRecording : startRecording}
+              onClick={isRecording ? handleStopRecording : handleStartRecording}
+              disabled={isRunningTest}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -484,19 +681,35 @@ export const PerformanceDashboard = ({
             </Button>
 
             {history.samples.length > 0 && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={exportMetrics}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                <Download size={16} />
-                Export Data
-              </Button>
+              <>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => exportMetrics()}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <Download size={16} />
+                  Export Basic
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void handleEnhancedExport()}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <Camera size={16} />
+                  Export Enhanced
+                </Button>
+              </>
             )}
           </Box>
 
@@ -505,7 +718,7 @@ export const PerformanceDashboard = ({
             size="xs"
             style={{ color: vars.colors.gray500 }}
           >
-            {history.samples.length} samples recorded
+            {history.samples.length} samples • {capturedLogs.length} logs • {capturedScreenshots.length} screenshots
           </Text>
         </Box>
 

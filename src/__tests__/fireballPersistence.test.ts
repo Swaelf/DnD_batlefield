@@ -59,7 +59,9 @@ describe('Fireball Spell Persistence', () => {
         layer: 0,
         isSpellEffect: true,
         roundCreated: 1,
+        eventCreated: 1,
         spellDuration: 1, // Should be 1 round, not 2000 (milliseconds)
+        durationType: 'events',
         persistentAreaData: {
           position: { x: 500, y: 300 },
           radius: 40,
@@ -100,8 +102,10 @@ describe('Fireball Spell Persistence', () => {
           layer: 0,
           isSpellEffect: true,
           roundCreated: 1,
+          eventCreated: 1,
           // The fix ensures this is in rounds (1) not milliseconds (persistMs)
           spellDuration: expectedRounds,
+          durationType: 'rounds',
           persistentAreaData: {
             position: { x: 100, y: 100 },
             radius: 40,
@@ -140,7 +144,9 @@ describe('Fireball Spell Persistence', () => {
         layer: 0,
         isSpellEffect: true,
         roundCreated: 1,
+        eventCreated: 1,
         spellDuration: 1, // Correctly set to 1 round
+        durationType: 'events',
         persistentAreaData: {
           position: { x: 400, y: 400 },
           radius: 40,
@@ -179,7 +185,9 @@ describe('Fireball Spell Persistence', () => {
         layer: 0,
         isSpellEffect: true,
         roundCreated: 1,
+        eventCreated: 1,
         spellDuration: 1,
+        durationType: 'events',
         persistentAreaData: {
           position: { x: 100, y: 100 },
           radius: 40,
@@ -203,7 +211,9 @@ describe('Fireball Spell Persistence', () => {
         layer: 0,
         isSpellEffect: true,
         roundCreated: 2,
+        eventCreated: 1,
         spellDuration: 1,
+        durationType: 'events',
         persistentAreaData: {
           position: { x: 200, y: 200 },
           radius: 40,
@@ -262,9 +272,9 @@ describe('Fireball Spell Persistence', () => {
       // Advance round
       await roundStore.nextEvent()
 
-      // Verify cleanup was called with the new round number
+      // Verify cleanup was called with the new round and event numbers
       expect(cleanupSpy).toHaveBeenCalled()
-      expect(cleanupSpy).toHaveBeenCalledWith(2)
+      expect(cleanupSpy).toHaveBeenCalledWith(2, 1)
 
       cleanupSpy.mockRestore()
     })
@@ -288,7 +298,9 @@ describe('Fireball Spell Persistence', () => {
         layer: 0,
         isSpellEffect: true,
         roundCreated: 10,
+        eventCreated: 1,
         spellDuration: 1,
+        durationType: 'events',
         persistentAreaData: {
           position: { x: 300, y: 300 },
           radius: 40,
@@ -323,7 +335,7 @@ describe('Fireball Spell Persistence', () => {
       } as any)
 
       // Call cleanup
-      mapStore.cleanupExpiredSpells(5)
+      mapStore.cleanupExpiredSpells(5, 1)
 
       // Non-spell area should still exist
       const state = useMapStore.getState()
@@ -341,11 +353,13 @@ describe('Fireball Spell Persistence', () => {
         layer: 10,
         isSpellEffect: true,
         roundCreated: 1,
-        spellDuration: 0 // Instant spell
+        eventCreated: 1,
+        spellDuration: 0, // Instant spell
+        durationType: 'rounds'
       })
 
       // Instant spells should not be removed by cleanup
-      mapStore.cleanupExpiredSpells(5)
+      mapStore.cleanupExpiredSpells(5, 1)
 
       const state = useMapStore.getState()
       expect(state.currentMap?.objects.some(obj => obj.id === 'instant-spell')).toBe(true)

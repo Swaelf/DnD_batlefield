@@ -50,7 +50,9 @@ describe('Isolated Fireball Test', () => {
       layer: 0,
       isSpellEffect: true,
       roundCreated: 1,
+      eventCreated: 1,
       spellDuration: 1,
+      durationType: 'events',
       persistentAreaData: {
         position: { x: 100, y: 100 },
         radius: 40,
@@ -79,7 +81,7 @@ describe('Isolated Fireball Test', () => {
     }
 
     // Test cleanup at round 1 (should keep)
-    mapStore.cleanupExpiredSpells(1)
+    mapStore.cleanupExpiredSpells(1, 1)
     // Get fresh state after cleanup
     const afterCleanup1 = useMapStore.getState()
     const existsAtRound1 = afterCleanup1.currentMap?.objects.some(obj => obj.id === 'test-burn')
@@ -87,7 +89,7 @@ describe('Isolated Fireball Test', () => {
     expect(existsAtRound1).toBe(true)
 
     // Test cleanup at round 2 (should remove)
-    mapStore.cleanupExpiredSpells(2)
+    mapStore.cleanupExpiredSpells(1, 2)
     // Get fresh state after cleanup
     const afterCleanup2 = useMapStore.getState()
     const existsAtRound2 = afterCleanup2.currentMap?.objects.some(obj => obj.id === 'test-burn')
@@ -108,7 +110,9 @@ describe('Isolated Fireball Test', () => {
       layer: 0,
       isSpellEffect: true,
       roundCreated: 1,
+      eventCreated: 1,
       spellDuration: 2,
+      durationType: 'events',
       persistentAreaData: {
         position: { x: 200, y: 200 },
         radius: 40,
@@ -150,7 +154,9 @@ describe('Isolated Fireball Test', () => {
       layer: 0,
       isSpellEffect: true,
       roundCreated: 1,
+      eventCreated: 1,
       spellDuration: 1,
+      durationType: 'events',
       persistentAreaData: {
         position: { x: 300, y: 300 },
         radius: 40,

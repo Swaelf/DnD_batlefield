@@ -124,7 +124,7 @@ export const generateAttackTestScenarios = (): TestScenario[] => {
       id: `attack-movement-tracking-${attackId}`,
       name: `${attackName} + Movement Tracking`,
       description: `Tests ${attackName} (${attack.attackType}) attack with token movement`,
-      category: 'combat',
+      category: 'attacks',
       steps: [
         // Step 1: Add token 1
         {

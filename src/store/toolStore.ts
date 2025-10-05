@@ -21,6 +21,15 @@ const useToolStore = create<ToolStore>()(
     staticEffectTemplate: null,
     measurementPoints: [],
 
+    // Category state
+    activeCategory: null,
+    expandedCategories: new Set(['drawing', 'objects']), // Start with drawing and objects expanded
+
+    // Terrain tool state
+    terrainBrushSize: 10, // 10px default brush
+    terrainColor: '#6B7280', // Stone gray default
+    terrainOpacity: 0.8,
+
     setTool: (tool) => set((state) => {
       if (tool !== state.currentTool) {
         state.previousTool = state.currentTool
@@ -92,6 +101,32 @@ const useToolStore = create<ToolStore>()(
 
     clearMeasurementPoints: () => set((state) => {
       state.measurementPoints = []
+    }),
+
+    // Category actions
+    setActiveCategory: (category) => set((state) => {
+      state.activeCategory = category
+    }),
+
+    toggleCategoryExpanded: (category) => set((state) => {
+      if (state.expandedCategories.has(category)) {
+        state.expandedCategories.delete(category)
+      } else {
+        state.expandedCategories.add(category)
+      }
+    }),
+
+    // Terrain tool actions
+    setTerrainBrushSize: (size) => set((state) => {
+      state.terrainBrushSize = Math.max(1, Math.min(100, size)) // Clamp to 1-100px
+    }),
+
+    setTerrainColor: (color) => set((state) => {
+      state.terrainColor = color
+    }),
+
+    setTerrainOpacity: (opacity) => set((state) => {
+      state.terrainOpacity = Math.max(0, Math.min(1, opacity)) // Clamp to 0-1
     }),
   }))
 )

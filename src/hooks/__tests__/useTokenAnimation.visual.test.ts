@@ -209,10 +209,17 @@ describe('Token Animation Visual Updates', () => {
       timeline: {
         id: 'timeline-1',
         mapId: 'map-1',
-        events: [
+        rounds: [{
+          id: 'round-1',
+          number: 1,
+          allActions: [],
+          executed: false,
+          timestamp: Date.now(),
+          events: [
           {
             id: 'event-1',
             number: 1,
+            roundNumber: 1,
             timestamp: Date.now(),
             actions: [] as any[],
             executed: false
@@ -220,6 +227,7 @@ describe('Token Animation Visual Updates', () => {
           {
             id: 'event-2',
             number: 2,
+            roundNumber: 1,
             timestamp: Date.now(),
             actions: [
               {
@@ -240,7 +248,8 @@ describe('Token Animation Visual Updates', () => {
             ],
             executed: false
           }
-        ],
+        ]}],
+        currentRound: 1,
         currentEvent: 1,
         isActive: true,
         history: []
@@ -364,7 +373,7 @@ describe('Token Animation Visual Updates', () => {
     it('should handle appear animation with correct initial position', async () => {
       // Update event to appear type
       const timelineStore = useTimelineStore.getState()
-      timelineStore.timeline!.events[1].actions = [
+      timelineStore.timeline!.rounds[0].events[1].actions = [
         {
           id: 'action-appear',
           eventNumber: 2,
@@ -406,7 +415,7 @@ describe('Token Animation Visual Updates', () => {
     it('should handle disappear animation from current position', async () => {
       // Update event to disappear type
       const timelineStore = useTimelineStore.getState()
-      timelineStore.timeline!.events[1].actions = [
+      timelineStore.timeline!.rounds[0].events[1].actions = [
         {
           id: 'action-disappear',
           eventNumber: 2,
@@ -478,7 +487,7 @@ describe('Token Animation Visual Updates', () => {
 
       // Add events for both tokens
       const timelineStore = useTimelineStore.getState()
-      timelineStore.timeline!.events[1].actions = [
+      timelineStore.timeline!.rounds[0].events[1].actions = [
         {
           id: 'action-1',
           eventNumber: 2,

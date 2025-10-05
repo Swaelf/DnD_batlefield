@@ -75,7 +75,9 @@ export const persistentAreaCleanupTest: TestScenario = {
                 roundCreated: roundStore.currentEvent
               },
               roundCreated: roundStore.currentEvent,
-              spellDuration: 0 // Initial spell object doesn't persist
+              eventCreated: roundStore.currentEvent,
+              spellDuration: 0, // Initial spell object doesn't persist
+              durationType: 'rounds' as const
             }
 
             mapStore.addSpellEffect(spellObject)
@@ -99,7 +101,9 @@ export const persistentAreaCleanupTest: TestScenario = {
                   roundCreated: roundStore.currentEvent
                 },
                 roundCreated: roundStore.currentEvent,
-                spellDuration: 1 // Persists for 1 round
+                eventCreated: roundStore.currentEvent,
+                spellDuration: 1, // Persists for 1 round
+                durationType: 'events' as const
               }
 
               mapStore.addSpellEffect(persistentArea)
@@ -169,10 +173,15 @@ export const persistentAreaCleanupTest: TestScenario = {
     {
       type: 'action',
       action: {
-        type: 'nextRound',
-        params: {}
+        type: 'custom',
+        params: {
+          execute: async () => {
+            const roundStore = (await import('@/store/timelineStore')).default.getState()
+            roundStore.startNewRound()
+          }
+        }
       },
-      description: 'Advance to round 2'
+      description: 'Advance to Round 2'
     },
 
     {
@@ -267,10 +276,12 @@ export const persistentAreaCleanupTest: TestScenario = {
                 color: '#000000',
                 opacity: 0.8,
                 spellName: 'Darkness',
-                roundCreated: roundStore.currentEvent
+                roundCreated: roundStore.currentRound
               },
-              roundCreated: roundStore.currentEvent,
-              spellDuration: 3 // Persists for 3 rounds
+              roundCreated: roundStore.currentRound,
+              eventCreated: roundStore.currentEvent,
+              spellDuration: 3, // Persists for 3 rounds
+              durationType: 'rounds' as const // Round-based duration, not events
             }
 
             mapStore.addSpellEffect(darknessArea)
@@ -305,10 +316,15 @@ export const persistentAreaCleanupTest: TestScenario = {
     {
       type: 'action',
       action: {
-        type: 'nextRound',
-        params: {}
+        type: 'custom',
+        params: {
+          execute: async () => {
+            const roundStore = (await import('@/store/timelineStore')).default.getState()
+            roundStore.startNewRound()
+          }
+        }
       },
-      description: 'Advance to round 3'
+      description: 'Advance to Round 3'
     },
 
     {
@@ -330,7 +346,7 @@ export const persistentAreaCleanupTest: TestScenario = {
               obj.type === 'persistent-area' &&
               (obj as SpellMapObject).persistentAreaData?.spellName === 'Darkness'
             ) || []
-            console.log('Round', roundStore.currentEvent, '- Darkness areas:', darknessAreas.length)
+            console.log('Round', roundStore.currentRound, '- Darkness areas:', darknessAreas.length)
             return darknessAreas.length === 1
           }
         },
@@ -339,29 +355,40 @@ export const persistentAreaCleanupTest: TestScenario = {
       description: 'Darkness should still exist at round 3'
     },
 
-    // Advance to round 5 (Darkness expires after round 4)
+    // Advance to round 4
     {
       type: 'action',
       action: {
-        type: 'nextRound',
-        params: {}
+        type: 'custom',
+        params: {
+          execute: async () => {
+            const roundStore = (await import('@/store/timelineStore')).default.getState()
+            roundStore.startNewRound()
+          }
+        }
       },
-      description: 'Advance to round 4'
+      description: 'Advance to Round 4'
     },
 
     {
       type: 'wait',
       wait: 500,
-      description: 'Wait'
+      description: 'Wait for round transition'
     },
 
+    // Advance to round 5
     {
       type: 'action',
       action: {
-        type: 'nextRound',
-        params: {}
+        type: 'custom',
+        params: {
+          execute: async () => {
+            const roundStore = (await import('@/store/timelineStore')).default.getState()
+            roundStore.startNewRound()
+          }
+        }
       },
-      description: 'Advance to round 5'
+      description: 'Advance to Round 5'
     },
 
     {
@@ -383,7 +410,7 @@ export const persistentAreaCleanupTest: TestScenario = {
               obj.type === 'persistent-area' &&
               (obj as SpellMapObject).persistentAreaData?.spellName === 'Darkness'
             ) || []
-            console.log('Round', roundStore.currentEvent, '- Darkness areas after cleanup:', darknessAreas.length)
+            console.log('Round', roundStore.currentRound, '- Darkness areas after cleanup:', darknessAreas.length)
             return darknessAreas.length === 0
           }
         },

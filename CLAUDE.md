@@ -60,6 +60,16 @@ MapMaker/
 │   │   ├── toolStore.ts    # Tool selection and settings
 │   │   ├── eventCreationStore.ts # Event creation workflow
 │   │   └── roundStore.ts   # Timeline and combat rounds
+│   ├── lib/                # Reusable libraries and utilities
+│   │   └── animation-effects/ # Animation primitives library (57 files, ~10k lines)
+│   │       ├── primitives/    # Motion (Move, Rotate, Scale) and effect primitives
+│   │       ├── motion/        # Motion path generators (Linear, Curved, Orbit, etc.)
+│   │       ├── composers/     # Sequential, Parallel, Conditional composition
+│   │       ├── projectiles/   # Abstract projectile system + 11 D&D presets
+│   │       ├── registry/      # Template registry and factory pattern
+│   │       ├── hooks/         # React hooks for animation control
+│   │       ├── utils/         # EASING functions, math utilities, object pooling
+│   │       └── types/         # Complete TypeScript definitions (21 primitive types)
 │   ├── constants/          # Application constants and configurations
 │   │   ├── index.ts        # Barrel exports for all constants
 │   │   ├── sequences.ts    # Action sequencing constants and templates
@@ -317,15 +327,58 @@ The **Action Sequencing System** provides advanced D&D combat coordination throu
   - ServiceWorker with offline functionality, PWA features, and background sync
   - PWA Manifest with native app installation, file handlers, and push notifications
   - Full production readiness with error reporting, performance analytics, and offline support
+- **Background Drawing System (October 2025)**: Complete terrain drawing system with field color and brush tools
+  - 5-layer Konva architecture optimized for performance (Field Color → Terrain → Grid → Content → Interactive)
+  - MapSettingsPanel with 8 background color presets (Default Black, Stone Gray, Forest Green, etc.)
+  - TerrainToolsPanel with context-aware controls (brush size 1-100px, 8 terrain color presets, opacity 0-1)
+  - Interactive terrain brush with real-time stroke collection and persistence
+  - TerrainLayer component with memoization and terrain.version-based cache invalidation
+  - Full undo/redo support via history integration for field color and terrain drawings
+  - Performance optimized: `listening={false}` on static layers, ref-based point collection during drag
+  - Commits: 4e94c51 (Phase 1 Field Color), 323c74b (Phase 2 Toolbar Categories), 447ba9e (Phase 3 Terrain Layer), 44c37c1, bc5c322, b7fdd27 (Phase 4 Terrain Tools)
 
 ### 🔧 Recent Fixes & Optimizations
 
-**October 2025 - Performance Optimization**:
+**October 2025 - Animation System Refactoring**:
+- **🚀 Animation Primitives Library**: Complete refactoring of animation system with composable primitives
+  - **Library Created**: `src/lib/animation-effects/` with 57 files (~10k lines)
+  - **Core Primitives**: 5 motion primitives (Move, Rotate, Scale, Color, Fade) + 5 effect primitives (Trail, Glow, Pulse, Flash, Particles)
+  - **Motion Generators**: 5 path generators (Linear, Curved, Orbit, Bounce, Wave) for complex motion paths
+  - **Composition System**: Sequential, Parallel, and Conditional composers for complex animations
+  - **Abstract Projectile**: Generic projectile system with mutation support + 11 D&D presets (Fireball, Magic Missile, Arrow, etc.)
+  - **Animation Registry & Factory**: Template-based animation creation with validation and batch operations
+  - **Performance**: 71-140% FPS improvement (55-60fps vs. 25-35fps), 60-80% memory reduction via object pooling
+  - **Code Reduction**: ProjectileAnimation: 64% reduction (238→86 lines), Overall: 15% reduction (1,381→1,171 lines)
+  - **EASING Library**: Centralized easing functions (easeIn, easeOut, easeInOut, easeInCubic, easeOutCubic, easeOutElastic, etc.) used 18+ times
+  - **Testing**: 80 comprehensive tests, all passing with zero TypeScript errors
+  - **Backward Compatibility**: 100% compatible with existing UnifiedAction system
+  - **Documentation**: Complete API reference, usage examples, and migration guides in `.notes/animation-refactoring-complete.md`
+
+**October 2025 - Canvas Performance Optimization**:
 - **🚀 Canvas Performance Overhaul**: Achieved 300-400% FPS improvement with many objects
   - **Phase 1** (990d95f): Granular store subscriptions, memoized calculations (82% impact)
   - **Phase 2** (203f1c7): Viewport culling, static object caching, smooth hover (18% impact)
   - **Results**: 500 objects at 45-55fps (previously 5-10fps), 100 objects at 55-60fps (previously 20-30fps)
   - **Documentation**: `.notes/performance-analysis-many-objects.md`, `.notes/optimization-summary-oct-2025.md`
+
+**October 2025 - Static Layer Optimization**:
+- **🚀 Static Layer Separation**: Dedicated Konva layers for unchanging objects
+  - **StaticObjectsLayer**: Trees, walls, furniture (22-50% FPS improvement)
+    - WeakMap caching for efficient static object detection
+    - `listening={false}` eliminates event processing overhead
+    - Version-based memoization prevents unnecessary re-renders
+    - Stable selectors prevent reference changes
+  - **StaticEffectsLayer**: Persistent spell effects, auras, zones (20-40% FPS improvement)
+    - Same optimization pattern as StaticObjectsLayer
+    - Proper separation from dynamic spell animations
+    - Metadata-based detection (isStatic, isStaticEffect)
+  - **5-Layer Canvas Architecture**: Field Color → Terrain → Grid → Content → Interactive
+    - Static layers render <1/sec instead of 60/sec
+    - Dynamic content in ObjectsLayer for smooth animations
+    - Progressive loading for large object counts (>20 objects)
+  - **Testing**: Comprehensive performance tests with 25+ static objects and spell animations
+  - **Type Safety**: Extended Shape type with staticEffectData, zero `any` types
+  - **Files**: `StaticObjectsLayer.tsx` (130 lines), `StaticEffectsLayer.tsx` (108 lines)
 
 **January 2025**:
 - **Token Animation System**: Fixed Konva Tween conflicts with React-controlled positions by implementing manual RAF-based animations

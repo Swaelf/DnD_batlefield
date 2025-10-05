@@ -23,7 +23,7 @@ export default defineConfig(({ mode, command }) => ({
     },
   },
   server: {
-    port: 3000,
+    port: 3100,
     host: true, // Для доступа по локальной сети
   },
   build: {

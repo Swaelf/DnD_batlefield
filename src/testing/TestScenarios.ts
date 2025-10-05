@@ -2,6 +2,14 @@ import { fireballPersistenceBugTest } from './TestFireballFix'
 import { persistentAreaCleanupTest } from './TestPersistentAreaCleanup'
 import { allSpellTestScenarios } from './TestAllSpells'
 import { allAttackTestScenarios } from './TestAllAttacks'
+import { runTimelineNavigationTest } from './TestTimelineNavigation'
+import { runRoundReplayTest } from './TestRoundReplay'
+import { animationTests } from './TestAnimationComponents'
+import { tokenTransformationTests } from './TestTokenTransformations'
+import { allSpellDurationTests } from './TestSpellDurations'
+import { allPostEffectCleanupTests } from './TestPostEffectCleanup'
+import { allAnimationPrimitiveTests } from './TestAnimationPrimitives'
+import { staticLayerPerformanceTests } from './TestStaticLayerPerformance'
 
 export interface TestStep {
   type: 'action' | 'wait' | 'assert' | 'capture'
@@ -13,7 +21,7 @@ export interface TestStep {
 }
 
 export interface TestAction {
-  type: 'addToken' | 'moveToken' | 'selectToken' | 'castSpell' | 'startCombat' | 'nextRound' | 'selectTool' | 'custom'
+  type: 'addToken' | 'moveToken' | 'selectToken' | 'castSpell' | 'startCombat' | 'nextRound' | 'selectTool' | 'addStaticObject' | 'custom'
   params: any
 }
 
@@ -32,12 +40,23 @@ export interface TestScenario {
   id: string
   name: string
   description: string
-  category: 'movement' | 'spells' | 'selection' | 'combat' | 'visual'
+  category: 'movement' | 'spells' | 'selection' | 'attacks' | 'timeline' | 'animations' | 'visual' | 'tokens'
   steps: TestStep[]
   cleanup?: () => void
 }
 
 export const testScenarios: TestScenario[] = [
+  // ============================================================================
+  // TOKEN TRANSFORMATION TESTS - Visual token property changes
+  // ============================================================================
+  // Tests visual token transformations:
+  // - Rotation (with directional appearance)
+  // - Size changes (tiny → small → medium → large → huge → gargantuan)
+  // - Opacity changes (full → transparent → invisible)
+  // - Shape changes (circle ↔ square)
+  // Total: 4 token transformation tests
+  ...tokenTransformationTests,
+
   {
     id: 'token-movement-basic',
     name: 'Basic Token Movement',
@@ -327,24 +346,53 @@ export const testScenarios: TestScenario[] = [
         description: 'Start combat'
       },
       {
+        type: 'wait',
+        wait: 500,
+        description: 'Wait for combat initialization'
+      },
+      {
         type: 'action',
         action: {
-          type: 'castSpell',
+          type: 'custom',
           params: {
-            spell: {
-              type: 'spell',
-              spellName: 'Web',
-              category: 'area',
-              fromPosition: { x: 300, y: 300 },
-              toPosition: { x: 300, y: 300 },
-              color: '#f0f0f0',
-              size: 20,
-              duration: 0,
-              persistDuration: 3 // 3 rounds
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              roundStore.addAction('void-token', 'spell', {
+                type: 'spell',
+                spellName: 'Web',
+                category: 'area',
+                fromPosition: { x: 300, y: 300 },
+                toPosition: { x: 300, y: 300 },
+                color: '#f0f0f0',
+                size: 60,
+                duration: 1000,
+                persistDuration: 3, // 3 rounds
+                durationType: 'rounds', // Continuous spell
+                persistColor: '#f0f0f0',
+                persistOpacity: 0.4
+              }, 1)
             }
           }
         },
-        description: 'Cast Web spell'
+        description: 'Add Web spell to Event 1'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              await roundStore.executeEventActions(1)
+            }
+          }
+        },
+        description: 'Execute Event 1 (Cast Web)'
+      },
+      {
+        type: 'wait',
+        wait: 1500,
+        description: 'Wait for Web animation'
       },
       {
         type: 'capture',
@@ -352,12 +400,26 @@ export const testScenarios: TestScenario[] = [
         description: 'Capture Web at round 1'
       },
       {
+        type: 'assert',
+        assert: {
+          type: 'spellActive',
+          params: { spellName: 'Web' },
+          expected: true
+        },
+        description: 'Verify Web active in round 1'
+      },
+      {
         type: 'action',
         action: {
-          type: 'nextRound',
-          params: {}
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              roundStore.startNewRound()
+            }
+          }
         },
-        description: 'Advance to round 2'
+        description: 'Advance to Round 2'
       },
       {
         type: 'wait',
@@ -376,23 +438,47 @@ export const testScenarios: TestScenario[] = [
           params: { spellName: 'Web' },
           expected: true
         },
-        description: 'Verify Web still active'
+        description: 'Verify Web still active in round 2'
       },
       {
         type: 'action',
         action: {
-          type: 'nextRound',
-          params: {}
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              roundStore.startNewRound()
+            }
+          }
         },
-        description: 'Advance to round 3'
+        description: 'Advance to Round 3'
+      },
+      {
+        type: 'wait',
+        wait: 500,
+        description: 'Wait for round transition'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'spellActive',
+          params: { spellName: 'Web' },
+          expected: true
+        },
+        description: 'Verify Web still active in round 3'
       },
       {
         type: 'action',
         action: {
-          type: 'nextRound',
-          params: {}
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              roundStore.startNewRound()
+            }
+          }
         },
-        description: 'Advance to round 4'
+        description: 'Advance to Round 4'
       },
       {
         type: 'wait',
@@ -1398,9 +1484,10 @@ export const testScenarios: TestScenario[] = [
 
               // Validate the action was created with tokenId
               if (roundStore.timeline) {
-                const event = roundStore.timeline.events.find(e => e.number === 1)
+                const roundData = roundStore.timeline.rounds.find(r => r.number === 1)
+                const event = roundData?.events.find((e: { number: number }) => e.number === 1)
                 if (event) {
-                  const spellAction = event.actions.find(a => a.type === 'spell')
+                  const spellAction = event.actions.find((a: { type: string }) => a.type === 'spell')
                   if (spellAction) {
                     const spellData = spellAction.data as any
                     if (!spellData.tokenId) {
@@ -1424,15 +1511,78 @@ export const testScenarios: TestScenario[] = [
   },
   fireballPersistenceBugTest,
   persistentAreaCleanupTest,
+  {
+    id: 'timeline-navigation',
+    name: 'Timeline Navigation - Event & Round Changes',
+    description: 'Comprehensive test for timeline navigation: event/round changes, position restoration, post-effect cleanup, and snapshot system',
+    category: 'timeline',
+    steps: [
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              // Run the comprehensive timeline navigation test
+              runTimelineNavigationTest()
+            }
+          }
+        },
+        description: 'Execute comprehensive timeline navigation test flow'
+      },
+      {
+        type: 'wait',
+        wait: 30000, // 30 seconds - enough time for the full test sequence
+        description: 'Wait for complete test execution (Round 1 → Round 2 → Navigation tests)'
+      }
+    ]
+  },
+  {
+    id: 'round-replay',
+    name: 'Round Replay - Animation Replay System',
+    description: 'Verifies round replay functionality: Round 1 events → Start New Round → Previous Round → Next Round (should replay all Round 1 animations)',
+    category: 'timeline',
+    steps: [
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              // Run the round replay test and WAIT for it to complete
+              await runRoundReplayTest()
+            }
+          }
+        },
+        description: 'Execute round replay test: create events, advance, go back, replay forward (waits for completion)'
+      }
+    ]
+  },
 
   // ============================================================================
   // DYNAMIC SPELL TESTS - Auto-generated from spellTemplates.ts
   // ============================================================================
   // These tests are automatically generated for ALL spells in spellTemplates.ts
   // When spells are added/removed from spellTemplates.ts, tests update automatically
-  // Each test validates: movement + spell tracking + spell to static position
-  // Total tests: One per spell (currently 20 spells = 20 tests)
+  // Each test validates: movement + spell tracking (consolidated - 1 test per spell)
+  // Total tests: One per spell (currently ~20 spells)
   ...allSpellTestScenarios,
+
+  // ============================================================================
+  // SPELL DURATION TESTS - Continuous spell persistence
+  // ============================================================================
+  // Tests spells with persistDuration to verify they last correct number of rounds
+  // Validates: Bless (3 rounds), Haste (10 rounds)
+  // Total tests: 2 duration scenarios
+  ...allSpellDurationTests,
+
+  // ============================================================================
+  // POST-EFFECT CLEANUP TESTS - Temporary spell effect removal
+  // ============================================================================
+  // Tests post-effects (durationType='events') are removed correctly
+  // Validates: Event cleanup, Round end cleanup
+  // Total tests: 2 cleanup scenarios
+  ...allPostEffectCleanupTests,
 
   // ============================================================================
   // DYNAMIC ATTACK TESTS - Auto-generated weapon attack scenarios
@@ -1440,8 +1590,43 @@ export const testScenarios: TestScenario[] = [
   // These tests are automatically generated for various weapon types
   // Each test validates: movement + attack animations for melee and ranged weapons
   // Covers slashing, piercing, and bludgeoning damage types
-  // Total tests: 12 weapon types (6 melee + 6 ranged)
-  ...allAttackTestScenarios
+  // Total tests: ~12 weapon types (6 melee + 6 ranged)
+  ...allAttackTestScenarios,
+
+  // ============================================================================
+  // ANIMATION PRIMITIVE TESTS - Isolated animation library testing
+  // ============================================================================
+  // ANIMATION COMPONENT TESTS - Visual animation rendering tests
+  // ============================================================================
+  // Tests that each animation category renders and animates correctly:
+  // - Projectile (arrows, missiles)
+  // - Burst (explosions, impacts)
+  // - Projectile-Burst (fireball pattern)
+  // - Cone (breath weapons, sprays)
+  // - Ray (instant beams)
+  // - Beam (sustained beams)
+  // - Area (circles, auras)
+  // - Multi-Projectile (magic missile)
+  // Total: 8 animation component tests
+  ...animationTests,
+
+  // ============================================================================
+  // Tests individual animation primitives and motion generators from animation-effects library
+  // Motion Primitives: Move, Rotate, Scale, Fade (4 tests)
+  // Motion Generators: Linear, Curved, Bounce, Wave, Orbit (5 tests)
+  // Effect Primitives: Trail, Glow, Pulse, Flash, Particles (5 tests)
+  // Total tests: 14 animation primitive tests
+  ...allAnimationPrimitiveTests,
+
+  // ============================================================================
+  // STATIC LAYER PERFORMANCE TESTS - Visual performance tests with many objects
+  // ============================================================================
+  // Tests the performance optimization of StaticObjectsLayer and StaticEffectsLayer
+  // Test 1: Static Objects (25 objects: 15 trees + 5 walls + 5 furniture) + 2 tokens + animations
+  // Test 2: Static Effects (5 persistent spell zones) + 2 tokens + animations
+  // Expected gains: 22-50% FPS improvement (static objects), 20-40% FPS improvement (static effects)
+  // Total tests: 2 performance tests
+  ...staticLayerPerformanceTests
 ]
 
 export function getScenarioById(id: string): TestScenario | undefined {

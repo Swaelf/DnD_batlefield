@@ -1,6 +1,6 @@
 import { memo, type FC } from 'react'
-import { SkipForward } from '@/utils/optimizedIcons'
-import { Text } from '@/components/primitives'
+import { SkipForward, Clock } from '@/utils/optimizedIcons'
+import { Text, Box } from '@/components/primitives'
 import {
   RoundCounter as RoundCounterContainer,
   NavControls,
@@ -9,24 +9,37 @@ import {
 } from './CombatTracker.styled.tsx'
 
 type RoundCounterProps = {
+  currentRound: number
   currentGroup: number
   onNextGroup: () => void
   onPreviousGroup: () => void
+  onStartNewRound?: () => void
+  canStartNewRound?: boolean
 }
 
 const RoundCounterComponent: FC<RoundCounterProps> = ({
+  currentRound,
   currentGroup,
   onNextGroup,
-  onPreviousGroup
+  onPreviousGroup,
+  onStartNewRound,
+  canStartNewRound = true
 }) => {
   return (
     <>
-      {/* Event Counter */}
+      {/* Round and Event Counter - Display in column */}
       <RoundCounterContainer>
-        <Text size="md" weight="bold" color="text">Event {currentGroup}</Text>
+        <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+          <Text size="sm" weight="bold" color="primary" style={{ whiteSpace: 'nowrap' }}>
+            Round {currentRound}
+          </Text>
+          <Text size="sm" weight="bold" color="text" style={{ whiteSpace: 'nowrap' }}>
+            Event {currentGroup}
+          </Text>
+        </Box>
       </RoundCounterContainer>
 
-      {/* Navigation Controls */}
+      {/* Event Navigation Controls */}
       <NavControls>
         <NavButton
           onClick={onPreviousGroup}
@@ -42,6 +55,17 @@ const RoundCounterComponent: FC<RoundCounterProps> = ({
         >
           <SkipForward size={20} />
         </NextRoundButton>
+
+        {onStartNewRound && (
+          <NavButton
+            onClick={onStartNewRound}
+            disabled={!canStartNewRound}
+            title="Start New Round"
+            style={{ marginLeft: '8px', backgroundColor: 'var(--color-primary)' }}
+          >
+            <Clock size={18} />
+          </NavButton>
+        )}
       </NavControls>
     </>
   )

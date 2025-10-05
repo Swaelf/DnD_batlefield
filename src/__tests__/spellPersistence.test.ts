@@ -57,6 +57,8 @@ describe('Spell Persistence - Fireball Burn Area', () => {
         layer: 0,
         isSpellEffect: true,
         roundCreated: roundStore.currentEvent,
+        eventCreated: roundStore.currentEvent,
+        durationType: 'events' as const,
         spellDuration: 1, // Should last 1 round
         persistentAreaData: {
           position: { x: 500, y: 300 },
@@ -110,6 +112,8 @@ describe('Spell Persistence - Fireball Burn Area', () => {
         layer: 0,
         isSpellEffect: true,
         roundCreated: 1,
+        eventCreated: 1,
+        durationType: 'events' as const,
         spellDuration: 1,
         persistentAreaData: {
           position: { x: 400, y: 400 },
@@ -180,7 +184,9 @@ describe('Spell Persistence - Fireball Burn Area', () => {
           layer: 0,
           isSpellEffect: true,
           roundCreated: test.roundCreated,
+          eventCreated: 1,
           spellDuration: test.spellDuration,
+          durationType: 'events' as const,
           persistentAreaData: {
             position: { x: 100, y: 100 },
             radius: 30,
@@ -194,7 +200,7 @@ describe('Spell Persistence - Fireball Burn Area', () => {
       })
 
       // Call cleanup at round 5
-      mapStore.cleanupExpiredSpells(5)
+      mapStore.cleanupExpiredSpells(5, 1)
 
       // Get fresh state after cleanup
       const stateAfterCleanup = useMapStore.getState()
@@ -234,6 +240,8 @@ describe('Spell Persistence - Fireball Burn Area', () => {
           layer: 0,
           isSpellEffect: true,
           roundCreated: 1,
+        eventCreated: 1,
+        durationType: 'events' as const,
           spellDuration: spell.duration,
           persistentAreaData: {
             position: { x: 200, y: 200 },
@@ -292,6 +300,8 @@ describe('Spell Persistence - Fireball Burn Area', () => {
         layer: 5,
         isSpellEffect: true,
         roundCreated: 3,
+        eventCreated: 1,
+        durationType: 'events' as const,
         spellDuration: 2,
         persistentAreaData: {
           position: { x: 300, y: 300 },
@@ -331,13 +341,15 @@ describe('Spell Persistence - Fireball Burn Area', () => {
         layer: 10,
         isSpellEffect: true,
         roundCreated: 1,
+        eventCreated: 1,
+        durationType: 'events' as const,
         spellDuration: 0 // Instant spell
       }
 
       mapStore.addSpellEffect(instantSpell)
 
       // Call cleanup - instant spells should not be removed
-      mapStore.cleanupExpiredSpells(5)
+      mapStore.cleanupExpiredSpells(5, 1)
 
       const stateAfterCleanup = useMapStore.getState()
       const stillExists = stateAfterCleanup.currentMap?.objects.some(obj => obj.id === 'test-instant-spell')
@@ -356,6 +368,8 @@ describe('Spell Persistence - Fireball Burn Area', () => {
         layer: 0,
         isSpellEffect: true,
         roundCreated: 1,
+        eventCreated: 1,
+        durationType: 'events' as const,
         spellDuration: 3, // Expires at round 4
         persistentAreaData: {
           position: { x: 200, y: 200 },
