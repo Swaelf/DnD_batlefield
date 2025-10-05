@@ -373,7 +373,7 @@ export const useToolHandlers = ({
       case 'staticEffect':
         // Place static effect using template
         if (staticEffectTemplate) {
-          const newObject: Partial<Shape> = {
+          const newObject: any = {
             id: crypto.randomUUID(),
             type: 'shape' as const,
             position: snappedPos,
@@ -386,7 +386,14 @@ export const useToolHandlers = ({
             strokeWidth: 2,
             opacity: staticEffectTemplate.defaultOpacity,
             name: staticEffectTemplate.name,
-            locked: false
+            locked: false,
+            metadata: {
+              isStaticEffect: true  // Mark as static effect for layer optimization
+            },
+            staticEffectData: {
+              template: staticEffectTemplate,
+              color: staticEffectTemplate.defaultColor
+            }
           }
 
           // Configure based on type
