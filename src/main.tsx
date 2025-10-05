@@ -44,9 +44,28 @@ if (process.env.NODE_ENV === 'development') {
       __REACT_DEVTOOLS_GLOBAL_HOOK__?: {
         isDisabled?: boolean
       }
+      runTimelineNavigationTest?: () => void
+      runRoundReplayTest?: () => void
     }
     if (globalWindow.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
       globalWindow.__REACT_DEVTOOLS_GLOBAL_HOOK__.isDisabled = false
     }
+
+    // Make tests available globally in development
+    import('./testing/TestTimelineNavigation').then(module => {
+      globalWindow.runTimelineNavigationTest = module.runTimelineNavigationTest
+      console.log('🧪 Timeline Navigation Test loaded!')
+      console.log('💡 Run test: runTimelineNavigationTest()')
+    }).catch(err => {
+      console.error('Failed to load timeline navigation test:', err)
+    })
+
+    import('./testing/TestRoundReplay').then(module => {
+      globalWindow.runRoundReplayTest = module.runRoundReplayTest
+      console.log('🧪 Round Replay Test loaded!')
+      console.log('💡 Run test: runRoundReplayTest()')
+    }).catch(err => {
+      console.error('Failed to load round replay test:', err)
+    })
   }
 }

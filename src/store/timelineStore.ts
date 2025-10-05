@@ -89,7 +89,17 @@ const useTimelineStore = create<TimelineStore>()(
       const round = timeline.rounds.find(r => r.number === currentRound)
       if (!round) return
 
-      // Create snapshot before executing actions
+      // Check if the current event exists and needs execution
+      const currentEventData = round.events.find(e => e.number === currentEvent)
+
+      // Only execute if the event has actions and is not marked as executed
+      // This allows re-execution after previousEvent() marks it as not executed
+      if (currentEventData && currentEventData.actions.length > 0 && !currentEventData.executed) {
+        // Execute actions for current event before advancing
+        await get().executeEventActions(currentEvent)
+      }
+
+      // Create snapshot before moving to next event
       const mapStore = useMapStore.getState()
       const currentMap = mapStore.currentMap
       if (currentMap) {
@@ -129,9 +139,6 @@ const useTimelineStore = create<TimelineStore>()(
         })
       }
 
-      // Execute actions for current event before advancing
-      await get().executeEventActions(currentEvent)
-
       // Then increment the event
       const nextEventNumber = currentEvent + 1
       set((state) => {
@@ -154,24 +161,28 @@ const useTimelineStore = create<TimelineStore>()(
         eventCreationStore.cancelEventCreation()
       }
 
-      // Get current round and event snapshot
+      // Get current round
       const round = timeline.rounds.find(r => r.number === currentRound)
       if (!round) return
 
-      const currentEventData = round.events.find(e => e.number === currentEvent)
-      const snapshot = currentEventData?.snapshot
+      // Calculate previous event number
+      const previousEventNumber = currentEvent - 1
+
+      // Get the snapshot from the PREVIOUS event (the one we're navigating TO)
+      const previousEventData = round.events.find(e => e.number === previousEventNumber)
+      const snapshot = previousEventData?.snapshot
 
       set((state) => {
-        state.currentEvent -= 1
+        state.currentEvent = previousEventNumber
         if (state.timeline) {
-          state.timeline.currentEvent = state.currentEvent
+          state.timeline.currentEvent = previousEventNumber
         }
 
         // Mark the previous event's actions as not executed so they can be re-executed
         const currentRoundData = state.timeline!.rounds.find(r => r.number === currentRound)
         if (!currentRoundData) return
 
-        const previousEventIndex = currentRoundData.events.findIndex(e => e.number === state.currentEvent)
+        const previousEventIndex = currentRoundData.events.findIndex(e => e.number === previousEventNumber)
         if (previousEventIndex !== -1) {
           currentRoundData.events[previousEventIndex].actions.forEach(action => {
             action.executed = false
@@ -199,6 +210,8 @@ const useTimelineStore = create<TimelineStore>()(
           spellEffectsToRemove.forEach(id => {
             mapStore.deleteObject(id)
           })
+
+          console.log(`⏮️ Returned to Event ${previousEventNumber}: Restored ${Object.keys(snapshot.tokenPositions).length} token positions, removed ${spellEffectsToRemove.length} spell effects`)
         }
       }
 
@@ -688,7 +701,7 @@ const useTimelineStore = create<TimelineStore>()(
       useMapStore.getState().cleanupExpiredSpells(state.currentRound, state.currentEvent)
     },
 
-    nextRound: () => {
+    nextRound: async () => {
       const { timeline, currentRound } = get()
       if (!timeline) return
 
@@ -706,16 +719,69 @@ const useTimelineStore = create<TimelineStore>()(
         return
       }
 
-      // Simply navigate to next round - don't execute anything
-      // Events remain as they were historically
+      const nextRoundNumber = currentRound + 1
+
+      // Check if CURRENT round (the one we're leaving) has unexecuted events
+      // If so, replay them before moving to next round
+      const currentRoundHasUnexecutedEvents = currentRoundData.events.some(event => !event.executed && event.actions.length > 0)
+
+      if (currentRoundHasUnexecutedEvents) {
+        // Get all events sorted by number
+        const sortedEvents = [...currentRoundData.events].sort((a, b) => a.number - b.number)
+
+        // Execute each event in sequence
+        for (const event of sortedEvents) {
+          if (event.actions.length > 0) {
+            await get().executeEventActions(event.number)
+
+            // Small delay between events for visual clarity
+            await new Promise(resolve => setTimeout(resolve, 200))
+
+            // Update current event number as we progress
+            set((state) => {
+              state.currentEvent = event.number
+              if (state.timeline) {
+                state.timeline.currentEvent = event.number
+              }
+            })
+          }
+        }
+      }
+
+      // Navigate to next round
       set((state) => {
-        state.currentRound = currentRound + 1
+        state.currentRound = nextRoundNumber
         state.currentEvent = 1
         if (state.timeline) {
-          state.timeline.currentRound = currentRound + 1
+          state.timeline.currentRound = nextRoundNumber
           state.timeline.currentEvent = 1
         }
       })
+
+      // Get the first event of the next round and restore its snapshot if it exists
+      const firstEvent = nextRoundData.events.find(e => e.number === 1)
+      const snapshot = firstEvent?.snapshot
+
+      if (snapshot) {
+        const mapStore = useMapStore.getState()
+
+        // Restore token positions from when this event was first created
+        Object.entries(snapshot.tokenPositions).forEach(([tokenId, position]) => {
+          mapStore.updateObjectPosition(tokenId, position)
+        })
+
+        // Restore spell effects - remove any created after, restore any from snapshot
+        const currentMap = mapStore.currentMap
+        if (currentMap) {
+          const spellEffectsToRemove = currentMap.objects
+            .filter(obj => obj.isSpellEffect && !snapshot.spellEffects.includes(obj.id))
+            .map(obj => obj.id)
+
+          spellEffectsToRemove.forEach(id => {
+            mapStore.deleteObject(id)
+          })
+        }
+      }
     },
 
     previousRound: () => {
@@ -724,13 +790,29 @@ const useTimelineStore = create<TimelineStore>()(
 
       const previousRoundNumber = currentRound - 1
 
-      // Get the first event of the previous round for snapshot
-      const previousRound = timeline.rounds.find(r => r.number === previousRoundNumber)
-      const firstEvent = previousRound?.events.find(e => e.number === 1)
+      // Get the previous round data
+      const previousRoundData = timeline.rounds.find(r => r.number === previousRoundNumber)
+      if (!previousRoundData) return
+
+      const firstEvent = previousRoundData.events.find(e => e.number === 1)
       const snapshot = firstEvent?.snapshot
 
-      // Navigate to previous round
+      // Navigate to previous round AND mark all events in the PREVIOUS ROUND as not executed
+      // so they can be replayed when we navigate forward
       set((state) => {
+        // Mark all events in the PREVIOUS ROUND (the one we're going TO) as not executed
+        // so they can be replayed when we navigate forward again
+        const roundWeAreGoingTo = state.timeline?.rounds.find(r => r.number === previousRoundNumber)
+        if (roundWeAreGoingTo) {
+          roundWeAreGoingTo.events.forEach(event => {
+            event.executed = false
+            event.actions.forEach(action => {
+              action.executed = false
+            })
+          })
+        }
+
+        // Navigate to previous round
         state.currentRound = previousRoundNumber
         state.currentEvent = 1
         if (state.timeline) {
@@ -797,7 +879,19 @@ const useTimelineStore = create<TimelineStore>()(
       state.timeline = null
       state.currentEvent = 1
       state.isInCombat = false
-    })
+    }),
+
+    // Helper function to check if current round is editable (not a historical round)
+    isCurrentRoundEditable: () => {
+      const { timeline, currentRound } = get()
+      if (!timeline) return false
+
+      const round = timeline.rounds.find(r => r.number === currentRound)
+      if (!round) return false
+
+      // A round is editable if it's not executed (not ended yet)
+      return !round.executed
+    }
   }))
 )
 

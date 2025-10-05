@@ -2,6 +2,8 @@ import { fireballPersistenceBugTest } from './TestFireballFix'
 import { persistentAreaCleanupTest } from './TestPersistentAreaCleanup'
 import { allSpellTestScenarios } from './TestAllSpells'
 import { allAttackTestScenarios } from './TestAllAttacks'
+import { runTimelineNavigationTest } from './TestTimelineNavigation'
+import { runRoundReplayTest } from './TestRoundReplay'
 
 export interface TestStep {
   type: 'action' | 'wait' | 'assert' | 'capture'
@@ -1425,6 +1427,58 @@ export const testScenarios: TestScenario[] = [
   },
   fireballPersistenceBugTest,
   persistentAreaCleanupTest,
+  {
+    id: 'timeline-navigation',
+    name: 'Timeline Navigation - Event & Round Changes',
+    description: 'Comprehensive test for timeline navigation: event/round changes, position restoration, post-effect cleanup, and snapshot system',
+    category: 'combat',
+    steps: [
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              // Run the comprehensive timeline navigation test
+              runTimelineNavigationTest()
+            }
+          }
+        },
+        description: 'Execute comprehensive timeline navigation test flow'
+      },
+      {
+        type: 'wait',
+        wait: 30000, // 30 seconds - enough time for the full test sequence
+        description: 'Wait for complete test execution (Round 1 → Round 2 → Navigation tests)'
+      }
+    ]
+  },
+  {
+    id: 'round-replay',
+    name: 'Round Replay - Animation Replay System',
+    description: 'Verifies round replay functionality: Round 1 events → Start New Round → Previous Round → Next Round (should replay all Round 1 animations)',
+    category: 'combat',
+    steps: [
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              // Run the round replay test
+              runRoundReplayTest()
+            }
+          }
+        },
+        description: 'Execute round replay test: create events, advance, go back, replay forward'
+      },
+      {
+        type: 'wait',
+        wait: 25000, // 25 seconds - enough time for the full replay sequence
+        description: 'Wait for complete replay test (4 events in Round 1 + navigation + replay)'
+      }
+    ]
+  },
 
   // ============================================================================
   // DYNAMIC SPELL TESTS - Auto-generated from spellTemplates.ts

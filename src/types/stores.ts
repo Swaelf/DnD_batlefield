@@ -118,6 +118,9 @@ export type TimelineStore = {
   // Configuration
   setAnimationSpeed: (speed: number) => void
   clearTimeline: () => void
+
+  // Helper functions
+  isCurrentRoundEditable: () => boolean
 }
 
 // Battle Log Store Types

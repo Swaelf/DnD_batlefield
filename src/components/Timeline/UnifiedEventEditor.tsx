@@ -44,6 +44,7 @@ const UnifiedEventEditorComponent = ({
   const timeline = useTimelineStore(state => state.timeline)
   const addAction = useTimelineStore(state => state.addAction)
   const removeAction = useTimelineStore(state => state.removeAction)
+  const isCurrentRoundEditable = useTimelineStore(state => state.isCurrentRoundEditable)
   const currentMap = useMapStore(state => state.currentMap)
   const spellPreviewEnabled = useMapStore(state => state.spellPreviewEnabled)
   const toggleSpellPreview = useMapStore(state => state.toggleSpellPreview)
@@ -391,6 +392,8 @@ const UnifiedEventEditorComponent = ({
   }
 
   const canAddEvent = () => {
+    // Cannot add events to historical (executed) rounds
+    if (!isCurrentRoundEditable()) return false
     return selectedToken && selectedAction && (targetTokenId || targetPosition.x !== 0 || targetPosition.y !== 0)
   }
 
