@@ -20,6 +20,7 @@ const RoundCounterComponent: FC<RoundCounterProps> = ({
   currentRound,
   currentGroup,
   onNextGroup,
+  onPreviousGroup,
   onStartNewRound
 }) => {
   return (
@@ -36,8 +37,16 @@ const RoundCounterComponent: FC<RoundCounterProps> = ({
         </Box>
       </RoundCounterContainer>
 
-      {/* Navigation Controls - Center */}
+      {/* Event Navigation Controls */}
       <NavControls>
+        <NavButton
+          onClick={onPreviousGroup}
+          disabled={currentGroup <= 1}
+          title="Previous Event (←)"
+        >
+          <SkipForward size={20} style={{ transform: 'rotate(180deg)' }} />
+        </NavButton>
+
         <NextRoundButton
           onClick={onNextGroup}
           title="Next Event (Space)"

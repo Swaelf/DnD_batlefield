@@ -30,6 +30,8 @@ const CombatTrackerComponent: FC = () => {
   const startNewRound = useTimelineStore(state => state.startNewRound)
   const nextEvent = useTimelineStore(state => state.nextEvent)
   const previousEvent = useTimelineStore(state => state.previousEvent)
+  const nextRound = useTimelineStore(state => state.nextRound)
+  const previousRound = useTimelineStore(state => state.previousRound)
   const setAnimationSpeed = useTimelineStore(state => state.setAnimationSpeed)
 
   // Use specific selectors to prevent unnecessary re-renders
@@ -77,11 +79,11 @@ const CombatTrackerComponent: FC = () => {
         <CombatPanel>
           {/* Main Combat Bar with Side Arrows */}
           <CombatBar>
-            {/* Left Arrow - Previous Event */}
+            {/* Left Arrow - Previous Round */}
             <NavButton
-              onClick={previousEvent}
-              disabled={currentEvent <= 1}
-              title="Previous Event (←)"
+              onClick={previousRound}
+              disabled={currentRound <= 1}
+              title="Previous Round (←)"
               style={{ marginRight: 'auto' }}
             >
               <ArrowLeft size={24} />
@@ -108,10 +110,10 @@ const CombatTrackerComponent: FC = () => {
               onSetAnimationSpeed={setAnimationSpeed}
             />
 
-            {/* Right Arrow - Next Event */}
+            {/* Right Arrow - Next Round */}
             <NavButton
-              onClick={handleNextEvent}
-              title="Next Event (→)"
+              onClick={nextRound}
+              title="Next Round (→)"
               style={{ marginLeft: 'auto' }}
             >
               <ArrowRight size={24} />
