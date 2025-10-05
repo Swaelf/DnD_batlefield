@@ -295,10 +295,34 @@ export class TestRunner {
           break
 
         case 'spellActive':
-          const spellActive = mapStore.currentMap?.objects.some(
-            obj => obj.type === 'spell' && (obj as any).spellData?.spellName === assertion.params.spellName
-          )
+          // Check both 'spell' type (during animation) and 'persistent-area' type (after animation)
+          const spellActive = mapStore.currentMap?.objects.some(obj => {
+            // Check spell objects (during animation)
+            if (obj.type === 'spell' && (obj as any).spellData?.spellName === assertion.params.spellName) {
+              return true
+            }
+            // Check persistent-area objects (after animation completes with persistDuration > 0)
+            if (obj.type === 'persistent-area' && (obj as any).persistentAreaData?.spellName === assertion.params.spellName) {
+              return true
+            }
+            return false
+          })
+
           if (spellActive !== assertion.expected) {
+            // Debug logging on failure
+            const allSpells = mapStore.currentMap?.objects.filter(obj =>
+              obj.type === 'spell' || obj.type === 'persistent-area'
+            ) || []
+            console.log(`🔍 [spellActive] Looking for "${assertion.params.spellName}", found ${allSpells.length} spell/persistent objects:`,
+              allSpells.map(obj => ({
+                id: obj.id,
+                type: obj.type,
+                spellName: obj.type === 'spell'
+                  ? (obj as any).spellData?.spellName
+                  : (obj as any).persistentAreaData?.spellName
+              }))
+            )
+
             return {
               success: false,
               error: `Expected spell active: ${assertion.expected}, got: ${spellActive}`
