@@ -4,6 +4,7 @@ import type { TimelineStore } from '../types'
 import type { TimelineAction } from '../types'
 import useMapStore from './mapStore'
 import useEventCreationStore from './eventCreationStore'
+import useBattleLogStore from './battleLogStore'
 
 const useTimelineStore = create<TimelineStore>()(
   immer((set, get) => ({
@@ -408,6 +409,23 @@ const useTimelineStore = create<TimelineStore>()(
                 spellData: updatedSpellData
               }
               mapStore.addSpellEffect(spellObject)
+
+              // Add battle log entry
+              const casterToken = spellData.tokenId ? mapStore.currentMap?.objects.find(obj => obj.id === spellData.tokenId) : null
+              useBattleLogStore.getState().addEntry({
+                roundNumber: get().currentRound,
+                eventNumber: eventNumber,
+                type: 'spell',
+                tokenId: spellData.tokenId,
+                tokenName: casterToken?.name || 'Unknown',
+                message: `Cast ${spellData.spellName || 'spell'}`,
+                severity: 'normal',
+                details: {
+                  spell: spellData.spellName,
+                  target: updatedSpellData.targetTokenId ? 'Token' : 'Position'
+                }
+              })
+
               // Wait for spell animation duration
               setTimeout(resolve, updatedSpellData.duration || 1000)
               break
@@ -443,6 +461,24 @@ const useTimelineStore = create<TimelineStore>()(
               }
 
               mapStore.addAttackEffect(updatedAttackData)
+
+              // Add battle log entry
+              const attackerToken = action.tokenId ? mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId) : null
+              const targetToken = attackData.targetTokenId ? mapStore.currentMap?.objects.find(obj => obj.id === attackData.targetTokenId) : null
+              useBattleLogStore.getState().addEntry({
+                roundNumber: get().currentRound,
+                eventNumber: eventNumber,
+                type: 'action',
+                tokenId: action.tokenId,
+                tokenName: attackerToken?.name || 'Unknown',
+                message: `${attackData.weaponName || 'Attack'} ${targetToken ? `on ${targetToken.name}` : 'at position'}`,
+                severity: 'normal',
+                details: {
+                  attack: attackData.weaponName,
+                  target: targetToken?.name || 'Position'
+                }
+              })
+
               // Wait for attack animation duration
               setTimeout(resolve, updatedAttackData.duration || 1000)
               break
@@ -485,6 +521,23 @@ const useTimelineStore = create<TimelineStore>()(
                   } else {
                     // Animation complete
                     animationStore.endAnimation(action.tokenId)
+
+                    // Add battle log entry after movement completes
+                    const movedToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
+                    useBattleLogStore.getState().addEntry({
+                      roundNumber: get().currentRound,
+                      eventNumber: eventNumber,
+                      type: 'movement',
+                      tokenId: action.tokenId,
+                      tokenName: movedToken?.name || 'Unknown',
+                      message: `Moved to new position`,
+                      severity: 'low',
+                      details: {
+                        from: moveData.fromPosition,
+                        to: moveData.toPosition
+                      }
+                    })
+
                     resolve() // Resolve the promise when animation is done
                   }
                 }
@@ -542,9 +595,19 @@ const useTimelineStore = create<TimelineStore>()(
       set((state) => {
         const currentRoundData = state.timeline!.rounds.find(r => r.number === activeRound)
         if (currentRoundData) {
-          // Merge all event actions into allActions
+          // Merge all event actions into allActions for battle logs
           currentRoundData.allActions = currentRoundData.events.flatMap(e => e.actions)
           currentRoundData.executed = true
+
+          // Clear events in the current round (keep only event 1 structure but empty)
+          currentRoundData.events = [{
+            id: crypto.randomUUID(),
+            roundNumber: activeRound,
+            number: 1,
+            timestamp: Date.now(),
+            actions: [],
+            executed: false
+          }]
         }
 
         // Create new round
@@ -579,21 +642,77 @@ const useTimelineStore = create<TimelineStore>()(
     },
 
     nextRound: () => {
-      get().startNewRound()
-    },
+      const { timeline, currentRound } = get()
+      if (!timeline) return
 
-    previousRound: () => {
-      const { currentRound } = get()
-      if (currentRound <= 1) return
+      // Check if current round is executed (ended)
+      const currentRoundData = timeline.rounds.find(r => r.number === currentRound)
+      if (!currentRoundData || !currentRoundData.executed) {
+        console.warn('Cannot go to next round: current round not ended yet')
+        return
+      }
 
+      // Check if next round exists
+      const nextRoundData = timeline.rounds.find(r => r.number === currentRound + 1)
+      if (!nextRoundData) {
+        console.warn('Cannot go to next round: round does not exist')
+        return
+      }
+
+      // Move to next round and execute its merged actions
       set((state) => {
-        state.currentRound -= 1
+        state.currentRound = currentRound + 1
         state.currentEvent = 1
         if (state.timeline) {
-          state.timeline.currentRound = state.currentRound
+          state.timeline.currentRound = currentRound + 1
           state.timeline.currentEvent = 1
         }
       })
+
+      // Execute all merged actions from the next round if it has any
+      if (nextRoundData.allActions && nextRoundData.allActions.length > 0) {
+        // Execute actions (they were merged when the round ended)
+        nextRoundData.allActions.forEach(action => {
+          get().executeEventActions(action.eventNumber || 1)
+        })
+      }
+    },
+
+    previousRound: () => {
+      const { timeline, currentRound } = get()
+      if (currentRound <= 1 || !timeline) return
+
+      const previousRoundNumber = currentRound - 1
+
+      set((state) => {
+        const previousRoundData = state.timeline?.rounds.find(r => r.number === previousRoundNumber)
+        if (!previousRoundData) return
+
+        // If previous round has merged actions, restore them to event 1
+        if (previousRoundData.allActions && previousRoundData.allActions.length > 0) {
+          previousRoundData.events = [{
+            id: crypto.randomUUID(),
+            roundNumber: previousRoundNumber,
+            number: 1,
+            timestamp: Date.now(),
+            actions: previousRoundData.allActions,
+            executed: false
+          }]
+          // Mark round as not executed since we're editing it again
+          previousRoundData.executed = false
+          previousRoundData.allActions = []
+        }
+
+        state.currentRound = previousRoundNumber
+        state.currentEvent = 1
+        if (state.timeline) {
+          state.timeline.currentRound = previousRoundNumber
+          state.timeline.currentEvent = 1
+        }
+      })
+
+      // TODO: Restore token positions to initial state for this round
+      // This would require saving snapshots when round starts
     },
 
     goToRound: (roundNumber) => {
