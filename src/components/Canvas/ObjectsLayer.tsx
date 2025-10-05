@@ -821,13 +821,12 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     )
   }
 
-  // ✅ OPTIMIZED: Separate static and dynamic objects for performance
-  // Static objects go to a separate non-listening group for major FPS boost
-  // NOTE: Viewport culling removed - was causing infinite render loops
-  const { staticObjects, dynamicObjects } = useMemo(() => {
+  // 🚀 PERFORMANCE: Only render dynamic objects in this layer
+  // Static objects are now in StaticObjectsLayer for better performance
+  const dynamicObjects = useMemo(() => {
     // Use progressively loaded objects instead of raw objects
     if (!progressiveObjects || progressiveObjects.length === 0) {
-      return { staticObjects: [], dynamicObjects: [] }
+      return EMPTY_ARRAY
     }
 
     const getLayerForObject = (obj: MapObject) => {
@@ -866,32 +865,26 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       })
       .map(({ obj }) => obj)
 
-    // Now separate into static and dynamic objects
-    const staticObjs: MapObject[] = []
-    const dynamicObjs: MapObject[] = []
+    // 🚀 PERFORMANCE: Filter OUT static objects - they're rendered in StaticObjectsLayer
+    // Only return dynamic objects (tokens, spells, animations, non-static shapes)
+    return visibleObjects.filter(obj => {
+      // Keep all non-shape objects (tokens, spells, etc.)
+      if (!isShape(obj)) return true
 
-    for (const obj of visibleObjects) {
-      // Check if object is static (walls, trees, furniture, etc.)
-      const isStatic = isShape(obj) && checkIsStaticObject(obj)
-
-      if (isStatic) {
-        staticObjs.push(obj)
-      } else {
-        dynamicObjs.push(obj)
-      }
-    }
-
-    return { staticObjects: staticObjs, dynamicObjects: dynamicObjs }
+      // For shapes, only keep non-static ones
+      return !checkIsStaticObject(obj)
+    })
   }, [progressiveObjects, mapVersion, layers, migrateNumericLayer, getDefaultLayerForObjectType, checkIsStaticObject]) // Re-compute when progressively loaded objects change OR mapVersion increments
 
   // 🚀 PERFORMANCE: Dev mode logging for performance monitoring
   useEffect(() => {
     if (process.env.NODE_ENV === 'development' && objects.length > 0) {
+      const staticCount = objects.filter(obj => isShape(obj) && checkIsStaticObject(obj)).length
       const stats = {
         totalObjects: objects.length,
-        staticObjects: staticObjects.length,
+        staticObjects: staticCount,
         dynamicObjects: dynamicObjects.length,
-        hiddenByLayers: objects.length - (staticObjects.length + dynamicObjects.length),
+        hiddenByLayers: objects.length - (staticCount + dynamicObjects.length),
         tokens: objects.filter(obj => obj.type === 'token').length,
         shapes: objects.filter(obj => obj.type === 'shape').length,
         trees: objects.filter(obj => (obj as any).metadata?.templateId === 'tree').length,
@@ -910,7 +903,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         console.info(`[Performance] ${stats.trees} trees rendering (${stats.trees} cached images, 75% node reduction)`)
       }
     }
-  }, [objects.length, staticObjects.length, dynamicObjects.length])
+  }, [objects.length, dynamicObjects.length, checkIsStaticObject])
 
   if (!objects || objects.length === 0) {
     return null
@@ -921,19 +914,10 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
   // Dynamic objects (tokens, animations) rendered without caching for smooth movement
   return (
     <>
-      {/* Static objects group - cached for better performance */}
+      {/* 🚀 PERFORMANCE: Only dynamic objects rendered here */}
+      {/* Static objects are now in separate StaticObjectsLayer */}
       <Group
-        name="static-objects-layer"
-        listening={true}  // Keep listening for drag/click, but benefit from caching
-        cache={true}
-        cachingEnabled={true}
-      >
-        {staticObjects.map(renderObject)}
-      </Group>
-
-      {/* Dynamic objects group - no caching for smooth animations */}
-      <Group
-        name="dynamic-objects-layer"
+        name="dynamic-objects-group"
         listening={true}
         cache={false}  // No caching for smooth movement/animations
       >
