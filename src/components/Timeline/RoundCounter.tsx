@@ -14,6 +14,7 @@ type RoundCounterProps = {
   onNextGroup: () => void
   onPreviousGroup: () => void
   onStartNewRound?: () => void
+  canStartNewRound?: boolean
 }
 
 const RoundCounterComponent: FC<RoundCounterProps> = ({
@@ -21,7 +22,8 @@ const RoundCounterComponent: FC<RoundCounterProps> = ({
   currentGroup,
   onNextGroup,
   onPreviousGroup,
-  onStartNewRound
+  onStartNewRound,
+  canStartNewRound = true
 }) => {
   return (
     <>
@@ -57,6 +59,7 @@ const RoundCounterComponent: FC<RoundCounterProps> = ({
         {onStartNewRound && (
           <NavButton
             onClick={onStartNewRound}
+            disabled={!canStartNewRound}
             title="Start New Round"
             style={{ marginLeft: '8px', backgroundColor: 'var(--color-primary)' }}
           >

@@ -59,6 +59,20 @@ const CombatTrackerComponent: FC = () => {
   // Count active spell effects
   const activeSpells = currentMap?.objects.filter(obj => obj.isSpellEffect).length || 0
 
+  // Check if current round is executed (ended)
+  const isCurrentRoundExecuted = currentRoundData?.executed || false
+
+  // Check if next round exists
+  const nextRoundExists = timeline?.rounds.some(r => r.number === currentRound + 1) || false
+
+  // Disable navigation logic:
+  // - Next Round: disabled if current round not executed OR next round doesn't exist
+  // - Previous Round: disabled if on round 1
+  // - Start New Round: disabled if next round exists (viewing historical round)
+  const canGoToNextRound = isCurrentRoundExecuted && nextRoundExists
+  const canGoToPreviousRound = currentRound > 1
+  const canStartNewRound = !nextRoundExists
+
   if (!isInCombat) {
     return (
       <TrackerContainer>
@@ -82,7 +96,7 @@ const CombatTrackerComponent: FC = () => {
             {/* Left Arrow - Previous Round */}
             <NavButton
               onClick={previousRound}
-              disabled={currentRound <= 1}
+              disabled={!canGoToPreviousRound}
               title="Previous Round (←)"
               style={{ marginRight: 'auto' }}
             >
@@ -96,6 +110,7 @@ const CombatTrackerComponent: FC = () => {
               onNextGroup={handleNextEvent}
               onPreviousGroup={previousEvent}
               onStartNewRound={startNewRound}
+              canStartNewRound={canStartNewRound}
             />
 
             {/* Combat Controls */}
@@ -113,6 +128,7 @@ const CombatTrackerComponent: FC = () => {
             {/* Right Arrow - Next Round */}
             <NavButton
               onClick={nextRound}
+              disabled={!canGoToNextRound}
               title="Next Round (→)"
               style={{ marginLeft: 'auto' }}
             >
