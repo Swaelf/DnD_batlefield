@@ -158,6 +158,7 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({ stage, isOpen, onClo
           }}
         >
           <option value="all">All Tests</option>
+          <option value="tokens">Tokens</option>
           <option value="movement">Movement</option>
           <option value="selection">Selection</option>
           <option value="attacks">Attacks</option>

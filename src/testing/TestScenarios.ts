@@ -4,6 +4,8 @@ import { allSpellTestScenarios } from './TestAllSpells'
 import { allAttackTestScenarios } from './TestAllAttacks'
 import { runTimelineNavigationTest } from './TestTimelineNavigation'
 import { runRoundReplayTest } from './TestRoundReplay'
+import { animationTests } from './TestAnimationComponents'
+import { tokenTransformationTests } from './TestTokenTransformations'
 import { allSpellDurationTests } from './TestSpellDurations'
 import { allPostEffectCleanupTests } from './TestPostEffectCleanup'
 import { allAnimationPrimitiveTests } from './TestAnimationPrimitives'
@@ -37,12 +39,23 @@ export interface TestScenario {
   id: string
   name: string
   description: string
-  category: 'movement' | 'spells' | 'selection' | 'attacks' | 'timeline' | 'animations' | 'visual'
+  category: 'movement' | 'spells' | 'selection' | 'attacks' | 'timeline' | 'animations' | 'visual' | 'tokens'
   steps: TestStep[]
   cleanup?: () => void
 }
 
 export const testScenarios: TestScenario[] = [
+  // ============================================================================
+  // TOKEN TRANSFORMATION TESTS - Visual token property changes
+  // ============================================================================
+  // Tests visual token transformations:
+  // - Rotation (with directional appearance)
+  // - Size changes (tiny → small → medium → large → huge → gargantuan)
+  // - Opacity changes (full → transparent → invisible)
+  // - Shape changes (circle ↔ square)
+  // Total: 4 token transformation tests
+  ...tokenTransformationTests,
+
   {
     id: 'token-movement-basic',
     name: 'Basic Token Movement',
@@ -1535,17 +1548,12 @@ export const testScenarios: TestScenario[] = [
           type: 'custom',
           params: {
             execute: async () => {
-              // Run the round replay test
-              runRoundReplayTest()
+              // Run the round replay test and WAIT for it to complete
+              await runRoundReplayTest()
             }
           }
         },
-        description: 'Execute round replay test: create events, advance, go back, replay forward'
-      },
-      {
-        type: 'wait',
-        wait: 25000, // 25 seconds - enough time for the full replay sequence
-        description: 'Wait for complete replay test (4 events in Round 1 + navigation + replay)'
+        description: 'Execute round replay test: create events, advance, go back, replay forward (waits for completion)'
       }
     ]
   },
@@ -1586,6 +1594,21 @@ export const testScenarios: TestScenario[] = [
 
   // ============================================================================
   // ANIMATION PRIMITIVE TESTS - Isolated animation library testing
+  // ============================================================================
+  // ANIMATION COMPONENT TESTS - Visual animation rendering tests
+  // ============================================================================
+  // Tests that each animation category renders and animates correctly:
+  // - Projectile (arrows, missiles)
+  // - Burst (explosions, impacts)
+  // - Projectile-Burst (fireball pattern)
+  // - Cone (breath weapons, sprays)
+  // - Ray (instant beams)
+  // - Beam (sustained beams)
+  // - Area (circles, auras)
+  // - Multi-Projectile (magic missile)
+  // Total: 8 animation component tests
+  ...animationTests,
+
   // ============================================================================
   // Tests individual animation primitives and motion generators from animation-effects library
   // Motion Primitives: Move, Rotate, Scale, Fade (4 tests)

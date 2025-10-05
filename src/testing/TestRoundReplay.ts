@@ -288,55 +288,46 @@ export const runRoundReplayTest = () => {
     console.log('⏳ REPLAYING ROUND 1 EVENTS...')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
 
-    // Wait for all animations to complete by monitoring animationStore
-    let animationCheckCount = 0
-    const maxChecks = 50 // 50 checks × 300ms = 15 seconds max
-    let animationsComplete = false
+    // Calculate total expected animation duration
+    // Event 1: Warrior move (1000ms move animation)
+    // Event 2: Fireball (1000ms spell duration + ~720ms projectile flight + ~1500ms burst/fade)
+    // Event 3: Rogue move (1000ms move animation)
+    // Event 4: Cure Wounds (1000ms spell duration + ~1000ms area effect fade)
+    // Plus 200ms delay between each event (4 events = 3 delays = 600ms)
+    // Total: 1000 + 3200 + 1000 + 2000 + 600 = 7800ms
+    // Add 2000ms buffer for visual effect fade-outs
+    const totalAnimationDuration = 10000
 
-    console.log('🔍 Monitoring animation progress...\n')
+    console.log('⏱️  Calculated animation duration:')
+    console.log('   - Event 1 (Warrior move): 1000ms')
+    console.log('   - Event 2 (Fireball): 3200ms (duration + projectile + burst + fade)')
+    console.log('   - Event 3 (Rogue move): 1000ms')
+    console.log('   - Event 4 (Cure Wounds): 2000ms (duration + area effect + fade)')
+    console.log('   - Delays between events: 600ms (200ms × 3)')
+    console.log('   - Safety buffer: 2000ms (for visual fade-outs)')
+    console.log(`   - Total: ${totalAnimationDuration}ms (${totalAnimationDuration / 1000}s)\n`)
 
-    while (!animationsComplete && animationCheckCount < maxChecks) {
-      await wait(300) // Check every 300ms
-      animationCheckCount++
+    console.log(`🔍 Waiting ${totalAnimationDuration / 1000}s for all animations to complete...\n`)
 
-      const animationState = useAnimationStore.getState()
-      const activeAnimations = animationState.activePaths.length
+    // Wait for animations with progress updates
+    const progressInterval = 2000 // Update every 2 seconds
+    let elapsed = 0
+    while (elapsed < totalAnimationDuration) {
+      await wait(progressInterval)
+      elapsed += progressInterval
 
-      const currentMapState = useMapStore.getState()
-      const currentWarrior = currentMapState.currentMap?.objects.find(obj => obj.id === 'replay-warrior')
-      const currentRogue = currentMapState.currentMap?.objects.find(obj => obj.id === 'replay-rogue')
+      if (elapsed < totalAnimationDuration) {
+        const currentMapState = useMapStore.getState()
+        const currentWarrior = currentMapState.currentMap?.objects.find(obj => obj.id === 'replay-warrior')
+        const currentRogue = currentMapState.currentMap?.objects.find(obj => obj.id === 'replay-rogue')
 
-      // Check if all animations have completed (no active paths)
-      // AND tokens have reached their final positions
-      const warriorAtFinal = currentWarrior?.position.x === 200 && currentWarrior?.position.y === 350
-      const rogueAtFinal = currentRogue?.position.x === 550 && currentRogue?.position.y === 350
-      const noActiveAnimations = activeAnimations === 0
-
-      if (noActiveAnimations && warriorAtFinal && rogueAtFinal) {
-        // All movement animations complete, wait additional time for spell animations
-        console.log(`⏱️  All animations completed after ${(animationCheckCount * 300 / 1000).toFixed(1)}s`)
-        console.log('   ✅ No active animation paths')
-        console.log('   ✅ All tokens at final positions')
-        console.log('⏳ Waiting 2 more seconds for spell visual effects...\n')
-        await wait(2000)
-        animationsComplete = true
-      }
-
-      // Log progress every 3 seconds
-      if (animationCheckCount % 10 === 0) {
-        console.log(`   ⏳ Still waiting... (${animationCheckCount * 300 / 1000}s elapsed)`)
-        console.log(`      Active animations: ${activeAnimations}`)
-        console.log(`      Warrior: (${currentWarrior?.position.x}, ${currentWarrior?.position.y}) → Target: (200, 350)`)
-        console.log(`      Rogue: (${currentRogue?.position.x}, ${currentRogue?.position.y}) → Target: (550, 350)\n`)
+        console.log(`   ⏳ ${(elapsed / 1000).toFixed(1)}s / ${(totalAnimationDuration / 1000).toFixed(1)}s elapsed`)
+        console.log(`      Warrior: (${currentWarrior?.position.x}, ${currentWarrior?.position.y})`)
+        console.log(`      Rogue: (${currentRogue?.position.x}, ${currentRogue?.position.y})\n`)
       }
     }
 
-    if (!animationsComplete) {
-      const finalAnimationState = useAnimationStore.getState()
-      console.warn('⚠️  Animation timeout reached (15 seconds)')
-      console.warn(`   Active animations remaining: ${finalAnimationState.activePaths.length}`)
-      console.warn('   Proceeding with verification anyway...\n')
-    }
+    console.log('   ✅ Animation duration complete\n')
 
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
     console.log('✅ REPLAY COMPLETE - VERIFYING RESULTS')
@@ -410,9 +401,10 @@ export const runRoundReplayTest = () => {
     console.log('   - Missing "⏭️ Executing Round X Event Y" messages\n')
   }
 
-  // Start the test flow
-  executeReplayTest().catch(error => {
+  // Start the test flow and return the Promise so callers can await it
+  return executeReplayTest().catch(error => {
     console.error('❌ Test failed:', error)
+    throw error // Re-throw so the test fails properly
   })
 }
 
