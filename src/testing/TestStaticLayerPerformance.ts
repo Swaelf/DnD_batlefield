@@ -18,7 +18,7 @@ import type { TestScenario } from './TestScenarios'
 export const staticObjectsPerformanceTest: TestScenario = {
   id: 'static-objects-performance',
   name: 'Static Objects Layer - Performance Test',
-  description: 'Tests performance with 30+ static objects (trees, walls, furniture) and token movement',
+  description: 'Tests performance with 25 static objects (15 trees, 5 walls, 5 furniture) and token movement/spells',
   category: 'visual',
   steps: [
     // Add 15 trees
@@ -626,19 +626,18 @@ export const staticObjectsPerformanceTest: TestScenario = {
             const staticObjects = mapStore.currentMap?.objects.filter(obj => {
               if (obj.type !== 'shape') return false
               const shape = obj as any
-              return !shape.metadata?.isStaticEffect && (
-                shape.fill?.includes('#228B22') ||
-                shape.fill?.includes('#6B7280') ||
-                shape.fill?.includes('#8B4513')
-              )
+              // Check for isStatic flag (not isStaticEffect)
+              return shape.metadata?.isStatic === true
             }) || []
-            // Should have 30 static objects (15 trees + 10 walls + 5 furniture)
-            return staticObjects.length === 30
+            console.log(`[Test] Found ${staticObjects.length} static objects`)
+            // Should have 30 static objects (15 trees + 5 walls + 5 furniture)
+            // Note: We only added 5 walls, not 10
+            return staticObjects.length === 25
           }
         },
         expected: true
       },
-      description: 'Verify 30 static objects are present'
+      description: 'Verify static objects are present (trees, walls, furniture)'
     }
   ]
 }

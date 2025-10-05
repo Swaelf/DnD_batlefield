@@ -1622,7 +1622,7 @@ export const testScenarios: TestScenario[] = [
   // STATIC LAYER PERFORMANCE TESTS - Visual performance tests with many objects
   // ============================================================================
   // Tests the performance optimization of StaticObjectsLayer and StaticEffectsLayer
-  // Test 1: Static Objects (30 objects: 15 trees + 10 walls + 5 furniture) + 2 tokens + animations
+  // Test 1: Static Objects (25 objects: 15 trees + 5 walls + 5 furniture) + 2 tokens + animations
   // Test 2: Static Effects (5 persistent spell zones) + 2 tokens + animations
   // Expected gains: 22-50% FPS improvement (static objects), 20-40% FPS improvement (static effects)
   // Total tests: 2 performance tests
