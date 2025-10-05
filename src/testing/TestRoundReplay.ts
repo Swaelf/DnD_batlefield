@@ -288,8 +288,45 @@ export const runRoundReplayTest = () => {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
 
     // Wait for all animations to complete
-    // 4 events × (execution time + delay) = ~10 seconds
-    await wait(10000)
+    // Monitor token positions to detect when animations finish
+    let animationCheckCount = 0
+    const maxChecks = 50 // 50 checks × 300ms = 15 seconds max
+    let animationsComplete = false
+
+    console.log('🔍 Monitoring animation progress...\n')
+
+    while (!animationsComplete && animationCheckCount < maxChecks) {
+      await wait(300) // Check every 300ms
+      animationCheckCount++
+
+      const currentMapState = useMapStore.getState()
+      const currentWarrior = currentMapState.currentMap?.objects.find(obj => obj.id === 'replay-warrior')
+      const currentRogue = currentMapState.currentMap?.objects.find(obj => obj.id === 'replay-rogue')
+
+      // Check if tokens have reached their final positions
+      const warriorAtFinal = currentWarrior?.position.x === 200 && currentWarrior?.position.y === 350
+      const rogueAtFinal = currentRogue?.position.x === 550 && currentRogue?.position.y === 350
+
+      if (warriorAtFinal && rogueAtFinal) {
+        // Wait an additional 2 seconds to ensure spell animations also complete
+        console.log(`⏱️  Tokens reached final positions after ${(animationCheckCount * 300 / 1000).toFixed(1)}s`)
+        console.log('⏳ Waiting 2 more seconds for spell animations...\n')
+        await wait(2000)
+        animationsComplete = true
+      }
+
+      // Log progress every 3 seconds
+      if (animationCheckCount % 10 === 0) {
+        console.log(`   ⏳ Still waiting... (${animationCheckCount * 300 / 1000}s elapsed)`)
+        console.log(`      Warrior: (${currentWarrior?.position.x}, ${currentWarrior?.position.y}) → Target: (200, 350)`)
+        console.log(`      Rogue: (${currentRogue?.position.x}, ${currentRogue?.position.y}) → Target: (550, 350)\n`)
+      }
+    }
+
+    if (!animationsComplete) {
+      console.warn('⚠️  Animation timeout reached (15 seconds)')
+      console.warn('   Proceeding with verification anyway...\n')
+    }
 
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
     console.log('✅ REPLAY COMPLETE - VERIFYING RESULTS')
