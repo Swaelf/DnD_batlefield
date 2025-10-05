@@ -28,7 +28,6 @@
 
 import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
-import useAnimationStore from '@/store/animationStore'
 import type { Token } from '@/types/token'
 import type { Position } from '@/types/map'
 

@@ -632,7 +632,7 @@ const useTimelineStore = create<TimelineStore>()(
       if (!timeline) return
 
       // First, execute the current event's actions (like nextEvent does)
-      get().executeEventActions(activeEvent)
+      void get().executeEventActions(activeEvent)
 
       set((state) => {
         const currentRoundData = state.timeline!.rounds.find(r => r.number === activeRound)

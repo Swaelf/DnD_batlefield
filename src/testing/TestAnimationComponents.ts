@@ -382,13 +382,12 @@ export const beamAnimationTest: TestScenario = {
             roundStore.addAction('void-token', 'spell', {
               type: 'spell',
               spellName: 'Disintegration Beam',
-              category: 'beam',
+              category: 'ray',  // Using 'ray' category (sustained beam effect)
               fromPosition: casterPos,
               toPosition: targetPos,
               color: '#00FF00',
               size: 10,
-              duration: 1500,
-              beamWidth: 5
+              duration: 1500
             }, 1)
           }
         }
