@@ -623,21 +623,37 @@ export const staticObjectsPerformanceTest: TestScenario = {
         params: {
           check: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            const staticObjects = mapStore.currentMap?.objects.filter(obj => {
+
+            // Debug: Log all objects
+            const allObjects = mapStore.currentMap?.objects || []
+            console.log(`[Test] Total objects on map: ${allObjects.length}`)
+
+            // Debug: Log object types
+            const objectTypes = allObjects.reduce((acc: any, obj: any) => {
+              acc[obj.type] = (acc[obj.type] || 0) + 1
+              return acc
+            }, {})
+            console.log('[Test] Object types:', objectTypes)
+
+            // Count static objects
+            const staticObjects = allObjects.filter(obj => {
               if (obj.type !== 'shape') return false
               const shape = obj as any
-              // Check for isStatic flag (not isStaticEffect)
-              return shape.metadata?.isStatic === true
-            }) || []
-            console.log(`[Test] Found ${staticObjects.length} static objects`)
-            // Should have 30 static objects (15 trees + 5 walls + 5 furniture)
-            // Note: We only added 5 walls, not 10
+              const isStatic = shape.metadata?.isStatic === true
+              const isStaticEffect = shape.metadata?.isStaticEffect === true
+              if (isStatic) {
+                console.log(`[Test] Static object: ${shape.name || shape.id}`)
+              }
+              return isStatic && !isStaticEffect
+            })
+
+            console.log(`[Test] Found ${staticObjects.length} static objects (expected 25)`)
             return staticObjects.length === 25
           }
         },
         expected: true
       },
-      description: 'Verify static objects are present (trees, walls, furniture)'
+      description: 'Verify 25 static objects are present (15 trees + 5 walls + 5 furniture)'
     }
   ]
 }
