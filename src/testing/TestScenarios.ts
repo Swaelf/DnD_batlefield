@@ -34,7 +34,7 @@ export interface TestScenario {
   id: string
   name: string
   description: string
-  category: 'movement' | 'spells' | 'selection' | 'combat' | 'visual'
+  category: 'movement' | 'spells' | 'selection' | 'attacks' | 'timeline' | 'animations' | 'visual'
   steps: TestStep[]
   cleanup?: () => void
 }
@@ -1431,7 +1431,7 @@ export const testScenarios: TestScenario[] = [
     id: 'timeline-navigation',
     name: 'Timeline Navigation - Event & Round Changes',
     description: 'Comprehensive test for timeline navigation: event/round changes, position restoration, post-effect cleanup, and snapshot system',
-    category: 'combat',
+    category: 'timeline',
     steps: [
       {
         type: 'action',
@@ -1457,7 +1457,7 @@ export const testScenarios: TestScenario[] = [
     id: 'round-replay',
     name: 'Round Replay - Animation Replay System',
     description: 'Verifies round replay functionality: Round 1 events → Start New Round → Previous Round → Next Round (should replay all Round 1 animations)',
-    category: 'combat',
+    category: 'timeline',
     steps: [
       {
         type: 'action',
