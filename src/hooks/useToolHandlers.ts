@@ -373,7 +373,7 @@ export const useToolHandlers = ({
       case 'staticEffect':
         // Place static effect using template
         if (staticEffectTemplate) {
-          const newObject: any = {
+          const newObject: Partial<Shape> = {
             id: crypto.randomUUID(),
             type: 'shape' as const,
             position: snappedPos,

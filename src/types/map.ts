@@ -67,10 +67,19 @@ export type Shape = MapObject & {
   strokeColor: string
   strokeWidth: number
   opacity: number
-  metadata?: any
+  metadata?: {
+    isStatic?: boolean
+    isStaticEffect?: boolean
+    [key: string]: any
+  }
   // Abstract component system properties
   abstractType?: 'wall' | 'furniture' | 'nature' | 'structure' | 'dungeon'
   variant?: string // Specific variant (e.g., 'stone', 'wooden', 'tree', etc.)
+  // Static effect data
+  staticEffectData?: {
+    template: any  // StaticEffectTemplate type from components/StaticEffect/types
+    color: string
+  }
 }
 
 export type Text = MapObject & {
