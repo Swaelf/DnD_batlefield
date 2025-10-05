@@ -107,7 +107,8 @@ export type SpellEventData = {
   duration: number          // Animation duration in ms
   projectileSpeed?: number  // Pixels per second for projectiles
   burstRadius?: number      // Burst effect radius in pixels
-  persistDuration?: number  // Rounds for area effects
+  persistDuration?: number  // Spell duration (rounds for continuous spells, events for post-effects)
+  durationType?: 'rounds' | 'events'  // How to interpret persistDuration (default: 'rounds')
   particleEffect?: boolean  // Enable particle effects
 
   // Enhanced animation properties for projectile_burst and other complex spells

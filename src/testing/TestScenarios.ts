@@ -332,24 +332,53 @@ export const testScenarios: TestScenario[] = [
         description: 'Start combat'
       },
       {
+        type: 'wait',
+        wait: 500,
+        description: 'Wait for combat initialization'
+      },
+      {
         type: 'action',
         action: {
-          type: 'castSpell',
+          type: 'custom',
           params: {
-            spell: {
-              type: 'spell',
-              spellName: 'Web',
-              category: 'area',
-              fromPosition: { x: 300, y: 300 },
-              toPosition: { x: 300, y: 300 },
-              color: '#f0f0f0',
-              size: 20,
-              duration: 0,
-              persistDuration: 3 // 3 rounds
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              roundStore.addAction('void-token', 'spell', {
+                type: 'spell',
+                spellName: 'Web',
+                category: 'area',
+                fromPosition: { x: 300, y: 300 },
+                toPosition: { x: 300, y: 300 },
+                color: '#f0f0f0',
+                size: 60,
+                duration: 1000,
+                persistDuration: 3, // 3 rounds
+                durationType: 'rounds', // Continuous spell
+                persistColor: '#f0f0f0',
+                persistOpacity: 0.4
+              }, 1)
             }
           }
         },
-        description: 'Cast Web spell'
+        description: 'Add Web spell to Event 1'
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              await roundStore.executeEventActions(1)
+            }
+          }
+        },
+        description: 'Execute Event 1 (Cast Web)'
+      },
+      {
+        type: 'wait',
+        wait: 1500,
+        description: 'Wait for Web animation'
       },
       {
         type: 'capture',
@@ -357,12 +386,26 @@ export const testScenarios: TestScenario[] = [
         description: 'Capture Web at round 1'
       },
       {
+        type: 'assert',
+        assert: {
+          type: 'spellActive',
+          params: { spellName: 'Web' },
+          expected: true
+        },
+        description: 'Verify Web active in round 1'
+      },
+      {
         type: 'action',
         action: {
-          type: 'nextRound',
-          params: {}
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              roundStore.startNewRound()
+            }
+          }
         },
-        description: 'Advance to round 2'
+        description: 'Advance to Round 2'
       },
       {
         type: 'wait',
@@ -381,23 +424,47 @@ export const testScenarios: TestScenario[] = [
           params: { spellName: 'Web' },
           expected: true
         },
-        description: 'Verify Web still active'
+        description: 'Verify Web still active in round 2'
       },
       {
         type: 'action',
         action: {
-          type: 'nextRound',
-          params: {}
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              roundStore.startNewRound()
+            }
+          }
         },
-        description: 'Advance to round 3'
+        description: 'Advance to Round 3'
+      },
+      {
+        type: 'wait',
+        wait: 500,
+        description: 'Wait for round transition'
+      },
+      {
+        type: 'assert',
+        assert: {
+          type: 'spellActive',
+          params: { spellName: 'Web' },
+          expected: true
+        },
+        description: 'Verify Web still active in round 3'
       },
       {
         type: 'action',
         action: {
-          type: 'nextRound',
-          params: {}
+          type: 'custom',
+          params: {
+            execute: async () => {
+              const roundStore = (await import('@/store/timelineStore')).default.getState()
+              roundStore.startNewRound()
+            }
+          }
         },
-        description: 'Advance to round 4'
+        description: 'Advance to Round 4'
       },
       {
         type: 'wait',

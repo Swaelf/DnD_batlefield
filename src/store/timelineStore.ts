@@ -443,8 +443,8 @@ const useTimelineStore = create<TimelineStore>()(
                 isSpellEffect: true,
                 roundCreated: get().currentRound,
                 eventCreated: get().currentEvent,
-                spellDuration: updatedSpellData.duration || 1,
-                durationType: 'rounds' as const,
+                spellDuration: updatedSpellData.persistDuration || 0, // Use persistDuration, not animation duration
+                durationType: updatedSpellData.durationType || 'rounds', // Respect spell's durationType
                 spellData: updatedSpellData
               }
               mapStore.addSpellEffect(spellObject)

@@ -271,12 +271,12 @@ export const persistentAreaCleanupTest: TestScenario = {
                 color: '#000000',
                 opacity: 0.8,
                 spellName: 'Darkness',
-                roundCreated: roundStore.currentEvent
+                roundCreated: roundStore.currentRound
               },
-              roundCreated: roundStore.currentEvent,
+              roundCreated: roundStore.currentRound,
               eventCreated: roundStore.currentEvent,
               spellDuration: 3, // Persists for 3 rounds
-              durationType: 'events' as const
+              durationType: 'rounds' as const // Round-based duration, not events
             }
 
             mapStore.addSpellEffect(darknessArea)

@@ -80,8 +80,9 @@ export const postEffectCleanupTests: TestScenario[] = [
                 color: '#FF6600',
                 size: 20,
                 duration: 1000,
-                burstRadius: 40
-                // NO persistDuration - this is a post effect
+                burstRadius: 40,
+                persistDuration: 1, // Post effect: lasts 1 event
+                durationType: 'events' // Cleanup on next event, not round
               }, 1)
             }
           }
@@ -232,7 +233,9 @@ export const postEffectCleanupTests: TestScenario[] = [
                 color: '#FF6600',
                 size: 20,
                 duration: 1000,
-                burstRadius: 40
+                burstRadius: 40,
+                persistDuration: 1, // Post effect: lasts 1 event
+                durationType: 'events' // Cleanup at round end if no more events
               }, 1)
             }
           }

@@ -67,6 +67,7 @@ export const spellDurationTests: TestScenario[] = [
                 size: 60,
                 duration: 1000,
                 persistDuration: 3, // 3 rounds
+                durationType: 'rounds', // Continuous spell
                 persistColor: '#FFD700',
                 persistOpacity: 0.3
               }, 1)
@@ -251,6 +252,7 @@ export const spellDurationTests: TestScenario[] = [
                 size: 50,
                 duration: 1000,
                 persistDuration: 10, // 10 rounds
+                durationType: 'rounds', // Continuous spell
                 persistColor: '#00FFFF',
                 persistOpacity: 0.2
               }, 1)
