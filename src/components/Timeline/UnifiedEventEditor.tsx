@@ -93,7 +93,8 @@ const UnifiedEventEditorComponent = ({
   }, [isOpen, currentMap?.objects])
 
   // Get actions for the current event
-  const currentRoundData = timeline?.rounds.find(r => r.number === 1) // Round 1 for now
+  const currentRound = useTimelineStore(state => state.currentRound)
+  const currentRoundData = timeline?.rounds.find(r => r.number === currentRound)
   const eventActions = currentRoundData?.events.find(e => e.number === currentEvent)?.actions || []
 
   useEffect(() => {

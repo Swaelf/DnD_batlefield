@@ -645,13 +645,6 @@ const useTimelineStore = create<TimelineStore>()(
       const { timeline, currentRound } = get()
       if (!timeline) return
 
-      // Check if current round is executed (ended)
-      const currentRoundData = timeline.rounds.find(r => r.number === currentRound)
-      if (!currentRoundData || !currentRoundData.executed) {
-        console.warn('Cannot go to next round: current round not ended yet')
-        return
-      }
-
       // Check if next round exists
       const nextRoundData = timeline.rounds.find(r => r.number === currentRound + 1)
       if (!nextRoundData) {
@@ -659,7 +652,19 @@ const useTimelineStore = create<TimelineStore>()(
         return
       }
 
-      // Move to next round and execute its merged actions
+      // Check if current round is executed (only required if next round has never been visited)
+      const currentRoundData = timeline.rounds.find(r => r.number === currentRound)
+
+      // If next round was previously created (has allActions), we're just navigating back
+      // Otherwise, we need the current round to be executed first
+      const isNavigatingBack = nextRoundData.allActions && nextRoundData.allActions.length > 0
+
+      if (!isNavigatingBack && (!currentRoundData || !currentRoundData.executed)) {
+        console.warn('Cannot go to next round: current round not ended yet')
+        return
+      }
+
+      // Move to next round
       set((state) => {
         state.currentRound = currentRound + 1
         state.currentEvent = 1
@@ -669,9 +674,8 @@ const useTimelineStore = create<TimelineStore>()(
         }
       })
 
-      // Execute all merged actions from the next round if it has any
-      if (nextRoundData.allActions && nextRoundData.allActions.length > 0) {
-        // Execute actions (they were merged when the round ended)
+      // Execute all merged actions from the next round if it has any (only when navigating back)
+      if (isNavigatingBack) {
         nextRoundData.allActions.forEach(action => {
           get().executeEventActions(action.eventNumber || 1)
         })
@@ -698,9 +702,9 @@ const useTimelineStore = create<TimelineStore>()(
             actions: previousRoundData.allActions,
             executed: false
           }]
-          // Mark round as not executed since we're editing it again
-          previousRoundData.executed = false
-          previousRoundData.allActions = []
+          // Keep round marked as executed since it was already completed
+          // This allows navigation forward again via nextRound button
+          // allActions is kept for re-execution when going forward
         }
 
         state.currentRound = previousRoundNumber
