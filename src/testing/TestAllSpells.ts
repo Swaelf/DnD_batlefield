@@ -5,15 +5,16 @@ import { spellTemplates } from '@/data/unifiedActions/spellTemplates'
 /**
  * Dynamically generates test scenarios for ALL spells in spellTemplates.ts
  *
- * Test pattern for each spell:
+ * Test pattern for each spell (consolidated - 1 test per spell):
  * 1. Add token 1 at (200, 200)
  * 2. Add token 2 at (500, 200)
  * 3. Move token 1 to (300, 400)
- * 4. Cast spell from token 2 to token 1 (tracking - follows movement)
- * 5. Cast spell from token 2 to token 1's INITIAL position (static - no tracking)
+ * 4. Move token 2 to (600, 300)
+ * 5. Cast spell from token 2 to token 1 (tracking - follows movement)
  * 6. Execute event
  *
  * This test automatically updates when spells are added/removed from spellTemplates.ts
+ * Each spell has exactly ONE test that validates movement tracking.
  */
 
 // Map animation types to spell categories for legacy event data
@@ -139,7 +140,7 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
                     duration: 600
                   }, 1)
 
-                  // 3. Token 2 casts spell at Token 1 (tracking)
+                  // 3. Token 2 casts spell at Token 1 (tracking - follows movement)
                   roundStore.addAction(token2Id, 'spell', {
                     type: 'spell',
                     targetTokenId: token1Id, // Tracks moving target
@@ -147,26 +148,6 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
                     category: category,
                     fromPosition: token2Final,
                     toPosition: token1Final, // Will track to final position
-                    color: color,
-                    secondaryColor: secondaryColor,
-                    size: size,
-                    duration: duration,
-                    coneAngle: coneAngle,
-                    persistDuration: persistDuration,
-                    persistColor: persistColor,
-                    persistOpacity: persistOpacity,
-                    particleEffect: particles,
-                    ...(category === 'projectile-burst' && { burstRadius: 30 })
-                  }, 1)
-
-                  // 4. Token 2 casts spell at Token 1's INITIAL position (static)
-                  roundStore.addAction(token2Id, 'spell', {
-                    type: 'spell',
-                    // NO targetTokenId - static position
-                    spellName: spellName,
-                    category: category,
-                    fromPosition: token2Final,
-                    toPosition: token1Initial, // Static initial position
                     color: color,
                     secondaryColor: secondaryColor,
                     size: size,

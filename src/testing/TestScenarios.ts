@@ -4,6 +4,8 @@ import { allSpellTestScenarios } from './TestAllSpells'
 import { allAttackTestScenarios } from './TestAllAttacks'
 import { runTimelineNavigationTest } from './TestTimelineNavigation'
 import { runRoundReplayTest } from './TestRoundReplay'
+import { allSpellDurationTests } from './TestSpellDurations'
+import { allPostEffectCleanupTests } from './TestPostEffectCleanup'
 
 export interface TestStep {
   type: 'action' | 'wait' | 'assert' | 'capture'
@@ -1485,9 +1487,25 @@ export const testScenarios: TestScenario[] = [
   // ============================================================================
   // These tests are automatically generated for ALL spells in spellTemplates.ts
   // When spells are added/removed from spellTemplates.ts, tests update automatically
-  // Each test validates: movement + spell tracking + spell to static position
-  // Total tests: One per spell (currently 20 spells = 20 tests)
+  // Each test validates: movement + spell tracking (consolidated - 1 test per spell)
+  // Total tests: One per spell (currently ~20 spells)
   ...allSpellTestScenarios,
+
+  // ============================================================================
+  // SPELL DURATION TESTS - Continuous spell persistence
+  // ============================================================================
+  // Tests spells with persistDuration to verify they last correct number of rounds
+  // Validates: Bless (3 rounds), Haste (10 rounds)
+  // Total tests: 2 duration scenarios
+  ...allSpellDurationTests,
+
+  // ============================================================================
+  // POST-EFFECT CLEANUP TESTS - Temporary spell effect removal
+  // ============================================================================
+  // Tests post-effects (durationType='events') are removed correctly
+  // Validates: Event cleanup, Round end cleanup
+  // Total tests: 2 cleanup scenarios
+  ...allPostEffectCleanupTests,
 
   // ============================================================================
   // DYNAMIC ATTACK TESTS - Auto-generated weapon attack scenarios
@@ -1495,7 +1513,7 @@ export const testScenarios: TestScenario[] = [
   // These tests are automatically generated for various weapon types
   // Each test validates: movement + attack animations for melee and ranged weapons
   // Covers slashing, piercing, and bludgeoning damage types
-  // Total tests: 12 weapon types (6 melee + 6 ranged)
+  // Total tests: ~12 weapon types (6 melee + 6 ranged)
   ...allAttackTestScenarios
 ]
 
