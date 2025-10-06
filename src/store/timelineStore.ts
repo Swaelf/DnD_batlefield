@@ -528,11 +528,26 @@ const useTimelineStore = create<TimelineStore>()(
             case 'move': {
               // Handle token movement animation
               const moveData = action.data as any
-              if (moveData.fromPosition && moveData.toPosition) {
+
+              // ✅ FIX: Get token's actual current position for chain movements
+              // This ensures movements chain correctly: initial → point1 → point2
+              let actualFromPosition = moveData.fromPosition
+              const actualToPosition = moveData.toPosition
+
+              if (action.tokenId) {
+                const movingToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
+                if (movingToken) {
+                  // Use token's current position as the starting point
+                  actualFromPosition = movingToken.position
+                  console.log(`🏃 Token ${action.tokenId} moving from current position:`, movingToken.position, 'to:', actualToPosition)
+                }
+              }
+
+              if (actualFromPosition && actualToPosition) {
                 // Start smooth animation using animationStore
                 const animationStoreModule = await import('./animationStore')
                 const animationStore = animationStoreModule.default.getState()
-                animationStore.startAnimation(action.tokenId, moveData.fromPosition, moveData.toPosition)
+                animationStore.startAnimation(action.tokenId, actualFromPosition, actualToPosition)
 
                 // Create animation loop
                 const duration = moveData.duration || 1000 // Default 1 second
@@ -551,9 +566,9 @@ const useTimelineStore = create<TimelineStore>()(
                   // Update animation progress
                   animationStore.updateProgress(action.tokenId, progress)
 
-                  // Calculate current position
-                  const currentX = moveData.fromPosition.x + (moveData.toPosition.x - moveData.fromPosition.x) * progress
-                  const currentY = moveData.fromPosition.y + (moveData.toPosition.y - moveData.fromPosition.y) * progress
+                  // Calculate current position using actual positions
+                  const currentX = actualFromPosition.x + (actualToPosition.x - actualFromPosition.x) * progress
+                  const currentY = actualFromPosition.y + (actualToPosition.y - actualFromPosition.y) * progress
 
                   // Update token position in map
                   mapStore.updateObjectPosition(action.tokenId, { x: currentX, y: currentY })
@@ -575,8 +590,8 @@ const useTimelineStore = create<TimelineStore>()(
                       message: `Moved to new position`,
                       severity: 'low',
                       details: {
-                        from: moveData.fromPosition,
-                        to: moveData.toPosition
+                        from: actualFromPosition,
+                        to: actualToPosition
                       }
                     })
 

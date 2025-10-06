@@ -36,9 +36,10 @@ export const AbstractBurst: FC<BaseSpellProps> = memo(({
     }
   }, [isAnimating, spell.duration, onAnimationComplete])
 
-  const baseRadius = spell.size || 20
-  const burstRadius = baseRadius * (1 + progress * 3)
-  const opacity = (1 - progress * 0.5) * 0.8
+  // Use burstRadius if available, otherwise use size
+  const maxRadius = spell.burstRadius || spell.size || 20
+  const burstRadius = maxRadius * (0.3 + progress * 0.7) // Expand from 30% to 100%
+  const burstOpacity = spell.opacity !== undefined ? spell.opacity : ((1 - progress * 0.5) * 0.8)
 
   return (
     <>
@@ -47,7 +48,7 @@ export const AbstractBurst: FC<BaseSpellProps> = memo(({
         y={spell.toPosition.y}
         radius={burstRadius}
         fill={spell.color}
-        opacity={opacity * 0.3}
+        opacity={burstOpacity * 0.3}
       />
       <Ring
         x={spell.toPosition.x}
@@ -55,7 +56,7 @@ export const AbstractBurst: FC<BaseSpellProps> = memo(({
         innerRadius={burstRadius * 0.7}
         outerRadius={burstRadius}
         fill={spell.color}
-        opacity={opacity}
+        opacity={burstOpacity}
       />
     </>
   )

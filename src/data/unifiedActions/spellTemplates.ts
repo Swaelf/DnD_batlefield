@@ -24,11 +24,11 @@ export const spellTemplates: UnifiedAction[] = [
       trackTarget: true, // Enable dynamic target following by default
       targetTokenId: '', // Will be set when targeting a token
       // Burst animation details
-      burstSize: 160, // Explosion radius - 20 feet × 8 pixels/foot = 160 pixels
+      burstSize: 210, // Explosion radius - 20ft + 1 grid cell = 160px + 50px = 210 pixels
       burstDuration: 600, // How long the explosion lasts
       burstColor: '#FF4500', // Explosion color (slightly different from projectile)
       // Post-effect properties
-      persistDuration: 2, // Lingering fire effects duration (rounds)
+      persistDuration: 2, // Lingering fire effects duration (2 in code = 1 visible event due to cleanup timing)
       persistColor: '#CC2500', // Darker fire for lingering effects
       persistOpacity: 0.4, // Opacity of lingering effects
       // Animation phases
@@ -42,7 +42,7 @@ export const spellTemplates: UnifiedAction[] = [
       areaOfEffect: {
         type: 'circle',
         center: { x: 0, y: 0 },
-        radius: 160 // 20-foot radius - 20 feet × 8 pixels/foot = 160 pixels
+        radius: 210 // 20-foot radius + 1 grid cell = 160px + 50px = 210 pixels
       }
     },
     metadata: {
@@ -51,7 +51,7 @@ export const spellTemplates: UnifiedAction[] = [
     },
     // D&D 5e Fireball properties
     range: 150, // 150 feet range
-    areaOfEffect: 160, // 20-foot radius - 20 feet × 8 pixels/foot = 160 pixels
+    areaOfEffect: 210, // 20-foot radius + 1 grid cell = 160px + 50px = 210 pixels
     damage: '8d6',
     damageType: 'fire',
     spellLevel: 3,
@@ -259,15 +259,24 @@ export const spellTemplates: UnifiedAction[] = [
     source: { x: 0, y: 0 },
     target: { x: 0, y: 0 },
     animation: {
-      type: 'touch',
+      type: 'burst',
       duration: 800,
-      color: '#FFD700',
-      size: 30,
-      glow: true
+      color: '#FFD700', // Gold
+      size: 30, // Base size for fallback
+      burstSize: 30, // Maximum burst radius (just around token)
+      burstDuration: 800,
+      burstColor: '#FFD700',
+      persistDuration: 0, // No persistent area
+      opacity: 0.6 // Semi-transparent
     },
     effects: {
       affectedTargets: [],
-      highlightColor: '#FFD700'
+      highlightColor: '#FFD700',
+      areaOfEffect: {
+        type: 'circle',
+        center: { x: 0, y: 0 },
+        radius: 30
+      }
     },
     metadata: {
       name: 'Cure Wounds',
@@ -275,6 +284,47 @@ export const spellTemplates: UnifiedAction[] = [
     },
     timestamp: 0,
     duration: 800
+  },
+  {
+    id: 'heal-template',
+    name: 'Heal',
+    description: 'A powerful healing spell',
+    type: 'spell',
+    category: 'healing',
+    tags: ["spell","magic","healing"],
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'burst',
+      duration: 1000,
+      color: '#00FF00', // Green
+      size: 30, // Base size for fallback
+      burstSize: 30, // Maximum burst radius (just around token)
+      burstDuration: 1000,
+      burstColor: '#00FF00',
+      persistDuration: 0, // No persistent area
+      opacity: 0.6 // Semi-transparent
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#00FF00',
+      areaOfEffect: {
+        type: 'circle',
+        center: { x: 0, y: 0 },
+        radius: 30
+      }
+    },
+    metadata: {
+      name: 'Heal',
+      description: 'Choose a creature that you can see within range. A surge of positive energy washes through the creature, causing it to regain 70 hit points.'
+    },
+    // D&D 5e Heal properties
+    range: 60, // 60 feet range
+    areaOfEffect: 30,
+    spellLevel: 6,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 1000
   },
 
   // Poison Spells
@@ -415,6 +465,53 @@ export const spellTemplates: UnifiedAction[] = [
     },
     timestamp: 0,
     duration: 900
+  },
+  {
+    id: 'bless-template',
+    name: 'Bless',
+    description: 'A blessing spell that empowers allies',
+    type: 'spell',
+    category: 'divine',
+    tags: ["spell","magic","buff"],
+    source: { x: 0, y: 0 },
+    target: { x: 0, y: 0 },
+    animation: {
+      type: 'burst',
+      duration: 800,
+      color: '#FFFFE0', // Light yellow
+      size: 30, // Base size for fallback
+      burstSize: 30, // Maximum burst radius (just around token)
+      burstDuration: 800,
+      burstColor: '#FFFFE0',
+      persistDuration: 0, // No persistent area
+      opacity: 0.6 // Semi-transparent
+    },
+    effects: {
+      affectedTargets: [],
+      highlightColor: '#FFFFE0',
+      areaOfEffect: {
+        type: 'circle',
+        center: { x: 0, y: 0 },
+        radius: 30
+      }
+    },
+    metadata: {
+      name: 'Bless',
+      description: 'You bless up to three creatures within range. Whenever a target makes an attack roll or saving throw, they can roll a d4 and add the result.'
+    },
+    // D&D 5e Bless properties
+    range: 30, // 30 feet range
+    areaOfEffect: 30,
+    spellLevel: 1,
+    castingTime: 'action',
+    timestamp: 0,
+    duration: 800,
+    // Status effect to apply on hit
+    statusEffect: {
+      type: 'blessed',
+      duration: 10, // 10 rounds (1 minute in D&D)
+      intensity: 1
+    }
   },
 
   // Fire Cone Spells

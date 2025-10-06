@@ -512,7 +512,8 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         } else {
           // Phase 2: Burst explosion
           const burstProgress = (progress - projectilePhase) / (1 - projectilePhase)
-          const burstRadius = (spell.burstRadius || baseRadius * 2) * (1 + burstProgress * 2)
+          const maxBurstRadius = spell.burstRadius || baseRadius * 2
+          const burstRadius = maxBurstRadius * (0.3 + burstProgress * 0.7) // Expand from 30% to 100%
           const burstOpacity = (1 - burstProgress) * 0.8
 
           return (
@@ -549,8 +550,23 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         }
 
       case 'burst':
-        // Expanding burst
-        const burstRadius = baseRadius * (1 + progress * 3)
+        // Expanding burst - use burstRadius (from event data) if available, otherwise use size
+        const maxBurstRadius = spell.burstRadius || spell.size || baseRadius
+        const burstRadius = maxBurstRadius * (0.3 + progress * 0.7) // Start at 30%, expand to 100%
+        const burstOpacityValue = spell.opacity !== undefined ? spell.opacity : opacity
+
+        // Debug logging
+        if (progress === 0) {
+          console.log('[SimpleSpellComponent] Burst spell:', {
+            spellName: spell.spellName,
+            burstRadius: spell.burstRadius,
+            size: spell.size,
+            baseRadius,
+            maxBurstRadius,
+            finalBurstRadius: maxBurstRadius
+          })
+        }
+
         return (
           <>
             <Circle
@@ -558,7 +574,7 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
               y={getTargetPosition().y}
               radius={burstRadius}
               fill={spell.color}
-              opacity={opacity * 0.3}
+              opacity={burstOpacityValue * 0.3}
             />
             <Ring
               x={getTargetPosition().x}
@@ -566,7 +582,7 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
               innerRadius={burstRadius * 0.7}
               outerRadius={burstRadius}
               fill={spell.color}
-              opacity={opacity}
+              opacity={burstOpacityValue}
             />
           </>
         )
