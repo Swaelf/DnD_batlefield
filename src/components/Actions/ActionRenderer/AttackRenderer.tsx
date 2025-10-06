@@ -1,8 +1,10 @@
-import { memo, useRef, useEffect } from 'react'
+import { memo, useRef, useEffect, useMemo, useState } from 'react'
 import Konva from 'konva'
 import { Group } from 'react-konva'
 import type { AttackEventData } from '@/types'
 import { ATTACK_VISUALS, CRITICAL_HIT } from '@/constants'
+import { AbstractProjectile } from '@/lib/animation-effects'
+import type { AbstractProjectileConfig } from '@/lib/animation-effects'
 
 type AttackRendererProps = {
   attack: AttackEventData
@@ -18,9 +20,51 @@ const AttackRendererComponent = ({
   const groupRef = useRef<Konva.Group>(null)
   const animationRef = useRef<Konva.Animation | null>(null)
   const hasStartedRef = useRef(false)
+  const [showImpactEffect, setShowImpactEffect] = useState(false)
+
+  // Configuration for ranged attacks using AbstractProjectile
+  const rangedProjectileConfig = useMemo((): AbstractProjectileConfig | null => {
+    if (attack.attackType !== 'ranged') return null
+
+    const { fromPosition, toPosition, duration, color, isCritical } = attack
+
+    // Determine projectile shape based on weapon
+    let shape: 'circle' | 'triangle' | 'rectangle' = 'circle'
+
+    // Arrows and bolts use triangle
+    if (attack.weaponName?.toLowerCase().includes('arrow') ||
+        attack.weaponName?.toLowerCase().includes('bow') ||
+        attack.weaponName?.toLowerCase().includes('crossbow')) {
+      shape = 'triangle'
+    }
+    // Throwing weapons use rectangle
+    else if (attack.weaponName?.toLowerCase().includes('javelin') ||
+             attack.weaponName?.toLowerCase().includes('spear') ||
+             attack.weaponName?.toLowerCase().includes('throw')) {
+      shape = 'rectangle'
+    }
+
+    return {
+      from: fromPosition,
+      to: toPosition,
+      shape,
+      color,
+      size: isCritical ? 5 : 3,
+      effects: ['trail', 'glow'],
+      duration,
+      onComplete: () => {
+        setShowImpactEffect(true)
+        // Delay actual completion until impact effect finishes
+        setTimeout(() => {
+          onAnimationComplete?.()
+        }, ATTACK_VISUALS.IMPACT_FLASH_DURATION)
+      },
+    }
+  }, [attack, onAnimationComplete])
 
   useEffect(() => {
-    if (!isAnimating || !groupRef.current || hasStartedRef.current) return
+    if (!isAnimating || attack.attackType === 'ranged') return
+    if (!groupRef.current || hasStartedRef.current) return
 
     hasStartedRef.current = true
     const group = groupRef.current
@@ -28,12 +72,8 @@ const AttackRendererComponent = ({
     // Reset animation state
     group.visible(true)
 
-    // Create animation based on attack type
-    if (attack.attackType === 'ranged') {
-      animateRangedAttack(group)
-    } else {
-      animateMeleeAttack(group)
-    }
+    // Create melee animation
+    animateMeleeAttack(group)
 
     // Cleanup function
     return () => {
@@ -45,86 +85,20 @@ const AttackRendererComponent = ({
     }
   }, [isAnimating, attack])
 
-  const animateRangedAttack = (group: Konva.Group) => {
-    const { fromPosition, toPosition, duration, color, isCritical } = attack
+  // Reset impact effect when animation restarts
+  useEffect(() => {
+    if (isAnimating) {
+      setShowImpactEffect(false)
+    }
+  }, [isAnimating])
 
-    // Calculate projectile path
-    const distance = Math.sqrt(
-      Math.pow(toPosition.x - fromPosition.x, 2) +
-      Math.pow(toPosition.y - fromPosition.y, 2)
-    )
+  // Impact effect for ranged attacks (shown after projectile hits)
+  useEffect(() => {
+    if (!showImpactEffect || !groupRef.current) return
 
-    const angle = Math.atan2(
-      toPosition.y - fromPosition.y,
-      toPosition.x - fromPosition.x
-    )
-
-    // Create projectile
-    const projectile = new Konva.Circle({
-      x: fromPosition.x,
-      y: fromPosition.y,
-      radius: 3,
-      fill: color,
-      stroke: '#FFFFFF',
-      strokeWidth: 1,
-      shadowColor: color,
-      shadowBlur: 8,
-      shadowOpacity: 0.8,
-    })
-
-    // Create trail effect
-    const trail = new Konva.Line({
-      points: [fromPosition.x, fromPosition.y, fromPosition.x, fromPosition.y],
-      stroke: color,
-      strokeWidth: 2,
-      opacity: 0.6,
-      lineCap: 'round',
-      dash: [5, 5],
-    })
-
-    group.add(trail)
-    group.add(projectile)
-
-    // Animate projectile movement
-    const anim = new Konva.Animation((frame) => {
-      if (!frame) return
-
-      const progress = Math.min(frame.time / duration, 1)
-
-      // Update projectile position
-      const currentX = fromPosition.x + (toPosition.x - fromPosition.x) * progress
-      const currentY = fromPosition.y + (toPosition.y - fromPosition.y) * progress
-
-      projectile.position({ x: currentX, y: currentY })
-
-      // Update trail
-      const trailLength = Math.min(ATTACK_VISUALS.TRAIL_LENGTH, distance * progress)
-      const trailStartX = currentX - Math.cos(angle) * trailLength
-      const trailStartY = currentY - Math.sin(angle) * trailLength
-
-      trail.points([trailStartX, trailStartY, currentX, currentY])
-
-      // Critical hit effect
-      if (isCritical && progress > 0.8) {
-        const scale = 1 + Math.sin(frame.time / 50) * 0.3
-        projectile.scale({ x: scale, y: scale })
-      }
-
-      if (progress >= 1) {
-        // Impact effect
-        createImpactEffect(group, toPosition, color, isCritical)
-        anim.stop()
-
-        // Clean up after impact effect
-        setTimeout(() => {
-          onAnimationComplete?.()
-        }, ATTACK_VISUALS.IMPACT_FLASH_DURATION)
-      }
-    })
-
-    animationRef.current = anim
-    anim.start()
-  }
+    const group = groupRef.current
+    createImpactEffect(group, attack.toPosition, attack.color, attack.isCritical)
+  }, [showImpactEffect, attack])
 
   const animateMeleeAttack = (group: Konva.Group) => {
     const { fromPosition, toPosition, duration, color, animation, isCritical, range } = attack
@@ -776,6 +750,21 @@ const AttackRendererComponent = ({
     shakeAnim.start()
   }
 
+  // Render ranged attacks using AbstractProjectile
+  if (attack.attackType === 'ranged' && rangedProjectileConfig) {
+    return (
+      <>
+        <AbstractProjectile config={rangedProjectileConfig} />
+        <Group
+          ref={groupRef}
+          visible={false}
+          listening={false}
+        />
+      </>
+    )
+  }
+
+  // Render melee attacks using custom Konva animations
   return (
     <Group
       ref={groupRef}
