@@ -31,6 +31,7 @@ export const spellTemplates: UnifiedAction[] = [
       persistDuration: 2, // Lingering fire effects duration (2 in code = 1 visible event due to cleanup timing)
       persistColor: '#CC2500', // Darker fire for lingering effects
       persistOpacity: 0.4, // Opacity of lingering effects
+      durationType: 'events', // Post-effect duration measured in events, not rounds
       // Animation phases
       projectilePhase: 400, // Time for projectile travel (calculated based on distance/speed)
       explosionPhase: 600, // Time for explosion animation
@@ -177,6 +178,11 @@ export const spellTemplates: UnifiedAction[] = [
     effects: {
       affectedTargets: [],
       highlightColor: '#B0E0E6'
+    },
+    statusEffect: {
+      type: 'chilled',
+      duration: 1, // 1 round
+      intensity: 1
     },
     metadata: {
       name: 'Ray of Frost',
@@ -340,13 +346,19 @@ export const spellTemplates: UnifiedAction[] = [
     animation: {
       type: 'cone',
       duration: 700,
-      color: '#9ACD32',
+      color: '#00FF00', // Changed to pure green
+      secondaryColor: '#32CD32', // Lime green for variation
       size: 40,
-      particles: true
+      coneAngle: 45,
+      particles: true,
+      persistDuration: 2, // 2 in code = 1 visible event
+      persistColor: '#228B22', // Forest green for lingering poison
+      persistOpacity: 0.4,
+      durationType: 'events' // Post-effect duration measured in events, not rounds
     },
     effects: {
       affectedTargets: [],
-      highlightColor: '#9ACD32',
+      highlightColor: '#00FF00',
       areaOfEffect: {
         type: 'cone',
         origin: { x: 0, y: 0 },
@@ -354,6 +366,11 @@ export const spellTemplates: UnifiedAction[] = [
         angle: 45,
         range: 40
       }
+    },
+    statusEffect: {
+      type: 'poisoned',
+      duration: 1, // 1 round
+      intensity: 1
     },
     metadata: {
       name: 'Poison Spray',
@@ -574,9 +591,10 @@ export const spellTemplates: UnifiedAction[] = [
       size: 30, // 30ft cone length
       coneAngle: 60,
       particles: true,
-      persistDuration: 1,
+      persistDuration: 2, // 2 in code = 1 visible event
       persistColor: '#CC2500',
-      persistOpacity: 0.4
+      persistOpacity: 0.4,
+      durationType: 'events' // Post-effect duration measured in events, not rounds
     },
     effects: {
       affectedTargets: [],
@@ -588,6 +606,11 @@ export const spellTemplates: UnifiedAction[] = [
         angle: 60,
         range: 30
       }
+    },
+    statusEffect: {
+      type: 'flaming',
+      duration: 1, // 1 round
+      intensity: 1
     },
     metadata: {
       name: 'Breath of the Dragon',

@@ -307,6 +307,7 @@ const UnifiedEventEditorComponent = ({
           persistDuration: action.animation.persistDuration || 0,
           persistColor: action.animation.persistColor || action.animation.color,
           persistOpacity: action.animation.persistOpacity || 0.4,
+          durationType: action.animation.durationType || 'rounds', // Pass through durationType
           // Cone spell properties
           coneAngle: action.animation.coneAngle || 60,
           particleEffect: action.animation.particles || false,

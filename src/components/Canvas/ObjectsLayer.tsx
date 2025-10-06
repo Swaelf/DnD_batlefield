@@ -599,20 +599,49 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
       // Apply status effects to tokens in area of effect (if spell has statusEffect property)
       if (spell.spellData?.statusEffect) {
-        const effectRadius = spell.spellData.category === 'cone'
-          ? spell.spellData.size
+        const PIXELS_PER_FOOT = 8
+
+        // For cone spells, use fromPosition as origin and size as range
+        const isCone = spell.spellData.category === 'cone'
+        const effectRadius = isCone
+          ? (spell.spellData.size || 30) * PIXELS_PER_FOOT // Convert feet to pixels
           : (spell.spellData.burstRadius || spell.spellData.size || 60)
 
-        const targetPosition = spell.spellData.toPosition
+        const originPosition = isCone ? spell.spellData.fromPosition : spell.spellData.toPosition
+
+        console.log(`[ObjectsLayer] Checking status effects for ${spell.spellData.spellName}:`, {
+          category: spell.spellData.category,
+          isCone,
+          effectRadius,
+          originPosition
+        })
 
         // Find all tokens within the spell's area of effect
         const affectedTokens = objects.filter(obj => {
           if (obj.type !== 'token') return false
 
-          // Calculate distance from spell center to token
-          const dx = obj.position.x - targetPosition.x
-          const dy = obj.position.y - targetPosition.y
+          // Calculate distance from spell origin to token
+          const dx = obj.position.x - originPosition.x
+          const dy = obj.position.y - originPosition.y
           const distance = Math.sqrt(dx * dx + dy * dy)
+
+          // For cone spells, also check if token is within the cone angle
+          if (isCone) {
+            const coneAngle = (spell.spellData.coneAngle || 60) * (Math.PI / 180)
+            const targetDx = spell.spellData.toPosition.x - spell.spellData.fromPosition.x
+            const targetDy = spell.spellData.toPosition.y - spell.spellData.fromPosition.y
+            const coneDirection = Math.atan2(targetDy, targetDx)
+
+            const tokenAngle = Math.atan2(dy, dx)
+            let angleDiff = Math.abs(tokenAngle - coneDirection)
+
+            // Normalize angle difference to 0-PI range
+            if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff
+
+            const isInCone = distance <= effectRadius && angleDiff <= coneAngle / 2
+            console.log(`[ObjectsLayer] Token ${obj.id} cone check:`, { distance, angleDiff: angleDiff * (180/Math.PI), coneAngleHalf: (coneAngle/2) * (180/Math.PI), isInCone })
+            return isInCone
+          }
 
           return distance <= effectRadius
         })
@@ -663,11 +692,10 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         // Get current round and event from timeline
         const { currentRound, currentEvent } = useTimelineStore.getState()
 
-        // Determine duration type based on spell category
-        // Continuous spells (area, ray, cone) use rounds
-        // Instant burst effects (projectile-burst) use events
-        const isContinuousSpell = ['area', 'ray', 'cone'].includes(spell.spellData.category || '')
-        const durationType: 'rounds' | 'events' = isContinuousSpell ? 'rounds' : 'events'
+        // Use durationType from spell data if provided, otherwise default based on category
+        // Continuous spells (area, ray) typically use rounds
+        // Instant burst effects (projectile-burst, cone with durationType='events') use events
+        const durationType: 'rounds' | 'events' = spell.spellData.durationType || 'rounds'
 
         const persistentAreaObject = {
           id: `persistent-area-${Date.now()}-${Math.random()}`,
@@ -840,6 +868,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           shadowColor={area.persistentAreaData.color}
           shadowBlur={20}
           shadowOpacity={0.4}
+          listening={false} // Make non-interactive so tokens can be selected through it
         />
       )
     }
