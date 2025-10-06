@@ -1,4 +1,5 @@
 import type { MapObject } from './map';
+import type { StatusEffect } from './statusEffects';
 
 export type TokenSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan';
 
@@ -16,7 +17,8 @@ export type Token = MapObject & {
   labelPosition?: 'top' | 'bottom';
   labelColor?: string;
   initiative?: number;
-  conditions?: string[];
+  conditions?: string[]; // Legacy string-based conditions (kept for backward compatibility)
+  statusEffects?: StatusEffect[]; // New visual status effect system
   isVoid?: boolean;  // Special flag for void/environment token
   allowedEvents?: ('move' | 'appear' | 'disappear' | 'spell')[];  // Restrict event types
   // HP Management

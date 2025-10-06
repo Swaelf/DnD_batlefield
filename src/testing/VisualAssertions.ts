@@ -1,4 +1,4 @@
-import type Konva from 'konva'
+import Konva from 'konva'
 import type { Position } from '@/types/map'
 import type { Screenshot } from './CanvasCapture'
 
@@ -301,5 +301,180 @@ export class VisualAssertions {
     }
 
     return false
+  }
+
+  // ============================================================================
+  // STATUS EFFECT ASSERTIONS
+  // ============================================================================
+
+  /**
+   * Check if a token has a specific status effect overlay rendered
+   * @param tokenId The token's ID
+   * @param effectType The status effect type to check for (e.g., 'flaming', 'stunned')
+   * @returns True if the effect overlay is found and visible
+   */
+  assertTokenHasStatusEffect(tokenId: string, effectType: string): boolean {
+    if (!this.stage) return false
+
+    // Find status effect overlay group for this token
+    const effectGroup = this.stage.findOne(`#status-effect-${tokenId}-${effectType}`)
+    if (!effectGroup) return false
+
+    // Verify the effect is visible and has opacity > 0
+    return effectGroup.visible() && effectGroup.opacity() > 0
+  }
+
+  /**
+   * Count the number of active status effect overlays on a token
+   * @param tokenId The token's ID
+   * @returns The number of visible status effect overlays
+   */
+  countTokenStatusEffects(tokenId: string): number {
+    if (!this.stage) return 0
+
+    // Find all status effect overlays for this token
+    const effectGroups = this.stage.find((node: Konva.Node) => {
+      const nodeId = node.id()
+      return nodeId && nodeId.startsWith(`status-effect-${tokenId}-`) && node.visible() && node.opacity() > 0
+    })
+
+    return effectGroups.length
+  }
+
+  /**
+   * Verify that a token has the expected set of status effects rendered
+   * @param tokenId The token's ID
+   * @param expectedEffects Array of effect types that should be present
+   * @returns True if all expected effects are found (order doesn't matter)
+   */
+  assertStatusEffectRendering(tokenId: string, expectedEffects: string[]): boolean {
+    if (!this.stage) return false
+
+    // Check each expected effect
+    for (const effectType of expectedEffects) {
+      if (!this.assertTokenHasStatusEffect(tokenId, effectType)) {
+        return false
+      }
+    }
+
+    // Verify count matches (no extra effects)
+    const actualCount = this.countTokenStatusEffects(tokenId)
+    return actualCount === expectedEffects.length
+  }
+
+  /**
+   * Check if a status effect overlay is animating
+   * @param tokenId The token's ID
+   * @param effectType The status effect type
+   * @returns True if the effect appears to be animating (has animation-related attributes)
+   */
+  assertStatusEffectAnimating(tokenId: string, effectType: string): boolean {
+    if (!this.stage) return false
+
+    const effectGroup = this.stage.findOne(`#status-effect-${tokenId}-${effectType}`)
+    if (!effectGroup) return false
+
+    // Check if the effect group has children (particles, pulses, etc.)
+    const children = (effectGroup as Konva.Group).getChildren()
+    if (children.length === 0) return false
+
+    // Check if any child elements have opacity or scale that suggests animation
+    for (const child of children) {
+      const opacity = child.opacity()
+      const scale = child.scaleX()
+
+      // Animation typically involves varying opacity or scale
+      if (opacity > 0 && opacity < 1) return true
+      if (scale !== 1) return true
+    }
+
+    return false
+  }
+
+  /**
+   * Verify status effect visual properties match expected values
+   * @param tokenId The token's ID
+   * @param effectType The status effect type
+   * @param expectedProps Expected visual properties
+   * @returns True if properties match within tolerance
+   */
+  assertStatusEffectProperties(
+    tokenId: string,
+    effectType: string,
+    expectedProps: {
+      opacity?: number
+      visible?: boolean
+      hasParticles?: boolean
+      particleCount?: number
+    }
+  ): boolean {
+    if (!this.stage) return false
+
+    const effectGroup = this.stage.findOne(`#status-effect-${tokenId}-${effectType}`)
+    if (!effectGroup) return false
+
+    // Check visibility
+    if (expectedProps.visible !== undefined && effectGroup.visible() !== expectedProps.visible) {
+      return false
+    }
+
+    // Check opacity (with tolerance)
+    if (expectedProps.opacity !== undefined) {
+      const actualOpacity = effectGroup.opacity()
+      const opacityTolerance = 0.1
+      if (Math.abs(actualOpacity - expectedProps.opacity) > opacityTolerance) {
+        return false
+      }
+    }
+
+    // Check for particles
+    if (expectedProps.hasParticles !== undefined) {
+      const children = (effectGroup as Konva.Group).getChildren()
+      const hasParticles = children.length > 1 // More than just base overlay
+      if (hasParticles !== expectedProps.hasParticles) {
+        return false
+      }
+    }
+
+    // Check particle count
+    if (expectedProps.particleCount !== undefined) {
+      const children = (effectGroup as Konva.Group).getChildren()
+      // Subtract 1 for base overlay, rest are particles
+      const particleCount = Math.max(0, children.length - 1)
+      if (particleCount !== expectedProps.particleCount) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  /**
+   * Get all status effects currently rendered on a token
+   * @param tokenId The token's ID
+   * @returns Array of effect types found
+   */
+  getTokenStatusEffects(tokenId: string): string[] {
+    if (!this.stage) return []
+
+    const effects: string[] = []
+    const effectGroups = this.stage.find((node: Konva.Node) => {
+      const nodeId = node.id()
+      return nodeId && nodeId.startsWith(`status-effect-${tokenId}-`)
+    })
+
+    for (const group of effectGroups) {
+      const nodeId = group.id()
+      if (nodeId && group.visible()) {
+        // Extract effect type from ID: "status-effect-{tokenId}-{effectType}"
+        const parts = nodeId.split('-')
+        if (parts.length >= 3) {
+          const effectType = parts.slice(3).join('-') // Handle effect types with hyphens
+          effects.push(effectType)
+        }
+      }
+    }
+
+    return effects
   }
 }

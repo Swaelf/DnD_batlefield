@@ -10,6 +10,7 @@ export * from './timeline'
 export * from './timelineUnified'
 export * from './spells'
 export * from './unifiedAction'
+export * from './statusEffects'
 
 // Application layer types
 export * from './stores'

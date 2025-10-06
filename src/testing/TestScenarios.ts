@@ -10,6 +10,7 @@ import { allSpellDurationTests } from './TestSpellDurations'
 import { allPostEffectCleanupTests } from './TestPostEffectCleanup'
 import { allAnimationPrimitiveTests } from './TestAnimationPrimitives'
 import { staticLayerPerformanceTests } from './TestStaticLayerPerformance'
+import { statusEffectTests } from './TestStatusEffects'
 
 export interface TestStep {
   type: 'action' | 'wait' | 'assert' | 'capture'
@@ -1594,10 +1595,10 @@ export const testScenarios: TestScenario[] = [
   ...allAttackTestScenarios,
 
   // ============================================================================
-  // ANIMATION PRIMITIVE TESTS - Isolated animation library testing
+  // ANIMATION TESTS - Visual animation rendering tests
   // ============================================================================
-  // ANIMATION COMPONENT TESTS - Visual animation rendering tests
-  // ============================================================================
+
+  // ANIMATION COMPONENT TESTS
   // Tests that each animation category renders and animates correctly:
   // - Projectile (arrows, missiles)
   // - Burst (explosions, impacts)
@@ -1610,13 +1611,22 @@ export const testScenarios: TestScenario[] = [
   // Total: 8 animation component tests
   ...animationTests,
 
-  // ============================================================================
+  // ANIMATION PRIMITIVE TESTS
   // Tests individual animation primitives and motion generators from animation-effects library
   // Motion Primitives: Move, Rotate, Scale, Fade (4 tests)
   // Motion Generators: Linear, Curved, Bounce, Wave, Orbit (5 tests)
   // Effect Primitives: Trail, Glow, Pulse, Flash, Particles (5 tests)
   // Total tests: 14 animation primitive tests
   ...allAnimationPrimitiveTests,
+
+  // STATUS EFFECT ANIMATION TESTS
+  // Tests all status effect animations and behavior:
+  // - Individual effect tests (12 effects: stunned, poisoned, prone, entangled, dying, flaming, chilled, dazed, blessed, regenerating, sleeping, frightened)
+  // - Effect stacking (multiple effects on one token)
+  // - Effect expiration (timeline-based cleanup)
+  // - Intensity variations (low vs high intensity rendering)
+  // Total tests: 16 status effect tests (12 individual + 4 functional)
+  ...statusEffectTests,
 
   // ============================================================================
   // STATIC LAYER PERFORMANCE TESTS - Visual performance tests with many objects

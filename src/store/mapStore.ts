@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
-import type { MapStore } from '../types'
+import type { WritableDraft } from 'immer'
+import type { MapStore, Token } from '../types'
 import type { MapObject, SpellMapObject, AttackEventData } from '../types'
 import { useHistoryStore } from './historyStore'
 import { useLayerStore } from './layerStore'
@@ -420,6 +421,104 @@ const useMapStore = create<MapStore>()(
         state.selectedObjects = []
       }
     }),
+
+    // Status Effect Management
+    addStatusEffect: (tokenId, effect) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          const obj = state.currentMap.objects.find(o => o.id === tokenId && o.type === 'token')
+          if (obj && obj.type === 'token') {
+            const token = obj as WritableDraft<Token>
+            if (!token.statusEffects) {
+              token.statusEffects = []
+            }
+            // Check if effect already exists, if so, update it
+            const existingIndex = token.statusEffects.findIndex(e => e.type === effect.type)
+            if (existingIndex >= 0) {
+              token.statusEffects[existingIndex] = effect
+            } else {
+              token.statusEffects.push(effect)
+            }
+            state.mapVersion += 1
+          }
+        }
+      })
+    },
+
+    removeStatusEffect: (tokenId, effectType) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          const obj = state.currentMap.objects.find(o => o.id === tokenId && o.type === 'token')
+          if (obj && obj.type === 'token') {
+            const token = obj as WritableDraft<Token>
+            if (token.statusEffects) {
+              token.statusEffects = token.statusEffects.filter(e => e.type !== effectType)
+              state.mapVersion += 1
+            }
+          }
+        }
+      })
+    },
+
+    clearStatusEffects: (tokenId) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          const obj = state.currentMap.objects.find(o => o.id === tokenId && o.type === 'token')
+          if (obj && obj.type === 'token') {
+            const token = obj as WritableDraft<Token>
+            token.statusEffects = []
+            state.mapVersion += 1
+          }
+        }
+      })
+    },
+
+    cleanupExpiredStatusEffects: (currentRound) => {
+      set((state) => {
+        if (state.currentMap) {
+          let hasChanges = false
+
+          // Iterate through all tokens
+          state.currentMap.objects.forEach((obj) => {
+            if (obj.type === 'token') {
+              const token = obj as WritableDraft<Token>
+              if (token.statusEffects && token.statusEffects.length > 0) {
+                // Filter out expired effects
+                const activeEffects = token.statusEffects.filter((effect) => {
+                  // If duration is undefined or 0, effect is indefinite
+                  if (!effect.duration || effect.duration === 0) {
+                    return true
+                  }
+
+                  // Calculate when effect was applied (current round - duration)
+                  // We assume effects last for their duration in rounds from when applied
+                  // For simplicity, we'll track this by storing roundApplied in the effect
+                  if (effect.roundApplied !== undefined) {
+                    const expiresAtRound = effect.roundApplied + effect.duration
+                    return currentRound < expiresAtRound
+                  }
+
+                  // If no roundApplied, keep the effect (backward compatibility)
+                  return true
+                })
+
+                if (activeEffects.length !== token.statusEffects.length) {
+                  token.statusEffects = activeEffects
+                  hasChanges = true
+                }
+              }
+            }
+          })
+
+          if (hasChanges) {
+            state.mapVersion += 1
+          }
+        }
+      })
+    },
   }))
 )
 

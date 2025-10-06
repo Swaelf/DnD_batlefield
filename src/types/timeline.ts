@@ -1,5 +1,6 @@
 import type Konva from 'konva'
 import type { Position } from './map'
+import type { StatusEffectType } from './statusEffects'
 
 // Timeline and event management types - Round-based system
 export type Timeline = {
@@ -131,6 +132,13 @@ export type SpellEventData = {
   // Target tracking properties
   targetTokenId?: string    // Token ID to track and follow
   trackTarget?: boolean     // Enable dynamic target tracking
+
+  // Status effect application
+  statusEffect?: {          // Status effect to apply on spell completion
+    type: StatusEffectType
+    duration?: number       // Duration in rounds
+    intensity?: number      // Effect intensity (0-1)
+  }
 }
 
 // Attack event data for weapon attacks

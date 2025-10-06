@@ -146,9 +146,10 @@ const useTimelineStore = create<TimelineStore>()(
         state.timeline!.currentEvent = nextEventNumber
       })
 
-      // Clean up expired spell effects when advancing events
+      // Clean up expired spell effects and status effects when advancing events
       const { currentRound: newRound, currentEvent: newEvent } = get()
       useMapStore.getState().cleanupExpiredSpells(newRound, newEvent)
+      useMapStore.getState().cleanupExpiredStatusEffects(newRound)
     },
 
     previousEvent: () => {
@@ -215,9 +216,10 @@ const useTimelineStore = create<TimelineStore>()(
         }
       }
 
-      // Clean up spell effects when navigating to previous event
+      // Clean up spell effects and status effects when navigating to previous event
       const { currentRound: newRound, currentEvent: newEvent } = get()
       useMapStore.getState().cleanupExpiredSpells(newRound, newEvent)
+      useMapStore.getState().cleanupExpiredStatusEffects(newRound)
     },
 
     goToEvent: (eventNumber) => {
@@ -254,9 +256,10 @@ const useTimelineStore = create<TimelineStore>()(
         }
       })
 
-      // Clean up spell effects when jumping to a specific event
+      // Clean up spell effects and status effects when jumping to a specific event
       const { currentRound: newRound } = get()
       useMapStore.getState().cleanupExpiredSpells(newRound, eventNumber)
+      useMapStore.getState().cleanupExpiredStatusEffects(newRound)
     },
 
     addAction: (tokenId, type, data, eventNumber) => set((state) => {
@@ -696,9 +699,10 @@ const useTimelineStore = create<TimelineStore>()(
         severity: 'high'
       })
 
-      // Clean up expired spells based on rounds
+      // Clean up expired spells and status effects based on rounds
       const state = get()
       useMapStore.getState().cleanupExpiredSpells(state.currentRound, state.currentEvent)
+      useMapStore.getState().cleanupExpiredStatusEffects(state.currentRound)
     },
 
     nextRound: async () => {

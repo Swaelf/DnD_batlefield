@@ -12,6 +12,7 @@ import { LayerManagementPanel } from './LayerManagementPanel'
 import { ShapeStylePanel } from './ShapeStylePanel'
 import { MapSettingsPanel } from './MapSettingsPanel'
 import { MultiSelectProperties } from './MultiSelectProperties'
+import { StatusEffectsPanel } from './StatusEffectsPanel'
 import { ComponentErrorBoundary } from '../ErrorBoundary/ErrorBoundary'
 import {
   Panel,
@@ -227,10 +228,21 @@ const PropertiesPanelComponent = ({ className, style }: PropertiesPanelProps) =>
               />
             )}
             {selectedObject.type === 'token' && (
-              <TokenProperties
-                token={selectedObject as Token}
-                onUpdate={handleUpdateObject}
-              />
+              <>
+                <TokenProperties
+                  token={selectedObject as Token}
+                  onUpdate={handleUpdateObject}
+                />
+                {/* Status Effects Panel for Tokens */}
+                <PanelSection>
+                  <ComponentErrorBoundary
+                    name="StatusEffectsPanel"
+                    fallback={<Text style={{ fontSize: '12px', color: 'var(--gray400)' }}>Status effects unavailable</Text>}
+                  >
+                    <StatusEffectsPanel />
+                  </ComponentErrorBoundary>
+                </PanelSection>
+              </>
             )}
           </>
         )}

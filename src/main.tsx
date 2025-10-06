@@ -67,5 +67,6 @@ if (process.env.NODE_ENV === 'development') {
     }).catch(err => {
       console.error('Failed to load round replay test:', err)
     })
+
   }
 }
