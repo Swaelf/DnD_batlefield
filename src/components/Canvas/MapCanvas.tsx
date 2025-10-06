@@ -528,13 +528,22 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
     if (isDrawingTerrainRef.current && (currentTool === 'terrainBrush' || currentTool === 'terrainEraser')) {
       terrainPointsRef.current.push(position.x, position.y)
 
+      // Convert flat array to Point[] for preview rendering
+      const previewPoints: Point[] = []
+      for (let i = 0; i < terrainPointsRef.current.length; i += 2) {
+        previewPoints.push({
+          x: terrainPointsRef.current[i],
+          y: terrainPointsRef.current[i + 1]
+        })
+      }
+
       // Update drawing state to show the path preview
       const toolState = useToolStore.getState()
       toolState.setDrawingState({
         isDrawing: true,
         startPoint: null,
         currentPoint: position,
-        points: [] // Terrain brush uses terrainPointsRef directly, not drawingState.points
+        points: previewPoints // Pass points for preview rendering
       })
     }
 
@@ -611,6 +620,9 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       // Reset terrain drawing state
       isDrawingTerrainRef.current = false
       terrainPointsRef.current = []
+
+      // Clear drawing state to hide preview
+      toolState.resetDrawingState()
     }
 
     // Background shape drawing: create TerrainDrawing on mouse up
