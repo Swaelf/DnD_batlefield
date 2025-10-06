@@ -24,7 +24,7 @@ export const spellTemplates: UnifiedAction[] = [
       trackTarget: true, // Enable dynamic target following by default
       targetTokenId: '', // Will be set when targeting a token
       // Burst animation details
-      burstSize: 80, // Explosion radius
+      burstSize: 160, // Explosion radius - 20 feet × 8 pixels/foot = 160 pixels
       burstDuration: 600, // How long the explosion lasts
       burstColor: '#FF4500', // Explosion color (slightly different from projectile)
       // Post-effect properties
@@ -42,22 +42,28 @@ export const spellTemplates: UnifiedAction[] = [
       areaOfEffect: {
         type: 'circle',
         center: { x: 0, y: 0 },
-        radius: 80 // 20-foot radius in D&D terms
+        radius: 160 // 20-foot radius - 20 feet × 8 pixels/foot = 160 pixels
       }
     },
     metadata: {
       name: 'Fireball',
-      description: 'A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Can track moving targets.'
+      description: 'A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Affected creatures are set aflame. Can track moving targets.'
     },
     // D&D 5e Fireball properties
     range: 150, // 150 feet range
-    areaOfEffect: 80, // 20-foot radius (4 pixels per foot)
+    areaOfEffect: 160, // 20-foot radius - 20 feet × 8 pixels/foot = 160 pixels
     damage: '8d6',
     damageType: 'fire',
     spellLevel: 3,
     castingTime: 'action',
     timestamp: 0,
-    duration: 1500
+    duration: 1500,
+    // Status effect to apply on hit
+    statusEffect: {
+      type: 'flaming',
+      duration: 1,
+      intensity: 1
+    }
   },
 
   // Force Spells

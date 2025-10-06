@@ -316,7 +316,13 @@ const UnifiedEventEditorComponent = ({
           curveDirection: action.animation.curveDirection || 'auto',
           // Target tracking properties - only enable if we have a target token
           trackTarget: !!(finalTargetTokenId && action.animation.trackTarget),
-          targetTokenId: finalTargetTokenId || ''
+          targetTokenId: finalTargetTokenId || '',
+          // Status effect to apply on spell completion
+          statusEffect: action.statusEffect ? {
+            type: action.statusEffect.type,
+            duration: action.statusEffect.duration || 1,
+            intensity: action.statusEffect.intensity || 1
+          } : undefined
         }
         return result
 

@@ -597,6 +597,43 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       }
       completedSpellAnimations.add(spell.id)
 
+      // Apply status effects to tokens in area of effect (if spell has statusEffect property)
+      if (spell.spellData?.statusEffect) {
+        const effectRadius = spell.spellData.category === 'cone'
+          ? spell.spellData.size
+          : (spell.spellData.burstRadius || spell.spellData.size || 60)
+
+        const targetPosition = spell.spellData.toPosition
+
+        // Find all tokens within the spell's area of effect
+        const affectedTokens = objects.filter(obj => {
+          if (obj.type !== 'token') return false
+
+          // Calculate distance from spell center to token
+          const dx = obj.position.x - targetPosition.x
+          const dy = obj.position.y - targetPosition.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
+          return distance <= effectRadius
+        })
+
+        // Apply status effect to all affected tokens
+        const { addStatusEffect } = useMapStore.getState()
+        const { currentRound } = useTimelineStore.getState()
+
+        affectedTokens.forEach(token => {
+          const statusEffect = {
+            type: spell.spellData!.statusEffect!.type,
+            intensity: spell.spellData!.statusEffect!.intensity || 1,
+            roundApplied: currentRound,
+            duration: spell.spellData!.statusEffect!.duration || 1
+          }
+
+          console.log(`[ObjectsLayer] Applying ${statusEffect.type} to token ${token.id}`)
+          addStatusEffect(token.id, statusEffect)
+        })
+      }
+
       // For spells with persist duration, create a persistent area
       const persistDuration = spell.spellData?.persistDuration || 0
       console.log('[ObjectsLayer] Animation complete for spell:', spell.spellData?.spellName, 'persistDuration:', persistDuration, 'category:', spell.spellData?.category)
