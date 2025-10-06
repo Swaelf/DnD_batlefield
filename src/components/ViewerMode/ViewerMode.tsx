@@ -50,10 +50,21 @@ export const ViewerMode = () => {
       addObject(object)
     })
 
-    // Subscribe to object updated
+    // Subscribe to object updated (legacy single updates)
     const unsubObjectUpdated = syncManager.on('OBJECT_UPDATED', ({ objectId, updates }) => {
       console.log('[ViewerMode] Object updated:', objectId)
       updateObject(objectId, updates)
+    })
+
+    // Subscribe to batched updates (performance optimized)
+    const unsubBatchUpdate = syncManager.on('BATCH_UPDATE', ({ updates }: { updates: Array<{ objectId: string; updates: any }> }) => {
+      console.log('[ViewerMode] Batch update:', updates.length, 'objects')
+      // Process all updates in a single RAF for smooth rendering
+      requestAnimationFrame(() => {
+        updates.forEach(({ objectId, updates }) => {
+          updateObject(objectId, updates)
+        })
+      })
     })
 
     // Subscribe to object removed
@@ -84,6 +95,7 @@ export const ViewerMode = () => {
       unsubMapUpdate()
       unsubObjectAdded()
       unsubObjectUpdated()
+      unsubBatchUpdate()
       unsubObjectRemoved()
       unsubHeartbeat()
       unsubTimelineEvent()

@@ -10,7 +10,8 @@ import type { BattleMap } from '@/types/map'
 export type SyncMessageType =
   | 'MAP_STATE_UPDATE'      // Full map state changed
   | 'OBJECT_ADDED'          // Single object added
-  | 'OBJECT_UPDATED'        // Single object updated
+  | 'OBJECT_UPDATED'        // Single object updated (deprecated - use BATCH_UPDATE)
+  | 'BATCH_UPDATE'          // Batched object updates (performance optimized)
   | 'OBJECT_REMOVED'        // Single object removed
   | 'ANIMATION_START'       // Animation initiated (spell, attack, movement)
   | 'TIMELINE_EVENT'        // Combat round/event changed
@@ -44,6 +45,9 @@ class SyncManager {
   private isMain: boolean
   private listeners: Map<SyncMessageType, Set<(payload: any) => void>> = new Map()
   private heartbeatInterval: number | null = null
+  private batchQueue: Map<string, any> = new Map() // objectId -> updates
+  private batchTimeout: number | null = null
+  private readonly BATCH_DELAY = 16 // ~60fps batching
 
   constructor(mode: 'main' | 'viewer') {
     this.isMain = mode === 'main'
@@ -178,10 +182,41 @@ class SyncManager {
   }
 
   /**
-   * Broadcast single object updated
+   * Broadcast single object updated (batched for performance)
    */
   broadcastObjectUpdated(objectId: string, updates: any) {
-    this.broadcast('OBJECT_UPDATED', { objectId, updates })
+    // Add to batch queue
+    const existing = this.batchQueue.get(objectId) || {}
+    this.batchQueue.set(objectId, { ...existing, ...updates })
+
+    // Schedule batch processing
+    if (this.batchTimeout === null) {
+      this.batchTimeout = window.setTimeout(() => {
+        this.flushBatchQueue()
+      }, this.BATCH_DELAY)
+    }
+  }
+
+  /**
+   * Flush batched updates
+   */
+  private flushBatchQueue() {
+    if (this.batchQueue.size === 0) {
+      this.batchTimeout = null
+      return
+    }
+
+    // Send all batched updates at once
+    const updates: Array<{ objectId: string; updates: any }> = []
+    this.batchQueue.forEach((objectUpdates, objectId) => {
+      updates.push({ objectId, updates: objectUpdates })
+    })
+
+    this.broadcast('BATCH_UPDATE', { updates })
+
+    // Clear queue and timeout
+    this.batchQueue.clear()
+    this.batchTimeout = null
   }
 
   /**
@@ -263,6 +298,12 @@ class SyncManager {
    * Cleanup and close channel
    */
   destroy() {
+    // Flush any pending batches
+    if (this.batchTimeout !== null) {
+      clearTimeout(this.batchTimeout)
+      this.flushBatchQueue()
+    }
+
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval)
       this.heartbeatInterval = null
@@ -274,6 +315,7 @@ class SyncManager {
     }
 
     this.listeners.clear()
+    this.batchQueue.clear()
     console.log('[SyncManager] Destroyed')
   }
 }
