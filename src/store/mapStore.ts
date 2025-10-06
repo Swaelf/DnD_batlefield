@@ -5,6 +5,7 @@ import type { MapStore, Token } from '../types'
 import type { MapObject, SpellMapObject, AttackEventData } from '../types'
 import { useHistoryStore } from './historyStore'
 import { useLayerStore } from './layerStore'
+import { getSyncManager } from '../utils/syncManager'
 
 // Helper function to save current state to history before modifications
 const saveToHistory = () => {
@@ -123,6 +124,14 @@ const useMapStore = create<MapStore>()(
 
       state.currentMap = map
       state.selectedObjects = []
+
+      // Broadcast map update to viewer
+      try {
+        const syncManager = getSyncManager('main')
+        syncManager.broadcastMapUpdate(map)
+      } catch {
+        // Sync manager not initialized or viewer mode - ignore
+      }
     }),
 
     addObject: (object) => {
@@ -131,6 +140,14 @@ const useMapStore = create<MapStore>()(
         if (state.currentMap) {
           const objectWithLayer = assignLayerId(object)
           state.currentMap.objects.push(objectWithLayer)
+
+          // Broadcast object added to viewer
+          try {
+            const syncManager = getSyncManager('main')
+            syncManager.broadcastObjectAdded(objectWithLayer)
+          } catch {
+            // Sync manager not initialized or viewer mode - ignore
+          }
         }
       })
     },
@@ -151,6 +168,14 @@ const useMapStore = create<MapStore>()(
         state.currentMap.objects.push(spellObject)
         // Force re-render
         state.mapVersion += 1
+
+        // Broadcast spell effect to viewer
+        try {
+          const syncManager = getSyncManager('main')
+          syncManager.broadcastObjectAdded(spellObject)
+        } catch {
+          // Sync manager not initialized or viewer mode - ignore
+        }
       }
     }),
 
@@ -234,6 +259,14 @@ const useMapStore = create<MapStore>()(
         if (state.currentMap) {
           state.currentMap.objects = state.currentMap.objects.filter(obj => obj.id !== id)
           state.selectedObjects = state.selectedObjects.filter(selectedId => selectedId !== id)
+
+          // Broadcast object removal to viewer
+          try {
+            const syncManager = getSyncManager('main')
+            syncManager.broadcastObjectRemoved(id)
+          } catch {
+            // Sync manager not initialized or viewer mode - ignore
+          }
         }
       })
     },
@@ -306,6 +339,14 @@ const useMapStore = create<MapStore>()(
             object.position = position
             // Increment version to force re-render
             state.mapVersion += 1
+
+            // Broadcast position update to viewer
+            try {
+              const syncManager = getSyncManager('main')
+              syncManager.broadcastObjectUpdated(id, { position })
+            } catch {
+              // Sync manager not initialized or viewer mode - ignore
+            }
           }
         }
       })
@@ -441,6 +482,14 @@ const useMapStore = create<MapStore>()(
               token.statusEffects.push(effect)
             }
             state.mapVersion += 1
+
+            // Broadcast status effect update to viewer
+            try {
+              const syncManager = getSyncManager('main')
+              syncManager.broadcastObjectUpdated(tokenId, { statusEffects: token.statusEffects })
+            } catch {
+              // Sync manager not initialized or viewer mode - ignore
+            }
           }
         }
       })
@@ -456,6 +505,14 @@ const useMapStore = create<MapStore>()(
             if (token.statusEffects) {
               token.statusEffects = token.statusEffects.filter(e => e.type !== effectType)
               state.mapVersion += 1
+
+              // Broadcast status effect update to viewer
+              try {
+                const syncManager = getSyncManager('main')
+                syncManager.broadcastObjectUpdated(tokenId, { statusEffects: token.statusEffects })
+              } catch {
+                // Sync manager not initialized or viewer mode - ignore
+              }
             }
           }
         }
@@ -471,6 +528,14 @@ const useMapStore = create<MapStore>()(
             const token = obj as WritableDraft<Token>
             token.statusEffects = []
             state.mapVersion += 1
+
+            // Broadcast status effect clear to viewer
+            try {
+              const syncManager = getSyncManager('main')
+              syncManager.broadcastObjectUpdated(tokenId, { statusEffects: [] })
+            } catch {
+              // Sync manager not initialized or viewer mode - ignore
+            }
           }
         }
       })

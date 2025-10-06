@@ -32,6 +32,8 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
   onMouseMove,
   onTransformChange,
   externalTransformVersion,
+  gridVisible: _gridVisible,  // Reserved for future use
+  isViewerMode: _isViewerMode,  // Reserved for future use
 }) => {
   const currentMap = useMapStore(state => state.currentMap)
   const currentTool = useToolStore(state => state.currentTool)

@@ -626,7 +626,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           const distance = Math.sqrt(dx * dx + dy * dy)
 
           // For cone spells, also check if token is within the cone angle
-          if (isCone) {
+          if (isCone && spell.spellData) {
             const coneAngle = (spell.spellData.coneAngle || 60) * (Math.PI / 180)
             const targetDx = spell.spellData.toPosition.x - spell.spellData.fromPosition.x
             const targetDy = spell.spellData.toPosition.y - spell.spellData.fromPosition.y

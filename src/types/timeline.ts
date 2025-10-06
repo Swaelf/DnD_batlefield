@@ -111,6 +111,7 @@ export type SpellEventData = {
   persistDuration?: number  // Spell duration (rounds for continuous spells, events for post-effects)
   durationType?: 'rounds' | 'events'  // How to interpret persistDuration (default: 'rounds')
   particleEffect?: boolean  // Enable particle effects
+  opacity?: number          // Animation opacity (0-1, default: 1)
 
   // Enhanced animation properties for projectile_burst and other complex spells
   trailLength?: number      // Number of trail segments

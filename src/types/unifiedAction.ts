@@ -1,4 +1,5 @@
 import type { Point } from './geometry'
+import type { StatusEffect } from './statusEffects'
 
 // Core unified action type
 export type UnifiedAction = {
@@ -24,6 +25,7 @@ export type UnifiedAction = {
   damageType?: string // type of damage (fire, cold, piercing, etc.)
   spellLevel?: number // D&D spell level (0-9)
   castingTime?: string // D&D casting time (e.g., "1 action", "1 bonus action")
+  statusEffect?: StatusEffect // Status effect applied to targets
 }
 
 // Animation configuration
@@ -35,6 +37,7 @@ export type AnimationConfig = {
   customParams?: Record<string, any>
   startDelay?: number
   easing?: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' | 'ease-in' | 'ease-out' | 'ease-in-out'
+  durationType?: 'rounds' | 'events' // Duration measured in combat rounds or events
 
   // Projectile properties
   speed?: number

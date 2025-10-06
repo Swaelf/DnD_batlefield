@@ -15,6 +15,8 @@ export interface MapCanvasProps {
   readonly onZoomChange?: (zoom: number) => void
   readonly onTransformChange?: () => void  // Callback when stage transform changes (pan/zoom)
   readonly externalTransformVersion?: number  // External transform version from parent
+  readonly gridVisible?: boolean  // Override grid visibility (for viewer mode)
+  readonly isViewerMode?: boolean  // Enable viewer-specific behaviors
 }
 
 export interface SelectionRectangle {

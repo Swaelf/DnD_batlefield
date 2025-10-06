@@ -31,13 +31,15 @@ import { StatusBar } from './components/StatusBar/StatusBar'
 const HelpDialog = lazy(() => import('./components/HelpDialog/HelpDialog').then(m => ({ default: m.HelpDialog })))
 const CombatTracker = lazy(() => import('./components/Timeline/CombatTracker').then(m => ({ default: m.CombatTracker })))
 const TestingPanel = lazy(() => import('./testing/TestingPanel').then(m => ({ default: m.TestingPanel })))
-import { Save, HelpCircle, Bug, Users, UserPlus, Activity, Accessibility, ZoomIn, ZoomOut, Maximize2, Grid3x3 } from '@/utils/optimizedIcons'
+import { Save, HelpCircle, Bug, Users, UserPlus, Activity, Accessibility, ZoomIn, ZoomOut, Maximize2, Grid3x3, Monitor } from '@/utils/optimizedIcons'
 import { Box, Text } from '@/components/ui'
 import { Button } from '@/components/primitives'
 import { vars } from '@/styles/theme.css'
 import { ContextMenuManager } from '@/components/ContextMenu/ContextMenuManager'
 import { initializePerformanceOptimizations } from '@/utils/performanceOptimizations'
 import { NavigationPad, EnvironmentToken } from '@/components/Navigation'
+import { ViewerMode } from '@/components/ViewerMode'
+import { getSyncManager, destroySyncManager } from '@/utils/syncManager'
 
 // Debug utilities available but not auto-imported to prevent startup animations
 // These can be manually imported in TestingPanel or browser console if needed:
@@ -67,6 +69,19 @@ function App() {
   const [showSessionCreator, setShowSessionCreator] = useState(false)
   const [showPerformance, setShowPerformance] = useState(false)
   const [showAccessibility, setShowAccessibility] = useState(false)
+
+  // Function to open viewer mode in new tab
+  const openViewerMode = () => {
+    // Open viewer in new window/tab
+    const viewerWindow = window.open(
+      `${window.location.origin}${window.location.pathname}#/viewer`,
+      '_blank',
+      'width=1280,height=720'
+    )
+    if (!viewerWindow) {
+      alert('Please allow popups to open Viewer Mode')
+    }
+  }
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [canvasTransformVersion, setCanvasTransformVersion] = useState(0)
@@ -74,6 +89,17 @@ function App() {
   // Collaboration state
   const { currentSession, isHost, connectedUsers, connectionStatus } = useCollaborationStore()
   const isCollaborating = currentSession && connectionStatus === 'connected'
+
+  // Initialize sync manager for main mode
+  useEffect(() => {
+    // Initialize SyncManager in main mode
+    getSyncManager('main')
+
+    return () => {
+      // Cleanup on unmount
+      destroySyncManager('main')
+    }
+  }, [])
 
   // Performance and accessibility
   // 🚀 OPTIMIZATION: Only monitor performance when dashboard is actually open
@@ -387,6 +413,16 @@ function App() {
             <Bug size={16} />
           </Button>
 
+          {/* Viewer Mode Button */}
+          <Button
+            onClick={openViewerMode}
+            {...({ variant: "ghost", size: "icon" } as any)}
+            title="Open Viewer Mode (Screen Share)"
+            style={{ color: vars.colors.success }}
+          >
+            <Monitor size={16} />
+          </Button>
+
           {/* Help Button */}
           <Button
             onClick={() => setShowHelp(true)}
@@ -541,6 +577,14 @@ function App() {
 }
 
 const AppWithContextMenu = () => {
+  // Check if we're in viewer mode
+  const isViewerMode = window.location.pathname === '/viewer' || window.location.hash === '#/viewer'
+
+  // Render viewer mode if detected (before any React hooks in App component)
+  if (isViewerMode) {
+    return <ViewerMode />
+  }
+
   return (
     <ContextMenuManager>
       <App />
