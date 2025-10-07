@@ -187,21 +187,23 @@ export const daggerStabTemplate: AttackTemplate = {
 }
 
 /**
- * Arrow Shot - Basic ranged attack
+ * Arrow Shot - Basic ranged attack (Longbow)
+ * Range: 120ft (24 cells)
  * Projectile attack
  */
 export const arrowShotTemplate: AttackTemplate = {
   templateId: 'arrow-shot',
-  name: 'Arrow Shot',
-  description: 'A basic arrow shot from a bow',
+  name: 'Arrow Shot (Longbow)',
+  description: 'A longbow arrow shot (Range: 120ft / 24 cells)',
   type: 'attack',
   category: 'arrow',
   tags: ["attack","combat"],
   animation: {
     type: 'projectile',
-    duration: 600,
+    duration: 800,
     color: '#8B4513',
     size: 8,
+    range: 120, // 120ft = 24 cells
     customParams: {
       projectileShape: 'arrow',
       rotation: true,
@@ -216,78 +218,84 @@ export const arrowShotTemplate: AttackTemplate = {
   },
   metadata: {
     name: 'Arrow Shot',
-    description: '1d8+2 piercing damage',
+    description: '1d8+2 piercing damage (Range: 120ft)',
     rollResult: {
       total: 7,
       rolls: [5],
       modifier: 2
-    }
+    },
+    range: 120 // Store range in metadata too
   },
-  duration: 600,
+  duration: 800,
   weaponType: 'longbow',
   damageType: 'piercing',
-  range: 150 // 150ft range
+  range: 120 // 120ft = 24 cells
 }
 
 /**
- * Crossbow Bolt - Heavy ranged attack
+ * Crossbow Bolt / Sling Shot - Medium ranged attack
+ * Range: 60ft (12 cells)
  * High damage projectile
  */
 export const crossbowBoltTemplate: AttackTemplate = {
   templateId: 'crossbow-bolt',
-  name: 'Crossbow Bolt',
-  description: 'A heavy crossbow bolt attack',
+  name: 'Sling Shot',
+  description: 'A sling shot attack (Range: 60ft / 12 cells)',
   type: 'attack',
   category: 'bolt',
   tags: ["attack","combat"],
   animation: {
     type: 'projectile',
-    duration: 500,
-    color: '#2F4F4F',
-    size: 10,
+    duration: 600,
+    color: '#8B7355',
+    size: 6,
+    range: 60, // 60ft = 12 cells
     customParams: {
       projectileShape: 'bolt',
-      speed: 1.2,
+      speed: 1.0,
       piercing: true,
-      impactForce: 'high'
+      impactForce: 'medium'
     }
   },
   effects: {
     affectedTargets: [],
-    highlightColor: '#2F4F4F',
-    highlightDuration: 600
+    highlightColor: '#8B7355',
+    highlightDuration: 500
   },
   metadata: {
-    name: 'Crossbow Bolt',
-    description: '1d10+1 piercing damage',
+    name: 'Sling Shot',
+    description: '1d4+2 bludgeoning damage (Range: 60ft)',
     rollResult: {
-      total: 8,
-      rolls: [7],
-      modifier: 1
-    }
+      total: 5,
+      rolls: [3],
+      modifier: 2
+    },
+    range: 60 // Store range in metadata too
   },
-  duration: 500,
-  weaponType: 'heavy crossbow',
-  damageType: 'piercing',
-  range: 100
+  duration: 600,
+  weaponType: 'sling',
+  damageType: 'bludgeoning',
+  range: 60 // 60ft = 12 cells
 }
 
 /**
- * Throwing Knife - Quick ranged attack
+ * Thrown Dagger - Quick ranged attack
+ * Range: 30ft (6 cells)
  * Fast projectile
  */
 export const throwingKnifeTemplate: AttackTemplate = {
   templateId: 'throwing-knife',
-  name: 'Throwing Knife',
-  description: 'A thrown knife attack',
+  name: 'Thrown Dagger',
+  description: 'A thrown dagger attack (Range: 30ft / 6 cells)',
   type: 'attack',
   category: 'thrown',
   tags: ["attack","combat"],
   animation: {
     type: 'projectile',
     duration: 400,
-    color: '#778899',
+    color: '#C0C0C0',
     size: 6,
+    range: 30, // 30ft = 6 cells
     customParams: {
       projectileShape: 'knife',
       spin: true,
@@ -297,22 +305,23 @@ export const throwingKnifeTemplate: AttackTemplate = {
   },
   effects: {
     affectedTargets: [],
-    highlightColor: '#778899',
+    highlightColor: '#C0C0C0',
     highlightDuration: 400
   },
   metadata: {
-    name: 'Throwing Knife',
-    description: '1d4+3 piercing damage',
+    name: 'Thrown Dagger',
+    description: '1d4+3 piercing damage (Range: 30ft)',
     rollResult: {
       total: 5,
       rolls: [2],
       modifier: 3
-    }
+    },
+    range: 30 // Store range in metadata too
   },
   duration: 400,
-  weaponType: 'throwing knife',
+  weaponType: 'dagger',
   damageType: 'piercing',
-  range: 20
+  range: 30 // 30ft = 6 cells
 }
 
 /**

@@ -1,10 +1,10 @@
-import { memo, useRef, useEffect, useMemo, useState } from 'react'
+import { memo, useRef, useEffect, useState } from 'react'
 import Konva from 'konva'
-import { Group } from 'react-konva'
+import { Group, Circle } from 'react-konva'
 import type { AttackEventData } from '@/types'
 import { ATTACK_VISUALS, CRITICAL_HIT } from '@/constants'
-import { AbstractProjectile } from '@/lib/animation-effects'
-import type { AbstractProjectileConfig } from '@/lib/animation-effects'
+import { createLinearMotion } from '@/lib/animation-effects/motion'
+import type { MotionPathGenerator } from '@/lib/animation-effects/motion/LinearMotion'
 
 type AttackRendererProps = {
   attack: AttackEventData
@@ -22,45 +22,13 @@ const AttackRendererComponent = ({
   const hasStartedRef = useRef(false)
   const [showImpactEffect, setShowImpactEffect] = useState(false)
 
-  // Configuration for ranged attacks using AbstractProjectile
-  const rangedProjectileConfig = useMemo((): AbstractProjectileConfig | null => {
-    if (attack.attackType !== 'ranged') return null
-
-    const { fromPosition, toPosition, duration, color, isCritical } = attack
-
-    // Determine projectile shape based on weapon
-    let shape: 'circle' | 'triangle' | 'rectangle' = 'circle'
-
-    // Arrows and bolts use triangle
-    if (attack.weaponName?.toLowerCase().includes('arrow') ||
-        attack.weaponName?.toLowerCase().includes('bow') ||
-        attack.weaponName?.toLowerCase().includes('crossbow')) {
-      shape = 'triangle'
-    }
-    // Throwing weapons use rectangle
-    else if (attack.weaponName?.toLowerCase().includes('javelin') ||
-             attack.weaponName?.toLowerCase().includes('spear') ||
-             attack.weaponName?.toLowerCase().includes('throw')) {
-      shape = 'rectangle'
-    }
-
-    return {
-      from: fromPosition,
-      to: toPosition,
-      shape,
-      color,
-      size: isCritical ? 5 : 3,
-      effects: ['trail', 'glow'],
-      duration,
-      onComplete: () => {
-        setShowImpactEffect(true)
-        // Delay actual completion until impact effect finishes
-        setTimeout(() => {
-          onAnimationComplete?.()
-        }, ATTACK_VISUALS.IMPACT_FLASH_DURATION)
-      },
-    }
-  }, [attack, onAnimationComplete])
+  // Ranged attack animation state
+  const [rangedProgress, setRangedProgress] = useState(0)
+  const [rangedIsComplete, setRangedIsComplete] = useState(false)
+  const [trailPositions, setTrailPositions] = useState<Array<{x: number, y: number, progress: number}>>([])
+  const rangedAnimationFrameRef = useRef<number>(0)
+  const rangedStartTimeRef = useRef<number>(Date.now())
+  const motionGeneratorRef = useRef<MotionPathGenerator | null>(null)
 
   useEffect(() => {
     if (!isAnimating || attack.attackType === 'ranged') return
@@ -91,6 +59,71 @@ const AttackRendererComponent = ({
       setShowImpactEffect(false)
     }
   }, [isAnimating])
+
+  // Initialize motion generator for ranged attacks
+  useEffect(() => {
+    if (attack.attackType !== 'ranged' || !isAnimating) return
+
+    motionGeneratorRef.current = createLinearMotion(attack.fromPosition, attack.toPosition)
+    rangedStartTimeRef.current = Date.now()
+    setRangedProgress(0)
+    setRangedIsComplete(false)
+    setTrailPositions([])
+  }, [attack.fromPosition, attack.toPosition, attack.attackType, isAnimating])
+
+  // Ranged attack animation loop
+  useEffect(() => {
+    if (attack.attackType !== 'ranged' || !isAnimating || rangedIsComplete) return
+
+    const motionGenerator = motionGeneratorRef.current
+    if (!motionGenerator) return
+
+    const animate = () => {
+      const elapsed = Date.now() - rangedStartTimeRef.current
+      const duration = attack.duration || 800
+      const currentProgress = Math.min(elapsed / duration, 1)
+
+      setRangedProgress(currentProgress)
+
+      // Update trail positions
+      const trailCount = 8
+      const newTrailPositions: Array<{x: number, y: number, progress: number}> = []
+
+      for (let i = 0; i < trailCount; i++) {
+        const trailProgress = Math.max(0, currentProgress - (i * 0.03))
+        if (trailProgress === 0 && currentProgress > 0.1) continue
+
+        const position = motionGenerator(trailProgress)
+        newTrailPositions.unshift({
+          x: position.x,
+          y: position.y,
+          progress: 1 - (i / trailCount)
+        })
+      }
+
+      setTrailPositions(newTrailPositions)
+
+      if (currentProgress >= 1) {
+        setRangedIsComplete(true)
+        setShowImpactEffect(true)
+        setTimeout(() => {
+          onAnimationComplete?.()
+        }, ATTACK_VISUALS.IMPACT_FLASH_DURATION)
+      } else {
+        if (!document.hidden) {
+          rangedAnimationFrameRef.current = requestAnimationFrame(animate)
+        }
+      }
+    }
+
+    rangedAnimationFrameRef.current = requestAnimationFrame(animate)
+
+    return () => {
+      if (rangedAnimationFrameRef.current) {
+        cancelAnimationFrame(rangedAnimationFrameRef.current)
+      }
+    }
+  }, [isAnimating, rangedIsComplete, attack, onAnimationComplete])
 
   // Impact effect for ranged attacks (shown after projectile hits)
   useEffect(() => {
@@ -750,11 +783,98 @@ const AttackRendererComponent = ({
     shakeAnim.start()
   }
 
-  // Render ranged attacks using AbstractProjectile
-  if (attack.attackType === 'ranged' && rangedProjectileConfig) {
+  // Render ranged attacks using custom animation
+  if (attack.attackType === 'ranged') {
+    if (rangedIsComplete) {
+      return (
+        <Group
+          ref={groupRef}
+          visible={false}
+          listening={false}
+        />
+      )
+    }
+
+    const motionGenerator = motionGeneratorRef.current
+    if (!motionGenerator) {
+      return (
+        <Group
+          ref={groupRef}
+          visible={false}
+          listening={false}
+        />
+      )
+    }
+
+    const position = motionGenerator(rangedProgress)
+    const size = attack.isCritical ? 10 : 6
+    const color = attack.color
+    const opacity = 1 - rangedProgress * 0.3
+
+    // Calculate angle for directional effect
+    const dx = attack.toPosition.x - attack.fromPosition.x
+    const dy = attack.toPosition.y - attack.fromPosition.y
+    const angle = Math.atan2(dy, dx)
+
     return (
       <>
-        <AbstractProjectile config={rangedProjectileConfig} />
+        <Group listening={false}>
+          {/* Trail effect */}
+          {trailPositions.map((pos, index) => {
+            const trailRatio = pos.progress
+            const trailSize = size * (0.3 + trailRatio * 0.7)
+
+            return (
+              <Circle
+                key={index}
+                x={pos.x}
+                y={pos.y}
+                radius={trailSize}
+                fill={color}
+                opacity={trailRatio * 0.5}
+              />
+            )
+          })}
+
+          {/* Glow effect */}
+          <Circle
+            x={position.x}
+            y={position.y}
+            radius={size * 1.5}
+            fill={color}
+            opacity={0.3}
+          />
+
+          {/* Main projectile body */}
+          <Circle
+            x={position.x}
+            y={position.y}
+            radius={size}
+            fill={color}
+            opacity={opacity}
+            shadowColor={color}
+            shadowBlur={size * 2}
+            shadowOpacity={0.6}
+          />
+
+          {/* Inner core */}
+          <Circle
+            x={position.x}
+            y={position.y}
+            radius={size * 0.5}
+            fill="#FFFFFF"
+            opacity={opacity * 0.8}
+          />
+
+          {/* Front-facing point */}
+          <Circle
+            x={position.x + Math.cos(angle) * size}
+            y={position.y + Math.sin(angle) * size}
+            radius={size * 0.3}
+            fill="#FFFFFF"
+            opacity={opacity * 0.9}
+          />
+        </Group>
         <Group
           ref={groupRef}
           visible={false}

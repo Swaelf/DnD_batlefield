@@ -339,7 +339,7 @@ The **Action Sequencing System** provides advanced D&D combat coordination throu
 
 ### 🔧 Recent Fixes & Optimizations
 
-**October 2025 - Animation System Refactoring**:
+**October 2025 - Animation System Refactoring & Fixes**:
 - **🚀 Animation Primitives Library**: Complete refactoring of animation system with composable primitives
   - **Library Created**: `src/lib/animation-effects/` with 57 files (~10k lines)
   - **Core Primitives**: 5 motion primitives (Move, Rotate, Scale, Color, Fade) + 5 effect primitives (Trail, Glow, Pulse, Flash, Particles)
@@ -353,6 +353,25 @@ The **Action Sequencing System** provides advanced D&D combat coordination throu
   - **Testing**: 80 comprehensive tests, all passing with zero TypeScript errors
   - **Backward Compatibility**: 100% compatible with existing UnifiedAction system
   - **Documentation**: Complete API reference, usage examples, and migration guides in `.notes/animation-refactoring-complete.md`
+
+**October 2025 - Projectile Animation System Rewrite**:
+- **🎯 Unified Animation Approach**: Replaced AbstractProjectile-based system with proven UnifiedProjectile pattern
+  - **requestAnimationFrame**: Smooth 60fps animation instead of Konva.Animation
+  - **React State Management**: useState for progress tracking instead of Konva Tween
+  - **Direct Rendering**: Konva shapes (Circle, Group) rendered directly without wrapper components
+  - **Trail System**: Position history array with fading effect for smooth visual trails
+  - **Motion Generators**: createLinearMotion stored in refs for stable references
+  - **Weapon Range Limiting**: D&D 5e authentic ranges (Longbow: 120ft/24 cells, Sling: 60ft/12 cells, Thrown Dagger: 30ft/6 cells)
+- **Files Updated**:
+  - `ProjectileAnimation.tsx`: Complete rewrite using UnifiedProjectile pattern (178 lines)
+  - `AttackRenderer.tsx`: Ranged attacks now use RAF-based animation (785 lines total)
+  - Both components share identical animation approach for consistency
+- **Benefits**:
+  - Stable references prevent animation restart bugs
+  - Predictable lifecycle with proper useEffect cleanup
+  - Visual consistency with spell projectiles
+  - Smooth animations that reach targets correctly
+  - No more "stuck animation" emergency cleanups
 
 **October 2025 - Canvas Performance Optimization**:
 - **🚀 Canvas Performance Overhaul**: Achieved 300-400% FPS improvement with many objects
