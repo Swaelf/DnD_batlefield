@@ -30,6 +30,7 @@ import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
 import type { Token } from '@/types/token'
 import type { Position } from '@/types/map'
+import { wait } from './testHelpers'
 
 export const runRoundReplayTest = () => {
   console.log('🧪 Starting Round Replay Visual Test...\n')
@@ -125,9 +126,6 @@ export const runRoundReplayTest = () => {
     timelineStore.startCombat(mapStore.currentMap.id)
   }
   console.log('✅ Combat started - Round 1, Event 1\n')
-
-  // Wait function
-  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
   // Execute test flow
   const executeReplayTest = async () => {

@@ -50,6 +50,7 @@ const ActionRendererComponent = ({ action, onAnimationComplete }: ActionRenderer
 
     switch (animationType) {
       case 'projectile':
+      case 'projectile_burst':
         return <ProjectileAnimation action={action} onComplete={handleAnimationComplete} />
 
       case 'melee_swing':

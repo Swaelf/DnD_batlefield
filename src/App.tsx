@@ -69,6 +69,15 @@ function App() {
   const [showSessionCreator, setShowSessionCreator] = useState(false)
   const [showPerformance, setShowPerformance] = useState(false)
   const [showAccessibility, setShowAccessibility] = useState(false)
+  const [viewerModeEnabled, setViewerModeEnabled] = useState(() => {
+    const saved = localStorage.getItem('app.viewerModeEnabled')
+    return saved !== null ? JSON.parse(saved) : true
+  })
+
+  // Persist viewer mode enabled state
+  useEffect(() => {
+    localStorage.setItem('app.viewerModeEnabled', JSON.stringify(viewerModeEnabled))
+  }, [viewerModeEnabled])
 
   // Function to open viewer mode in new tab
   const openViewerMode = () => {
@@ -90,8 +99,14 @@ function App() {
   const { currentSession, isHost, connectedUsers, connectionStatus } = useCollaborationStore()
   const isCollaborating = currentSession && connectionStatus === 'connected'
 
-  // Initialize sync manager for main mode
+  // Initialize sync manager for main mode (only if viewer mode enabled)
   useEffect(() => {
+    if (!viewerModeEnabled) {
+      // Destroy existing sync manager if disabled
+      destroySyncManager('main')
+      return
+    }
+
     // Initialize SyncManager in main mode
     getSyncManager('main')
 
@@ -99,7 +114,7 @@ function App() {
       // Cleanup on unmount
       destroySyncManager('main')
     }
-  }, [])
+  }, [viewerModeEnabled])
 
   // Performance and accessibility
   // 🚀 OPTIMIZATION: Only monitor performance when dashboard is actually open
@@ -413,15 +428,30 @@ function App() {
             <Bug size={16} />
           </Button>
 
-          {/* Viewer Mode Button */}
-          <Button
-            onClick={openViewerMode}
-            {...({ variant: "ghost", size: "icon" } as any)}
-            title="Open Viewer Mode (Screen Share)"
-            style={{ color: vars.colors.success }}
-          >
-            <Monitor size={16} />
-          </Button>
+          {/* Viewer Mode Buttons */}
+          <Box display="flex" alignItems="center" gap={1}>
+            <Button
+              onClick={openViewerMode}
+              {...({ variant: "ghost", size: "icon" } as any)}
+              title="Open Viewer Mode (Screen Share)"
+              style={{ color: viewerModeEnabled ? vars.colors.success : vars.colors.gray400 }}
+            >
+              <Monitor size={16} />
+            </Button>
+            <Button
+              onClick={() => setViewerModeEnabled(!viewerModeEnabled)}
+              {...({ variant: "ghost", size: "icon" } as any)}
+              title={viewerModeEnabled ? "Disable Viewer Mode Sync" : "Enable Viewer Mode Sync"}
+              style={{
+                color: viewerModeEnabled ? vars.colors.success : vars.colors.error,
+                fontSize: '10px',
+                padding: '2px 6px',
+                minWidth: 'auto'
+              }}
+            >
+              {viewerModeEnabled ? '●' : '○'}
+            </Button>
+          </Box>
 
           {/* Help Button */}
           <Button

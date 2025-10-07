@@ -1,0 +1,138 @@
+/**
+ * Magic Missile Curve Motion Generator
+ *
+ * Creates randomized curved paths for Magic Missile projectiles with consistent
+ * variation based on spell ID seed. Each missile follows a unique curved trajectory.
+ */
+
+import type { Point } from '@/types/geometry'
+import type { MotionPathGenerator } from './LinearMotion'
+
+export interface MagicMissileCurveConfig {
+  /** Base curve height in pixels (default: 50) */
+  baseHeight?: number
+  /** Seed for randomization (0-1, default: random from spell ID) */
+  seed?: number
+}
+
+/**
+ * Creates a curved motion path for Magic Missile projectiles
+ *
+ * Features:
+ * - 5 different trajectory patterns with guaranteed target accuracy
+ * - Random trajectory type selection based on seed
+ * - Random positive or negative direction for each curve
+ * - Reduced amplitude (50% of base height, ±20 pixels variation)
+ * - All trajectories start and end at zero offset (perfect target hit)
+ * - Deterministic randomization from seed (same ID = same curve)
+ *
+ * Trajectory Types (all end at target position):
+ * - Type 0: Single smooth arc (classic gentle curve)
+ * - Type 1: S-curve (double wave, erratic flight)
+ * - Type 2: Triple wave (complex weaving pattern)
+ * - Type 3: Double arc with asymmetry (warped S-curve)
+ * - Type 4: Half wave gentle curve (decaying arc)
+ *
+ * @param from Starting position
+ * @param to Target position
+ * @param config Curve configuration
+ * @returns Motion generator function
+ */
+export function createMagicMissileCurve(
+  from: Point,
+  to: Point,
+  config: MagicMissileCurveConfig = {}
+): MotionPathGenerator {
+  const baseHeight = config.baseHeight ?? 50
+  const seed = config.seed ?? Math.random()
+
+  // Calculate direction vector
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+  const length = Math.sqrt(dx * dx + dy * dy)
+
+  // Perpendicular vector (normalized)
+  const perpX = length > 0 ? -dy / length : 0
+  const perpY = length > 0 ? dx / length : 0
+
+  // Generate random variations from seed
+  // Use multiple seed values for different aspects
+  const seed1 = (seed * 7919) % 1  // Prime number for better distribution
+  const seed2 = (seed * 6971) % 1
+  const seed3 = (seed * 5879) % 1
+  const seed4 = (seed * 5381) % 1
+
+  // Height variation - reduced to half (±20 pixels)
+  const heightVariation = (seed1 - 0.5) * 40
+  const curveHeight = Math.max(10, (baseHeight / 2) + heightVariation)
+
+  // Random trajectory type (5 different patterns)
+  const trajectoryType = Math.floor(seed2 * 5)
+  // 0: Single smooth arc (1 zero crossing)
+  // 1: S-curve (2 zero crossings)
+  // 2: Wave (3 zero crossings)
+  // 3: Double arc (asymmetric 2x)
+  // 4: Half wave (0.5 frequency)
+
+  // Random direction: positive or negative
+  const directionMultiplier = seed3 < 0.5 ? 1 : -1
+
+  // Asymmetry factor for type 3
+  const asymmetryFactor = seed4 * 0.3 // Small shift (0-30%)
+
+  return (progress: number): Point => {
+    let curveFactor = 0
+
+    switch (trajectoryType) {
+      case 0: // Single smooth arc (starts at 0, ends at 0)
+        curveFactor = Math.sin(progress * Math.PI)
+        break
+      case 1: // S-curve (starts at 0, ends at 0)
+        curveFactor = Math.sin(progress * Math.PI * 2)
+        break
+      case 2: // Triple wave (starts at 0, ends at 0)
+        curveFactor = Math.sin(progress * Math.PI * 3)
+        break
+      case 3: // Double arc with asymmetry (starts at 0, ends at 0)
+        const adjustedProgress = progress + asymmetryFactor * Math.sin(progress * Math.PI)
+        curveFactor = Math.sin(adjustedProgress * Math.PI * 2)
+        break
+      case 4: // Half wave gentle curve (starts at 0, ends at 0)
+        curveFactor = Math.sin(progress * Math.PI * 0.5) * (1 - progress)
+        break
+    }
+
+    curveFactor *= directionMultiplier * curveHeight
+
+    // Base position along straight line
+    const baseX = from.x + dx * progress
+    const baseY = from.y + dy * progress
+
+    // Apply perpendicular offset
+    return {
+      x: baseX + perpX * curveFactor,
+      y: baseY + perpY * curveFactor
+    }
+  }
+}
+
+/**
+ * Helper function to generate seed from spell ID string
+ *
+ * @param spellId Unique spell instance ID
+ * @returns Normalized seed value (0-1)
+ */
+export function seedFromSpellId(spellId: string): number {
+  if (!spellId || spellId.length === 0) return Math.random()
+
+  // Hash the entire string for maximum variation
+  let hash = 0
+  for (let i = 0; i < spellId.length; i++) {
+    const char = spellId.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32-bit integer
+  }
+
+  // Convert to 0-1 range
+  return Math.abs(hash % 10000) / 10000
+}

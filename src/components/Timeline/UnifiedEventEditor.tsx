@@ -11,6 +11,7 @@ import type { UnifiedAction } from '@/types/unifiedAction'
 // ActionId is just a string identifier
 type ActionId = string
 import { createUnifiedRoundEvent } from '@/types/timelineUnified'
+import { nanoid } from 'nanoid'
 import { Box, Text, Button } from '@/components/primitives'
 import { Modal } from '@/components/ui/Modal'
 import { ActionSelectionModal } from './ActionSelectionModal'
@@ -282,10 +283,20 @@ const UnifiedEventEditorComponent = ({
 
   // Helper to convert unified action to legacy event data
   const convertActionToLegacyData = (action: UnifiedAction, finalTargetTokenId?: string): any => {
+    console.log('[UnifiedEventEditor] Converting action:', {
+      name: action.metadata.name,
+      type: action.type,
+      category: action.category,
+      animationType: action.animation.type,
+      curved: action.animation.curved,
+      burstSize: action.animation.burstSize
+    })
+
     switch (action.type) {
       case 'spell':
         // Map unified animation types to legacy spell categories
         const legacyCategory = action.animation.type === 'projectile_burst' ? 'projectile-burst' : action.animation.type
+        console.log('[UnifiedEventEditor] legacyCategory:', legacyCategory)
         const result = {
           type: 'spell',
           tokenId: selectedToken, // ✅ FIX: Include caster token ID for position lookup
@@ -318,6 +329,8 @@ const UnifiedEventEditorComponent = ({
           // Target tracking properties - only enable if we have a target token
           trackTarget: !!(finalTargetTokenId && action.animation.trackTarget),
           targetTokenId: finalTargetTokenId || '',
+          // Unique ID for trajectory variation (important for curved projectiles like Magic Missile)
+          id: nanoid(),
           // Status effect to apply on spell completion
           statusEffect: action.statusEffect ? {
             type: action.statusEffect.type,

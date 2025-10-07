@@ -6,6 +6,7 @@
  */
 
 import type { BattleMap } from '@/types/map'
+import { logger } from './logger'
 
 export type SyncMessageType =
   | 'MAP_STATE_UPDATE'      // Full map state changed
@@ -57,7 +58,7 @@ class SyncManager {
   private initChannel() {
     // Check if BroadcastChannel is supported
     if (typeof BroadcastChannel === 'undefined') {
-      console.warn('[SyncManager] BroadcastChannel not supported in this browser')
+      logger.warn('sync', 'BroadcastChannel not supported in this browser')
       return
     }
 
@@ -69,9 +70,9 @@ class SyncManager {
         this.startHeartbeat()
       }
 
-      console.log(`[SyncManager] Initialized in ${this.isMain ? 'MAIN' : 'VIEWER'} mode`)
+      logger.debug('sync', `Initialized in ${this.isMain ? 'MAIN' : 'VIEWER'} mode`)
     } catch (error) {
-      console.error('[SyncManager] Failed to create BroadcastChannel:', error)
+      logger.error('sync', 'Failed to create BroadcastChannel:', error)
     }
   }
 
@@ -91,7 +92,7 @@ class SyncManager {
       if (this.isMain) return
 
       // Viewer tab processes messages
-      console.log(`[SyncManager] Received ${message.type}:`, message.payload)
+      logger.debug('sync', `Received ${message.type}`, message.payload)
 
       const listeners = this.listeners.get(message.type)
       if (listeners) {
@@ -99,7 +100,7 @@ class SyncManager {
           try {
             callback(message.payload)
           } catch (error) {
-            console.error(`[SyncManager] Error in listener for ${message.type}:`, error)
+            logger.error('sync', `Error in listener for ${message.type}:`, error)
           }
         })
       }
@@ -119,12 +120,12 @@ class SyncManager {
    */
   private broadcast(type: SyncMessageType, payload: any) {
     if (!this.isMain) {
-      console.warn('[SyncManager] Only main tab can broadcast')
+      logger.warn('sync', 'Only main tab can broadcast')
       return
     }
 
     if (!this.channel) {
-      console.warn('[SyncManager] BroadcastChannel not available')
+      logger.warn('sync', 'BroadcastChannel not available')
       return
     }
 
@@ -137,9 +138,9 @@ class SyncManager {
 
     try {
       this.channel.postMessage(message)
-      console.log(`[SyncManager] Broadcasted ${type}`)
+      logger.debug('sync', `Broadcasted ${type}`)
     } catch (error) {
-      console.error(`[SyncManager] Failed to broadcast ${type}:`, error)
+      logger.error('sync', `Failed to broadcast ${type}:`, error)
     }
   }
 
@@ -149,7 +150,7 @@ class SyncManager {
    */
   on(type: SyncMessageType, callback: (payload: any) => void) {
     if (this.isMain) {
-      console.warn('[SyncManager] Main tab should not listen to messages')
+      logger.warn('sync', 'Main tab should not listen to messages')
       return () => {}
     }
 
@@ -259,16 +260,16 @@ class SyncManager {
    */
   requestSync() {
     if (this.isMain) {
-      console.warn('[SyncManager] Main tab cannot request sync')
+      logger.warn('sync', 'Main tab cannot request sync')
       return
     }
 
     if (!this.channel) {
-      console.warn('[SyncManager] BroadcastChannel not available')
+      logger.warn('sync', 'BroadcastChannel not available')
       return
     }
 
-    console.log('[SyncManager] Requesting initial sync...')
+    logger.debug('sync', 'Requesting initial sync...')
     const message: SyncMessage = {
       type: 'SYNC_REQUEST',
       timestamp: Date.now(),
@@ -283,14 +284,14 @@ class SyncManager {
    * Handle sync request from viewer (main only)
    */
   private handleSyncRequest() {
-    console.log('[SyncManager] Received sync request, sending current state...')
+    logger.debug('sync', 'Received sync request, sending current state...')
 
     // Import mapStore dynamically to avoid circular dependencies
     import('@/store/mapStore').then((module) => {
       const currentMap = module.default.getState().currentMap
       this.broadcast('SYNC_RESPONSE', { map: currentMap })
     }).catch((error) => {
-      console.error('[SyncManager] Failed to get map state:', error)
+      logger.error('sync', 'Failed to get map state:', error)
     })
   }
 
@@ -316,7 +317,7 @@ class SyncManager {
 
     this.listeners.clear()
     this.batchQueue.clear()
-    console.log('[SyncManager] Destroyed')
+    logger.debug('sync', 'Destroyed')
   }
 }
 

@@ -2,12 +2,15 @@ import { memo, useMemo } from 'react'
 import type { UnifiedAction } from '@/types/unifiedAction'
 import type { Point } from '@/types/geometry'
 import { AbstractProjectile } from '@/lib/animation-effects'
-import type { AbstractProjectileConfig } from '@/lib/animation-effects'
+import type { AbstractProjectileConfig, ProjectileMutation } from '@/lib/animation-effects'
+import { createArc } from '@/lib/animation-effects/motion'
 
 type ProjectileAnimationProps = {
   action: UnifiedAction
   onComplete?: () => void
 }
+
+// Force HMR update for animation changes
 
 const ProjectileAnimationComponent = ({ action, onComplete }: ProjectileAnimationProps) => {
   // Parse source and target positions
@@ -23,63 +26,85 @@ const ProjectileAnimationComponent = ({ action, onComplete }: ProjectileAnimatio
       : action.target as Point
   }, [action.target])
 
-  // Build projectile configuration based on category
+  // Build projectile configuration from animation properties
   const config = useMemo((): AbstractProjectileConfig => {
-    const duration = action.animation.duration || 1000
-    const size = action.animation.size || 10
-    const color = action.animation.color || '#FF0000'
+    const anim = action.animation
+    const duration = anim.duration || 1000
+    const size = anim.size || 10
+    const color = anim.color || '#FF0000'
 
-    switch (action.category) {
-      case 'arrow':
-      case 'dart':
-        return {
-          from: source,
-          to: target,
-          shape: 'triangle',
-          color: color,
-          size: size,
-          effects: ['trail', 'pulse'],
-          duration: duration,
-          onComplete: onComplete,
-        }
+    // Build effects list based on animation properties
+    const effects: Array<'trail' | 'glow' | 'pulse' | 'flash' | 'particles'> = []
+    if (anim.trail) effects.push('trail')
+    if (anim.glow) effects.push('glow')
+    if (anim.pulse) effects.push('pulse')
+    if (anim.particles) effects.push('particles')
 
-      case 'magic_missile':
-        return {
-          from: source,
-          to: target,
-          shape: 'star',
-          color: color,
-          size: size,
-          effects: ['trail', 'glow', 'pulse'],
-          duration: duration,
-          onComplete: onComplete,
-        }
-
-      case 'eldritch_blast':
-        return {
-          from: source,
-          to: target,
-          shape: 'circle',
-          color: color,
-          size: size,
-          effects: ['trail', 'glow', 'flash'],
-          duration: duration,
-          onComplete: onComplete,
-        }
-
-      default:
-        return {
-          from: source,
-          to: target,
-          shape: 'circle',
-          color: color,
-          size: size,
-          effects: ['trail', 'pulse'],
-          duration: duration,
-          onComplete: onComplete,
-        }
+    // Default effects if none specified
+    if (effects.length === 0) {
+      effects.push('trail', 'pulse')
     }
-  }, [action.category, action.animation.duration, action.animation.size, action.animation.color, source, target, onComplete])
+
+    // Determine shape - all projectiles use circle for consistency
+    // (Star/triangle shapes can be added via animation flags if needed)
+    const shape: 'circle' | 'triangle' | 'star' | 'diamond' = 'circle'
+
+    console.log('[ProjectileAnimation] Config:', {
+      category: action.category,
+      animationType: anim.type,
+      shape,
+      color,
+      size,
+      effects,
+      curved: anim.curved,
+      burstSize: anim.burstSize
+    })
+
+    // Build base config
+    const baseConfig: AbstractProjectileConfig = {
+      from: source,
+      to: target,
+      shape,
+      color,
+      size,
+      effects,
+      duration,
+      onComplete: onComplete,
+    }
+
+    // Add curved motion if specified
+    if (anim.curved) {
+      const curveHeight = anim.curveHeight || 60
+      const direction: 'up' | 'down' | 'auto' = anim.curveDirection || 'auto'
+
+      // Determine actual direction if auto
+      const actualDirection = direction === 'auto'
+        ? (source.y < target.y ? 'up' : 'down')
+        : direction
+
+      baseConfig.motion = createArc(
+        source,
+        target,
+        curveHeight,
+        actualDirection
+      )
+    }
+
+    // Add burst mutation for projectile_burst type
+    if (anim.type === 'projectile_burst') {
+      const burstMutation: ProjectileMutation = {
+        trigger: { type: 'progress', value: 1.0 }, // Burst at 100% progress (impact)
+        shape: 'circle',
+        size: anim.burstSize || size * 4,
+        color: anim.burstColor || color,
+        effects: ['glow', 'pulse', 'flash'],
+        transitionDuration: anim.burstDuration || 400
+      }
+      baseConfig.mutations = [burstMutation]
+    }
+
+    return baseConfig
+  }, [action.animation, action.category, source, target, onComplete])
 
   return <AbstractProjectile config={config} />
 }

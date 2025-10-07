@@ -22,10 +22,17 @@ export const fireballTemplate: SpellTemplate = {
   category: 'fire',
   tags: ["spell","magic"],
   animation: {
-    type: 'projectile',
+    type: 'projectile_burst',
     duration: 800,
     color: '#FF4500',
     size: 15,
+    trail: true,
+    glow: true,
+    pulse: true,
+    curved: false, // Fireball flies straight
+    burstSize: 150,
+    burstColor: '#FF6600',
+    burstDuration: 600,
     customParams: {
       trailLength: 5,
       trailColor: '#FFA500',
@@ -61,19 +68,29 @@ export const fireballTemplate: SpellTemplate = {
  * Magic Missile - Auto-hit projectile spell
  * 1st level evocation spell
  * Creates 3 darts that hit targets
+ * Updated: Uses projectile_burst with curved motion
  */
 export const magicMissileTemplate: SpellTemplate = {
   templateId: 'magic-missile',
   name: 'Magic Missile',
   description: 'Auto-hit projectiles that never miss their target',
   type: 'spell',
-  category: 'force',
+  category: 'magic_missile',
   tags: ["spell","magic"],
   animation: {
-    type: 'projectile',
+    type: 'projectile_burst',
     duration: 600,
     color: '#9400D3',
     size: 8,
+    trail: true,
+    glow: true,
+    pulse: true,
+    curved: true, // Magic Missile curves to target
+    curveHeight: 60,
+    curveDirection: 'auto',
+    burstSize: 32, // Smaller burst than fireball (size * 4)
+    burstColor: '#BA55D3',
+    burstDuration: 400,
     customParams: {
       projectileCount: 3,
       staggerDelay: 100,

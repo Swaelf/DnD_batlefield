@@ -29,6 +29,7 @@ import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
 import type { Token } from '@/types/token'
 import type { Position } from '@/types/map'
+import { wait, moveToNextRound, moveToNextEvent } from './testHelpers'
 
 export const runTimelineNavigationTest = () => {
   console.log('🧪 Starting Timeline Navigation Visual Test...\n')
@@ -123,7 +124,6 @@ export const runTimelineNavigationTest = () => {
   console.log('✅ Combat started - Round 1, Event 1\n')
 
   // Wait function for visual feedback
-  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
   // Execute test flow
   const executeTestFlow = async () => {
@@ -150,7 +150,7 @@ export const runTimelineNavigationTest = () => {
 
     // Round 1, Event 2: Mage casts Fireball (post effect)
     console.log('📌 Round 1, Event 2: Mage casts Fireball')
-    timelineStore.nextEvent()
+    await moveToNextEvent()
     await wait(500)
 
     timelineStore.addAction('test-mage', 'spell', {
@@ -174,7 +174,7 @@ export const runTimelineNavigationTest = () => {
 
     // Round 1, Event 3: Move Rogue
     console.log('📌 Round 1, Event 3: Move Rogue to flank')
-    timelineStore.nextEvent()
+    await moveToNextEvent()
     await wait(500)
 
     const rogueMove1: Position = { x: 550, y: 350 }
@@ -207,7 +207,7 @@ export const runTimelineNavigationTest = () => {
 
     await wait(2000)
     console.log('⏭️  Going to Next Event (Event 3)...')
-    timelineStore.nextEvent()
+    await moveToNextEvent()
     await wait(500)
     console.log('✅ Position Restored:')
     console.log(`   Rogue back at: (550, 350) ← from (400, 200)`)
@@ -220,7 +220,7 @@ export const runTimelineNavigationTest = () => {
 
     await wait(1000)
     console.log('🔚 Starting New Round...')
-    timelineStore.startNewRound()
+    await moveToNextRound()
     await wait(500)
     console.log('✅ Round 1 ended, Round 2 started')
     console.log('   🧹 Post effects cleaned (Fireball removed)')
@@ -251,7 +251,7 @@ export const runTimelineNavigationTest = () => {
 
     // Round 2, Event 2: Cleric casts Bless (continuous)
     console.log('📌 Round 2, Event 2: Cleric casts Bless')
-    timelineStore.nextEvent()
+    await moveToNextEvent()
     await wait(500)
 
     timelineStore.addAction('test-cleric', 'spell', {
@@ -291,7 +291,7 @@ export const runTimelineNavigationTest = () => {
 
     await wait(3000)
     console.log('⏭️  Going to Next Round (Round 2)...')
-    timelineStore.nextRound()
+    await moveToNextRound()
     await wait(500)
     console.log('✅ Round 2 Restored:')
     console.log(`   Warrior: (200, 200) ← from (200, 300)`)

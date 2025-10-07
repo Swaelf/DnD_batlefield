@@ -1,5 +1,5 @@
 import { type FC, useEffect, useRef, useState } from 'react'
-import { Group, Circle, Ring, RegularPolygon, Line, Star } from 'react-konva'
+import { Group, Circle, Ring, RegularPolygon, Line } from 'react-konva'
 import type { SpellEventData } from '@/types/timeline'
 import type { Position } from '@/types/map'
 import useMapStore from '@/store/mapStore'
@@ -252,7 +252,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         const angle = Math.atan2(dy, dx)
 
         // Determine projectile style based on spell
-        const isMagicMissile = spell.spellName?.toLowerCase().includes('magic missile')
         const isFireball = spell.spellName?.toLowerCase().includes('fireball')
 
         return (
@@ -306,45 +305,25 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
               opacity={0.3}
             />
 
-            {/* Main projectile body */}
-            {isMagicMissile ? (
-              // Magic missile as a star
-              <Star
-                x={x}
-                y={y}
-                numPoints={4}
-                innerRadius={baseRadius * 0.5}
-                outerRadius={baseRadius}
-                fill={spell.color}
-                opacity={opacity}
-                rotation={progress * 360}
-                shadowColor={spell.color}
-                shadowBlur={baseRadius * 2}
-                shadowOpacity={0.7}
-              />
-            ) : (
-              // Other projectiles as enhanced circles
-              <>
-                <Circle
-                  x={x}
-                  y={y}
-                  radius={baseRadius}
-                  fill={spell.color}
-                  opacity={opacity}
-                  shadowColor={spell.color}
-                  shadowBlur={baseRadius * 2}
-                  shadowOpacity={0.6}
-                />
-                {/* Inner core */}
-                <Circle
-                  x={x}
-                  y={y}
-                  radius={baseRadius * 0.5}
-                  fill="#FFFFFF"
-                  opacity={opacity * 0.8}
-                />
-              </>
-            )}
+            {/* Main projectile body - all projectiles use circle */}
+            <Circle
+              x={x}
+              y={y}
+              radius={baseRadius}
+              fill={spell.color}
+              opacity={opacity}
+              shadowColor={spell.color}
+              shadowBlur={baseRadius * 2}
+              shadowOpacity={0.6}
+            />
+            {/* Inner core */}
+            <Circle
+              x={x}
+              y={y}
+              radius={baseRadius * 0.5}
+              fill="#FFFFFF"
+              opacity={opacity * 0.8}
+            />
 
             {/* Directional energy effect */}
             <RegularPolygon

@@ -243,6 +243,10 @@ export class TestRunner {
         break
 
       case 'nextRound':
+        await roundStore.startNewRound()
+        break
+
+      case 'nextEvent':
         await roundStore.nextEvent()
         break
 

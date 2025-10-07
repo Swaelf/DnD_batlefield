@@ -6,6 +6,7 @@ import type { MapObject, SpellMapObject, AttackEventData } from '../types'
 import { useHistoryStore } from './historyStore'
 import { useLayerStore } from './layerStore'
 import { getSyncManager } from '../utils/syncManager'
+import { logger } from '../utils/logger'
 
 // Helper function to save current state to history before modifications
 const saveToHistory = () => {
@@ -406,13 +407,13 @@ const useMapStore = create<MapStore>()(
     }),
 
     cleanupExpiredSpells: (currentRound, currentEvent) => set((state) => {
-      console.log('[mapStore.cleanupExpiredSpells] Called with round/event:', currentRound, currentEvent)
+      logger.debug('store', 'cleanupExpiredSpells called', { currentRound, currentEvent })
       if (state.currentMap) {
         state.currentMap.objects = state.currentMap.objects.filter(obj => {
           if (obj.isSpellEffect && obj.spellDuration !== undefined) {
             // Don't remove instant spells (duration 0) - they're handled by animation timeout
             if (obj.spellDuration === 0) {
-              console.log('[mapStore.cleanupExpiredSpells] Keeping instant spell:', obj.id)
+              logger.debug('store', 'Keeping instant spell', obj.id)
               return true  // Keep instant spells, let animation handle removal
             }
 
@@ -425,7 +426,7 @@ const useMapStore = create<MapStore>()(
               // Lasts for N rounds starting from when cast
               const expiresAtRound = obj.roundCreated + obj.spellDuration
               shouldKeep = currentRound < expiresAtRound
-              console.log('[mapStore.cleanupExpiredSpells] Round-based spell:', {
+              logger.debug('store', 'Round-based spell expiry check', {
                 id: obj.id,
                 roundCreated: obj.roundCreated,
                 spellDuration: obj.spellDuration,
@@ -438,7 +439,7 @@ const useMapStore = create<MapStore>()(
               // Lasts for N events starting from when cast
               const expiresAtEvent = obj.eventCreated + obj.spellDuration
               shouldKeep = currentEvent < expiresAtEvent
-              console.log('[mapStore.cleanupExpiredSpells] Event-based spell:', {
+              logger.debug('store', 'Event-based spell expiry check', {
                 id: obj.id,
                 eventCreated: obj.eventCreated,
                 spellDuration: obj.spellDuration,
