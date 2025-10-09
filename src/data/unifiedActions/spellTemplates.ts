@@ -1,5 +1,19 @@
 import type { UnifiedAction } from '@/types/unifiedAction'
 
+/**
+ * Spell templates for D&D MapMaker timeline system
+ *
+ * These templates integrate with both:
+ * 1. Legacy animation system (UnifiedProjectile, SpellRenderer)
+ * 2. New animation library (src/lib/animations)
+ *
+ * The animation library provides enhanced spell effects with:
+ * - Promise-based execution
+ * - Timeline integration
+ * - Concentration management
+ * - Multiple duration types (time, rounds, events)
+ */
+
 export const spellTemplates: UnifiedAction[] = [
   // Fire Spells
   {
@@ -48,7 +62,16 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Fireball',
-      description: 'A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Affected creatures are set aflame. Can track moving targets.'
+      description: 'A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Affected creatures are set aflame. Can track moving targets.',
+      // Animation library integration (src/lib/animations)
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Fireball',
+      libraryConfig: {
+        // Fireball spell configuration for animation library
+        // Uses AbstractProjectile with curved motion and burst impact
+        curveAmount: 0.3, // Slight arc for dramatic effect
+        power: 'normal' // Can be 'normal' | 'empowered' | 'maximized'
+      }
     },
     // D&D 5e Fireball properties
     range: 150, // 150 feet range
@@ -101,7 +124,16 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Magic Missile',
-      description: 'You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range and follows them if they move.'
+      description: 'You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range and follows them if they move.',
+      // Animation library integration
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Magic Missile',
+      libraryConfig: {
+        // Magic Missile uses AbstractProjectile with curved homing paths
+        // Automatically creates volley based on spell level (3 at level 1)
+        spellLevel: 1,
+        stagger: 150 // ms delay between missiles
+      }
     },
     // D&D 5e Magic Missile properties
     range: 120, // 120 feet range
@@ -146,7 +178,17 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Darkness',
-      description: 'Magical darkness spreads from a point you choose within range to fill a 15-foot-radius sphere for the duration.'
+      description: 'Magical darkness spreads from a point you choose within range to fill a 15-foot-radius sphere for the duration.',
+      // Animation library integration
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Darkness',
+      libraryConfig: {
+        // Darkness uses AbstractAreaEffect with pulsing and tracking
+        durationType: 'rounds', // Can be 'time' | 'rounds' | 'events'
+        duration: 10, // 10 rounds (concentration)
+        intensity: 'normal', // Can be 'normal' | 'deeper'
+        trackTarget: false // Can track moving object if cast on one
+      }
     },
     // D&D 5e Darkness properties
     range: 60, // 60 feet range
@@ -186,7 +228,15 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Ray of Frost',
-      description: 'A frigid beam of blue-white light streaks toward a creature within range and follows them if they move.'
+      description: 'A frigid beam of blue-white light streaks toward a creature within range and follows them if they move.',
+      // Animation library integration
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Ray of Frost',
+      libraryConfig: {
+        // Ray of Frost uses AbstractRay with tapering and flickering
+        casterLevel: 1, // Cantrip scaling: 1d8 → 2d8 → 3d8 → 4d8
+        power: 'normal' // Can be 'normal' | 'empowered'
+      }
     },
     timestamp: 0,
     duration: 600
@@ -698,7 +748,16 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Thunderwave',
-      description: 'A wave of thunderous force sweeps out from you.'
+      description: 'A wave of thunderous force sweeps out from you.',
+      // Animation library integration
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Thunderwave',
+      libraryConfig: {
+        // Thunderwave uses AbstractBurst with square shape and screen shake
+        spellLevel: 1, // Level scaling affects size and intensity
+        direction: 'north', // Can be 'north' | 'south' | 'east' | 'west'
+        power: 'normal' // Can be 'normal' | 'empowered'
+      }
     },
     range: 5, // Self
     areaOfEffect: 15,
