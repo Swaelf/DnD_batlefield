@@ -41,6 +41,18 @@ import { SlingAttack, type SlingConfig } from '../spells/attacks/SlingAttack'
 import { WalkMovement, type WalkConfig } from '../spells/movement/WalkMovement'
 import { DashMovement, type DashConfig } from '../spells/movement/DashMovement'
 import { TeleportMovement, type TeleportConfig } from '../spells/movement/TeleportMovement'
+import { StunnedEffect, type StunnedConfig } from '../spells/status/StunnedEffect'
+import { PoisonedEffect, type PoisonedConfig } from '../spells/status/PoisonedEffect'
+import { ProneEffect, type ProneConfig } from '../spells/status/ProneEffect'
+import { EntangledEffect, type EntangledConfig } from '../spells/status/EntangledEffect'
+import { DyingEffect, type DyingConfig } from '../spells/status/DyingEffect'
+import { FlamingEffect, type FlamingConfig } from '../spells/status/FlamingEffect'
+import { ChilledEffect, type ChilledConfig } from '../spells/status/ChilledEffect'
+import { DazedEffect, type DazedConfig } from '../spells/status/DazedEffect'
+import { BlessedEffect, type BlessedConfig } from '../spells/status/BlessedEffect'
+import { RegeneratingEffect, type RegeneratingConfig } from '../spells/status/RegeneratingEffect'
+import { SleepingEffect, type SleepingConfig } from '../spells/status/SleepingEffect'
+import { FrightenedEffect, type FrightenedConfig } from '../spells/status/FrightenedEffect'
 
 /**
  * Animation template definition
@@ -474,6 +486,175 @@ class AnimationRegistryClass {
       },
       factory: (config: TeleportConfig) => new TeleportMovement(config)
     })
+
+    // Status effects
+    this.register('Stunned', {
+      name: 'Stunned',
+      category: 'status' as AnimationCategory,
+      description: 'Cannot move or take actions, automatically fail Str/Dex saves.',
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Stunned',
+        duration: 2000,
+        color: '#FFD700',
+        size: 40
+      },
+      factory: (config: StunnedConfig) => new StunnedEffect(config)
+    })
+
+    this.register('Poisoned', {
+      name: 'Poisoned',
+      category: 'status' as AnimationCategory,
+      description: 'Disadvantage on attack rolls and ability checks.',
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Poisoned',
+        duration: 3000,
+        color: '#00FF00',
+        size: 40
+      },
+      factory: (config: PoisonedConfig) => new PoisonedEffect(config)
+    })
+
+    this.register('Prone', {
+      name: 'Prone',
+      category: 'status' as AnimationCategory,
+      description: 'Disadvantage on attack rolls, attacks against have advantage.',
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Prone',
+        duration: 2500,
+        color: '#808080',
+        size: 40
+      },
+      factory: (config: ProneConfig) => new ProneEffect(config)
+    })
+
+    this.register('Entangled', {
+      name: 'Entangled',
+      category: 'status' as AnimationCategory,
+      description: 'Speed reduced to 0, restrained.',
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Entangled',
+        duration: 2000,
+        color: '#228B22',
+        size: 40
+      },
+      factory: (config: EntangledConfig) => new EntangledEffect(config)
+    })
+
+    this.register('Dying', {
+      name: 'Dying',
+      category: 'status' as AnimationCategory,
+      description: 'Making death saving throws, unconscious.',
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Dying',
+        duration: 1500,
+        color: '#8B0000',
+        size: 40
+      },
+      factory: (config: DyingConfig) => new DyingEffect(config)
+    })
+
+    this.register('Flaming', {
+      name: 'Flaming',
+      category: 'status' as AnimationCategory,
+      description: 'Taking fire damage each turn.',
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Flaming',
+        duration: 1000,
+        color: '#FF4500',
+        size: 40
+      },
+      factory: (config: FlamingConfig) => new FlamingEffect(config)
+    })
+
+    this.register('Chilled', {
+      name: 'Chilled',
+      category: 'status' as AnimationCategory,
+      description: 'Speed reduced, vulnerability to cold damage.',
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Chilled',
+        duration: 2500,
+        color: '#00FFFF',
+        size: 40
+      },
+      factory: (config: ChilledConfig) => new ChilledEffect(config)
+    })
+
+    this.register('Dazed', {
+      name: 'Dazed',
+      category: 'status' as AnimationCategory,
+      description: "Can't take reactions, reduced movement.",
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Dazed',
+        duration: 2000,
+        color: '#FFFF00',
+        size: 40
+      },
+      factory: (config: DazedConfig) => new DazedEffect(config)
+    })
+
+    this.register('Blessed', {
+      name: 'Blessed',
+      category: 'status' as AnimationCategory,
+      description: '+1d4 to attack rolls and saving throws.',
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Blessed',
+        duration: 3000,
+        color: '#FFD700',
+        size: 40
+      },
+      factory: (config: BlessedConfig) => new BlessedEffect(config)
+    })
+
+    this.register('Regenerating', {
+      name: 'Regenerating',
+      category: 'status' as AnimationCategory,
+      description: 'Regaining HP each turn.',
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Regenerating',
+        duration: 2000,
+        color: '#00FF00',
+        size: 40
+      },
+      factory: (config: RegeneratingConfig) => new RegeneratingEffect(config)
+    })
+
+    this.register('Sleeping', {
+      name: 'Sleeping',
+      category: 'status' as AnimationCategory,
+      description: 'Unconscious, melee attacks are critical hits.',
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Sleeping',
+        duration: 3000,
+        color: '#9370DB',
+        size: 40
+      },
+      factory: (config: SleepingConfig) => new SleepingEffect(config)
+    })
+
+    this.register('Frightened', {
+      name: 'Frightened',
+      category: 'status' as AnimationCategory,
+      description: "Disadvantage on checks and attacks while source in sight.",
+      defaults: {
+        category: 'status' as AnimationCategory,
+        name: 'Frightened',
+        duration: 1500,
+        color: '#4B0082',
+        size: 40
+      },
+      factory: (config: FrightenedConfig) => new FrightenedEffect(config)
+    })
   }
 
   /**
@@ -645,6 +826,19 @@ export type RegisteredAnimationName =
   | 'Walk'
   | 'Dash'
   | 'Teleport'
+  // Status effects
+  | 'Stunned'
+  | 'Poisoned'
+  | 'Prone'
+  | 'Entangled'
+  | 'Dying'
+  | 'Flaming'
+  | 'Chilled'
+  | 'Dazed'
+  | 'Blessed'
+  | 'Regenerating'
+  | 'Sleeping'
+  | 'Frightened'
   | string // Allow custom names
 
 /**
@@ -703,5 +897,19 @@ export const SpellTemplates = {
   // Movements
   walk: (from: Point, to: Point) => new WalkMovement({ fromPosition: from, toPosition: to }),
   dash: (from: Point, to: Point) => new DashMovement({ fromPosition: from, toPosition: to }),
-  teleport: (from: Point, to: Point) => new TeleportMovement({ fromPosition: from, toPosition: to })
+  teleport: (from: Point, to: Point) => new TeleportMovement({ fromPosition: from, toPosition: to }),
+
+  // Status effects
+  stunned: (position: Point) => new StunnedEffect({ position }),
+  poisoned: (position: Point) => new PoisonedEffect({ position }),
+  prone: (position: Point) => new ProneEffect({ position }),
+  entangled: (position: Point) => new EntangledEffect({ position }),
+  dying: (position: Point) => new DyingEffect({ position }),
+  flaming: (position: Point) => new FlamingEffect({ position }),
+  chilled: (position: Point) => new ChilledEffect({ position }),
+  dazed: (position: Point) => new DazedEffect({ position }),
+  blessed: (position: Point) => new BlessedEffect({ position }),
+  regenerating: (position: Point) => new RegeneratingEffect({ position }),
+  sleeping: (position: Point) => new SleepingEffect({ position }),
+  frightened: (position: Point) => new FrightenedEffect({ position })
 } as const

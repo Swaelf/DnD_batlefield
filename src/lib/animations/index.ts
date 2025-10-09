@@ -48,6 +48,10 @@ export type { RangedAttackConfig, RangedWeaponType } from './core/AbstractRanged
 export { AbstractMovement } from './core/AbstractMovement'
 export type { MovementConfig, MovementType, EasingType } from './core/AbstractMovement'
 
+// Status effect abstractions
+export { AbstractStatusEffect } from './core/AbstractStatusEffect'
+export type { StatusEffectConfig, StatusEffectType, AnimationType } from './core/AbstractStatusEffect'
+
 // Spell implementations - Projectiles
 export { Fireball } from './spells/projectile/Fireball'
 export type { FireballConfig } from './spells/projectile/Fireball'
@@ -129,6 +133,32 @@ export { DashMovement } from './spells/movement/DashMovement'
 export type { DashConfig } from './spells/movement/DashMovement'
 export { TeleportMovement } from './spells/movement/TeleportMovement'
 export type { TeleportConfig } from './spells/movement/TeleportMovement'
+
+// Status effect implementations
+export { StunnedEffect } from './spells/status/StunnedEffect'
+export type { StunnedConfig } from './spells/status/StunnedEffect'
+export { PoisonedEffect } from './spells/status/PoisonedEffect'
+export type { PoisonedConfig } from './spells/status/PoisonedEffect'
+export { ProneEffect } from './spells/status/ProneEffect'
+export type { ProneConfig } from './spells/status/ProneEffect'
+export { EntangledEffect } from './spells/status/EntangledEffect'
+export type { EntangledConfig } from './spells/status/EntangledEffect'
+export { DyingEffect } from './spells/status/DyingEffect'
+export type { DyingConfig } from './spells/status/DyingEffect'
+export { FlamingEffect } from './spells/status/FlamingEffect'
+export type { FlamingConfig } from './spells/status/FlamingEffect'
+export { ChilledEffect } from './spells/status/ChilledEffect'
+export type { ChilledConfig } from './spells/status/ChilledEffect'
+export { DazedEffect } from './spells/status/DazedEffect'
+export type { DazedConfig } from './spells/status/DazedEffect'
+export { BlessedEffect } from './spells/status/BlessedEffect'
+export type { BlessedConfig } from './spells/status/BlessedEffect'
+export { RegeneratingEffect } from './spells/status/RegeneratingEffect'
+export type { RegeneratingConfig } from './spells/status/RegeneratingEffect'
+export { SleepingEffect } from './spells/status/SleepingEffect'
+export type { SleepingConfig } from './spells/status/SleepingEffect'
+export { FrightenedEffect } from './spells/status/FrightenedEffect'
+export type { FrightenedConfig } from './spells/status/FrightenedEffect'
 
 // Registry and factory
 export { AnimationRegistry, SpellTemplates } from './registry/AnimationRegistry'
