@@ -118,6 +118,10 @@ export type ActionMetadata = {
   conditions?: string[] // applied conditions
   sourceName?: string
   targetNames?: string[]
+  // Animation library integration
+  useAnimationLibrary?: boolean // Whether to use the new animation library
+  animationLibrarySpell?: string // Name of the animation library spell to use
+  libraryConfig?: Record<string, unknown> // Configuration for the animation library spell
 }
 
 // Area shape definitions for area effects

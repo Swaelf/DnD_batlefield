@@ -35,12 +35,16 @@ export { AbstractAreaEffect } from './core/AbstractAreaEffect'
 export type { AreaEffectConfig } from './core/AbstractAreaEffect'
 export { AbstractRay } from './core/AbstractRay'
 export type { RayConfig } from './core/AbstractRay'
+export { AbstractCone } from './core/AbstractCone'
+export type { ConeConfig } from './core/AbstractCone'
 
 // Spell implementations - Projectiles
 export { Fireball } from './spells/projectile/Fireball'
 export type { FireballConfig } from './spells/projectile/Fireball'
 export { MagicMissile } from './spells/projectile/MagicMissile'
 export type { MagicMissileConfig } from './spells/projectile/MagicMissile'
+export { GuidingBolt } from './spells/projectile/GuidingBolt'
+export type { GuidingBoltConfig } from './spells/projectile/GuidingBolt'
 
 // Spell implementations - Burst
 export { Thunderwave } from './spells/burst/Thunderwave'
@@ -49,10 +53,42 @@ export type { ThunderwaveConfig } from './spells/burst/Thunderwave'
 // Spell implementations - Area
 export { Darkness } from './spells/area/Darkness'
 export type { DarknessConfig } from './spells/area/Darkness'
+export { Web } from './spells/area/Web'
+export type { WebConfig } from './spells/area/Web'
 
 // Spell implementations - Ray
 export { RayOfFrost } from './spells/ray/RayOfFrost'
 export type { RayOfFrostConfig } from './spells/ray/RayOfFrost'
+export { EldritchBlast } from './spells/ray/EldritchBlast'
+export type { EldritchBlastConfig } from './spells/ray/EldritchBlast'
+
+// Spell implementations - Cone
+export { BurningHands } from './spells/cone/BurningHands'
+export type { BurningHandsConfig } from './spells/cone/BurningHands'
+export { PoisonSpray } from './spells/cone/PoisonSpray'
+export type { PoisonSprayConfig } from './spells/cone/PoisonSpray'
+export { ConeOfCold } from './spells/cone/ConeOfCold'
+export type { ConeOfColdConfig } from './spells/cone/ConeOfCold'
+export { BreathWeapon } from './spells/cone/BreathWeapon'
+export type { BreathWeaponConfig, BreathType } from './spells/cone/BreathWeapon'
+
+// Spell implementations - Healing
+export { CureWounds } from './spells/healing/CureWounds'
+export type { CureWoundsConfig } from './spells/healing/CureWounds'
+export { Heal } from './spells/healing/Heal'
+export type { HealConfig } from './spells/healing/Heal'
+
+// Spell implementations - Buff
+export { Bless } from './spells/buff/Bless'
+export type { BlessConfig } from './spells/buff/Bless'
+
+// Spell implementations - Line
+export { LightningBolt } from './spells/line/LightningBolt'
+export type { LightningBoltConfig } from './spells/line/LightningBolt'
+
+// Spell implementations - Touch
+export { ShockingGrasp } from './spells/touch/ShockingGrasp'
+export type { ShockingGraspConfig } from './spells/touch/ShockingGrasp'
 
 // Registry and factory
 export { AnimationRegistry, SpellTemplates } from './registry/AnimationRegistry'

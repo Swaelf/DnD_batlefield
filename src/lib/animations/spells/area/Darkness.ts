@@ -64,8 +64,8 @@ export class Darkness extends AbstractAreaEffect {
 
       // Pulsing darkness effect (breathing)
       pulsing: true,
-      pulsingSpeed: 1.5, // Slow, ominous pulse
-      pulsingAmplitude: 0.15, // Subtle size variation
+      pulseSpeed: 1.5, // Slow, ominous pulse
+      pulseAmplitude: 0.15, // Subtle size variation
 
       // No rotation for darkness
       rotating: false,

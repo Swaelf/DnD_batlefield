@@ -271,7 +271,13 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Lightning Bolt',
-      description: 'A stroke of lightning forming a line 100 feet long and 5 feet wide blasts out from you in a direction you choose.'
+      description: 'A stroke of lightning forming a line 100 feet long and 5 feet wide blasts out from you in a direction you choose.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Lightning Bolt',
+      libraryConfig: {
+        spellLevel: 3,
+        power: 'normal'
+      }
     },
     timestamp: 0,
     duration: 400
@@ -298,7 +304,13 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Shocking Grasp',
-      description: 'Lightning springs from your hand to deliver a shock to a creature you try to touch.'
+      description: 'Lightning springs from your hand to deliver a shock to a creature you try to touch.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Shocking Grasp',
+      libraryConfig: {
+        casterLevel: 1,
+        power: 'normal'
+      }
     },
     timestamp: 0,
     duration: 500
@@ -336,7 +348,14 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Cure Wounds',
-      description: 'A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier.'
+      description: 'A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Cure Wounds',
+      libraryConfig: {
+        spellLevel: 1,
+        healingBonus: 0,
+        power: 'normal'
+      }
     },
     timestamp: 0,
     duration: 800
@@ -372,7 +391,13 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Heal',
-      description: 'Choose a creature that you can see within range. A surge of positive energy washes through the creature, causing it to regain 70 hit points.'
+      description: 'Choose a creature that you can see within range. A surge of positive energy washes through the creature, causing it to regain 70 hit points.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Heal',
+      libraryConfig: {
+        spellLevel: 6,
+        power: 'normal'
+      }
     },
     // D&D 5e Heal properties
     range: 60, // 60 feet range
@@ -424,7 +449,13 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Poison Spray',
-      description: 'You extend your hand toward a creature you can see within range and project a puff of noxious gas from your palm.'
+      description: 'You extend your hand toward a creature you can see within range and project a puff of noxious gas from your palm.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Poison Spray',
+      libraryConfig: {
+        casterLevel: 1,
+        power: 'normal'
+      }
     },
     timestamp: 0,
     duration: 700
@@ -528,7 +559,14 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Guiding Bolt',
-      description: 'A flash of light streaks toward a creature of your choice within range.'
+      description: 'A flash of light streaks toward a creature of your choice within range.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Guiding Bolt',
+      libraryConfig: {
+        spellLevel: 1,
+        curved: false,
+        power: 'normal'
+      }
     },
     timestamp: 0,
     duration: 900
@@ -564,7 +602,14 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Bless',
-      description: 'You bless up to three creatures within range. Whenever a target makes an attack roll or saving throw, they can roll a d4 and add the result.'
+      description: 'You bless up to three creatures within range. Whenever a target makes an attack roll or saving throw, they can roll a d4 and add the result.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Bless',
+      libraryConfig: {
+        spellLevel: 1,
+        power: 'normal',
+        persistent: false
+      }
     },
     // D&D 5e Bless properties
     range: 30, // 30 feet range
@@ -613,7 +658,13 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Burning Hands',
-      description: 'A thin sheet of flames shoots forth from your outstretched fingertips.'
+      description: 'A thin sheet of flames shoots forth from your outstretched fingertips.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Burning Hands',
+      libraryConfig: {
+        spellLevel: 1,
+        power: 'normal'
+      }
     },
     range: 5, // Touch range (self)
     areaOfEffect: 15,
@@ -664,7 +715,15 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Breath of the Dragon',
-      description: 'Channel the power of dragons to unleash a devastating wave of fire in a cone, leaving burning embers for one round.'
+      description: 'Channel the power of dragons to unleash a devastating wave of fire in a cone, leaving burning embers for one round.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Breath Weapon',
+      libraryConfig: {
+        breathType: 'fire',
+        range: 30,
+        damageLevel: 3,
+        power: 'normal'
+      }
     },
     range: 5, // Touch range (self)
     areaOfEffect: 30,
@@ -708,7 +767,13 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Cone of Cold',
-      description: 'A blast of cold air erupts from your hands in a 60-foot cone.'
+      description: 'A blast of cold air erupts from your hands in a 60-foot cone.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Cone of Cold',
+      libraryConfig: {
+        spellLevel: 5,
+        power: 'normal'
+      }
     },
     range: 5, // Touch range (self)
     areaOfEffect: 60,
@@ -793,7 +858,13 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Eldritch Blast',
-      description: 'A beam of crackling energy streaks toward a creature within range.'
+      description: 'A beam of crackling energy streaks toward a creature within range.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Eldritch Blast',
+      libraryConfig: {
+        casterLevel: 1,
+        power: 'normal'
+      }
     },
     range: 120,
     damage: '1d10',
@@ -832,7 +903,14 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Web',
-      description: 'You conjure a mass of thick, sticky webbing at a point of your choice within range.'
+      description: 'You conjure a mass of thick, sticky webbing at a point of your choice within range.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Web',
+      libraryConfig: {
+        spellLevel: 2,
+        durationType: 'rounds',
+        duration: 10
+      }
     },
     range: 60,
     areaOfEffect: 20,

@@ -15,9 +15,21 @@
 import type { Animation, AnimationCategory, Point } from '../types'
 import { Fireball, type FireballConfig } from '../spells/projectile/Fireball'
 import { MagicMissile, type MagicMissileConfig } from '../spells/projectile/MagicMissile'
+import { GuidingBolt, type GuidingBoltConfig } from '../spells/projectile/GuidingBolt'
 import { Thunderwave, type ThunderwaveConfig } from '../spells/burst/Thunderwave'
 import { Darkness, type DarknessConfig } from '../spells/area/Darkness'
+import { Web, type WebConfig } from '../spells/area/Web'
 import { RayOfFrost, type RayOfFrostConfig } from '../spells/ray/RayOfFrost'
+import { EldritchBlast, type EldritchBlastConfig } from '../spells/ray/EldritchBlast'
+import { BurningHands, type BurningHandsConfig } from '../spells/cone/BurningHands'
+import { PoisonSpray, type PoisonSprayConfig } from '../spells/cone/PoisonSpray'
+import { ConeOfCold, type ConeOfColdConfig } from '../spells/cone/ConeOfCold'
+import { BreathWeapon, type BreathWeaponConfig } from '../spells/cone/BreathWeapon'
+import { CureWounds, type CureWoundsConfig } from '../spells/healing/CureWounds'
+import { Heal, type HealConfig } from '../spells/healing/Heal'
+import { Bless, type BlessConfig } from '../spells/buff/Bless'
+import { LightningBolt, type LightningBoltConfig } from '../spells/line/LightningBolt'
+import { ShockingGrasp, type ShockingGraspConfig } from '../spells/touch/ShockingGrasp'
 
 /**
  * Animation template definition
@@ -75,6 +87,21 @@ class AnimationRegistryClass {
       factory: (config: MagicMissileConfig) => new MagicMissile(config)
     })
 
+    this.register('Guiding Bolt', {
+      name: 'Guiding Bolt',
+      category: 'projectile',
+      description: 'A flash of light streaks toward a creature of your choice within range. The next attack roll against this target has advantage.',
+      defaults: {
+        category: 'projectile',
+        name: 'Guiding Bolt',
+        duration: 800,
+        speed: 450,
+        color: '#F0E68C',
+        size: 16
+      },
+      factory: (config: GuidingBoltConfig) => new GuidingBolt(config)
+    })
+
     // Burst spells
     this.register('Thunderwave', {
       name: 'Thunderwave',
@@ -105,6 +132,20 @@ class AnimationRegistryClass {
       factory: (config: DarknessConfig) => new Darkness(config)
     })
 
+    this.register('Web', {
+      name: 'Web',
+      category: 'area',
+      description: 'You conjure a mass of thick, sticky webbing at a point of your choice within range. The webs are difficult terrain and lightly obscure their area.',
+      defaults: {
+        category: 'area',
+        name: 'Web',
+        duration: 3600000, // 1 hour
+        color: '#F5F5DC',
+        size: 100
+      },
+      factory: (config: WebConfig) => new Web(config)
+    })
+
     // Ray spells
     this.register('Ray of Frost', {
       name: 'Ray of Frost',
@@ -118,6 +159,151 @@ class AnimationRegistryClass {
         width: 8
       },
       factory: (config: RayOfFrostConfig) => new RayOfFrost(config)
+    })
+
+    this.register('Eldritch Blast', {
+      name: 'Eldritch Blast',
+      category: 'ray',
+      description: 'A beam of crackling energy streaks toward a creature within range. At higher levels, you can fire multiple beams.',
+      defaults: {
+        category: 'ray',
+        name: 'Eldritch Blast',
+        duration: 400,
+        color: '#8B00FF',
+        width: 10
+      },
+      factory: (config: EldritchBlastConfig) => new EldritchBlast(config)
+    })
+
+    // Cone spells
+    this.register('Burning Hands', {
+      name: 'Burning Hands',
+      category: 'area',
+      description: 'A thin sheet of flames shoots forth from your outstretched fingertips. Each creature in a 15-foot cone must make a saving throw.',
+      defaults: {
+        category: 'area',
+        name: 'Burning Hands',
+        duration: 600,
+        color: '#FF6B35',
+        size: 75
+      },
+      factory: (config: BurningHandsConfig) => new BurningHands(config)
+    })
+
+    this.register('Poison Spray', {
+      name: 'Poison Spray',
+      category: 'area',
+      description: 'You extend your hand toward a creature you can see within range and project a puff of noxious gas from your palm.',
+      defaults: {
+        category: 'area',
+        name: 'Poison Spray',
+        duration: 800,
+        color: '#9ACD32',
+        size: 50
+      },
+      factory: (config: PoisonSprayConfig) => new PoisonSpray(config)
+    })
+
+    this.register('Cone of Cold', {
+      name: 'Cone of Cold',
+      category: 'area',
+      description: 'A blast of cold air erupts from your hands. Each creature in a 60-foot cone must make a saving throw.',
+      defaults: {
+        category: 'area',
+        name: 'Cone of Cold',
+        duration: 800,
+        color: '#87CEEB',
+        size: 300
+      },
+      factory: (config: ConeOfColdConfig) => new ConeOfCold(config)
+    })
+
+    this.register('Breath Weapon', {
+      name: 'Breath Weapon',
+      category: 'area',
+      description: 'You exhale destructive energy in a cone. The energy type and range depends on your draconic ancestry.',
+      defaults: {
+        category: 'area',
+        name: 'Breath Weapon',
+        duration: 700,
+        color: '#FF6B35',
+        size: 75
+      },
+      factory: (config: BreathWeaponConfig) => new BreathWeapon(config)
+    })
+
+    // Healing spells
+    this.register('Cure Wounds', {
+      name: 'Cure Wounds',
+      category: 'burst',
+      description: 'A creature you touch regains a number of hit points. This spell has no effect on undead or constructs.',
+      defaults: {
+        category: 'burst',
+        name: 'Cure Wounds',
+        duration: 800,
+        color: '#FFD700',
+        size: 40
+      },
+      factory: (config: CureWoundsConfig) => new CureWounds(config)
+    })
+
+    this.register('Heal', {
+      name: 'Heal',
+      category: 'burst',
+      description: 'Choose a creature that you can see within range. A surge of positive energy washes through the creature, causing it to regain 70 hit points.',
+      defaults: {
+        category: 'burst',
+        name: 'Heal',
+        duration: 1000,
+        color: '#FFFFFF',
+        size: 60
+      },
+      factory: (config: HealConfig) => new Heal(config)
+    })
+
+    // Buff spells
+    this.register('Bless', {
+      name: 'Bless',
+      category: 'burst',
+      description: 'You bless up to three creatures within range. Whenever a target makes an attack roll or saving throw, it can roll a d4 and add the number rolled.',
+      defaults: {
+        category: 'burst',
+        name: 'Bless',
+        duration: 600,
+        color: '#FFFFE0',
+        size: 30
+      },
+      factory: (config: BlessConfig) => new Bless(config)
+    })
+
+    // Line spells
+    this.register('Lightning Bolt', {
+      name: 'Lightning Bolt',
+      category: 'ray',
+      description: 'A stroke of lightning forming a line 100 feet long and 5 feet wide blasts out from you in a direction you choose.',
+      defaults: {
+        category: 'ray',
+        name: 'Lightning Bolt',
+        duration: 300,
+        color: '#00BFFF',
+        width: 25
+      },
+      factory: (config: LightningBoltConfig) => new LightningBolt(config)
+    })
+
+    // Touch spells
+    this.register('Shocking Grasp', {
+      name: 'Shocking Grasp',
+      category: 'burst',
+      description: 'Lightning springs from your hand to deliver a shock to a creature you try to touch.',
+      defaults: {
+        category: 'burst',
+        name: 'Shocking Grasp',
+        duration: 400,
+        color: '#00BFFF',
+        size: 25
+      },
+      factory: (config: ShockingGraspConfig) => new ShockingGrasp(config)
     })
   }
 
@@ -261,9 +447,21 @@ export const AnimationRegistry = new AnimationRegistryClass()
 export type RegisteredAnimationName =
   | 'Fireball'
   | 'Magic Missile'
+  | 'Guiding Bolt'
   | 'Thunderwave'
   | 'Darkness'
+  | 'Web'
   | 'Ray of Frost'
+  | 'Eldritch Blast'
+  | 'Burning Hands'
+  | 'Poison Spray'
+  | 'Cone of Cold'
+  | 'Breath Weapon'
+  | 'Cure Wounds'
+  | 'Heal'
+  | 'Bless'
+  | 'Lightning Bolt'
+  | 'Shocking Grasp'
   | string // Allow custom names
 
 /**
@@ -273,13 +471,35 @@ export const SpellTemplates = {
   // Projectiles
   fireball: (from: Point, to: Point) => new Fireball({ fromPosition: from, toPosition: to }),
   magicMissile: (from: Point, to: Point) => new MagicMissile({ fromPosition: from, toPosition: to }),
+  guidingBolt: (from: Point, to: Point) => new GuidingBolt({ fromPosition: from, toPosition: to }),
 
   // Bursts
   thunderwave: (position: Point) => new Thunderwave({ position }),
 
   // Area effects
   darkness: (position: Point) => new Darkness({ position }),
+  web: (position: Point) => new Web({ position }),
 
   // Rays
-  rayOfFrost: (from: Point, to: Point) => new RayOfFrost({ fromPosition: from, toPosition: to })
+  rayOfFrost: (from: Point, to: Point) => new RayOfFrost({ fromPosition: from, toPosition: to }),
+  eldritchBlast: (from: Point, to: Point) => new EldritchBlast({ fromPosition: from, toPosition: to }),
+
+  // Cones
+  burningHands: (position: Point, target: Point) => new BurningHands({ position, targetPosition: target }),
+  poisonSpray: (position: Point, target: Point) => new PoisonSpray({ position, targetPosition: target }),
+  coneOfCold: (position: Point, target: Point) => new ConeOfCold({ position, targetPosition: target }),
+  breathWeapon: (position: Point, target: Point) => new BreathWeapon({ position, targetPosition: target }),
+
+  // Healing
+  cureWounds: (position: Point) => new CureWounds({ position }),
+  heal: (position: Point) => new Heal({ position }),
+
+  // Buff
+  bless: (position: Point) => new Bless({ position }),
+
+  // Line
+  lightningBolt: (from: Point, to: Point) => new LightningBolt({ fromPosition: from, toPosition: to }),
+
+  // Touch
+  shockingGrasp: (position: Point) => new ShockingGrasp({ position })
 } as const
