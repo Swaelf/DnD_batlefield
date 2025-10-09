@@ -495,7 +495,15 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Stone Rain',
-      description: 'A barrage of stones rains down in a large area, striking multiple locations with small impacts.'
+      description: 'A barrage of stones rains down in a large area, striking multiple locations with small impacts.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Stone Rain',
+      libraryConfig: {
+        spellLevel: 3,
+        power: 'normal',
+        impactCount: 12,
+        impactInterval: 150
+      }
     },
     // D&D-style properties
     range: 120,           // 120 feet range
@@ -531,7 +539,13 @@ export const spellTemplates: UnifiedAction[] = [
     },
     metadata: {
       name: 'Sacred Flame',
-      description: 'Flame-like radiance descends on a creature that you can see within range.'
+      description: 'Flame-like radiance descends on a creature that you can see within range.',
+      useAnimationLibrary: true,
+      animationLibrarySpell: 'Sacred Flame',
+      libraryConfig: {
+        casterLevel: 1,
+        power: 'normal'
+      }
     },
     timestamp: 0,
     duration: 800

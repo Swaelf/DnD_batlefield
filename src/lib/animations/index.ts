@@ -55,6 +55,8 @@ export { Darkness } from './spells/area/Darkness'
 export type { DarknessConfig } from './spells/area/Darkness'
 export { Web } from './spells/area/Web'
 export type { WebConfig } from './spells/area/Web'
+export { StoneRain } from './spells/area/StoneRain'
+export type { StoneRainConfig } from './spells/area/StoneRain'
 
 // Spell implementations - Ray
 export { RayOfFrost } from './spells/ray/RayOfFrost'
@@ -89,6 +91,10 @@ export type { LightningBoltConfig } from './spells/line/LightningBolt'
 // Spell implementations - Touch
 export { ShockingGrasp } from './spells/touch/ShockingGrasp'
 export type { ShockingGraspConfig } from './spells/touch/ShockingGrasp'
+
+// Spell implementations - Pillar
+export { SacredFlame } from './spells/pillar/SacredFlame'
+export type { SacredFlameConfig } from './spells/pillar/SacredFlame'
 
 // Registry and factory
 export { AnimationRegistry, SpellTemplates } from './registry/AnimationRegistry'

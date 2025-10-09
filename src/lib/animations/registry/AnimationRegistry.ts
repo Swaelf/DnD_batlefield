@@ -19,6 +19,7 @@ import { GuidingBolt, type GuidingBoltConfig } from '../spells/projectile/Guidin
 import { Thunderwave, type ThunderwaveConfig } from '../spells/burst/Thunderwave'
 import { Darkness, type DarknessConfig } from '../spells/area/Darkness'
 import { Web, type WebConfig } from '../spells/area/Web'
+import { StoneRain, type StoneRainConfig } from '../spells/area/StoneRain'
 import { RayOfFrost, type RayOfFrostConfig } from '../spells/ray/RayOfFrost'
 import { EldritchBlast, type EldritchBlastConfig } from '../spells/ray/EldritchBlast'
 import { BurningHands, type BurningHandsConfig } from '../spells/cone/BurningHands'
@@ -30,6 +31,7 @@ import { Heal, type HealConfig } from '../spells/healing/Heal'
 import { Bless, type BlessConfig } from '../spells/buff/Bless'
 import { LightningBolt, type LightningBoltConfig } from '../spells/line/LightningBolt'
 import { ShockingGrasp, type ShockingGraspConfig } from '../spells/touch/ShockingGrasp'
+import { SacredFlame, type SacredFlameConfig } from '../spells/pillar/SacredFlame'
 
 /**
  * Animation template definition
@@ -144,6 +146,20 @@ class AnimationRegistryClass {
         size: 100
       },
       factory: (config: WebConfig) => new Web(config)
+    })
+
+    this.register('Stone Rain', {
+      name: 'Stone Rain',
+      category: 'area',
+      description: 'A barrage of stones rains down in a large area, striking multiple locations with small impacts.',
+      defaults: {
+        category: 'area',
+        name: 'Stone Rain',
+        duration: 2000,
+        color: '#8B7355',
+        size: 100
+      },
+      factory: (config: StoneRainConfig) => new StoneRain(config)
     })
 
     // Ray spells
@@ -305,6 +321,21 @@ class AnimationRegistryClass {
       },
       factory: (config: ShockingGraspConfig) => new ShockingGrasp(config)
     })
+
+    // Pillar spells
+    this.register('Sacred Flame', {
+      name: 'Sacred Flame',
+      category: 'burst',
+      description: 'Flame-like radiance descends on a creature that you can see within range. The target must succeed on a Dexterity saving throw or take 1d8 radiant damage.',
+      defaults: {
+        category: 'burst',
+        name: 'Sacred Flame',
+        duration: 800,
+        color: '#FFD700',
+        size: 25
+      },
+      factory: (config: SacredFlameConfig) => new SacredFlame(config)
+    })
   }
 
   /**
@@ -451,6 +482,7 @@ export type RegisteredAnimationName =
   | 'Thunderwave'
   | 'Darkness'
   | 'Web'
+  | 'Stone Rain'
   | 'Ray of Frost'
   | 'Eldritch Blast'
   | 'Burning Hands'
@@ -462,6 +494,7 @@ export type RegisteredAnimationName =
   | 'Bless'
   | 'Lightning Bolt'
   | 'Shocking Grasp'
+  | 'Sacred Flame'
   | string // Allow custom names
 
 /**
@@ -479,6 +512,7 @@ export const SpellTemplates = {
   // Area effects
   darkness: (position: Point) => new Darkness({ position }),
   web: (position: Point) => new Web({ position }),
+  stoneRain: (position: Point) => new StoneRain({ position }),
 
   // Rays
   rayOfFrost: (from: Point, to: Point) => new RayOfFrost({ fromPosition: from, toPosition: to }),
@@ -501,5 +535,8 @@ export const SpellTemplates = {
   lightningBolt: (from: Point, to: Point) => new LightningBolt({ fromPosition: from, toPosition: to }),
 
   // Touch
-  shockingGrasp: (position: Point) => new ShockingGrasp({ position })
+  shockingGrasp: (position: Point) => new ShockingGrasp({ position }),
+
+  // Pillar
+  sacredFlame: (position: Point) => new SacredFlame({ position })
 } as const
