@@ -672,8 +672,8 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       console.log('[ObjectsLayer] Animation complete for spell:', spell.spellData?.spellName, 'persistDuration:', persistDuration, 'category:', spell.spellData?.category)
       console.log('[ObjectsLayer] ⚠️ SPELL SIZE:', spell.spellData?.size, 'BURST RADIUS:', spell.spellData?.burstRadius)
 
-      // Area spells, projectile-burst spells, and cone spells can create persistent areas
-      if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst' || spell.spellData?.category === 'cone')) {
+      // Area spells, projectile-burst spells, cone spells, and projectiles with burst effects can create persistent areas
+      if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst' || spell.spellData?.category === 'cone' || (spell.spellData?.category === 'projectile' && spell.spellData?.burstRadius))) {
         // Determine position for persistent area - use current target position if tracking enabled
         let persistentPosition = spell.spellData.toPosition
         if (spell.spellData.trackTarget && spell.spellData.targetTokenId) {

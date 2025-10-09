@@ -113,16 +113,45 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
   }, [spell.id]) // Only recreate when spell ID changes (new spell)
 
   useEffect(() => {
-    if (!isAnimating || isComplete) return
+    console.log('[UnifiedProjectile] Animation effect triggered:', {
+      isAnimating,
+      isComplete,
+      hasMotionGenerator: !!motionGeneratorRef.current
+    })
+
+    if (!isAnimating || isComplete) {
+      console.log('[UnifiedProjectile] Animation effect BLOCKED:', { isAnimating, isComplete })
+      return
+    }
 
     // Use the stored motion generator
     const motionGenerator = motionGeneratorRef.current
-    if (!motionGenerator) return
+    if (!motionGenerator) {
+      console.log('[UnifiedProjectile] NO MOTION GENERATOR!')
+      return
+    }
+
+    // Calculate total duration ONCE outside the animation loop
+    let totalDuration = spell.duration || 1000
+    const hasBurst = spell.category === 'projectile-burst' || (spell.category === 'projectile' && !!spell.burstRadius)
+
+    if (hasBurst) {
+      const burstDuration = spell.burstDuration || 600
+      totalDuration = totalDuration + burstDuration
+    }
+
+    console.log('[UnifiedProjectile] Starting animation loop for:', spell.spellName, {
+      isAnimating,
+      isComplete,
+      spellDuration: spell.duration,
+      spellBurstDuration: spell.burstDuration,
+      hasBurst,
+      totalDuration
+    })
 
     const animate = () => {
       const elapsed = Date.now() - startTimeRef.current
-      const duration = spell.duration || 1000
-      const currentProgress = Math.min(elapsed / duration, 1)
+      const currentProgress = Math.min(elapsed / totalDuration, 1)
 
       setProgress(currentProgress)
 
@@ -182,12 +211,31 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
     const baseRadius = spell.size || 20
     const opacity = 1 - progress * 0.5
 
-    // For projectile-burst, split into two phases
-    if (spell.category === 'projectile-burst') {
+    // For projectile-burst (or projectiles with burstRadius), split into two phases
+    const shouldUseBurstPhase = spell.category === 'projectile-burst' || (spell.category === 'projectile' && !!spell.burstRadius)
+
+    console.log('[UnifiedProjectile] Render check:', {
+      spellName: spell.spellName,
+      category: spell.category,
+      hasBurstRadius: !!spell.burstRadius,
+      burstRadius: spell.burstRadius,
+      shouldUseBurstPhase,
+      progress
+    })
+
+    if (shouldUseBurstPhase) {
       const projectilePhase = 0.7 // 70% travel, 30% burst
+
+      console.log('[UnifiedProjectile] Burst phase check:', {
+        progress,
+        projectilePhase,
+        inProjectilePhase: progress < projectilePhase,
+        inBurstPhase: progress >= projectilePhase
+      })
 
       if (progress < projectilePhase) {
         // Phase 1: Projectile travel
+        console.log('[UnifiedProjectile] ✈️ Rendering PROJECTILE phase')
         const projectileProgress = progress / projectilePhase
         const motionGenerator = createMotionGenerator()
         const position = motionGenerator(projectileProgress)
@@ -309,11 +357,20 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
         )
       } else {
         // Phase 2: Burst explosion
+        console.log('[UnifiedProjectile] 💥 Rendering BURST phase')
         const burstProgress = (progress - projectilePhase) / (1 - projectilePhase)
         const maxBurstRadius = spell.burstRadius || baseRadius * 2
         const burstRadius = maxBurstRadius * (0.3 + burstProgress * 0.7)
         const burstOpacity = (1 - burstProgress) * 0.8
         const target = getTargetPosition()
+
+        console.log('[UnifiedProjectile] Burst values:', {
+          burstProgress,
+          maxBurstRadius,
+          burstRadius,
+          burstOpacity,
+          targetPos: target
+        })
 
         return (
           <>

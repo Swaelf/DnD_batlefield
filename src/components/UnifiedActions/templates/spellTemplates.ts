@@ -17,26 +17,32 @@ export type SpellTemplate = Omit<UnifiedAction, 'id' | 'timestamp' | 'source' | 
 export const fireballTemplate: SpellTemplate = {
   templateId: 'fireball',
   name: 'Fireball',
-  description: 'A classic fireball spell that explodes in a 20-foot radius',
+  description: 'A bright streak flashes to a point within range then blossoms into an explosion of flame (20-foot radius, 8d6 fire damage)',
   type: 'spell',
   category: 'fire',
   tags: ["spell","magic"],
   animation: {
     type: 'projectile_burst',
     duration: 800,
-    color: '#FF4500',
-    size: 15,
+    color: '#FF6B35',
+    size: 20,
+    speed: 500, // Projectile speed
+    range: 120, // Maximum range: 24 grid cells = 120 feet
     trail: true,
     glow: true,
     pulse: true,
     curved: false, // Fireball flies straight
-    burstSize: 150,
-    burstColor: '#FF6600',
+    burstSize: 200, // 4 grid cells radius = 200px (50px per cell)
+    burstColor: '#FF4500',
     burstDuration: 600,
+    persistDuration: 1, // Persist for 1 event (burning ground)
+    durationType: 'events', // Event-based duration
+    persistColor: '#FF4500',
+    persistOpacity: 0.6,
     customParams: {
-      trailLength: 5,
-      trailColor: '#FFA500',
-      explosionSize: 150,
+      trailLength: 8,
+      trailColor: '#FF4500',
+      explosionSize: 200,
       explosionDuration: 600
     }
   },
@@ -45,10 +51,9 @@ export const fireballTemplate: SpellTemplate = {
     areaOfEffect: {
       type: 'circle',
       center: { x: 0, y: 0 }, // Will be set at cast time
-      radius: 100 // 20ft radius in grid units
+      radius: 200 // 20ft radius = 4 grid cells = 200px
     },
-    highlightColor: '#FF6600',
-    persistDuration: 1000
+    highlightColor: '#FF6600'
   },
   metadata: {
     name: 'Fireball',

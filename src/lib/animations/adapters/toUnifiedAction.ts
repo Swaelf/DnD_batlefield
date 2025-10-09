@@ -196,7 +196,45 @@ function buildAnimationConfig(template: any, instance: any): AnimationConfig {
       config.trail = true
       config.trailLength = 8
       config.trailFade = 0.8
+
+      // Handle projectiles with burst effects (like Fireball)
+      // Try to get animation data using getAnimation() method or direct access
+      const projectileAnim = typeof instance.getAnimation === 'function'
+        ? instance.getAnimation()
+        : ((instance as any).animation || instance)
+
+      // Extract range from instance or animation data (can be 'range' or 'maxRange')
       if (instance.range) config.range = instance.range
+      if (projectileAnim.maxRange) config.range = projectileAnim.maxRange
+
+      console.log('[Adapter] Projectile data:', {
+        hasGetAnimation: typeof instance.getAnimation === 'function',
+        hasImpactEffect: !!projectileAnim.impactEffect,
+        hasMetadata: !!projectileAnim.metadata,
+        impactEffect: projectileAnim.impactEffect,
+        metadata: projectileAnim.metadata,
+        instanceRange: instance.range,
+        animMaxRange: projectileAnim.maxRange,
+        configRange: config.range
+      })
+
+      if (projectileAnim.impactEffect) {
+        const impact = projectileAnim.impactEffect
+        config.burstSize = impact.radius || impact.size
+        config.burstDuration = impact.duration || 600
+        config.burstColor = impact.color
+        console.log('[Adapter] ✅ Projectile with burst:', { burstSize: config.burstSize, burstDuration: config.burstDuration })
+      }
+
+      // Handle persistent effects (burning ground, etc.)
+      if (projectileAnim.metadata?.persistDuration) {
+        config.persistDuration = projectileAnim.metadata.persistDuration
+        config.durationType = 'events' // Projectile bursts use event-based duration
+        config.persistent = true
+        config.persistColor = config.burstColor || config.color
+        config.persistOpacity = 0.6
+        console.log('[Adapter] ✅ Projectile persistent effect:', { persistDuration: config.persistDuration, durationType: config.durationType })
+      }
       break
 
     case 'burst':

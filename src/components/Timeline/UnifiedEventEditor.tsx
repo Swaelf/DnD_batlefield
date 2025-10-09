@@ -296,7 +296,13 @@ const UnifiedEventEditorComponent = ({
       case 'spell':
         // Map unified animation types to legacy spell categories
         const legacyCategory = action.animation.type === 'projectile_burst' ? 'projectile-burst' : action.animation.type
-        console.log('[UnifiedEventEditor] legacyCategory:', legacyCategory)
+        console.log('[UnifiedEventEditor] Spell conversion:', {
+          animationType: action.animation.type,
+          legacyCategory,
+          burstSize: action.animation.burstSize,
+          persistDuration: action.animation.persistDuration,
+          durationType: action.animation.durationType
+        })
         const result = {
           type: 'spell',
           tokenId: selectedToken, // ✅ FIX: Include caster token ID for position lookup
@@ -312,8 +318,8 @@ const UnifiedEventEditorComponent = ({
           projectileSpeed: action.animation.speed || 500,
           trailLength: action.animation.trailLength || 8,
           trailFade: action.animation.trailFade || 0.8,
-          // Only set burstRadius for burst/projectile-burst spells, not area spells
-          burstRadius: (legacyCategory === 'burst' || legacyCategory === 'projectile-burst') ? (action.animation.burstSize || 80) : undefined,
+          // Set burstRadius if burstSize is defined (handles both projectile-burst category and projectiles with burst effects)
+          burstRadius: action.animation.burstSize || ((legacyCategory === 'burst' || legacyCategory === 'projectile-burst') ? 80 : undefined),
           burstDuration: action.animation.burstDuration || 600,
           burstColor: action.animation.burstColor || action.animation.color,
           persistDuration: action.animation.persistDuration || 0,
@@ -339,6 +345,12 @@ const UnifiedEventEditorComponent = ({
             intensity: action.statusEffect.intensity || 1
           } : undefined
         }
+        console.log('[UnifiedEventEditor] 🎯 Final spell data:', {
+          category: result.category,
+          burstRadius: result.burstRadius,
+          persistDuration: result.persistDuration,
+          durationType: result.durationType
+        })
         return result
 
       case 'attack':

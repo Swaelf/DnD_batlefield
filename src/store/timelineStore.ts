@@ -495,11 +495,31 @@ const useTimelineStore = create<TimelineStore>()(
               })
 
               // Wait for spell animation duration
-              // For persistent spells (area effects), use a short delay just to show the initial animation
+              // For projectile-burst spells, need to wait for projectile travel + burst animation
+              // For persistent area spells, use a short delay just to show the initial animation
               // For instant spells (projectiles, bursts), use the full animation duration
               const isPersistent = updatedSpellData.persistDuration && updatedSpellData.persistDuration > 0
-              const waitTime = isPersistent ? 500 : (updatedSpellData.duration || 1000)
-              console.log('🔮 [Timeline] Waiting for spell animation:', { isPersistent, waitTime })
+              const hasBurst = updatedSpellData.burstRadius && updatedSpellData.burstDuration
+
+              let waitTime: number
+              if (hasBurst) {
+                // Projectile-burst spells need full duration + burst duration
+                waitTime = (updatedSpellData.duration || 1000) + (updatedSpellData.burstDuration || 600)
+                console.log('🔮 [Timeline] Projectile-burst spell - waiting for full animation:', {
+                  projectileDuration: updatedSpellData.duration,
+                  burstDuration: updatedSpellData.burstDuration,
+                  totalWaitTime: waitTime
+                })
+              } else if (isPersistent) {
+                // Area spells with persistence only need initial fade-in
+                waitTime = 500
+                console.log('🔮 [Timeline] Persistent area spell - short wait:', { waitTime })
+              } else {
+                // Regular projectiles use their duration
+                waitTime = updatedSpellData.duration || 1000
+                console.log('🔮 [Timeline] Regular spell - using duration:', { waitTime })
+              }
+
               setTimeout(resolve, waitTime)
               break
             }

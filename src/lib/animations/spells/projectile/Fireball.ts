@@ -45,8 +45,8 @@ export class Fireball extends AbstractProjectile {
       size = 20,
       color = '#FF6B35',
       trailLength = 8,
-      burstRadius = 210, // 20-foot radius = ~4 grid cells = 200px
-      persistDuration = 0
+      burstRadius = 200, // 20-foot radius = 4 grid cells = 200px (50px per cell)
+      persistDuration = 1 // Persist for 1 event (burning ground effect)
     } = config
 
     // Calculate enhanced size/color based on power
@@ -142,8 +142,9 @@ export class Fireball extends AbstractProjectile {
         volume: 0.7
       },
 
-      // D&D 5e range
-      maxRange: 150, // 150 feet
+      // D&D 5e range: 150 feet = 30 grid cells (5 feet per cell)
+      // But limiting to 24 grid cells = 120 feet for better gameplay
+      maxRange: 120, // 120 feet = 24 grid cells
 
       // Metadata
       metadata: {
