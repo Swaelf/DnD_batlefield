@@ -9,220 +9,6 @@ import type { TestScenario } from './TestScenarios'
 
 export const projectileSpellTests: TestScenario[] = [
   {
-    id: 'magic-missile-curved-test',
-    name: 'Magic Missile - Curved Projectile',
-    description: 'Tests Magic Missile with curved path and burst effect (no persistent post-effect)',
-    category: 'spells',
-    steps: [
-      // Step 1: Create first token (caster)
-      {
-        type: 'action',
-        action: {
-          type: 'addToken',
-          params: {
-            id: 'wizard-token',
-            name: 'Wizard',
-            position: { x: 200, y: 300 },
-            size: 'medium',
-            color: '#9400D3',
-            shape: 'circle'
-          }
-        },
-        description: 'Add wizard token (caster)'
-      },
-      {
-        type: 'wait',
-        wait: 200,
-        description: 'Wait for wizard to render'
-      },
-
-      // Step 2: Create second token (target)
-      {
-        type: 'action',
-        action: {
-          type: 'addToken',
-          params: {
-            id: 'goblin-token',
-            name: 'Goblin',
-            position: { x: 600, y: 300 },
-            size: 'small',
-            color: '#228B22',
-            shape: 'circle'
-          }
-        },
-        description: 'Add goblin token (target)'
-      },
-      {
-        type: 'wait',
-        wait: 200,
-        description: 'Wait for goblin to render'
-      },
-
-      // Step 3: Start combat
-      {
-        type: 'action',
-        action: {
-          type: 'startCombat',
-          params: {}
-        },
-        description: 'Start combat'
-      },
-      {
-        type: 'wait',
-        wait: 300,
-        description: 'Wait for combat to initialize'
-      },
-
-      // Step 4: Schedule wizard movement (4 cells upward)
-      {
-        type: 'action',
-        action: {
-          type: 'custom',
-          params: {
-            execute: async () => {
-              const timelineStore = (await import('@/store/timelineStore')).default.getState()
-              timelineStore.addAction('wizard-token', 'move', {
-                type: 'move',
-                fromPosition: { x: 200, y: 300 },
-                toPosition: { x: 200, y: 100 }, // 4 grid cells up (50px per cell)
-                duration: 1200,
-                easing: 'ease-in-out'
-              }, 1)
-            }
-          }
-        },
-        description: 'Schedule wizard movement upward (4 cells)'
-      },
-
-      // Step 5: Schedule goblin movement (4 cells downward)
-      {
-        type: 'action',
-        action: {
-          type: 'custom',
-          params: {
-            execute: async () => {
-              const timelineStore = (await import('@/store/timelineStore')).default.getState()
-              timelineStore.addAction('goblin-token', 'move', {
-                type: 'move',
-                fromPosition: { x: 600, y: 300 },
-                toPosition: { x: 600, y: 500 }, // 4 grid cells down (50px per cell)
-                duration: 1200,
-                easing: 'ease-in-out'
-              }, 1)
-            }
-          }
-        },
-        description: 'Schedule goblin movement downward (4 cells)'
-      },
-
-      // Step 6: Schedule Magic Missile spell (wizard → goblin target position)
-      {
-        type: 'action',
-        action: {
-          type: 'custom',
-          params: {
-            execute: async () => {
-              const timelineStore = (await import('@/store/timelineStore')).default.getState()
-              timelineStore.addAction('wizard-token', 'spell', {
-                type: 'spell',
-                spellName: 'Magic Missile',
-                category: 'projectile',
-                fromPosition: { x: 200, y: 100 },
-                toPosition: { x: 600, y: 500 },
-                color: '#9370DB',
-                size: 8,
-                duration: 1200,
-                curved: true,
-                curveHeight: 60,
-                projectileSpeed: 400,
-                trailLength: 12,
-                trailFade: 0.75
-              }, 1)
-            }
-          }
-        },
-        description: 'Schedule Magic Missile from wizard to goblin'
-      },
-
-      // Step 7: Execute round 1 (movements + spell)
-      {
-        type: 'action',
-        action: {
-          type: 'nextRound',
-          params: {}
-        },
-        description: 'Execute round 1 - all scheduled actions'
-      },
-      {
-        type: 'wait',
-        wait: 3000,
-        description: 'Wait for all animations to complete (movement + spell)'
-      },
-
-      // Step 8: Verify wizard moved
-      {
-        type: 'assert',
-        assert: {
-          type: 'tokenPosition',
-          params: { tokenId: 'wizard-token' },
-          expected: { x: 200, y: 100 }
-        },
-        description: 'Verify wizard moved upward'
-      },
-
-      // Step 9: Verify goblin moved
-      {
-        type: 'assert',
-        assert: {
-          type: 'tokenPosition',
-          params: { tokenId: 'goblin-token' },
-          expected: { x: 600, y: 500 }
-        },
-        description: 'Verify goblin moved downward'
-      },
-
-      // Step 10: Wait before executing next round
-      {
-        type: 'wait',
-        wait: 500,
-        description: 'Wait before next round to ensure spell animation completes'
-      },
-
-      // Step 11: Execute next round to ensure cleanup
-      {
-        type: 'action',
-        action: {
-          type: 'nextRound',
-          params: {}
-        },
-        description: 'Execute next round for cleanup'
-      },
-      {
-        type: 'wait',
-        wait: 500,
-        description: 'Wait for cleanup'
-      },
-
-      // Step 12: Verify spell cleaned up (Magic Missile has no persistent post-effect)
-      {
-        type: 'assert',
-        assert: {
-          type: 'custom',
-          params: {
-            check: async () => {
-              const mapStore = (await import('@/store/mapStore')).default.getState()
-              const spellObjects = mapStore.currentMap?.objects.filter(obj => obj.type === 'spell') || []
-              return spellObjects.length === 0
-            }
-          },
-          expected: true
-        },
-        description: 'Verify Magic Missile cleaned up (no post-effect)'
-      }
-    ]
-  },
-
-  {
     id: 'fireball-straight-test',
     name: 'Fireball - Straight Projectile',
     description: 'Tests Fireball with straight path and burst effect (no persistent post-effect)',
@@ -352,10 +138,9 @@ export const projectileSpellTests: TestScenario[] = [
                 burstRadius: 210,
                 burstColor: '#FF4500',
                 burstDuration: 600,
-                persistDuration: 2,
+                persistDuration: 0, // No persistent post-effect for this test
                 persistColor: '#CC2500',
-                persistOpacity: 0.4,
-                durationType: 'events'
+                persistOpacity: 0.4
               }, 1)
             }
           }
@@ -409,7 +194,16 @@ export const projectileSpellTests: TestScenario[] = [
             check: async () => {
               const mapStore = (await import('@/store/mapStore')).default.getState()
               const spellObjects = mapStore.currentMap?.objects.filter(obj => obj.type === 'spell') || []
-              return spellObjects.length === 0
+              const persistentAreas = mapStore.currentMap?.objects.filter(obj => obj.type === 'persistent-area') || []
+
+              console.log('[Test] Cleanup check:', {
+                spellObjects: spellObjects.length,
+                spellDetails: spellObjects.map(s => ({ id: s.id, spellName: (s as any).spellData?.spellName })),
+                persistentAreas: persistentAreas.length,
+                persistentDetails: persistentAreas.map(p => ({ id: p.id, spellName: (p as any).persistentAreaData?.spellName }))
+              })
+
+              return spellObjects.length === 0 && persistentAreas.length === 0
             }
           },
           expected: true

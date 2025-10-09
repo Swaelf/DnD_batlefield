@@ -107,8 +107,10 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
   useEffect(() => {
     if (isAnimating) {
       motionGeneratorRef.current = createMotionGenerator()
+      startTimeRef.current = Date.now() // Reset start time when spell changes
     }
-  }, [spell.id, spell.curved, spell.fromPosition.x, spell.fromPosition.y, spell.toPosition.x, spell.toPosition.y])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spell.id]) // Only recreate when spell ID changes (new spell)
 
   useEffect(() => {
     if (!isAnimating || isComplete) return
@@ -143,8 +145,10 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
       setTrailPositions(newTrailPositions)
 
       if (currentProgress >= 1) {
+        console.log('[UnifiedProjectile] Animation complete:', spell.spellName, 'spell.id:', spell.id)
         setIsComplete(true)
         onAnimationComplete?.()
+        console.log('[UnifiedProjectile] onAnimationComplete called')
       } else {
         if (!document.hidden) {
           animationFrameRef.current = requestAnimationFrame(animate)
@@ -159,7 +163,8 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isAnimating, isComplete, spell, onAnimationComplete])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAnimating, isComplete, spell.duration, onAnimationComplete]) // Only use primitives to prevent restarts
 
   // Reset when animation should restart
   useEffect(() => {

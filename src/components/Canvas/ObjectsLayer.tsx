@@ -591,11 +591,15 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     }
 
     const handleAnimationComplete = () => {
+      console.log('[ObjectsLayer] handleAnimationComplete called for:', spell.id, spell.spellData?.spellName)
+
       // Guard against multiple completions
       if (completedSpellAnimations.has(spell.id)) {
+        console.log('[ObjectsLayer] Already completed, skipping:', spell.id)
         return
       }
       completedSpellAnimations.add(spell.id)
+      console.log('[ObjectsLayer] Added to completed set:', spell.id)
 
       // Apply status effects to tokens in area of effect (if spell has statusEffect property)
       if (spell.spellData?.statusEffect) {
@@ -747,11 +751,18 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         setTimeout(() => {
           console.log('[ObjectsLayer] Removing spell animation object:', spell.id)
           deleteObject(spell.id)
+          // Clean up from completed set to allow same spell ID to be used again
+          completedSpellAnimations.delete(spell.id)
         }, 100)
       } else {
         // Remove immediately if no persist duration
+        console.log('[ObjectsLayer] No persist duration, removing spell:', spell.id)
         setTimeout(() => {
+          console.log('[ObjectsLayer] Deleting spell object:', spell.id)
           deleteObject(spell.id)
+          // Clean up from completed set to allow same spell ID to be used again
+          completedSpellAnimations.delete(spell.id)
+          console.log('[ObjectsLayer] Deleted and removed from completed set:', spell.id)
         }, 100)
       }
     }

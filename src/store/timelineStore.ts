@@ -693,16 +693,27 @@ const useTimelineStore = create<TimelineStore>()(
         state.timeline!.currentEvent = 1
       })
 
-      // Remove post effects (durationType='events') from previous round
+      // Remove EXPIRED post effects (durationType='events') from previous round
       const mapStore = useMapStore.getState()
+      const currentEvent = get().currentEvent // Get current event count
+
       if (mapStore.currentMap) {
-        const postEffects = mapStore.currentMap.objects.filter(obj =>
-          obj.isSpellEffect && obj.durationType === 'events'
-        )
-        postEffects.forEach(effect => {
+        const expiredEffects = mapStore.currentMap.objects.filter(obj => {
+          if (!obj.isSpellEffect || obj.durationType !== 'events') return false
+
+          // Check if effect has expired based on event count
+          if (obj.eventCreated !== undefined && obj.spellDuration !== undefined) {
+            const expiresAtEvent = obj.eventCreated + obj.spellDuration
+            return currentEvent >= expiresAtEvent // Remove if current event >= expiration
+          }
+
+          return false // Keep if no duration info
+        })
+
+        expiredEffects.forEach(effect => {
           mapStore.deleteObject(effect.id)
         })
-        console.log(`🧹 Removed ${postEffects.length} post effects from Round ${activeRound}`)
+        console.log(`🧹 Removed ${expiredEffects.length} expired post effects from Round ${activeRound}`)
       }
 
       // Add battle log entry for round ending
