@@ -1,6 +1,7 @@
 import type { TestScenario } from './TestScenarios'
 import type { SpellCategory } from '@/types/timeline'
-import { spellTemplates } from '@/data/unifiedActions/spellTemplates'
+import { AnimationRegistry } from '@/lib/animations'
+import { animationToUnifiedAction } from '@/lib/animations/adapters/toUnifiedAction'
 
 /**
  * Dynamically generates test scenarios for ALL spells in spellTemplates.ts
@@ -34,8 +35,21 @@ const getSpellCategory = (animationType: string): SpellCategory => {
   return categoryMap[animationType] || 'projectile'
 }
 
+// Get spell templates from animation library
+const getSpellTemplates = () => {
+  const templates = AnimationRegistry.getAllTemplates()
+    .filter(t => t.category === 'projectile' || t.category === 'burst' || t.category === 'area' || t.category === 'ray')
+
+  const dummyPos = { x: 0, y: 0 }
+  return templates.map(template =>
+    animationToUnifiedAction(template.name as any, dummyPos, dummyPos)
+  )
+}
+
 // Generate a unique test scenario for each spell
 export const generateSpellTestScenarios = (): TestScenario[] => {
+  const spellTemplates = getSpellTemplates()
+
   return spellTemplates.map((spell, index) => {
     const spellName = spell.name
     const spellId = spell.id
@@ -233,6 +247,7 @@ export const allSpellTestScenarios = generateSpellTestScenarios()
 
 // Helper to get scenarios by spell category
 export const getSpellTestsByCategory = (category: string): TestScenario[] => {
+  const spellTemplates = getSpellTemplates()
   return spellTemplates
     .filter(spell => spell.category === category)
     .map(spell => {
@@ -248,4 +263,4 @@ export const getSpellTest = (spellId: string): TestScenario | undefined => {
 }
 
 // Export spell count for test runner info
-export const spellTestCount = spellTemplates.length
+export const spellTestCount = getSpellTemplates().length

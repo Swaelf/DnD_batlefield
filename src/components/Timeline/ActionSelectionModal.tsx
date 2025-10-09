@@ -7,10 +7,9 @@ import { Button } from '@/components/primitives/ButtonVE'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import type { UnifiedAction } from '@/types/unifiedAction'
-import { spellTemplates } from '@/data/unifiedActions/spellTemplates'
-import { attackTemplates } from '@/data/unifiedActions/attackTemplates'
+import { AnimationRegistry, type RegisteredAnimationName } from '@/lib/animations'
+import { animationToUnifiedAction } from '@/lib/animations/adapters/toUnifiedAction'
 import { interactionTemplates } from '@/data/unifiedActions/interactionTemplates'
-import { moveTemplates } from '@/data/unifiedActions/moveTemplates'
 
 type ActionSelectionModalProps = {
   isOpen: boolean
@@ -47,13 +46,31 @@ export const ActionSelectionModal = ({
     }
   }, [isOpen, pauseAnimations, resumeAnimations])
 
-  // Combine all action templates
+  // Get all action templates - combining animation library with interactions
   const allActions = useMemo(() => {
+    // Get all animation templates from library
+    const animationTemplates = AnimationRegistry.getAllTemplates()
+
+    // Convert to UnifiedAction format using adapter
+    // Use dummy positions (0, 0) - will be set when action is actually used
+    const dummyPosition = { x: 0, y: 0 }
+    const animationActions: UnifiedAction[] = animationTemplates.map(template => {
+      try {
+        return animationToUnifiedAction(
+          template.name as RegisteredAnimationName,
+          dummyPosition,
+          dummyPosition
+        )
+      } catch (error) {
+        console.error(`Failed to convert animation template ${template.name}:`, error)
+        return null
+      }
+    }).filter((action): action is UnifiedAction => action !== null)
+
+    // Add interaction templates (not in animation library yet)
     return [
-      ...Object.values(spellTemplates),
-      ...Object.values(attackTemplates),
-      ...Object.values(interactionTemplates),
-      ...Object.values(moveTemplates)
+      ...animationActions,
+      ...Object.values(interactionTemplates)
     ]
   }, [])
 

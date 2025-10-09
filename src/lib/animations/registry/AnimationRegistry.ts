@@ -41,6 +41,13 @@ import { SlingAttack, type SlingConfig } from '../spells/attacks/SlingAttack'
 import { WalkMovement, type WalkConfig } from '../spells/movement/WalkMovement'
 import { DashMovement, type DashConfig } from '../spells/movement/DashMovement'
 import { TeleportMovement, type TeleportConfig } from '../spells/movement/TeleportMovement'
+import { ChargeMovement, type ChargeConfig } from '../spells/movement/ChargeMovement'
+import { SneakMovement, type SneakConfig } from '../spells/movement/SneakMovement'
+import { ClimbMovement, type ClimbConfig } from '../spells/movement/ClimbMovement'
+import { SwimMovement, type SwimConfig } from '../spells/movement/SwimMovement'
+import { FlyMovement, type FlyConfig } from '../spells/movement/FlyMovement'
+import { WithdrawMovement, type WithdrawConfig } from '../spells/movement/WithdrawMovement'
+import { DisengageMovement, type DisengageConfig } from '../spells/movement/DisengageMovement'
 import { StunnedEffect, type StunnedConfig } from '../spells/status/StunnedEffect'
 import { PoisonedEffect, type PoisonedConfig } from '../spells/status/PoisonedEffect'
 import { ProneEffect, type ProneConfig } from '../spells/status/ProneEffect'
@@ -92,7 +99,7 @@ class AnimationRegistryClass {
         color: '#FF6B35',
         size: 20
       },
-      factory: (config: FireballConfig) => new Fireball(config)
+      factory: ((config: FireballConfig) => new Fireball(config)) as (config: unknown) => unknown
     })
 
     this.register('Magic Missile', {
@@ -107,7 +114,7 @@ class AnimationRegistryClass {
         color: '#9370DB',
         size: 12
       },
-      factory: (config: MagicMissileConfig) => new MagicMissile(config)
+      factory: ((config: MagicMissileConfig) => new MagicMissile(config)) as (config: unknown) => unknown
     })
 
     this.register('Guiding Bolt', {
@@ -122,7 +129,7 @@ class AnimationRegistryClass {
         color: '#F0E68C',
         size: 16
       },
-      factory: (config: GuidingBoltConfig) => new GuidingBolt(config)
+      factory: ((config: GuidingBoltConfig) => new GuidingBolt(config)) as (config: unknown) => unknown
     })
 
     // Burst spells
@@ -137,7 +144,7 @@ class AnimationRegistryClass {
         color: '#4169E1',
         size: 150
       },
-      factory: (config: ThunderwaveConfig) => new Thunderwave(config)
+      factory: ((config: ThunderwaveConfig) => new Thunderwave(config)) as (config: unknown) => unknown
     })
 
     // Area spells
@@ -152,7 +159,7 @@ class AnimationRegistryClass {
         color: '#000000',
         size: 150
       },
-      factory: (config: DarknessConfig) => new Darkness(config)
+      factory: ((config: DarknessConfig) => new Darkness(config)) as (config: unknown) => unknown
     })
 
     this.register('Web', {
@@ -166,7 +173,7 @@ class AnimationRegistryClass {
         color: '#F5F5DC',
         size: 100
       },
-      factory: (config: WebConfig) => new Web(config)
+      factory: ((config: WebConfig) => new Web(config)) as (config: unknown) => unknown
     })
 
     this.register('Stone Rain', {
@@ -180,7 +187,7 @@ class AnimationRegistryClass {
         color: '#8B7355',
         size: 100
       },
-      factory: (config: StoneRainConfig) => new StoneRain(config)
+      factory: ((config: StoneRainConfig) => new StoneRain(config)) as (config: unknown) => unknown
     })
 
     // Ray spells
@@ -195,7 +202,7 @@ class AnimationRegistryClass {
         color: '#87CEEB',
         width: 8
       },
-      factory: (config: RayOfFrostConfig) => new RayOfFrost(config)
+      factory: ((config: RayOfFrostConfig) => new RayOfFrost(config)) as (config: unknown) => unknown
     })
 
     this.register('Eldritch Blast', {
@@ -209,7 +216,7 @@ class AnimationRegistryClass {
         color: '#8B00FF',
         width: 10
       },
-      factory: (config: EldritchBlastConfig) => new EldritchBlast(config)
+      factory: ((config: EldritchBlastConfig) => new EldritchBlast(config)) as (config: unknown) => unknown
     })
 
     // Cone spells
@@ -224,7 +231,7 @@ class AnimationRegistryClass {
         color: '#FF6B35',
         size: 75
       },
-      factory: (config: BurningHandsConfig) => new BurningHands(config)
+      factory: ((config: BurningHandsConfig) => new BurningHands(config)) as (config: unknown) => unknown
     })
 
     this.register('Poison Spray', {
@@ -238,7 +245,7 @@ class AnimationRegistryClass {
         color: '#9ACD32',
         size: 50
       },
-      factory: (config: PoisonSprayConfig) => new PoisonSpray(config)
+      factory: ((config: PoisonSprayConfig) => new PoisonSpray(config)) as (config: unknown) => unknown
     })
 
     this.register('Cone of Cold', {
@@ -252,7 +259,7 @@ class AnimationRegistryClass {
         color: '#87CEEB',
         size: 300
       },
-      factory: (config: ConeOfColdConfig) => new ConeOfCold(config)
+      factory: ((config: ConeOfColdConfig) => new ConeOfCold(config)) as (config: unknown) => unknown
     })
 
     this.register('Breath Weapon', {
@@ -266,7 +273,7 @@ class AnimationRegistryClass {
         color: '#FF6B35',
         size: 75
       },
-      factory: (config: BreathWeaponConfig) => new BreathWeapon(config)
+      factory: ((config: BreathWeaponConfig) => new BreathWeapon(config)) as (config: unknown) => unknown
     })
 
     // Healing spells
@@ -281,7 +288,7 @@ class AnimationRegistryClass {
         color: '#FFD700',
         size: 40
       },
-      factory: (config: CureWoundsConfig) => new CureWounds(config)
+      factory: ((config: CureWoundsConfig) => new CureWounds(config)) as (config: unknown) => unknown
     })
 
     this.register('Heal', {
@@ -295,7 +302,7 @@ class AnimationRegistryClass {
         color: '#FFFFFF',
         size: 60
       },
-      factory: (config: HealConfig) => new Heal(config)
+      factory: ((config: HealConfig) => new Heal(config)) as (config: unknown) => unknown
     })
 
     // Buff spells
@@ -310,7 +317,7 @@ class AnimationRegistryClass {
         color: '#FFFFE0',
         size: 30
       },
-      factory: (config: BlessConfig) => new Bless(config)
+      factory: ((config: BlessConfig) => new Bless(config)) as (config: unknown) => unknown
     })
 
     // Line spells
@@ -325,7 +332,7 @@ class AnimationRegistryClass {
         color: '#00BFFF',
         width: 25
       },
-      factory: (config: LightningBoltConfig) => new LightningBolt(config)
+      factory: ((config: LightningBoltConfig) => new LightningBolt(config)) as (config: unknown) => unknown
     })
 
     // Touch spells
@@ -340,7 +347,7 @@ class AnimationRegistryClass {
         color: '#00BFFF',
         size: 25
       },
-      factory: (config: ShockingGraspConfig) => new ShockingGrasp(config)
+      factory: ((config: ShockingGraspConfig) => new ShockingGrasp(config)) as (config: unknown) => unknown
     })
 
     // Pillar spells
@@ -355,7 +362,7 @@ class AnimationRegistryClass {
         color: '#FFD700',
         size: 25
       },
-      factory: (config: SacredFlameConfig) => new SacredFlame(config)
+      factory: ((config: SacredFlameConfig) => new SacredFlame(config)) as (config: unknown) => unknown
     })
 
     // Melee attacks
@@ -370,7 +377,7 @@ class AnimationRegistryClass {
         color: '#C0C0C0',
         size: 40
       },
-      factory: (config: LongswordConfig) => new LongswordAttack(config)
+      factory: ((config: LongswordConfig) => new LongswordAttack(config)) as (config: unknown) => unknown
     })
 
     this.register('Rapier', {
@@ -384,7 +391,7 @@ class AnimationRegistryClass {
         color: '#B0B0B0',
         size: 35
       },
-      factory: (config: RapierConfig) => new RapierAttack(config)
+      factory: ((config: RapierConfig) => new RapierAttack(config)) as (config: unknown) => unknown
     })
 
     this.register('Warhammer', {
@@ -398,7 +405,7 @@ class AnimationRegistryClass {
         color: '#8B7355',
         size: 35
       },
-      factory: (config: WarhammerConfig) => new WarhammerAttack(config)
+      factory: ((config: WarhammerConfig) => new WarhammerAttack(config)) as (config: unknown) => unknown
     })
 
     // Ranged attacks
@@ -413,7 +420,7 @@ class AnimationRegistryClass {
         color: '#8B4513',
         size: 8
       },
-      factory: (config: LongbowConfig) => new LongbowAttack(config)
+      factory: ((config: LongbowConfig) => new LongbowAttack(config)) as (config: unknown) => unknown
     })
 
     this.register('Thrown Dagger', {
@@ -427,7 +434,7 @@ class AnimationRegistryClass {
         color: '#C0C0C0',
         size: 12
       },
-      factory: (config: ThrownDaggerConfig) => new ThrownDaggerAttack(config)
+      factory: ((config: ThrownDaggerConfig) => new ThrownDaggerAttack(config)) as (config: unknown) => unknown
     })
 
     this.register('Sling', {
@@ -441,7 +448,7 @@ class AnimationRegistryClass {
         color: '#696969',
         size: 10
       },
-      factory: (config: SlingConfig) => new SlingAttack(config)
+      factory: ((config: SlingConfig) => new SlingAttack(config)) as (config: unknown) => unknown
     })
 
     // Movement types
@@ -456,7 +463,7 @@ class AnimationRegistryClass {
         color: '#4A90E2',
         size: 0
       },
-      factory: (config: WalkConfig) => new WalkMovement(config)
+      factory: ((config: WalkConfig) => new WalkMovement(config)) as (config: unknown) => unknown
     })
 
     this.register('Dash', {
@@ -470,7 +477,7 @@ class AnimationRegistryClass {
         color: '#FFD700',
         size: 0
       },
-      factory: (config: DashConfig) => new DashMovement(config)
+      factory: ((config: DashConfig) => new DashMovement(config)) as (config: unknown) => unknown
     })
 
     this.register('Teleport', {
@@ -484,7 +491,105 @@ class AnimationRegistryClass {
         color: '#9370DB',
         size: 40
       },
-      factory: (config: TeleportConfig) => new TeleportMovement(config)
+      factory: ((config: TeleportConfig) => new TeleportMovement(config)) as (config: unknown) => unknown
+    })
+
+    this.register('Charge', {
+      name: 'Charge',
+      category: 'movement' as AnimationCategory,
+      description: 'Aggressive forward movement toward an enemy for attack bonus.',
+      defaults: {
+        category: 'movement' as AnimationCategory,
+        name: 'Charge',
+        duration: 800,
+        color: '#FF6B47',
+        size: 0
+      },
+      factory: ((config: ChargeConfig) => new ChargeMovement(config)) as (config: unknown) => unknown
+    })
+
+    this.register('Sneak', {
+      name: 'Sneak',
+      category: 'movement' as AnimationCategory,
+      description: 'Stealthy movement to avoid detection (Stealth check required).',
+      defaults: {
+        category: 'movement' as AnimationCategory,
+        name: 'Sneak',
+        duration: 1500,
+        color: '#6A4C93',
+        size: 0
+      },
+      factory: ((config: SneakConfig) => new SneakMovement(config)) as (config: unknown) => unknown
+    })
+
+    this.register('Climb', {
+      name: 'Climb',
+      category: 'movement' as AnimationCategory,
+      description: 'Climb vertical surfaces (Athletics check required, half speed).',
+      defaults: {
+        category: 'movement' as AnimationCategory,
+        name: 'Climb',
+        duration: 2000,
+        color: '#8B4513',
+        size: 0
+      },
+      factory: ((config: ClimbConfig) => new ClimbMovement(config)) as (config: unknown) => unknown
+    })
+
+    this.register('Swim', {
+      name: 'Swim',
+      category: 'movement' as AnimationCategory,
+      description: 'Move through water or liquid terrain (Athletics check, half speed).',
+      defaults: {
+        category: 'movement' as AnimationCategory,
+        name: 'Swim',
+        duration: 1800,
+        color: '#4ECDC4',
+        size: 0
+      },
+      factory: ((config: SwimConfig) => new SwimMovement(config)) as (config: unknown) => unknown
+    })
+
+    this.register('Fly', {
+      name: 'Fly',
+      category: 'movement' as AnimationCategory,
+      description: 'Aerial movement using magical or natural flight.',
+      defaults: {
+        category: 'movement' as AnimationCategory,
+        name: 'Fly',
+        duration: 800,
+        color: '#B19CD9',
+        size: 0
+      },
+      factory: ((config: FlyConfig) => new FlyMovement(config)) as (config: unknown) => unknown
+    })
+
+    this.register('Withdraw', {
+      name: 'Withdraw',
+      category: 'movement' as AnimationCategory,
+      description: 'Careful retreat without provoking opportunity attacks from first square.',
+      defaults: {
+        category: 'movement' as AnimationCategory,
+        name: 'Withdraw',
+        duration: 1200,
+        color: '#FFA500',
+        size: 0
+      },
+      factory: ((config: WithdrawConfig) => new WithdrawMovement(config)) as (config: unknown) => unknown
+    })
+
+    this.register('Disengage', {
+      name: 'Disengage',
+      category: 'movement' as AnimationCategory,
+      description: 'Use action to move without triggering opportunity attacks.',
+      defaults: {
+        category: 'movement' as AnimationCategory,
+        name: 'Disengage',
+        duration: 1000,
+        color: '#20B2AA',
+        size: 0
+      },
+      factory: ((config: DisengageConfig) => new DisengageMovement(config)) as (config: unknown) => unknown
     })
 
     // Status effects
@@ -499,7 +604,7 @@ class AnimationRegistryClass {
         color: '#FFD700',
         size: 40
       },
-      factory: (config: StunnedConfig) => new StunnedEffect(config)
+      factory: ((config: StunnedConfig) => new StunnedEffect(config)) as (config: unknown) => unknown
     })
 
     this.register('Poisoned', {
@@ -513,7 +618,7 @@ class AnimationRegistryClass {
         color: '#00FF00',
         size: 40
       },
-      factory: (config: PoisonedConfig) => new PoisonedEffect(config)
+      factory: ((config: PoisonedConfig) => new PoisonedEffect(config)) as (config: unknown) => unknown
     })
 
     this.register('Prone', {
@@ -527,7 +632,7 @@ class AnimationRegistryClass {
         color: '#808080',
         size: 40
       },
-      factory: (config: ProneConfig) => new ProneEffect(config)
+      factory: ((config: ProneConfig) => new ProneEffect(config)) as (config: unknown) => unknown
     })
 
     this.register('Entangled', {
@@ -541,7 +646,7 @@ class AnimationRegistryClass {
         color: '#228B22',
         size: 40
       },
-      factory: (config: EntangledConfig) => new EntangledEffect(config)
+      factory: ((config: EntangledConfig) => new EntangledEffect(config)) as (config: unknown) => unknown
     })
 
     this.register('Dying', {
@@ -555,7 +660,7 @@ class AnimationRegistryClass {
         color: '#8B0000',
         size: 40
       },
-      factory: (config: DyingConfig) => new DyingEffect(config)
+      factory: ((config: DyingConfig) => new DyingEffect(config)) as (config: unknown) => unknown
     })
 
     this.register('Flaming', {
@@ -569,7 +674,7 @@ class AnimationRegistryClass {
         color: '#FF4500',
         size: 40
       },
-      factory: (config: FlamingConfig) => new FlamingEffect(config)
+      factory: ((config: FlamingConfig) => new FlamingEffect(config)) as (config: unknown) => unknown
     })
 
     this.register('Chilled', {
@@ -583,7 +688,7 @@ class AnimationRegistryClass {
         color: '#00FFFF',
         size: 40
       },
-      factory: (config: ChilledConfig) => new ChilledEffect(config)
+      factory: ((config: ChilledConfig) => new ChilledEffect(config)) as (config: unknown) => unknown
     })
 
     this.register('Dazed', {
@@ -597,7 +702,7 @@ class AnimationRegistryClass {
         color: '#FFFF00',
         size: 40
       },
-      factory: (config: DazedConfig) => new DazedEffect(config)
+      factory: ((config: DazedConfig) => new DazedEffect(config)) as (config: unknown) => unknown
     })
 
     this.register('Blessed', {
@@ -611,7 +716,7 @@ class AnimationRegistryClass {
         color: '#FFD700',
         size: 40
       },
-      factory: (config: BlessedConfig) => new BlessedEffect(config)
+      factory: ((config: BlessedConfig) => new BlessedEffect(config)) as (config: unknown) => unknown
     })
 
     this.register('Regenerating', {
@@ -625,7 +730,7 @@ class AnimationRegistryClass {
         color: '#00FF00',
         size: 40
       },
-      factory: (config: RegeneratingConfig) => new RegeneratingEffect(config)
+      factory: ((config: RegeneratingConfig) => new RegeneratingEffect(config)) as (config: unknown) => unknown
     })
 
     this.register('Sleeping', {
@@ -639,7 +744,7 @@ class AnimationRegistryClass {
         color: '#9370DB',
         size: 40
       },
-      factory: (config: SleepingConfig) => new SleepingEffect(config)
+      factory: ((config: SleepingConfig) => new SleepingEffect(config)) as (config: unknown) => unknown
     })
 
     this.register('Frightened', {
@@ -653,7 +758,7 @@ class AnimationRegistryClass {
         color: '#4B0082',
         size: 40
       },
-      factory: (config: FrightenedConfig) => new FrightenedEffect(config)
+      factory: ((config: FrightenedConfig) => new FrightenedEffect(config)) as (config: unknown) => unknown
     })
   }
 

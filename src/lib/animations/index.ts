@@ -133,6 +133,20 @@ export { DashMovement } from './spells/movement/DashMovement'
 export type { DashConfig } from './spells/movement/DashMovement'
 export { TeleportMovement } from './spells/movement/TeleportMovement'
 export type { TeleportConfig } from './spells/movement/TeleportMovement'
+export { ChargeMovement } from './spells/movement/ChargeMovement'
+export type { ChargeConfig } from './spells/movement/ChargeMovement'
+export { SneakMovement } from './spells/movement/SneakMovement'
+export type { SneakConfig } from './spells/movement/SneakMovement'
+export { ClimbMovement } from './spells/movement/ClimbMovement'
+export type { ClimbConfig } from './spells/movement/ClimbMovement'
+export { SwimMovement } from './spells/movement/SwimMovement'
+export type { SwimConfig } from './spells/movement/SwimMovement'
+export { FlyMovement } from './spells/movement/FlyMovement'
+export type { FlyConfig } from './spells/movement/FlyMovement'
+export { WithdrawMovement } from './spells/movement/WithdrawMovement'
+export type { WithdrawConfig } from './spells/movement/WithdrawMovement'
+export { DisengageMovement } from './spells/movement/DisengageMovement'
+export type { DisengageConfig } from './spells/movement/DisengageMovement'
 
 // Status effect implementations
 export { StunnedEffect } from './spells/status/StunnedEffect'
@@ -171,6 +185,15 @@ export { animationCaster, castSpell } from './api/AnimationCaster'
 export type { CastOptions, CastResult } from './api/AnimationCaster'
 export { timelineIntegration } from './api/TimelineIntegration'
 export type { TimelineAnimationEvent, PersistentEffect } from './api/TimelineIntegration'
+
+// Adapters
+export {
+  animationToUnifiedAction,
+  getAnimationsByCategory,
+  getAnimationsByType,
+  getAnimationInfo,
+  searchAnimations
+} from './adapters/toUnifiedAction'
 
 /**
  * Library Version

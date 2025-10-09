@@ -1,4 +1,6 @@
 import type { TestScenario } from './TestScenarios'
+import { AnimationRegistry } from '@/lib/animations'
+import { animationToUnifiedAction } from '@/lib/animations/adapters/toUnifiedAction'
 
 /**
  * Dynamically generates test scenarios for attack animations
@@ -13,8 +15,34 @@ import type { TestScenario } from './TestScenarios'
  * 7. Execute event
  */
 
-// Attack configurations for testing - matches attackTemplates.ts exactly
-const attackConfigs = [
+// Get attack templates from animation library
+const getAttackTemplates = () => {
+  const templates = AnimationRegistry.getAllTemplates()
+    .filter(t => t.category === 'attack')
+
+  const dummyPos = { x: 0, y: 0 }
+  return templates.map(template => {
+    const action = animationToUnifiedAction(template.name as any, dummyPos, dummyPos)
+    return {
+      id: action.id,
+      name: action.name,
+      weaponName: action.name,
+      attackType: action.metadata.attackType || 'melee',
+      damageType: action.damageType || 'slashing',
+      damage: action.damage || '1d8',
+      animation: action.animation.type,
+      color: action.animation.color,
+      duration: action.animation.duration,
+      range: action.range || 5
+    }
+  })
+}
+
+// Attack configurations from animation library
+const attackConfigs = getAttackTemplates()
+
+// Legacy hardcoded configs (kept for reference, but overridden by animation library)
+const legacyAttackConfigs = [
   // ===== MELEE ATTACKS =====
 
   // Slashing - Longsword
