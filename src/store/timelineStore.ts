@@ -76,8 +76,12 @@ const useTimelineStore = create<TimelineStore>()(
     },
 
     nextEvent: async () => {
+      console.log('⏭️ [Timeline] nextEvent called')
       const { timeline, currentRound, currentEvent } = get()
-      if (!timeline || !timeline.isActive) return
+      if (!timeline || !timeline.isActive) {
+        console.log('⏭️ [Timeline] No active timeline, returning')
+        return
+      }
 
       // Clean up any lingering event creation state before advancing
       const eventCreationStore = useEventCreationStore.getState()
@@ -87,16 +91,26 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Get current round data
       const round = timeline.rounds.find(r => r.number === currentRound)
-      if (!round) return
+      if (!round) {
+        console.log('⏭️ [Timeline] Round not found:', currentRound)
+        return
+      }
 
       // Check if the current event exists and needs execution
       const currentEventData = round.events.find(e => e.number === currentEvent)
+      console.log('⏭️ [Timeline] Current event:', {
+        eventNumber: currentEvent,
+        hasActions: currentEventData?.actions.length || 0,
+        executed: currentEventData?.executed
+      })
 
       // Only execute if the event has actions and is not marked as executed
       // This allows re-execution after previousEvent() marks it as not executed
       if (currentEventData && currentEventData.actions.length > 0 && !currentEventData.executed) {
+        console.log('⏭️ [Timeline] Executing event actions...')
         // Execute actions for current event before advancing
         await get().executeEventActions(currentEvent)
+        console.log('⏭️ [Timeline] Event actions completed')
       }
 
       // Create snapshot before moving to next event
@@ -141,6 +155,7 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Then increment the event
       const nextEventNumber = currentEvent + 1
+      console.log('⏭️ [Timeline] Advancing to event:', nextEventNumber)
       set((state) => {
         state.currentEvent = nextEventNumber
         state.timeline!.currentEvent = nextEventNumber
@@ -148,8 +163,10 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Clean up expired spell effects and status effects when advancing events
       const { currentRound: newRound, currentEvent: newEvent } = get()
+      console.log('⏭️ [Timeline] Cleaning up expired spells...')
       useMapStore.getState().cleanupExpiredSpells(newRound, newEvent)
       useMapStore.getState().cleanupExpiredStatusEffects(newRound)
+      console.log('⏭️ [Timeline] nextEvent complete')
     },
 
     previousEvent: () => {
@@ -388,6 +405,7 @@ const useTimelineStore = create<TimelineStore>()(
           const executeActionAsync = async () => {
             switch (action.type) {
             case 'spell': {
+              console.log('🔮 [Timeline] Executing spell action:', action)
               // Create proper SpellMapObject for spell
               const spellData = action.data as any
 
@@ -450,6 +468,14 @@ const useTimelineStore = create<TimelineStore>()(
                 durationType: updatedSpellData.durationType || 'rounds', // Respect spell's durationType
                 spellData: updatedSpellData
               }
+              console.log('🔮 [Timeline] Creating spell object:', {
+                id: spellObject.id,
+                spellName: updatedSpellData.spellName,
+                persistDuration: updatedSpellData.persistDuration,
+                durationType: updatedSpellData.durationType,
+                spellDuration: spellObject.spellDuration,
+                position: spellObject.position
+              })
               mapStore.addSpellEffect(spellObject)
 
               // Add battle log entry
@@ -469,7 +495,12 @@ const useTimelineStore = create<TimelineStore>()(
               })
 
               // Wait for spell animation duration
-              setTimeout(resolve, updatedSpellData.duration || 1000)
+              // For persistent spells (area effects), use a short delay just to show the initial animation
+              // For instant spells (projectiles, bursts), use the full animation duration
+              const isPersistent = updatedSpellData.persistDuration && updatedSpellData.persistDuration > 0
+              const waitTime = isPersistent ? 500 : (updatedSpellData.duration || 1000)
+              console.log('🔮 [Timeline] Waiting for spell animation:', { isPersistent, waitTime })
+              setTimeout(resolve, waitTime)
               break
             }
             case 'attack': {

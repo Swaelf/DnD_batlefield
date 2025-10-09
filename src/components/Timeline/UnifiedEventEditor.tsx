@@ -308,11 +308,12 @@ const UnifiedEventEditorComponent = ({
           secondaryColor: '#FFAA00', // Default yellow-orange for flame cores
           size: action.animation.size || 20,
           duration: action.animation.duration || 1000,
-          // Pass through enhanced animation properties for projectile_burst
+          // Pass through enhanced animation properties for projectile_burst and burst spells only
           projectileSpeed: action.animation.speed || 500,
           trailLength: action.animation.trailLength || 8,
           trailFade: action.animation.trailFade || 0.8,
-          burstRadius: action.animation.burstSize || 80, // Map burstSize to burstRadius for ProjectileSpell compatibility
+          // Only set burstRadius for burst/projectile-burst spells, not area spells
+          burstRadius: (legacyCategory === 'burst' || legacyCategory === 'projectile-burst') ? (action.animation.burstSize || 80) : undefined,
           burstDuration: action.animation.burstDuration || 600,
           burstColor: action.animation.burstColor || action.animation.color,
           persistDuration: action.animation.persistDuration || 0,

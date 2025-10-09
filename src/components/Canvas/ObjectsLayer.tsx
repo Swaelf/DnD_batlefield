@@ -690,7 +690,8 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         console.log('[ObjectsLayer] Spell data for persistent area:', {
           burstRadius: spell.spellData.burstRadius,
           size: spell.spellData.size,
-          spellName: spell.spellData.spellName
+          spellName: spell.spellData.spellName,
+          category: spell.spellData.category
         })
 
         // Get current round and event from timeline
@@ -701,6 +702,18 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         // Instant burst effects (projectile-burst, cone with durationType='events') use events
         const durationType: 'rounds' | 'events' = spell.spellData.durationType || 'rounds'
 
+        // Calculate radius for persistent area
+        const persistentRadius = spell.spellData.category === 'cone'
+          ? spell.spellData.size
+          : (spell.spellData.burstRadius || spell.spellData.size || 60)
+
+        console.log('[ObjectsLayer] 🎯 Persistent area radius calculation:', {
+          category: spell.spellData.category,
+          burstRadius: spell.spellData.burstRadius,
+          size: spell.spellData.size,
+          calculatedRadius: persistentRadius
+        })
+
         const persistentAreaObject = {
           id: `persistent-area-${Date.now()}-${Math.random()}`,
           type: 'persistent-area' as const,
@@ -710,7 +723,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           persistentAreaData: {
             position: persistentPosition,
             // For cone spells, use size (in feet). For burst spells, use burstRadius (in pixels)
-            radius: spell.spellData.category === 'cone' ? spell.spellData.size : (spell.spellData.burstRadius || spell.spellData.size || 60),
+            radius: persistentRadius,
             color: spell.spellData.persistColor || spell.spellData.color || '#3D3D2E',
             opacity: spell.spellData.persistOpacity || 0.8,
             spellName: spell.spellData.spellName || 'Area Effect',
@@ -822,7 +835,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       return null
     }
 
-    console.log('[ObjectsLayer] Rendering persistent area:', area.id, 'shape:', area.persistentAreaData.shape)
+    console.log('[ObjectsLayer] Rendering persistent area:', area.id, 'shape:', area.persistentAreaData.shape, 'radius:', area.persistentAreaData.radius)
 
     // Determine current position - track token if enabled
     let currentPosition = area.persistentAreaData.position

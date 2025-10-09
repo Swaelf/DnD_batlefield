@@ -26,7 +26,7 @@ export type WebConfig = {
   // Optional overrides
   spellLevel?: number // 2-9, affects size
   durationType?: 'time' | 'rounds' | 'events'
-  duration?: number // In ms for time, count for rounds/events
+  duration?: number // In rounds for rounds type, count for events
   size?: number
   color?: string
 }
@@ -36,8 +36,8 @@ export class Web extends AbstractAreaEffect {
     const {
       position,
       spellLevel = 2,
-      durationType = 'time',
-      duration = 3600000, // 1 hour in ms (D&D default)
+      durationType = 'rounds',
+      duration = 600, // 1 hour = 600 rounds (D&D default)
       size = 100, // 20-foot cube = ~100px
       color = '#F5F5DC'
     } = config
@@ -60,7 +60,6 @@ export class Web extends AbstractAreaEffect {
       // Subtle pulsing effect (web strands tightening/loosening)
       pulsing: true,
       pulseSpeed: 0.8, // Slow pulse
-      pulseAmplitude: 0.08, // Very subtle
 
       // No rotation for web
       rotating: false,

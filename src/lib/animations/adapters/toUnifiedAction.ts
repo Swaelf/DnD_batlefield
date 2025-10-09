@@ -205,9 +205,17 @@ function buildAnimationConfig(template: any, instance: any): AnimationConfig {
       break
 
     case 'area':
-      config.persistent = instance.persistDuration > 0
-      config.persistDuration = instance.persistDuration
-      config.opacity = instance.opacity || 0.6
+      // Access animation properties from the instance's animation object
+      const areaAnim = (instance as any).animation || instance
+      config.persistent = (areaAnim.persistDuration || 0) > 0
+      config.persistDuration = areaAnim.persistDuration || 0
+      config.durationType = areaAnim.durationType || 'rounds'
+      config.opacity = areaAnim.opacity || 0.6
+      // Use actual size from animation instance, not template defaults
+      if (areaAnim.size) {
+        config.size = areaAnim.size
+        console.log('[Adapter] Area spell size:', { instanceSize: areaAnim.size, configSize: config.size, templateDefault: template.defaults.size })
+      }
       break
 
     case 'ray':

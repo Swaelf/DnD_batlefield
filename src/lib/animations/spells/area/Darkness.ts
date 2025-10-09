@@ -26,7 +26,7 @@ export type DarknessConfig = {
   // Optional overrides
   spellLevel?: number // 2-9, affects size
   durationType?: 'time' | 'rounds' | 'events'
-  duration?: number // In ms for time, count for rounds/events
+  duration?: number // In rounds for rounds type, count for events
   trackTarget?: boolean // Follow moving object
   intensity?: 'normal' | 'deeper' // Deeper darkness (higher spell slot)
   size?: number
@@ -38,11 +38,11 @@ export class Darkness extends AbstractAreaEffect {
     const {
       position,
       spellLevel = 2,
-      durationType = 'time',
-      duration = 600000, // 10 minutes in ms (D&D default)
+      durationType = 'rounds',
+      duration = 10, // 10 rounds = 1 minute (for testing, D&D default is 100 rounds/10 minutes)
       trackTarget = false,
       intensity = 'normal',
-      size = 150, // 15-foot radius = 150px
+      size = 200, // 4 grid cells radius = 20-foot radius = 200px (50px per cell)
       color = '#000000'
     } = config
 
@@ -65,7 +65,6 @@ export class Darkness extends AbstractAreaEffect {
       // Pulsing darkness effect (breathing)
       pulsing: true,
       pulseSpeed: 1.5, // Slow, ominous pulse
-      pulseAmplitude: 0.15, // Subtle size variation
 
       // No rotation for darkness
       rotating: false,

@@ -47,7 +47,7 @@ export class Thunderwave extends AbstractBurst {
     const finalSize = size * levelMultiplier * powerMultiplier
 
     // Adjust position based on direction (cube extends from caster)
-    const adjustedPosition = this.getDirectionalPosition(position, finalSize / 2, direction)
+    const adjustedPosition = Thunderwave.getDirectionalPosition(position, finalSize / 2, direction)
 
     const burstConfig: BurstConfig = {
       name: 'Thunderwave',
@@ -117,7 +117,7 @@ export class Thunderwave extends AbstractBurst {
   /**
    * Get position adjusted for directional cube
    */
-  private getDirectionalPosition(
+  private static getDirectionalPosition(
     center: Point,
     offset: number,
     direction: 'north' | 'south' | 'east' | 'west'

@@ -17,7 +17,10 @@ export const AbstractArea: FC<BaseSpellProps> = memo(({
   useEffect(() => {
     if (!isAnimating) return
 
-    const duration = spell.duration || 500
+    // For persistent spells, use a short fade-in (200ms) instead of spell.duration
+    // This allows the spell to appear quickly while the persistent area remains
+    const isPersistent = spell.persistDuration && spell.persistDuration > 0
+    const duration = isPersistent ? 200 : (spell.duration || 500)
     const startTime = Date.now()
     let animationFrameId: number
 
@@ -39,7 +42,7 @@ export const AbstractArea: FC<BaseSpellProps> = memo(({
     return () => {
       cancelAnimationFrame(animationFrameId)
     }
-  }, [isAnimating, spell.duration, onAnimationComplete])
+  }, [isAnimating, spell.duration, spell.persistDuration, onAnimationComplete])
 
   const effectRadius = spell.size || 40
   const areaOpacity = progress * 0.6
