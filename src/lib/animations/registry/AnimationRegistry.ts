@@ -38,6 +38,9 @@ import { WarhammerAttack, type WarhammerConfig } from '../spells/attacks/Warhamm
 import { LongbowAttack, type LongbowConfig } from '../spells/attacks/LongbowAttack'
 import { ThrownDaggerAttack, type ThrownDaggerConfig } from '../spells/attacks/ThrownDaggerAttack'
 import { SlingAttack, type SlingConfig } from '../spells/attacks/SlingAttack'
+import { WalkMovement, type WalkConfig } from '../spells/movement/WalkMovement'
+import { DashMovement, type DashConfig } from '../spells/movement/DashMovement'
+import { TeleportMovement, type TeleportConfig } from '../spells/movement/TeleportMovement'
 
 /**
  * Animation template definition
@@ -428,6 +431,49 @@ class AnimationRegistryClass {
       },
       factory: (config: SlingConfig) => new SlingAttack(config)
     })
+
+    // Movement types
+    this.register('Walk', {
+      name: 'Walk',
+      category: 'movement' as AnimationCategory,
+      description: 'Standard walking movement at 30 feet per round.',
+      defaults: {
+        category: 'movement' as AnimationCategory,
+        name: 'Walk',
+        duration: 1000,
+        color: '#4A90E2',
+        size: 0
+      },
+      factory: (config: WalkConfig) => new WalkMovement(config)
+    })
+
+    this.register('Dash', {
+      name: 'Dash',
+      category: 'movement' as AnimationCategory,
+      description: 'Use action to gain extra movement at double speed.',
+      defaults: {
+        category: 'movement' as AnimationCategory,
+        name: 'Dash',
+        duration: 600,
+        color: '#FFD700',
+        size: 0
+      },
+      factory: (config: DashConfig) => new DashMovement(config)
+    })
+
+    this.register('Teleport', {
+      name: 'Teleport',
+      category: 'movement' as AnimationCategory,
+      description: 'Magical instant transportation without provoking opportunity attacks.',
+      defaults: {
+        category: 'movement' as AnimationCategory,
+        name: 'Teleport',
+        duration: 400,
+        color: '#9370DB',
+        size: 40
+      },
+      factory: (config: TeleportConfig) => new TeleportMovement(config)
+    })
   }
 
   /**
@@ -595,6 +641,10 @@ export type RegisteredAnimationName =
   | 'Longbow'
   | 'Thrown Dagger'
   | 'Sling'
+  // Movements
+  | 'Walk'
+  | 'Dash'
+  | 'Teleport'
   | string // Allow custom names
 
 /**
@@ -648,5 +698,10 @@ export const SpellTemplates = {
   // Ranged attacks
   longbow: (position: Point, target: Point) => new LongbowAttack({ position, target }),
   thrownDagger: (position: Point, target: Point) => new ThrownDaggerAttack({ position, target }),
-  sling: (position: Point, target: Point) => new SlingAttack({ position, target })
+  sling: (position: Point, target: Point) => new SlingAttack({ position, target }),
+
+  // Movements
+  walk: (from: Point, to: Point) => new WalkMovement({ fromPosition: from, toPosition: to }),
+  dash: (from: Point, to: Point) => new DashMovement({ fromPosition: from, toPosition: to }),
+  teleport: (from: Point, to: Point) => new TeleportMovement({ fromPosition: from, toPosition: to })
 } as const

@@ -44,6 +44,10 @@ export type { MeleeAttackConfig, MeleeAttackType } from './core/AbstractMeleeAtt
 export { AbstractRangedAttack } from './core/AbstractRangedAttack'
 export type { RangedAttackConfig, RangedWeaponType } from './core/AbstractRangedAttack'
 
+// Movement abstractions
+export { AbstractMovement } from './core/AbstractMovement'
+export type { MovementConfig, MovementType, EasingType } from './core/AbstractMovement'
+
 // Spell implementations - Projectiles
 export { Fireball } from './spells/projectile/Fireball'
 export type { FireballConfig } from './spells/projectile/Fireball'
@@ -117,6 +121,14 @@ export { ThrownDaggerAttack } from './spells/attacks/ThrownDaggerAttack'
 export type { ThrownDaggerConfig } from './spells/attacks/ThrownDaggerAttack'
 export { SlingAttack } from './spells/attacks/SlingAttack'
 export type { SlingConfig } from './spells/attacks/SlingAttack'
+
+// Movement implementations
+export { WalkMovement } from './spells/movement/WalkMovement'
+export type { WalkConfig } from './spells/movement/WalkMovement'
+export { DashMovement } from './spells/movement/DashMovement'
+export type { DashConfig } from './spells/movement/DashMovement'
+export { TeleportMovement } from './spells/movement/TeleportMovement'
+export type { TeleportConfig } from './spells/movement/TeleportMovement'
 
 // Registry and factory
 export { AnimationRegistry, SpellTemplates } from './registry/AnimationRegistry'
