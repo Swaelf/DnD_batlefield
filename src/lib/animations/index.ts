@@ -38,6 +38,12 @@ export type { RayConfig } from './core/AbstractRay'
 export { AbstractCone } from './core/AbstractCone'
 export type { ConeConfig } from './core/AbstractCone'
 
+// Attack abstractions
+export { AbstractMeleeAttack } from './core/AbstractMeleeAttack'
+export type { MeleeAttackConfig, MeleeAttackType } from './core/AbstractMeleeAttack'
+export { AbstractRangedAttack } from './core/AbstractRangedAttack'
+export type { RangedAttackConfig, RangedWeaponType } from './core/AbstractRangedAttack'
+
 // Spell implementations - Projectiles
 export { Fireball } from './spells/projectile/Fireball'
 export type { FireballConfig } from './spells/projectile/Fireball'
@@ -95,6 +101,22 @@ export type { ShockingGraspConfig } from './spells/touch/ShockingGrasp'
 // Spell implementations - Pillar
 export { SacredFlame } from './spells/pillar/SacredFlame'
 export type { SacredFlameConfig } from './spells/pillar/SacredFlame'
+
+// Attack implementations - Melee
+export { LongswordAttack } from './spells/attacks/LongswordAttack'
+export type { LongswordConfig } from './spells/attacks/LongswordAttack'
+export { RapierAttack } from './spells/attacks/RapierAttack'
+export type { RapierConfig } from './spells/attacks/RapierAttack'
+export { WarhammerAttack } from './spells/attacks/WarhammerAttack'
+export type { WarhammerConfig } from './spells/attacks/WarhammerAttack'
+
+// Attack implementations - Ranged
+export { LongbowAttack } from './spells/attacks/LongbowAttack'
+export type { LongbowConfig } from './spells/attacks/LongbowAttack'
+export { ThrownDaggerAttack } from './spells/attacks/ThrownDaggerAttack'
+export type { ThrownDaggerConfig } from './spells/attacks/ThrownDaggerAttack'
+export { SlingAttack } from './spells/attacks/SlingAttack'
+export type { SlingConfig } from './spells/attacks/SlingAttack'
 
 // Registry and factory
 export { AnimationRegistry, SpellTemplates } from './registry/AnimationRegistry'

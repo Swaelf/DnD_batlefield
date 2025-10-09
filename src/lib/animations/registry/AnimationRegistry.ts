@@ -32,6 +32,12 @@ import { Bless, type BlessConfig } from '../spells/buff/Bless'
 import { LightningBolt, type LightningBoltConfig } from '../spells/line/LightningBolt'
 import { ShockingGrasp, type ShockingGraspConfig } from '../spells/touch/ShockingGrasp'
 import { SacredFlame, type SacredFlameConfig } from '../spells/pillar/SacredFlame'
+import { LongswordAttack, type LongswordConfig } from '../spells/attacks/LongswordAttack'
+import { RapierAttack, type RapierConfig } from '../spells/attacks/RapierAttack'
+import { WarhammerAttack, type WarhammerConfig } from '../spells/attacks/WarhammerAttack'
+import { LongbowAttack, type LongbowConfig } from '../spells/attacks/LongbowAttack'
+import { ThrownDaggerAttack, type ThrownDaggerConfig } from '../spells/attacks/ThrownDaggerAttack'
+import { SlingAttack, type SlingConfig } from '../spells/attacks/SlingAttack'
 
 /**
  * Animation template definition
@@ -336,6 +342,92 @@ class AnimationRegistryClass {
       },
       factory: (config: SacredFlameConfig) => new SacredFlame(config)
     })
+
+    // Melee attacks
+    this.register('Longsword', {
+      name: 'Longsword',
+      category: 'attack' as AnimationCategory,
+      description: 'A powerful sweeping slash with a longsword. Versatile weapon (1d8 one-handed, 1d10 two-handed).',
+      defaults: {
+        category: 'attack' as AnimationCategory,
+        name: 'Longsword',
+        duration: 600,
+        color: '#C0C0C0',
+        size: 40
+      },
+      factory: (config: LongswordConfig) => new LongswordAttack(config)
+    })
+
+    this.register('Rapier', {
+      name: 'Rapier',
+      category: 'attack' as AnimationCategory,
+      description: 'A precise thrusting attack with a rapier. Finesse weapon (1d8 piercing).',
+      defaults: {
+        category: 'attack' as AnimationCategory,
+        name: 'Rapier',
+        duration: 500,
+        color: '#B0B0B0',
+        size: 35
+      },
+      factory: (config: RapierConfig) => new RapierAttack(config)
+    })
+
+    this.register('Warhammer', {
+      name: 'Warhammer',
+      category: 'attack' as AnimationCategory,
+      description: 'A bone-crushing swing with a warhammer. Versatile weapon (1d8 one-handed, 1d10 two-handed).',
+      defaults: {
+        category: 'attack' as AnimationCategory,
+        name: 'Warhammer',
+        duration: 700,
+        color: '#8B7355',
+        size: 35
+      },
+      factory: (config: WarhammerConfig) => new WarhammerAttack(config)
+    })
+
+    // Ranged attacks
+    this.register('Longbow', {
+      name: 'Longbow',
+      category: 'attack' as AnimationCategory,
+      description: 'An arrow fired from a longbow. Ammunition, heavy, two-handed (1d8 piercing, range 150/600).',
+      defaults: {
+        category: 'attack' as AnimationCategory,
+        name: 'Longbow',
+        duration: 800,
+        color: '#8B4513',
+        size: 8
+      },
+      factory: (config: LongbowConfig) => new LongbowAttack(config)
+    })
+
+    this.register('Thrown Dagger', {
+      name: 'Thrown Dagger',
+      category: 'attack' as AnimationCategory,
+      description: 'A dagger thrown at the target. Finesse, light, thrown (1d4 piercing, range 20/60).',
+      defaults: {
+        category: 'attack' as AnimationCategory,
+        name: 'Thrown Dagger',
+        duration: 500,
+        color: '#C0C0C0',
+        size: 12
+      },
+      factory: (config: ThrownDaggerConfig) => new ThrownDaggerAttack(config)
+    })
+
+    this.register('Sling', {
+      name: 'Sling',
+      category: 'attack' as AnimationCategory,
+      description: 'A stone hurled from a sling. Ammunition (1d4 bludgeoning, range 30/120).',
+      defaults: {
+        category: 'attack' as AnimationCategory,
+        name: 'Sling',
+        duration: 600,
+        color: '#696969',
+        size: 10
+      },
+      factory: (config: SlingConfig) => new SlingAttack(config)
+    })
   }
 
   /**
@@ -476,6 +568,7 @@ export const AnimationRegistry = new AnimationRegistryClass()
  * Helper types for registry usage
  */
 export type RegisteredAnimationName =
+  // Spells
   | 'Fireball'
   | 'Magic Missile'
   | 'Guiding Bolt'
@@ -495,6 +588,13 @@ export type RegisteredAnimationName =
   | 'Lightning Bolt'
   | 'Shocking Grasp'
   | 'Sacred Flame'
+  // Attacks
+  | 'Longsword'
+  | 'Rapier'
+  | 'Warhammer'
+  | 'Longbow'
+  | 'Thrown Dagger'
+  | 'Sling'
   | string // Allow custom names
 
 /**
@@ -538,5 +638,15 @@ export const SpellTemplates = {
   shockingGrasp: (position: Point) => new ShockingGrasp({ position }),
 
   // Pillar
-  sacredFlame: (position: Point) => new SacredFlame({ position })
+  sacredFlame: (position: Point) => new SacredFlame({ position }),
+
+  // Melee attacks
+  longsword: (position: Point, target: Point) => new LongswordAttack({ position, target }),
+  rapier: (position: Point, target: Point) => new RapierAttack({ position, target }),
+  warhammer: (position: Point, target: Point) => new WarhammerAttack({ position, target }),
+
+  // Ranged attacks
+  longbow: (position: Point, target: Point) => new LongbowAttack({ position, target }),
+  thrownDagger: (position: Point, target: Point) => new ThrownDaggerAttack({ position, target }),
+  sling: (position: Point, target: Point) => new SlingAttack({ position, target })
 } as const
