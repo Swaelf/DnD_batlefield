@@ -97,8 +97,12 @@ class AnimationRegistryClass {
         duration: 1000,
         speed: 500,
         color: '#FF6B35',
-        size: 20
-      },
+        size: 20,
+        persistDuration: 1,  // Linger for 1 event (burning ground)
+        durationType: 'events',
+        persistColor: '#FF4500',
+        persistOpacity: 0.6
+      } as any,  // Extended properties for post-effects (not in core Animation type)
       factory: ((config: FireballConfig) => new Fireball(config)) as (config: unknown) => unknown
     })
 
