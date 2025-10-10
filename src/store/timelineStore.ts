@@ -725,15 +725,15 @@ const useTimelineStore = create<TimelineStore>()(
           if (!obj.isSpellEffect || obj.durationType !== 'events') return false
 
           // Check if effect has expired based on event count
-          // persistDuration=1 means "lasts for 1 event only" (the creation event)
-          // Created at event N, should be removed starting from event N+persistDuration
+          // persistDuration=1 means: visible at creation event + 1 additional event
+          // Created at event N, should be removed when eventsElapsed > persistDuration
           if (obj.eventCreated !== undefined && obj.spellDuration !== undefined) {
             // Calculate how many events have elapsed since creation
-            // Event 1 created, now event 1 = 0 elapsed (keep - creation event, duration=1)
-            // Event 1 created, now event 2 = 1 elapsed (remove - duration exceeded)
-            // Event 1 created, now event 3 = 2 elapsed (remove - duration exceeded)
+            // Event 1 created, now event 1 = 0 elapsed (keep - creation event)
+            // Event 1 created, now event 2 = 1 elapsed (keep - within duration=1)
+            // Event 1 created, now event 3 = 2 elapsed (remove - exceeded duration)
             const eventsElapsed = currentEvent - obj.eventCreated
-            return eventsElapsed >= obj.spellDuration // Remove when eventsElapsed reaches persistDuration
+            return eventsElapsed > obj.spellDuration // Remove when > duration
           }
 
           return false // Keep if no duration info

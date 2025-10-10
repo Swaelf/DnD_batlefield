@@ -581,10 +581,38 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
   /**
    * Render spell using the new modern architecture
+   * Handles both animation phase and persistent phase
    */
   const renderModernSpell = (spell: MapObject & { type: 'spell'; spellData?: SpellEventData }) => {
     if (!spell.spellData) {
       return null
+    }
+
+    // Check if this spell has completed its animation
+    const hasCompletedAnimation = completedSpellAnimations.has(spell.id)
+    const hasPersistDuration = (spell.spellData?.persistDuration || 0) > 0
+
+    // If animation completed and has persist duration, render as persistent area
+    if (hasCompletedAnimation && hasPersistDuration) {
+      return renderPersistentArea({
+        id: spell.id,
+        type: 'persistent-area',
+        position: spell.position,
+        rotation: 0,
+        layer: spell.layer,
+        persistentAreaData: {
+          position: spell.spellData.toPosition || spell.position,
+          radius: spell.spellData.burstRadius || spell.spellData.size || 60,
+          color: spell.spellData.persistColor || spell.spellData.color || '#FF4500',
+          opacity: spell.spellData.persistOpacity || 0.6,
+          spellName: spell.spellData.spellName || 'Persistent Effect',
+          roundCreated: spell.roundCreated,
+          shape: spell.spellData.category === 'cone' ? 'cone' : 'circle',
+          fromPosition: spell.spellData.fromPosition,
+          toPosition: spell.spellData.toPosition,
+          coneAngle: spell.spellData.coneAngle || 60
+        }
+      })
     }
 
     const handleAnimationComplete = () => {
@@ -660,11 +688,20 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         persistDuration,
         durationType: spell.spellData?.durationType,
         category: spell.spellData?.category,
-        spellSize: spell.spellData?.size
+        spellSize: spell.spellData?.size,
+        hasEventData: !!spell.eventCreated
       })
 
-      // Area spells, projectile-burst spells, cone spells, and projectiles with burst effects can create persistent areas
-      if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst' || spell.spellData?.category === 'cone' || (spell.spellData?.category === 'projectile' && spell.spellData?.burstRadius))) {
+      // Don't create duplicate persistent areas or delete spell objects with persistence
+      // The spell object will render as a persistent area after animation completes
+      if (persistDuration > 0) {
+        // Spell has persistence - DON'T delete it, let cleanup logic handle it based on events
+        console.log('[ObjectsLayer] Spell has persistDuration, keeping object for persistent rendering')
+        return
+      }
+
+      // Only delete if NO persistence
+      if (false && persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst' || spell.spellData?.category === 'cone' || (spell.spellData?.category === 'projectile' && spell.spellData?.burstRadius))) {
         // Determine position for persistent area - use current target position if tracking enabled
         let persistentPosition = spell.spellData.toPosition
         if (spell.spellData.trackTarget && spell.spellData.targetTokenId) {

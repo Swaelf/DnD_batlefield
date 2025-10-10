@@ -14,14 +14,19 @@ import { animationToUnifiedAction } from '@/lib/animations/adapters/toUnifiedAct
  *    - Breath Weapon (elemental energy persists for 1 event)
  *    - Stone Rain (rubble persists for 1 event)
  *
- *    EVENT-BASED TEST FLOW:
+ *    EVENT-BASED TEST FLOW (persistDuration=1 means visible at Events 1-2):
  *    - Cast spell and execute Event 1
- *    - Verify post-effect is visible (capture + assertion)
+ *    - Verify post-effect is visible at Event 1 (capture + assertion)
  *    - ASSERT: Post-effect exists in map objects
  *    - Advance to Event 2 (nextEvent)
  *    - Add dummy action to Event 2
  *    - Execute Event 2
- *    - Verify post-effect is removed (capture + assertion)
+ *    - Verify post-effect STILL VISIBLE at Event 2 (capture + assertion)
+ *    - ASSERT: Post-effect still exists (persistDuration=1 means visible through Event 2)
+ *    - Advance to Event 3 (nextEvent)
+ *    - Add dummy action to Event 3
+ *    - Execute Event 3 (cleanup triggers)
+ *    - Verify post-effect is REMOVED at Event 3 (capture + assertion)
  *    - ASSERT: Post-effect removed from map objects (test FAILS if not removed)
  *
  * 2. ROUND-BASED persistence (durationType: 'rounds'):
@@ -103,7 +108,8 @@ console.log('[TestPersistentSpells] 🎯 Persistent spell configurations from An
 
 /**
  * Generate test scenarios for event-based persistent spells
- * Tests that post-effects persist for 1 event and are removed after next event execution
+ * Tests that post-effects with persistDuration=1 are visible at Events 1-2 and removed at Event 3
+ * Semantics: persistDuration=1 means "visible for creation event + 1 additional event"
  */
 export const generateEventBasedPersistentTests = (): TestScenario[] => {
   return eventBased.map((spell, index) => {
@@ -121,7 +127,7 @@ export const generateEventBasedPersistentTests = (): TestScenario[] => {
     return {
       id: `persistent-event-${spellId}`,
       name: `${spellName} - Event-Based Persistence`,
-      description: `Tests ${spellName} post-effect persists for 1 event and is removed after next event`,
+      description: `Tests ${spellName} post-effect visible at Events 1-2 (persistDuration=1), removed at Event 3`,
       category: 'spells',
       steps: [
         // Step 1: Add caster token
@@ -211,6 +217,15 @@ export const generateEventBasedPersistentTests = (): TestScenario[] => {
                   if (spell.animation.opacity) spellData.opacity = spell.animation.opacity
                   if (spell.animation.particles) spellData.particleEffect = spell.animation.particles
 
+                  console.log(`[Persistent Test] 🔍 Casting ${spellName} with spellData:`, {
+                    persistDuration: spellData.persistDuration,
+                    durationType: spellData.durationType,
+                    fromAnimation: {
+                      persistDuration: spell.animation.persistDuration,
+                      durationType: spell.animation.durationType
+                    }
+                  })
+
                   roundStore.addAction(casterId, 'spell', spellData, 1)
                 }
               }
@@ -252,11 +267,21 @@ export const generateEventBasedPersistentTests = (): TestScenario[] => {
             params: {
               check: async () => {
                 const mapStore = (await import('@/store/mapStore')).default.getState()
-                // Check if there are any active spell effects (post-effects are stored as shapes with spell metadata)
-                const postEffects = mapStore.currentMap?.objects.filter((obj: any) =>
-                  obj.type === 'spell' && obj.persistDuration && obj.persistDuration > 0
-                ) || []
-                console.log(`[Persistent Test] Post-effects after Event 1:`, postEffects.length)
+                // Check if there are any active spell effects (post-effects are stored as spell objects with spellDuration)
+                const allSpells = mapStore.currentMap?.objects.filter((obj: any) => obj.type === 'spell') || []
+                const postEffects = allSpells.filter((obj: any) => obj.spellDuration && obj.spellDuration > 0)
+
+                console.log(`[Persistent Test] 🔍 Spell objects after Event 1:`, {
+                  total: allSpells.length,
+                  withDuration: postEffects.length,
+                  details: allSpells.map((obj: any) => ({
+                    id: obj.id,
+                    spellDuration: obj.spellDuration,
+                    durationType: obj.durationType,
+                    roundCreated: obj.roundCreated,
+                    eventCreated: obj.eventCreated
+                  }))
+                })
                 return postEffects.length > 0
               }
             },
@@ -322,13 +347,13 @@ export const generateEventBasedPersistentTests = (): TestScenario[] => {
           wait: 1000,
           description: 'Wait for event execution'
         },
-        // Step 14: Capture after post-effect removal
+        // Step 13a: Capture post-effect still visible at Event 2
         {
           type: 'capture',
-          capture: { name: `${spellId}-post-effect-removed` },
-          description: 'Post-effect should be removed'
+          capture: { name: `${spellId}-post-effect-event2-visible` },
+          description: 'Post-effect should still be visible at Event 2'
         },
-        // Step 14a: Assert post-effect is removed
+        // Step 13b: Assert post-effect still exists at Event 2
         {
           type: 'assert',
           assert: {
@@ -336,23 +361,106 @@ export const generateEventBasedPersistentTests = (): TestScenario[] => {
             params: {
               check: async () => {
                 const mapStore = (await import('@/store/mapStore')).default.getState()
-                // Check if there are NO active spell effects with persistDuration
                 const postEffects = mapStore.currentMap?.objects.filter((obj: any) =>
-                  obj.type === 'spell' && obj.persistDuration && obj.persistDuration > 0
+                  obj.type === 'spell' && obj.spellDuration && obj.spellDuration > 0
                 ) || []
-                console.log(`[Persistent Test] Post-effects after Event 2:`, postEffects.length)
+                console.log(`[Persistent Test] 🔍 Post-effects at Event 2:`, postEffects.length)
+                return postEffects.length > 0
+              }
+            },
+            expected: true
+          },
+          description: 'Verify post-effect still exists at Event 2 (persistDuration=1 means visible at Events 1-2)'
+        },
+        // Step 14: Advance to Event 3
+        {
+          type: 'action',
+          action: {
+            type: 'nextEvent',
+            params: {}
+          },
+          description: 'Advance to Event 3'
+        },
+        // Step 15: Wait for event transition
+        {
+          type: 'wait',
+          wait: 300,
+          description: 'Wait for event transition to Event 3'
+        },
+        // Step 16: Add dummy action for Event 3
+        {
+          type: 'action',
+          action: {
+            type: 'custom',
+            params: {
+              execute: async () => {
+                const roundStore = (await import('@/store/timelineStore')).default.getState()
+
+                if (roundStore.timeline) {
+                  // Add a dummy move action to Event 3
+                  roundStore.addAction(casterId, 'move', {
+                    type: 'move',
+                    fromPosition: { x: casterPos.x + 50, y: casterPos.y },
+                    toPosition: { x: casterPos.x + 100, y: casterPos.y },
+                    duration: 500
+                  }, 3)
+                }
+              }
+            }
+          },
+          description: 'Add dummy action for Event 3'
+        },
+        // Step 17: Execute Event 3 (should trigger post-effect removal)
+        {
+          type: 'action',
+          action: {
+            type: 'custom',
+            params: {
+              execute: async () => {
+                const roundStore = (await import('@/store/timelineStore')).default.getState()
+                await roundStore.executeEventActions(3)
+              }
+            }
+          },
+          description: 'Execute Event 3 (cleanup should remove post-effect)'
+        },
+        // Step 18: Wait for cleanup
+        {
+          type: 'wait',
+          wait: 800,
+          description: 'Wait for Event 3 execution and cleanup'
+        },
+        // Step 19: Capture after post-effect removal
+        {
+          type: 'capture',
+          capture: { name: `${spellId}-post-effect-removed` },
+          description: 'Post-effect should be removed at Event 3'
+        },
+        // Step 19a: Assert post-effect is removed
+        {
+          type: 'assert',
+          assert: {
+            type: 'custom',
+            params: {
+              check: async () => {
+                const mapStore = (await import('@/store/mapStore')).default.getState()
+                // Check if there are NO active spell effects with spellDuration
+                const postEffects = mapStore.currentMap?.objects.filter((obj: any) =>
+                  obj.type === 'spell' && obj.spellDuration && obj.spellDuration > 0
+                ) || []
+                console.log(`[Persistent Test] 🔍 Post-effects after Event 3:`, postEffects.length)
                 return postEffects.length === 0
               }
             },
             expected: true
           },
-          description: 'Verify post-effect is removed from map objects (TEST WILL FAIL if still present)'
+          description: 'Verify post-effect is removed from map objects at Event 3 (TEST WILL FAIL if still present)'
         },
-        // Step 15: Pause to observe
+        // Step 20: Pause to observe
         {
           type: 'wait',
           wait: 500,
-          description: `Observe ${spellName} post-effect lifecycle`
+          description: `Observe ${spellName} post-effect lifecycle complete`
         }
       ]
     }
@@ -486,7 +594,7 @@ export const generateRoundBasedPersistentTests = (): TestScenario[] => {
                 const mapStore = (await import('@/store/mapStore')).default.getState()
                 // Check for active area effects
                 const areaEffects = mapStore.currentMap?.objects.filter((obj: any) =>
-                  obj.type === 'spell' && obj.persistDuration && obj.persistDuration > 0
+                  obj.type === 'spell' && obj.spellDuration && obj.spellDuration > 0
                 ) || []
                 console.log(`[Persistent Test] Area effects in Round 1:`, areaEffects.length)
                 return areaEffects.length > 0
@@ -559,7 +667,7 @@ export const generateRoundBasedPersistentTests = (): TestScenario[] => {
               check: async () => {
                 const mapStore = (await import('@/store/mapStore')).default.getState()
                 const areaEffects = mapStore.currentMap?.objects.filter((obj: any) =>
-                  obj.type === 'spell' && obj.persistDuration && obj.persistDuration > 0
+                  obj.type === 'spell' && obj.spellDuration && obj.spellDuration > 0
                 ) || []
                 console.log(`[Persistent Test] Area effects in Round 10:`, areaEffects.length)
                 return areaEffects.length > 0
@@ -600,7 +708,7 @@ export const generateRoundBasedPersistentTests = (): TestScenario[] => {
                 const mapStore = (await import('@/store/mapStore')).default.getState()
                 // Check that NO area effects remain
                 const areaEffects = mapStore.currentMap?.objects.filter((obj: any) =>
-                  obj.type === 'spell' && obj.persistDuration && obj.persistDuration > 0
+                  obj.type === 'spell' && obj.spellDuration && obj.spellDuration > 0
                 ) || []
                 console.log(`[Persistent Test] Area effects in Round 11:`, areaEffects.length)
                 return areaEffects.length === 0

@@ -437,18 +437,29 @@ const useMapStore = create<MapStore>()(
             } else if (durationType === 'events' && obj.eventCreated !== undefined && currentEvent !== undefined) {
               // Event-based duration (instant area effects like Fireball burn, cone spells)
               // persistDuration=1 means "lasts for 1 event only" (the creation event)
-              // Created at event N, should be removed starting from event N+persistDuration
+              // Cleanup happens DURING event transition, so we see the effect until it's removed
               const sameRound = obj.roundCreated === currentRound
 
               // Calculate how many events have elapsed since creation
-              // Event 1 created, now event 1 = 0 elapsed (keep - creation event, duration=1)
-              // Event 1 created, now event 2 = 1 elapsed (remove - duration exceeded)
-              // Event 1 created, now event 3 = 2 elapsed (remove - duration exceeded)
+              // persistDuration=1 means: "visible for creation event + 1 additional event"
+              // Event 1 created, Event 1: eventsElapsed = 0, keep (creation event)
+              // Event 1 created, Event 2: eventsElapsed = 1, keep (within duration=1)
+              // Event 1 created, Event 3: eventsElapsed = 2, remove (exceeded duration=1)
               const eventsElapsed = currentEvent - obj.eventCreated
 
-              // Keep if: events elapsed < duration AND same round
-              // Remove when eventsElapsed >= duration OR round changes
-              shouldKeep = eventsElapsed < obj.spellDuration && sameRound
+              // Keep while eventsElapsed <= persistDuration
+              // persistDuration=1: created at event 1, visible at events 1-2, removed at event 3
+              shouldKeep = eventsElapsed <= obj.spellDuration && sameRound
+
+              console.log('[Cleanup] Event-based spell check:', {
+                spellId: obj.id,
+                eventCreated: obj.eventCreated,
+                currentEvent,
+                eventsElapsed,
+                spellDuration: obj.spellDuration,
+                sameRound,
+                shouldKeep
+              })
 
               logger.debug('store', 'Event-based spell expiry check', {
                 id: obj.id,
