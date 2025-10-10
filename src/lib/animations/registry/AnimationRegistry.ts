@@ -155,9 +155,13 @@ class AnimationRegistryClass {
       defaults: {
         category: 'area',
         name: 'Darkness',
-        duration: 600000, // 10 minutes
+        duration: 500, // Initial animation duration (fade-in)
         color: '#000000',
-        size: 150
+        size: 150,
+        persistDuration: 10, // Lasts for 10 rounds (D&D 5e: 10 minutes = 100 rounds, but using 10 for gameplay)
+        durationType: 'rounds',
+        persistColor: '#000000',
+        persistOpacity: 0.8
       },
       factory: ((config: DarknessConfig) => new Darkness(config)) as (config: unknown) => unknown
     })
@@ -169,9 +173,13 @@ class AnimationRegistryClass {
       defaults: {
         category: 'area',
         name: 'Web',
-        duration: 3600000, // 1 hour
+        duration: 500, // Initial animation duration (fade-in)
         color: '#F5F5DC',
-        size: 100
+        size: 100,
+        persistDuration: 10, // Lasts for 10 rounds (D&D 5e: 1 hour = 600 rounds, but using 10 for gameplay)
+        durationType: 'rounds',
+        persistColor: '#F5F5DC',
+        persistOpacity: 0.6
       },
       factory: ((config: WebConfig) => new Web(config)) as (config: unknown) => unknown
     })
@@ -183,9 +191,13 @@ class AnimationRegistryClass {
       defaults: {
         category: 'area',
         name: 'Stone Rain',
-        duration: 2000,
+        duration: 2000, // Animation shows stones falling
         color: '#8B7355',
-        size: 100
+        size: 100,
+        persistDuration: 1, // Rubble lasts for 1 event (difficult terrain)
+        durationType: 'events',
+        persistColor: '#696969',
+        persistOpacity: 0.5
       },
       factory: ((config: StoneRainConfig) => new StoneRain(config)) as (config: unknown) => unknown
     })
@@ -222,56 +234,76 @@ class AnimationRegistryClass {
     // Cone spells
     this.register('Burning Hands', {
       name: 'Burning Hands',
-      category: 'area',
+      category: 'cone',
       description: 'A thin sheet of flames shoots forth from your outstretched fingertips. Each creature in a 15-foot cone must make a saving throw.',
       defaults: {
-        category: 'area',
+        category: 'cone',
         name: 'Burning Hands',
         duration: 600,
         color: '#FF6B35',
-        size: 75
+        size: 175,  // Range in pixels (3 cells × 50px/cell + 25px token radius = 175px)
+        coneAngle: 15,  // 15-degree cone width
+        persistDuration: 1,  // Linger for 1 event (burning ground)
+        durationType: 'events',
+        persistColor: '#FF4500',
+        persistOpacity: 0.6
       },
       factory: ((config: BurningHandsConfig) => new BurningHands(config)) as (config: unknown) => unknown
     })
 
     this.register('Poison Spray', {
       name: 'Poison Spray',
-      category: 'area',
+      category: 'cone',
       description: 'You extend your hand toward a creature you can see within range and project a puff of noxious gas from your palm.',
       defaults: {
-        category: 'area',
+        category: 'cone',
         name: 'Poison Spray',
         duration: 800,
         color: '#9ACD32',
-        size: 50
+        size: 125,  // Range in pixels (2 cells × 50px/cell + 25px token radius = 125px)
+        coneAngle: 15,  // 15-degree cone width (10ft range)
+        persistDuration: 1,  // Linger for 1 event (poisonous cloud)
+        durationType: 'events',
+        persistColor: '#9ACD32',
+        persistOpacity: 0.5
       },
       factory: ((config: PoisonSprayConfig) => new PoisonSpray(config)) as (config: unknown) => unknown
     })
 
     this.register('Cone of Cold', {
       name: 'Cone of Cold',
-      category: 'area',
+      category: 'cone',
       description: 'A blast of cold air erupts from your hands. Each creature in a 60-foot cone must make a saving throw.',
       defaults: {
-        category: 'area',
+        category: 'cone',
         name: 'Cone of Cold',
         duration: 800,
         color: '#87CEEB',
-        size: 300
+        size: 625,  // Range in pixels (12 cells × 50px/cell + 25px token radius = 625px)
+        coneAngle: 60,  // 60-degree cone width
+        persistDuration: 1,  // Linger for 1 event (icy ground) - consistent with other cone spells
+        durationType: 'events',
+        persistColor: '#B0E0E6',
+        persistOpacity: 0.5
       },
       factory: ((config: ConeOfColdConfig) => new ConeOfCold(config)) as (config: unknown) => unknown
     })
 
     this.register('Breath Weapon', {
       name: 'Breath Weapon',
-      category: 'area',
+      category: 'cone',
       description: 'You exhale destructive energy in a cone. The energy type and range depends on your draconic ancestry.',
       defaults: {
-        category: 'area',
+        category: 'cone',
         name: 'Breath Weapon',
         duration: 700,
         color: '#FF6B35',
-        size: 75
+        size: 175,  // Range in pixels (3 cells × 50px/cell + 25px token radius = 175px)
+        coneAngle: 30,  // 30-degree cone width
+        persistDuration: 1,  // Linger for 1 event (elemental energy)
+        durationType: 'events',
+        persistColor: '#FF6B35',
+        persistOpacity: 0.6
       },
       factory: ((config: BreathWeaponConfig) => new BreathWeapon(config)) as (config: unknown) => unknown
     })

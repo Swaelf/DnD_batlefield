@@ -153,6 +153,7 @@ function mapCategoryToActionType(category: string): UnifiedAction['type'] {
     case 'burst':
     case 'area':
     case 'ray':
+    case 'cone':
       return 'spell'
 
     // Attack category
@@ -255,6 +256,40 @@ function buildAnimationConfig(template: any, instance: any): AnimationConfig {
       if (instance.range) config.range = instance.range
       break
 
+    case 'cone':
+      // Cone spells use projectile animation type but need special handling
+      const coneAnim = typeof instance.getAnimation === 'function'
+        ? instance.getAnimation()
+        : ((instance as any).animation || instance)
+
+      config.type = 'projectile' // Cone spells render as projectile type
+      config.coneAngle = coneAnim.coneAngle || template.defaults.coneAngle || 60
+      // IMPORTANT: Use template.defaults.size as the source of truth (in pixels)
+      config.size = template.defaults.size || coneAnim.size || 30
+
+      // Handle persistent cone effects (burning hands, poison spray, etc.)
+      // Read from template defaults since animation instance doesn't expose these
+      const persistDuration = template.defaults.persistDuration
+      console.log('[Adapter] Cone config:', {
+        animationName: template.name,
+        persistDuration,
+        durationType: template.defaults.durationType,
+        templateDefaults: template.defaults
+      })
+      if (persistDuration) {
+        config.persistDuration = persistDuration
+        config.durationType = (template.defaults.durationType as 'rounds' | 'events') || 'events'
+        config.persistent = true
+        config.persistColor = (template.defaults.persistColor as string) || config.color
+        config.persistOpacity = (template.defaults.persistOpacity as number) || 0.5
+      }
+
+      // Particles for visual effect
+      if (coneAnim.particles || template.defaults.particles) {
+        config.particles = true
+      }
+      break
+
     case 'attack':
       // Determine if melee or ranged based on instance type
       if (instance.attackType === 'melee' || instance.weaponType === 'melee') {
@@ -307,6 +342,8 @@ function mapCategoryToAnimationType(category: string): AnimationConfig['type'] {
       return 'area'
     case 'ray':
       return 'ray'
+    case 'cone':
+      return 'projectile' // Cone spells use projectile animation type
     case 'attack':
       return 'melee_slash' // Default, overridden by buildAnimationConfig
     case 'movement':

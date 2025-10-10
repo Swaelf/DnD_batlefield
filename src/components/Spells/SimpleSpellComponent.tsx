@@ -725,116 +725,140 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         )
 
       case 'cone':
-        // Cone spell effect - expanding arc animation with fire particles
-        const PIXELS_PER_FOOT = 8
-        const coneLength = (spell.size || 30) * PIXELS_PER_FOOT
+        // Cone spell effect - circular sector (pie slice) centered at source
+        if (progress === 0) {
+          console.log('[Cone Spell]', {
+            spellName: spell.spellName,
+            category: spell.category,
+            size: spell.size,
+            coneAngle: spell.coneAngle,
+            fromPosition: spell.fromPosition,
+            toPosition: spell.toPosition
+          })
+        }
+        // Size is already in pixels from the spell data - use it directly
+        const coneLength = spell.size || 100
         const coneAngle = (spell.coneAngle || 60) * (Math.PI / 180)
-        const expansionProgress = Math.min(progress * 1.3, 1)
+        const expansionProgress = Math.min(progress * 1.5, 1) // Faster expansion
 
-        // Calculate cone direction
+        // Calculate cone direction from source to target
         const coneDx = getTargetPosition().x - spell.fromPosition.x
         const coneDy = getTargetPosition().y - spell.fromPosition.y
         const coneDirection = Math.atan2(coneDy, coneDx)
 
-        // Calculate cone edges
+        // Calculate cone sector angles (source is center, range is radius)
         const leftAngle = coneDirection - coneAngle / 2
 
-        const coneOpacity = progress < 0.8 ? 0.7 : (1 - progress) * 3.5
+        // Current radius based on expansion
+        const currentRadius = coneLength * expansionProgress
+
+        // Opacity fades at the end of animation
+        const coneOpacity = progress < 0.85 ? 0.65 : (1 - progress) * 4.3
+
+        // Build circular sector points (pie slice)
+        const arcSegments = 30
+        const sectorPoints: number[] = [
+          spell.fromPosition.x, // Start at source (sector center)
+          spell.fromPosition.y
+        ]
+
+        // Add arc points from left to right angle
+        for (let i = 0; i <= arcSegments; i++) {
+          const angle = leftAngle + (coneAngle * i / arcSegments)
+          sectorPoints.push(
+            spell.fromPosition.x + Math.cos(angle) * currentRadius,
+            spell.fromPosition.y + Math.sin(angle) * currentRadius
+          )
+        }
+
+        // Close the sector back to center
+        sectorPoints.push(spell.fromPosition.x, spell.fromPosition.y)
 
         return (
           <>
-            {/* Expanding fire arc waves */}
-            {[0, 0.1, 0.2, 0.3].map((waveOffset, index) => {
-              const wavePos = expansionProgress - waveOffset
-              if (wavePos <= 0 || wavePos > 1) return null
+            {/* Main filled sector (pie slice) */}
+            <Line
+              points={sectorPoints}
+              closed={true}
+              fill={spell.color}
+              opacity={coneOpacity * 0.5}
+              shadowColor={spell.color}
+              shadowBlur={20}
+              shadowOpacity={0.6}
+            />
 
-              const currentRadius = coneLength * wavePos
-              const trailLength = 0.2 // Longer fading tail for fire effect
-              const trailStart = Math.max(0, wavePos - trailLength)
+            {/* Sector border for definition */}
+            <Line
+              points={sectorPoints}
+              closed={true}
+              stroke={spell.secondaryColor || spell.color}
+              strokeWidth={2}
+              opacity={coneOpacity * 0.8}
+              shadowColor={spell.secondaryColor || spell.color}
+              shadowBlur={10}
+            />
 
-              // Create arc segment
-              const arcSegments = 25
-              const arcPoints: number[] = []
+            {/* Expanding wave effect at the arc edge */}
+            {[0, 0.15, 0.3].map((waveOffset, index) => {
+              const waveProgress = expansionProgress - waveOffset
+              if (waveProgress <= 0 || waveProgress > 1) return null
 
+              const waveRadius = coneLength * waveProgress
+              const waveOpacity = (1 - waveOffset / 0.3) * coneOpacity
+
+              // Arc points for wave
+              const wavePoints: number[] = []
               for (let i = 0; i <= arcSegments; i++) {
                 const angle = leftAngle + (coneAngle * i / arcSegments)
-                arcPoints.push(
-                  spell.fromPosition.x + Math.cos(angle) * currentRadius,
-                  spell.fromPosition.y + Math.sin(angle) * currentRadius
+                wavePoints.push(
+                  spell.fromPosition.x + Math.cos(angle) * waveRadius,
+                  spell.fromPosition.y + Math.sin(angle) * waveRadius
                 )
               }
 
-              const waveIntensity = Math.pow(1 - waveOffset / 0.3, 1.8)
-              const fadeOpacity = (1 - waveOffset / 0.3) * waveIntensity
-
               return (
-                <Group key={index}>
-                  {/* Main fire arc - bright orange/yellow */}
-                  <Line
-                    points={arcPoints}
-                    stroke={index === 0 ? '#FFD700' : spell.secondaryColor || '#FF6B00'}
-                    strokeWidth={8 * waveIntensity}
-                    opacity={fadeOpacity * coneOpacity * 0.9}
-                    lineCap="round"
-                    lineJoin="round"
-                    shadowColor={'#FFD700'}
-                    shadowBlur={25 * waveIntensity}
-                  />
-
-                  {/* Fire trail - darker red */}
-                  {trailStart > 0 && (
-                    <Line
-                      points={arcPoints.map((_val, i) => {
-                        const isX = i % 2 === 0
-                        const segmentIndex = Math.floor(i / 2)
-                        const angle = leftAngle + (coneAngle * segmentIndex / arcSegments)
-                        const trailDist = coneLength * trailStart
-                        return isX
-                          ? spell.fromPosition.x + Math.cos(angle) * trailDist
-                          : spell.fromPosition.y + Math.sin(angle) * trailDist
-                      })}
-                      stroke={spell.color}
-                      strokeWidth={5 * waveIntensity}
-                      opacity={fadeOpacity * coneOpacity * 0.5}
-                      lineCap="round"
-                      lineJoin="round"
-                      shadowColor={spell.color}
-                      shadowBlur={15 * waveIntensity}
-                    />
-                  )}
-                </Group>
+                <Line
+                  key={index}
+                  points={wavePoints}
+                  stroke={index === 0 ? '#FFD700' : spell.secondaryColor || spell.color}
+                  strokeWidth={4}
+                  opacity={waveOpacity * 0.8}
+                  lineCap="round"
+                  shadowColor={spell.color}
+                  shadowBlur={15}
+                />
               )
             })}
 
-            {/* Fire particles - ember-like particles throughout cone */}
+            {/* Particle effects within the cone */}
             {spell.particleEffect && (
               <>
-                {[...Array(30)].map((_, i) => {
-                  // Random position within cone, following expansion
+                {[...Array(25)].map((_, i) => {
+                  // Random position within the cone sector
                   const angleVariation = (Math.random() - 0.5) * coneAngle
                   const particleAngle = coneDirection + angleVariation
                   const baseDistance = Math.random()
-                  const particleDistance = coneLength * expansionProgress * baseDistance
+                  const particleDistance = currentRadius * baseDistance
 
                   const particleX = spell.fromPosition.x + Math.cos(particleAngle) * particleDistance
                   const particleY = spell.fromPosition.y + Math.sin(particleAngle) * particleDistance
 
-                  // Particles flicker and fade based on distance and time
+                  // Particles flicker based on distance and time
                   const flickerOffset = (i * 0.1) % 1
                   const flickerValue = Math.sin((progress + flickerOffset) * Math.PI * 4) * 0.3 + 0.7
-                  const distanceFade = 1 - (baseDistance * 0.4)
-                  const particleOpacity = Math.max(0, (1 - progress) * distanceFade * flickerValue)
+                  const distanceFade = 1 - (baseDistance * 0.3)
+                  const particleOpacity = Math.max(0, (1 - progress) * distanceFade * flickerValue * coneOpacity)
 
-                  // Fire colors: yellow core, orange mid, red outer
+                  // Varied particle colors based on spell
                   const particleColor = i % 4 === 0
                     ? '#FFFF00'  // Bright yellow
                     : i % 4 === 1
-                    ? '#FFD700'  // Gold
+                    ? spell.secondaryColor || '#FFD700'  // Secondary or gold
                     : i % 4 === 2
-                    ? '#FF8C00'  // Dark orange
-                    : '#FF4500'  // Red-orange
+                    ? spell.color  // Primary spell color
+                    : '#FFFFFF'  // White
 
-                  const particleSize = (3 + Math.random() * 5) * (1 - baseDistance * 0.3)
+                  const particleSize = (2 + Math.random() * 4) * (1 - baseDistance * 0.2)
 
                   return (
                     <Circle
@@ -843,10 +867,10 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
                       y={particleY}
                       radius={particleSize}
                       fill={particleColor}
-                      opacity={particleOpacity * 0.9}
+                      opacity={particleOpacity}
                       shadowColor={particleColor}
-                      shadowBlur={8}
-                      shadowOpacity={0.8}
+                      shadowBlur={6}
+                      shadowOpacity={0.7}
                     />
                   )
                 })}

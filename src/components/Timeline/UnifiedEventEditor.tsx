@@ -294,10 +294,14 @@ const UnifiedEventEditorComponent = ({
 
     switch (action.type) {
       case 'spell':
-        // Map unified animation types to legacy spell categories
-        const legacyCategory = action.animation.type === 'projectile_burst' ? 'projectile-burst' : action.animation.type
+        // Use action.category directly for cone spells, otherwise use animation.type
+        // Cone spells have action.category = 'cone' but animation.type might be 'projectile'
+        const isConespell = action.category === 'cone'
+        const legacyCategory = isConespell ? 'cone' : (action.animation.type === 'projectile_burst' ? 'projectile-burst' : action.animation.type)
         console.log('[UnifiedEventEditor] Spell conversion:', {
+          actionCategory: action.category,
           animationType: action.animation.type,
+          isConespell,
           legacyCategory,
           burstSize: action.animation.burstSize,
           persistDuration: action.animation.persistDuration,

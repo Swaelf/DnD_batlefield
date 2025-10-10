@@ -334,8 +334,8 @@ export abstract class AbstractAreaEffect {
   protected getConeVertices(): Point[] {
     const { position, size, coneAngle = 60, coneDirection = 0 } = this.animation
 
-    // Convert feet to pixels (assuming 50px per 5ft square)
-    const PIXELS_PER_FOOT = 8
+    // Convert feet to pixels (50px grid = 5 feet, so 1 foot = 10 pixels)
+    const PIXELS_PER_FOOT = 10
     const coneLength = size * PIXELS_PER_FOOT
 
     const angleRad = (coneAngle * Math.PI) / 180

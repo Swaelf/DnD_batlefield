@@ -44,6 +44,7 @@ export type AnimationCategory =
   | 'projectile'    // Moving objects (arrows, fireballs, magic missiles)
   | 'burst'         // Instant explosions (thunderwave, shatter)
   | 'area'          // Persistent ground effects (fog, darkness)
+  | 'cone'          // Cone-shaped area effects (burning hands, poison spray)
   | 'ray'           // Beam-like effects (ray of frost, laser)
   | 'movement'      // Token/object movement
   | 'environmental' // Weather, lighting, ambient effects
@@ -254,6 +255,8 @@ export type AreaAnimation = BaseAnimation & {
   // Duration
   persistDuration?: number  // How long effect lasts (ms or rounds/events)
   durationType?: 'time' | 'rounds' | 'events'
+  persistColor?: Color      // Color during persistent phase
+  persistOpacity?: number   // Opacity during persistent phase (0-1)
 
   // Visual behavior
   pulsing?: boolean         // Whether effect pulses
@@ -265,6 +268,31 @@ export type AreaAnimation = BaseAnimation & {
   // Targeting
   trackTarget?: boolean     // Follow target token
   targetTokenId?: string
+}
+
+// =============================================================================
+// CONE ANIMATIONS
+// =============================================================================
+
+export type ConeAnimation = BaseAnimation & {
+  category: 'cone'
+
+  // Position and targeting
+  position: Point           // Source position (caster)
+  targetPosition: Point     // Direction target point
+
+  // Cone properties
+  size: number              // Cone length/range in pixels
+  coneAngle: number         // Cone spread angle (degrees)
+
+  // Duration and persistence
+  persistDuration?: number  // How long effect lasts (rounds or events)
+  durationType?: 'time' | 'rounds' | 'events'
+  persistColor?: Color      // Color during persistent phase
+  persistOpacity?: number   // Opacity during persistent phase (0-1)
+
+  // Visual effects
+  particles?: boolean       // Enable particle effects
 }
 
 // =============================================================================
@@ -395,6 +423,7 @@ export type Animation =
   | ProjectileAnimation
   | BurstAnimation
   | AreaAnimation
+  | ConeAnimation
   | RayAnimation
   | MovementAnimation
   | EnvironmentalAnimation
@@ -456,6 +485,7 @@ export type AnimationController = {
 export type IsProjectile = (anim: Animation) => anim is ProjectileAnimation
 export type IsBurst = (anim: Animation) => anim is BurstAnimation
 export type IsArea = (anim: Animation) => anim is AreaAnimation
+export type IsCone = (anim: Animation) => anim is ConeAnimation
 export type IsRay = (anim: Animation) => anim is RayAnimation
 export type IsMovement = (anim: Animation) => anim is MovementAnimation
 export type IsEnvironmental = (anim: Animation) => anim is EnvironmentalAnimation

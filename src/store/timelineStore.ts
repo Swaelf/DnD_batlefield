@@ -95,10 +95,6 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Check if the current event exists and needs execution
       const currentEventData = round.events.find(e => e.number === currentEvent)
-        eventNumber: currentEvent,
-        hasActions: currentEventData?.actions.length || 0,
-        executed: currentEventData?.executed
-      })
 
       // Only execute if the event has actions and is not marked as executed
       // This allows re-execution after previousEvent() marks it as not executed
@@ -458,13 +454,7 @@ const useTimelineStore = create<TimelineStore>()(
                 durationType: updatedSpellData.durationType || 'rounds', // Respect spell's durationType
                 spellData: updatedSpellData
               }
-                id: spellObject.id,
-                spellName: updatedSpellData.spellName,
-                persistDuration: updatedSpellData.persistDuration,
-                durationType: updatedSpellData.durationType,
-                spellDuration: spellObject.spellDuration,
-                position: spellObject.position
-              })
+
               mapStore.addSpellEffect(spellObject)
 
               // Add battle log entry
@@ -494,10 +484,6 @@ const useTimelineStore = create<TimelineStore>()(
               if (hasBurst) {
                 // Projectile-burst spells need full duration + burst duration
                 waitTime = (updatedSpellData.duration || 1000) + (updatedSpellData.burstDuration || 600)
-                  projectileDuration: updatedSpellData.duration,
-                  burstDuration: updatedSpellData.burstDuration,
-                  totalWaitTime: waitTime
-                })
               } else if (isPersistent) {
                 // Area spells with persistence only need initial fade-in
                 waitTime = 500
@@ -739,9 +725,15 @@ const useTimelineStore = create<TimelineStore>()(
           if (!obj.isSpellEffect || obj.durationType !== 'events') return false
 
           // Check if effect has expired based on event count
+          // persistDuration=1 means "lasts for creation event + 1 more event" (total 2 events)
+          // Created at event N, should persist through event N+persistDuration, removed at N+persistDuration+1
           if (obj.eventCreated !== undefined && obj.spellDuration !== undefined) {
-            const expiresAtEvent = obj.eventCreated + obj.spellDuration
-            return currentEvent >= expiresAtEvent // Remove if current event >= expiration
+            // Calculate how many events have elapsed since creation
+            // Event 1 created, now event 1 = 0 elapsed (keep - creation event)
+            // Event 1 created, now event 2 = 1 elapsed (keep if duration=1 - the persistence event)
+            // Event 1 created, now event 3 = 2 elapsed (remove if duration=1)
+            const eventsElapsed = currentEvent - obj.eventCreated
+            return eventsElapsed > obj.spellDuration // Remove after creation + N persistence events
           }
 
           return false // Keep if no duration info

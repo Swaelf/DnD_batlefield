@@ -435,19 +435,26 @@ const useMapStore = create<MapStore>()(
                 shouldKeep
               })
             } else if (durationType === 'events' && obj.eventCreated !== undefined && currentEvent !== undefined) {
-              // Event-based duration (instant area effects like Fireball burn)
-              // Lasts for N events starting from when cast OR until round changes
-              const expiresAtEvent = obj.eventCreated + obj.spellDuration
+              // Event-based duration (instant area effects like Fireball burn, cone spells)
+              // persistDuration=1 means "lasts for creation event + 1 more event" (total 2 events)
+              // Created at event N, should persist through event N+persistDuration, removed at N+persistDuration+1
               const sameRound = obj.roundCreated === currentRound
 
-              // Keep if: still within event duration AND same round
-              shouldKeep = currentEvent <= expiresAtEvent && sameRound
+              // Calculate how many events have elapsed since creation
+              // Event 1 created, now event 1 = 0 elapsed (keep - creation event)
+              // Event 1 created, now event 2 = 1 elapsed (keep if duration=1 - the persistence event)
+              // Event 1 created, now event 3 = 2 elapsed (remove if duration=1)
+              const eventsElapsed = currentEvent - obj.eventCreated
+
+              // Keep if: events elapsed <= duration AND same round
+              // Remove when eventsElapsed > duration OR round changes
+              shouldKeep = eventsElapsed <= obj.spellDuration && sameRound
 
               logger.debug('store', 'Event-based spell expiry check', {
                 id: obj.id,
                 eventCreated: obj.eventCreated,
                 spellDuration: obj.spellDuration,
-                expiresAtEvent,
+                eventsElapsed,
                 currentEvent,
                 roundCreated: obj.roundCreated,
                 currentRound,

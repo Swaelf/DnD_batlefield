@@ -607,12 +607,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
         const originPosition = isCone ? spell.spellData.fromPosition : spell.spellData.toPosition
 
-          category: spell.spellData.category,
-          isCone,
-          effectRadius,
-          originPosition
-        })
-
         // Find all tokens within the spell's area of effect
         const affectedTokens = objects.filter(obj => {
           if (obj.type !== 'token') return false
@@ -661,6 +655,14 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       // For spells with persist duration, create a persistent area
       const persistDuration = spell.spellData?.persistDuration || 0
 
+      console.log('[ObjectsLayer] Persistent area check:', {
+        spellName: spell.spellData?.spellName,
+        persistDuration,
+        durationType: spell.spellData?.durationType,
+        category: spell.spellData?.category,
+        spellSize: spell.spellData?.size
+      })
+
       // Area spells, projectile-burst spells, cone spells, and projectiles with burst effects can create persistent areas
       if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst' || spell.spellData?.category === 'cone' || (spell.spellData?.category === 'projectile' && spell.spellData?.burstRadius))) {
         // Determine position for persistent area - use current target position if tracking enabled
@@ -675,13 +677,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           }
         }
 
-        // Create persistent area object
-          burstRadius: spell.spellData.burstRadius,
-          size: spell.spellData.size,
-          spellName: spell.spellData.spellName,
-          category: spell.spellData.category
-        })
-
         // Get current round and event from timeline
         const { currentRound, currentEvent } = useTimelineStore.getState()
 
@@ -694,12 +689,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         const persistentRadius = spell.spellData.category === 'cone'
           ? spell.spellData.size
           : (spell.spellData.burstRadius || spell.spellData.size || 60)
-
-          category: spell.spellData.category,
-          burstRadius: spell.spellData.burstRadius,
-          size: spell.spellData.size,
-          calculatedRadius: persistentRadius
-        })
 
         const persistentAreaObject = {
           id: `persistent-area-${Date.now()}-${Math.random()}`,
@@ -731,14 +720,15 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           isSpellEffect: true as const // Mark as spell effect for cleanup
         }
 
-          roundCreated: currentRound,
-          eventCreated: currentEvent,
-          spellDuration: persistDuration,
-          durationType: durationType,
-          expiresAt: durationType === 'rounds'
-            ? `Round ${currentRound + persistDuration}`
-            : `Event ${currentEvent + persistDuration}`,
-          spellName: spell.spellData?.spellName
+        console.log('[ObjectsLayer] Creating persistent area:', {
+          spellName: spell.spellData.spellName,
+          currentEvent,
+          persistDuration,
+          expiresAt: currentEvent + persistDuration,
+          durationType,
+          shape: persistentAreaObject.persistentAreaData.shape,
+          persistentRadius,
+          spellSize: spell.spellData.size
         })
 
         // Add persistent area to map using addSpellEffect to ensure it's tracked properly
@@ -828,16 +818,9 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
     // Render cone-shaped persistent area
     if (area.persistentAreaData.shape === 'cone') {
-      const PIXELS_PER_FOOT = 8
-      const coneLength = (area.persistentAreaData.radius || 30) * PIXELS_PER_FOOT
+      // Radius is already in pixels from the spell data - use it directly
+      const coneLength = area.persistentAreaData.radius || 100
       const coneAngle = (area.persistentAreaData.coneAngle || 60) * (Math.PI / 180)
-
-        fromPosition: area.persistentAreaData.fromPosition,
-        toPosition: area.persistentAreaData.toPosition,
-        radius: area.persistentAreaData.radius,
-        coneLength,
-        coneAngle
-      })
 
       const dx = area.persistentAreaData.toPosition.x - area.persistentAreaData.fromPosition.x
       const dy = area.persistentAreaData.toPosition.y - area.persistentAreaData.fromPosition.y
