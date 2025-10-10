@@ -70,16 +70,6 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
   const createMotionGenerator = (): MotionPathGenerator => {
     const target = getTargetPosition()
 
-    console.log('[UnifiedProjectile] Creating motion generator:', {
-      spellName: spell.spellName,
-      curved: spell.curved,
-      curveHeight: spell.curveHeight,
-      curveDirection: spell.curveDirection,
-      spellId: spell.id,
-      from: spell.fromPosition,
-      to: target
-    })
-
     // Check if this spell uses curved path
     if (spell.curved) {
       // Generate stable seed from spell ID or create one from position/timestamp
@@ -91,7 +81,6 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
         const positionHash = Math.abs(spell.fromPosition.x + spell.fromPosition.y * 1000 + target.x * 100 + target.y * 10000)
         seed = (positionHash % 10000) / 10000
       }
-      console.log('[UnifiedProjectile] Using Magic Missile curve with seed:', seed)
       return createMagicMissileCurve(spell.fromPosition, target, {
         baseHeight: spell.curveHeight,
         seed
@@ -99,7 +88,6 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
     }
 
     // Default to linear motion
-    console.log('[UnifiedProjectile] Using linear motion')
     return createLinearMotion(spell.fromPosition, target)
   }
 
@@ -113,21 +101,13 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
   }, [spell.id]) // Only recreate when spell ID changes (new spell)
 
   useEffect(() => {
-    console.log('[UnifiedProjectile] Animation effect triggered:', {
-      isAnimating,
-      isComplete,
-      hasMotionGenerator: !!motionGeneratorRef.current
-    })
-
     if (!isAnimating || isComplete) {
-      console.log('[UnifiedProjectile] Animation effect BLOCKED:', { isAnimating, isComplete })
       return
     }
 
     // Use the stored motion generator
     const motionGenerator = motionGeneratorRef.current
     if (!motionGenerator) {
-      console.log('[UnifiedProjectile] NO MOTION GENERATOR!')
       return
     }
 
@@ -139,15 +119,6 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
       const burstDuration = spell.burstDuration || 600
       totalDuration = totalDuration + burstDuration
     }
-
-    console.log('[UnifiedProjectile] Starting animation loop for:', spell.spellName, {
-      isAnimating,
-      isComplete,
-      spellDuration: spell.duration,
-      spellBurstDuration: spell.burstDuration,
-      hasBurst,
-      totalDuration
-    })
 
     const animate = () => {
       const elapsed = Date.now() - startTimeRef.current
@@ -174,10 +145,8 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
       setTrailPositions(newTrailPositions)
 
       if (currentProgress >= 1) {
-        console.log('[UnifiedProjectile] Animation complete:', spell.spellName, 'spell.id:', spell.id)
         setIsComplete(true)
         onAnimationComplete?.()
-        console.log('[UnifiedProjectile] onAnimationComplete called')
       } else {
         if (!document.hidden) {
           animationFrameRef.current = requestAnimationFrame(animate)
@@ -214,28 +183,11 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
     // For projectile-burst (or projectiles with burstRadius), split into two phases
     const shouldUseBurstPhase = spell.category === 'projectile-burst' || (spell.category === 'projectile' && !!spell.burstRadius)
 
-    console.log('[UnifiedProjectile] Render check:', {
-      spellName: spell.spellName,
-      category: spell.category,
-      hasBurstRadius: !!spell.burstRadius,
-      burstRadius: spell.burstRadius,
-      shouldUseBurstPhase,
-      progress
-    })
-
     if (shouldUseBurstPhase) {
       const projectilePhase = 0.7 // 70% travel, 30% burst
 
-      console.log('[UnifiedProjectile] Burst phase check:', {
-        progress,
-        projectilePhase,
-        inProjectilePhase: progress < projectilePhase,
-        inBurstPhase: progress >= projectilePhase
-      })
-
       if (progress < projectilePhase) {
         // Phase 1: Projectile travel
-        console.log('[UnifiedProjectile] ✈️ Rendering PROJECTILE phase')
         const projectileProgress = progress / projectilePhase
         const motionGenerator = createMotionGenerator()
         const position = motionGenerator(projectileProgress)
@@ -357,20 +309,11 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
         )
       } else {
         // Phase 2: Burst explosion
-        console.log('[UnifiedProjectile] 💥 Rendering BURST phase')
         const burstProgress = (progress - projectilePhase) / (1 - projectilePhase)
         const maxBurstRadius = spell.burstRadius || baseRadius * 2
         const burstRadius = maxBurstRadius * (0.3 + burstProgress * 0.7)
         const burstOpacity = (1 - burstProgress) * 0.8
         const target = getTargetPosition()
-
-        console.log('[UnifiedProjectile] Burst values:', {
-          burstProgress,
-          maxBurstRadius,
-          burstRadius,
-          burstOpacity,
-          targetPos: target
-        })
 
         return (
           <>

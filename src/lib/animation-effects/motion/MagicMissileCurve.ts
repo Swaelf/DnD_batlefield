@@ -62,19 +62,16 @@ export function createMagicMissileCurve(
   const seed3 = (seed * 5879) % 1
   const seed4 = (seed * 5381) % 1
 
-  // Height variation - reduced to half (±20 pixels)
-  const heightVariation = (seed1 - 0.5) * 40
-  const curveHeight = Math.max(10, (baseHeight / 2) + heightVariation)
+  // Use 0.1 of distance as amplitude (10% of range to target)
+  const curveHeight = length * 0.1
 
-  // Random trajectory type (5 different patterns)
-  const trajectoryType = Math.floor(seed2 * 5)
-  // 0: Single smooth arc (1 zero crossing)
-  // 1: S-curve (2 zero crossings)
-  // 2: Wave (3 zero crossings)
-  // 3: Double arc (asymmetric 2x)
-  // 4: Half wave (0.5 frequency)
+  // Always use sine wave with 2 zero points (S-curve trajectory type)
+  // This creates: sin(progress * 2π) which has zero at start (0%) and end (100%)
+  const trajectoryType = 1
 
-  // Random direction: positive or negative
+  // Random direction: positive (up/right) or negative (down/left)
+  // Use seed3 to ensure consistent direction for this specific missile (seed-based randomness)
+  // This ensures each spell ID gets a unique but consistent trajectory
   const directionMultiplier = seed3 < 0.5 ? 1 : -1
 
   // Asymmetry factor for type 3

@@ -207,23 +207,18 @@ function buildAnimationConfig(template: any, instance: any): AnimationConfig {
       if (instance.range) config.range = instance.range
       if (projectileAnim.maxRange) config.range = projectileAnim.maxRange
 
-      console.log('[Adapter] Projectile data:', {
-        hasGetAnimation: typeof instance.getAnimation === 'function',
-        hasImpactEffect: !!projectileAnim.impactEffect,
-        hasMetadata: !!projectileAnim.metadata,
-        impactEffect: projectileAnim.impactEffect,
-        metadata: projectileAnim.metadata,
-        instanceRange: instance.range,
-        animMaxRange: projectileAnim.maxRange,
-        configRange: config.range
-      })
+      // Extract curved flag from motion path configuration
+      if (projectileAnim.motionPath?.type === 'curved') {
+        config.curved = true
+        config.curveHeight = projectileAnim.motionPath.curveHeight
+        config.curveDirection = projectileAnim.motionPath.curveDirection
+      }
 
       if (projectileAnim.impactEffect) {
         const impact = projectileAnim.impactEffect
         config.burstSize = impact.radius || impact.size
         config.burstDuration = impact.duration || 600
         config.burstColor = impact.color
-        console.log('[Adapter] ✅ Projectile with burst:', { burstSize: config.burstSize, burstDuration: config.burstDuration })
       }
 
       // Handle persistent effects (burning ground, etc.)
@@ -233,7 +228,6 @@ function buildAnimationConfig(template: any, instance: any): AnimationConfig {
         config.persistent = true
         config.persistColor = config.burstColor || config.color
         config.persistOpacity = 0.6
-        console.log('[Adapter] ✅ Projectile persistent effect:', { persistDuration: config.persistDuration, durationType: config.durationType })
       }
       break
 
@@ -252,7 +246,6 @@ function buildAnimationConfig(template: any, instance: any): AnimationConfig {
       // Use actual size from animation instance, not template defaults
       if (areaAnim.size) {
         config.size = areaAnim.size
-        console.log('[Adapter] Area spell size:', { instanceSize: areaAnim.size, configSize: config.size, templateDefault: template.defaults.size })
       }
       break
 

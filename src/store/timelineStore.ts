@@ -76,10 +76,8 @@ const useTimelineStore = create<TimelineStore>()(
     },
 
     nextEvent: async () => {
-      console.log('⏭️ [Timeline] nextEvent called')
       const { timeline, currentRound, currentEvent } = get()
       if (!timeline || !timeline.isActive) {
-        console.log('⏭️ [Timeline] No active timeline, returning')
         return
       }
 
@@ -92,13 +90,11 @@ const useTimelineStore = create<TimelineStore>()(
       // Get current round data
       const round = timeline.rounds.find(r => r.number === currentRound)
       if (!round) {
-        console.log('⏭️ [Timeline] Round not found:', currentRound)
         return
       }
 
       // Check if the current event exists and needs execution
       const currentEventData = round.events.find(e => e.number === currentEvent)
-      console.log('⏭️ [Timeline] Current event:', {
         eventNumber: currentEvent,
         hasActions: currentEventData?.actions.length || 0,
         executed: currentEventData?.executed
@@ -107,10 +103,8 @@ const useTimelineStore = create<TimelineStore>()(
       // Only execute if the event has actions and is not marked as executed
       // This allows re-execution after previousEvent() marks it as not executed
       if (currentEventData && currentEventData.actions.length > 0 && !currentEventData.executed) {
-        console.log('⏭️ [Timeline] Executing event actions...')
         // Execute actions for current event before advancing
         await get().executeEventActions(currentEvent)
-        console.log('⏭️ [Timeline] Event actions completed')
       }
 
       // Create snapshot before moving to next event
@@ -155,7 +149,6 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Then increment the event
       const nextEventNumber = currentEvent + 1
-      console.log('⏭️ [Timeline] Advancing to event:', nextEventNumber)
       set((state) => {
         state.currentEvent = nextEventNumber
         state.timeline!.currentEvent = nextEventNumber
@@ -163,10 +156,8 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Clean up expired spell effects and status effects when advancing events
       const { currentRound: newRound, currentEvent: newEvent } = get()
-      console.log('⏭️ [Timeline] Cleaning up expired spells...')
       useMapStore.getState().cleanupExpiredSpells(newRound, newEvent)
       useMapStore.getState().cleanupExpiredStatusEffects(newRound)
-      console.log('⏭️ [Timeline] nextEvent complete')
     },
 
     previousEvent: () => {
@@ -405,7 +396,6 @@ const useTimelineStore = create<TimelineStore>()(
           const executeActionAsync = async () => {
             switch (action.type) {
             case 'spell': {
-              console.log('🔮 [Timeline] Executing spell action:', action)
               // Create proper SpellMapObject for spell
               const spellData = action.data as any
 
@@ -468,7 +458,6 @@ const useTimelineStore = create<TimelineStore>()(
                 durationType: updatedSpellData.durationType || 'rounds', // Respect spell's durationType
                 spellData: updatedSpellData
               }
-              console.log('🔮 [Timeline] Creating spell object:', {
                 id: spellObject.id,
                 spellName: updatedSpellData.spellName,
                 persistDuration: updatedSpellData.persistDuration,
@@ -505,7 +494,6 @@ const useTimelineStore = create<TimelineStore>()(
               if (hasBurst) {
                 // Projectile-burst spells need full duration + burst duration
                 waitTime = (updatedSpellData.duration || 1000) + (updatedSpellData.burstDuration || 600)
-                console.log('🔮 [Timeline] Projectile-burst spell - waiting for full animation:', {
                   projectileDuration: updatedSpellData.duration,
                   burstDuration: updatedSpellData.burstDuration,
                   totalWaitTime: waitTime
@@ -513,11 +501,9 @@ const useTimelineStore = create<TimelineStore>()(
               } else if (isPersistent) {
                 // Area spells with persistence only need initial fade-in
                 waitTime = 500
-                console.log('🔮 [Timeline] Persistent area spell - short wait:', { waitTime })
               } else {
                 // Regular projectiles use their duration
                 waitTime = updatedSpellData.duration || 1000
-                console.log('🔮 [Timeline] Regular spell - using duration:', { waitTime })
               }
 
               setTimeout(resolve, waitTime)

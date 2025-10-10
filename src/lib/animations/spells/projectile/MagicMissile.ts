@@ -20,6 +20,7 @@
 
 import { AbstractProjectile, type ProjectileConfig } from '../../core/AbstractProjectile'
 import type { Point } from '../../types'
+import { createSineWave } from '../../../animation-effects/motion/WaveMotion'
 
 export type MagicMissileConfig = {
   fromPosition: Point
@@ -31,9 +32,12 @@ export type MagicMissileConfig = {
   size?: number
   color?: string
   curved?: boolean
+  curveDirection?: 'left' | 'right' | 'random' // Direction of sine wave curve
 }
 
 export class MagicMissile extends AbstractProjectile {
+  private sineWaveGenerator?: (progress: number) => Point
+
   constructor(config: MagicMissileConfig) {
     const {
       fromPosition,
@@ -43,11 +47,25 @@ export class MagicMissile extends AbstractProjectile {
       speed = 600,
       size = 8,
       color = '#9D4EDD',
-      curved = true
+      curved = true,
+      curveDirection = 'random'
     } = config
 
     // Calculate missile count (3 + spell level - 1)
     const missileCount = 2 + spellLevel
+
+    // Determine curve direction (random or specified)
+    let direction: 'left' | 'right'
+    if (curveDirection === 'random') {
+      direction = Math.random() > 0.5 ? 'left' : 'right'
+    } else {
+      direction = curveDirection
+    }
+
+    // Create sine wave motion generator if curved
+    // Amplitude: 50px (1 grid cell), Frequency: 1 (2 zero points at start and end)
+    // Direction determines positive or negative amplitude
+    const amplitude = direction === 'left' ? -50 : 50
 
     // Create projectile configuration
     const projectileConfig: ProjectileConfig = {
@@ -60,14 +78,14 @@ export class MagicMissile extends AbstractProjectile {
       opacity: 1,
       rotateToDirection: true,
 
-      // Motion path - always curved for visual "seeking" effect
+      // Motion path - curved for sine wave trajectory
       motionPath: {
-        type: curved ? 'curved' : 'linear',
+        type: 'curved',
         startPosition: fromPosition,
         endPosition: toPosition,
         duration: 0, // Calculated from speed
-        curveHeight: curved ? 60 : 0,
-        curveDirection: missileIndex % 2 === 0 ? 'up' : 'down', // Alternate curve direction
+        curveHeight: amplitude, // Pass amplitude for adapter
+        curveDirection: direction, // Pass direction for adapter
         easing: 'easeInOut'
       },
 
@@ -142,6 +160,27 @@ export class MagicMissile extends AbstractProjectile {
     }
 
     super(projectileConfig)
+
+    // Initialize sine wave generator if curved
+    if (curved) {
+      this.sineWaveGenerator = createSineWave(
+        fromPosition,
+        toPosition,
+        amplitude, // 50px (1 grid cell), positive or negative based on direction
+        1 // 1 complete wave = 2 zero points (start and end)
+      )
+    }
+  }
+
+  /**
+   * Override position calculation to use sine wave motion
+   */
+  getCurrentPosition(progress: number): Point {
+    if (this.sineWaveGenerator) {
+      return this.sineWaveGenerator(progress)
+    }
+    // Fallback to default linear motion
+    return super.getCurrentPosition(progress)
   }
 
   /**

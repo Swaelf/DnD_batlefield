@@ -107,7 +107,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
     if (isLargeLoad || (isInitialLoad && objects.length > 20) || isBigChange) {
       // Use progressive loading for large loads
-      console.log(`[Progressive Loading] Starting for ${objects.length} objects`)
 
       progressiveLoader.current.loadObjects(
         objects,
@@ -119,7 +118,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           onProgress: (loaded, total) => {
             setLoadingProgress({ loaded, total })
             if (loaded === total) {
-              console.log('[Progressive Loading] Complete')
             }
           },
           onComplete: () => {
@@ -586,20 +584,16 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
    */
   const renderModernSpell = (spell: MapObject & { type: 'spell'; spellData?: SpellEventData }) => {
     if (!spell.spellData) {
-      console.warn('[ObjectsLayerModern] Spell has no spellData:', spell)
       return null
     }
 
     const handleAnimationComplete = () => {
-      console.log('[ObjectsLayer] handleAnimationComplete called for:', spell.id, spell.spellData?.spellName)
 
       // Guard against multiple completions
       if (completedSpellAnimations.has(spell.id)) {
-        console.log('[ObjectsLayer] Already completed, skipping:', spell.id)
         return
       }
       completedSpellAnimations.add(spell.id)
-      console.log('[ObjectsLayer] Added to completed set:', spell.id)
 
       // Apply status effects to tokens in area of effect (if spell has statusEffect property)
       if (spell.spellData?.statusEffect) {
@@ -613,7 +607,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
         const originPosition = isCone ? spell.spellData.fromPosition : spell.spellData.toPosition
 
-        console.log(`[ObjectsLayer] Checking status effects for ${spell.spellData.spellName}:`, {
           category: spell.spellData.category,
           isCone,
           effectRadius,
@@ -643,7 +636,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
             if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff
 
             const isInCone = distance <= effectRadius && angleDiff <= coneAngle / 2
-            console.log(`[ObjectsLayer] Token ${obj.id} cone check:`, { distance, angleDiff: angleDiff * (180/Math.PI), coneAngleHalf: (coneAngle/2) * (180/Math.PI), isInCone })
             return isInCone
           }
 
@@ -662,15 +654,12 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
             duration: spell.spellData!.statusEffect!.duration || 1
           }
 
-          console.log(`[ObjectsLayer] Applying ${statusEffect.type} to token ${token.id}`)
           addStatusEffect(token.id, statusEffect)
         })
       }
 
       // For spells with persist duration, create a persistent area
       const persistDuration = spell.spellData?.persistDuration || 0
-      console.log('[ObjectsLayer] Animation complete for spell:', spell.spellData?.spellName, 'persistDuration:', persistDuration, 'category:', spell.spellData?.category)
-      console.log('[ObjectsLayer] ⚠️ SPELL SIZE:', spell.spellData?.size, 'BURST RADIUS:', spell.spellData?.burstRadius)
 
       // Area spells, projectile-burst spells, cone spells, and projectiles with burst effects can create persistent areas
       if (persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst' || spell.spellData?.category === 'cone' || (spell.spellData?.category === 'projectile' && spell.spellData?.burstRadius))) {
@@ -687,7 +676,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         }
 
         // Create persistent area object
-        console.log('[ObjectsLayer] Spell data for persistent area:', {
           burstRadius: spell.spellData.burstRadius,
           size: spell.spellData.size,
           spellName: spell.spellData.spellName,
@@ -707,7 +695,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           ? spell.spellData.size
           : (spell.spellData.burstRadius || spell.spellData.size || 60)
 
-        console.log('[ObjectsLayer] 🎯 Persistent area radius calculation:', {
           category: spell.spellData.category,
           burstRadius: spell.spellData.burstRadius,
           size: spell.spellData.size,
@@ -744,7 +731,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           isSpellEffect: true as const // Mark as spell effect for cleanup
         }
 
-        console.log('[ObjectsLayer] ⚠️ PERSISTENT AREA VALUES:', {
           roundCreated: currentRound,
           eventCreated: currentEvent,
           spellDuration: persistDuration,
@@ -757,25 +743,20 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
         // Add persistent area to map using addSpellEffect to ensure it's tracked properly
         const addSpellEffect = useMapStore.getState().addSpellEffect
-        console.log('[ObjectsLayer] Creating persistent area:', persistentAreaObject)
         addSpellEffect(persistentAreaObject)
 
         // Remove the spell animation object
         setTimeout(() => {
-          console.log('[ObjectsLayer] Removing spell animation object:', spell.id)
           deleteObject(spell.id)
           // Clean up from completed set to allow same spell ID to be used again
           completedSpellAnimations.delete(spell.id)
         }, 100)
       } else {
         // Remove immediately if no persist duration
-        console.log('[ObjectsLayer] No persist duration, removing spell:', spell.id)
         setTimeout(() => {
-          console.log('[ObjectsLayer] Deleting spell object:', spell.id)
           deleteObject(spell.id)
           // Clean up from completed set to allow same spell ID to be used again
           completedSpellAnimations.delete(spell.id)
-          console.log('[ObjectsLayer] Deleted and removed from completed set:', spell.id)
         }, 100)
       }
     }
@@ -812,7 +793,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     // 🚀 PERFORMANCE: Set emergency cleanup timer for stuck animations (5 seconds)
     if (!attackCleanupTimers.has(attack.id)) {
       const emergencyTimer = setTimeout(() => {
-        console.warn('[Performance] Emergency cleanup: stuck attack animation removed', attack.id)
         deleteObject(attack.id)
         attackCleanupTimers.delete(attack.id)
       }, 5000)
@@ -831,11 +811,9 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
   const renderPersistentArea = (area: MapObject & { type: 'persistent-area'; persistentAreaData?: any }) => {
     if (!area.persistentAreaData) {
-      console.warn('[ObjectsLayer] Persistent area has no data:', area.id)
       return null
     }
 
-    console.log('[ObjectsLayer] Rendering persistent area:', area.id, 'shape:', area.persistentAreaData.shape, 'radius:', area.persistentAreaData.radius)
 
     // Determine current position - track token if enabled
     let currentPosition = area.persistentAreaData.position
@@ -854,7 +832,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       const coneLength = (area.persistentAreaData.radius || 30) * PIXELS_PER_FOOT
       const coneAngle = (area.persistentAreaData.coneAngle || 60) * (Math.PI / 180)
 
-      console.log('[ObjectsLayer] Cone calculation:', {
         fromPosition: area.persistentAreaData.fromPosition,
         toPosition: area.persistentAreaData.toPosition,
         radius: area.persistentAreaData.radius,
@@ -880,7 +857,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         area.persistentAreaData.fromPosition.y + Math.sin(rightAngle) * coneLength
       ]
 
-      console.log('[ObjectsLayer] Cone points:', conePoints)
 
       return (
         <Line
@@ -983,15 +959,11 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         spells: objects.filter(obj => obj.type === 'spell').length,
       }
 
-      console.log('[ObjectsLayer Performance]', stats)
-      console.log(`[Static Layer Separation] ${stats.staticObjects} static (non-listening) | ${stats.dynamicObjects} dynamic (interactive)`)
 
       // Performance warnings
       if (stats.attacks > 0) {
-        console.warn(`[Performance] ${stats.attacks} active attack animations - may impact FPS`)
       }
       if (stats.trees > 10) {
-        console.info(`[Performance] ${stats.trees} trees rendering (${stats.trees} cached images, 75% node reduction)`)
       }
     }
   }, [objects.length, dynamicObjects.length, checkIsStaticObject])
