@@ -1,6 +1,5 @@
-import { projectileSpellTests } from './TestProjectileSpells'
-import { individualSpellTests } from './TestIndividualSpells'
 import { allAttackTestScenarios } from './TestAllAttacks'
+import { allSpellTestScenarios } from './TestAllSpells'
 import { runTimelineNavigationTest } from './TestTimelineNavigation'
 import { runRoundReplayTest } from './TestRoundReplay'
 import { animationTests } from './TestAnimationComponents'
@@ -284,29 +283,22 @@ export const testScenarios: TestScenario[] = [
   },
 
   // ============================================================================
-  // PROJECTILE SPELL TESTS - Unified projectile system tests
+  // SPELL MOVEMENT TRACKING TESTS - Auto-generated spell animation tests
   // ============================================================================
-  // Tests the unified projectile component with Magic Missile and Fireball
-  // Validates: Curved paths, straight paths, burst effects, cleanup
-  // Flow: Create tokens → Move tokens → Cast spells → Verify cleanup
-  // Total tests: 6 projectile scenarios
-  ...projectileSpellTests,
-
-  // ============================================================================
-  // INDIVIDUAL SPELL TESTS - Complete lifecycle for each D&D spell
-  // ============================================================================
-  // Tests full spell lifecycle for 6 D&D spells:
-  // - Fireball: Post-effects, status effects (flaming)
-  // - Magic Missile: Tracking projectile
-  // - Dragon Breath: Cone area, status effects (flaming/chilled)
-  // - Ray of Frost: Instant ray, status effects (chilled)
-  // - Bless: Continuous area effect (10 rounds), status effects (blessed)
-  // - Poison Spray: Projectile burst, status effects (poisoned)
-  // Flow: Create tokens → Move tokens → Cast bidirectional spells →
-  //       Verify post-effects → Verify status effects → Verify continuous effects →
-  //       Execute 10 rounds → Verify all cleaned up
-  // Total tests: 6 complete spell lifecycles
-  ...individualSpellTests,
+  // These tests are automatically generated for all registered spells in AnimationRegistry
+  // Each test follows the SAME pattern as attack tests (movement + spell casting):
+  // 1. Add token 1 (target) at (200, 200)
+  // 2. Add token 2 (caster) at (500, 200)
+  // 3. Move token 1 to (300, 400)
+  // 4. Move token 2 to (600, 300)
+  // 5. Token 2 casts spell at token 1 (tracking - follows movement)
+  // 6. Token 2 casts spell at token 1's INITIAL position (static - no tracking)
+  // 7. Execute event
+  //
+  // Categories: projectile, burst, area, ray, cone
+  // Total tests: ~19 spells (Fireball, Magic Missile, Thunderwave, Ray of Frost, etc.)
+  // NOTE: Tests automatically update when spells are added/removed from AnimationRegistry
+  ...allSpellTestScenarios,
 
   // ============================================================================
   // DYNAMIC ATTACK TESTS - Auto-generated weapon attack scenarios
@@ -360,16 +352,6 @@ export function getScenarioById(id: string): TestScenario | undefined {
 
 export function getScenariosByCategory(category: TestScenario['category']): TestScenario[] {
   return testScenarios.filter(s => s.category === category)
-}
-
-// Get count of projectile spell tests
-export function getProjectileSpellTestCount(): number {
-  return projectileSpellTests.length
-}
-
-// Get all projectile spell test IDs for reference
-export function getAllProjectileSpellTestIds(): string[] {
-  return projectileSpellTests.map(scenario => scenario.id)
 }
 
 // Get count of dynamically generated attack tests
