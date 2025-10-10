@@ -1,5 +1,6 @@
 import { allAttackTestScenarios } from './TestAllAttacks'
 import { allSpellTestScenarios } from './TestAllSpells'
+import { persistentSpellTests } from './TestPersistentSpells'
 import { runTimelineNavigationTest } from './TestTimelineNavigation'
 import { runRoundReplayTest } from './TestRoundReplay'
 import { animationTests } from './TestAnimationComponents'
@@ -299,6 +300,23 @@ export const testScenarios: TestScenario[] = [
   // Total tests: ~19 spells (Fireball, Magic Missile, Thunderwave, Ray of Frost, etc.)
   // NOTE: Tests automatically update when spells are added/removed from AnimationRegistry
   ...allSpellTestScenarios,
+
+  // ============================================================================
+  // PERSISTENT SPELL TESTS - Post-effect and continuous area spell tests
+  // ============================================================================
+  // These tests verify persistent spell effects (burning ground, area effects, etc.)
+  // Two categories:
+  // 1. EVENT-BASED persistence (durationType: 'events'):
+  //    - Fireball, Burning Hands, Poison Spray, Cone of Cold, Breath Weapon, Stone Rain
+  //    - Tests that post-effect persists for 1 event and is removed after next event
+  //    - Flow: Cast spell → Execute Event 1 → Post-effect visible → Advance to Event 2 → Add dummy action → Execute Event 2 → Post-effect removed
+  // 2. ROUND-BASED persistence (durationType: 'rounds'):
+  //    - Darkness, Web (both persist for 10 rounds)
+  //    - Tests that area effect persists across all rounds and is removed after duration expires
+  //    - Flow: Cast spell (Round 1) → Advance through Rounds 2-10 → Area visible throughout → Advance to Round 11 → Area removed
+  //    - Captures: Round 1 (visible), Round 2 (visible), Round 10 (visible - last round), Round 11 (removed)
+  // Total tests: 8 persistent spell tests (6 event-based + 2 round-based)
+  ...persistentSpellTests,
 
   // ============================================================================
   // DYNAMIC ATTACK TESTS - Auto-generated weapon attack scenarios
