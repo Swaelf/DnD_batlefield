@@ -10,7 +10,7 @@
  * - Damage: 8d6 fire damage
  *
  * Animation Features:
- * - Straight or slightly curved projectile
+ * - Straight linear projectile (no curve)
  * - Orange/red flame colors
  * - Fire trail effect
  * - Large explosion burst on impact
@@ -40,7 +40,7 @@ export class Fireball extends AbstractProjectile {
       fromPosition,
       toPosition,
       power = 'normal',
-      curveAmount = 0.2,
+      curveAmount = 0, // Fireball travels in a straight line (Magic Missile has curves)
       speed = 500,
       size = 20,
       color = '#FF6B35',
