@@ -41,6 +41,7 @@ export class WarhammerAttack extends AbstractMeleeAttack {
       position,
       target,
       attackType: 'swing',
+      weaponType: 'mace',
       color: '#8B7355', // Brown/bronze
       duration: 700, // Slower, heavy weapon
       range: 5, // 5 feet (one square)

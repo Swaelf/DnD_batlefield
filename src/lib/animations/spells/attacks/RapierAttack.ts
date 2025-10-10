@@ -39,6 +39,7 @@ export class RapierAttack extends AbstractMeleeAttack {
       position,
       target,
       attackType: 'thrust',
+      weaponType: 'dagger', // Use dagger category for finesse weapons
       color: '#B0B0B0', // Light steel gray
       duration: 500, // Fast weapon
       range: 5, // 5 feet (one square)

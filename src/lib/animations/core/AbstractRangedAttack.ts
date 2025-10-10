@@ -148,6 +148,7 @@ export class AbstractRangedAttack {
       duration: this.duration,
       range: this.range,
       size: this.size,
+      trailCount: this.trailCount, // Include trail count for renderer
       spin: this.spin,
       isCritical: this.metadata.isCritical as boolean | undefined,
       actualDamage: this.metadata.actualDamage as number | undefined

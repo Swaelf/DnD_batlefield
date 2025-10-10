@@ -56,13 +56,19 @@ export function animationToUnifiedAction(
   // Build metadata from animation instance
   const metadata = buildMetadata(animationInstance)
 
+  // For attacks, use weaponType from instance metadata as category (arrow, bolt, thrown, sword, etc.)
+  // For other animations, use template category
+  const categoryValue = template.category === 'attack' && animationInstance.weaponType
+    ? animationInstance.weaponType
+    : template.category
+
   return {
     id: nanoid(),
     name: template.name,
     description: template.description || `${template.name} animation`,
     type: actionType,
-    category: template.category,
-    tags: [actionType, template.category],
+    category: categoryValue,  // Use weaponType for attacks, template.category for others
+    tags: [actionType, categoryValue],
     source,
     target,
     animation: animationConfig,
@@ -291,18 +297,22 @@ function buildAnimationConfig(template: any, instance: any): AnimationConfig {
       break
 
     case 'attack':
-      // Determine if melee or ranged based on instance type
-      if (instance.attackType === 'melee' || instance.weaponType === 'melee') {
-        config.type = mapMeleeTypeToAnimation(instance.attackType || 'slash')
-        config.range = instance.range || 5
-        config.impact = true
-      } else {
+      // Determine if melee or ranged based on weaponType
+      const rangedWeaponTypes = ['arrow', 'bolt', 'thrown', 'sling']
+      const isRanged = rangedWeaponTypes.includes(instance.weaponType)
+
+      if (isRanged) {
         // Ranged attack
         config.type = 'projectile'
         config.speed = 600
         config.trail = true
         config.spin = instance.spin || false
         if (instance.range) config.range = instance.range
+      } else {
+        // Melee attack - use attackType to determine animation
+        config.type = mapMeleeTypeToAnimation(instance.attackType || 'slash')
+        config.range = instance.range || 5
+        config.impact = true
       }
       break
 

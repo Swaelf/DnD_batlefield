@@ -8,7 +8,7 @@
  * - Range: 20/60 feet (normal/long)
  *
  * Animation Features:
- * - Dagger projectile with spinning
+ * - Dagger projectile with spinning (no trail)
  * - Fast flight time
  * - Short range (20 feet normal)
  * - Impact flash on hit
@@ -45,7 +45,7 @@ export class ThrownDaggerAttack extends AbstractRangedAttack {
       duration: 500, // Fast throw
       range: longRange ? 60 : 20, // Normal or long range
       size: 12, // Larger than arrow
-      trailCount: 8, // Fading trail
+      trailCount: 0, // No trail (simple projectile, different from magic spells)
       spin: true, // Daggers spin when thrown
       metadata: {
         weaponName: 'Dagger (Thrown)',

@@ -41,6 +41,7 @@ export class LongswordAttack extends AbstractMeleeAttack {
       position,
       target,
       attackType: 'slash',
+      weaponType: 'sword',
       color: '#C0C0C0', // Silver/steel
       duration: 600, // Medium speed
       range: 5, // 5 feet (one square)

@@ -8,7 +8,7 @@
  * - Range: 30/120 feet (normal/long)
  *
  * Animation Features:
- * - Stone projectile
+ * - Stone projectile (no trail)
  * - Medium flight time
  * - Short-medium range (30 feet normal)
  * - Impact flash on hit
@@ -45,7 +45,7 @@ export class SlingAttack extends AbstractRangedAttack {
       duration: 600, // Medium flight
       range: longRange ? 120 : 30, // Normal or long range
       size: 10, // Stone size
-      trailCount: 8, // Fading trail
+      trailCount: 0, // No trail (simple projectile, different from magic spells)
       spin: false, // Stones don't spin
       metadata: {
         weaponName: 'Sling',

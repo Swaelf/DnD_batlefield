@@ -17,6 +17,16 @@ const AttackRendererComponent = ({
   isAnimating,
   onAnimationComplete
 }: AttackRendererProps) => {
+  // Debug logging
+  console.log('[AttackRenderer] 🎯 Received attack data:', {
+    weaponName: attack.weaponName,
+    attackType: attack.attackType,
+    animation: attack.animation,
+    trailCount: attack.trailCount,
+    color: attack.color,
+    range: attack.range
+  })
+
   const groupRef = useRef<Konva.Group>(null)
   const animationRef = useRef<Konva.Animation | null>(null)
   const hasStartedRef = useRef(false)
@@ -85,8 +95,8 @@ const AttackRendererComponent = ({
 
       setRangedProgress(currentProgress)
 
-      // Update trail positions
-      const trailCount = 8
+      // Update trail positions - use trailCount from attack (0 = no trail, 8 = magic spell)
+      const trailCount = attack.trailCount ?? 0 // Default to 0 if not specified
       const newTrailPositions: Array<{x: number, y: number, progress: number}> = []
 
       for (let i = 0; i < trailCount; i++) {

@@ -22,6 +22,7 @@ export type MeleeAttackConfig = {
   position: Point // Source position (attacker)
   target: Point // Target position
   attackType: MeleeAttackType
+  weaponType?: string // Weapon category (sword, axe, mace, dagger, spear)
   color: string
   duration: number
   range?: number // Attack range in D&D feet (default: 5)
@@ -53,6 +54,7 @@ export class AbstractMeleeAttack {
   public readonly position: Point
   public readonly target: Point
   public readonly attackType: MeleeAttackType
+  public readonly weaponType: string
   public readonly color: string
   public readonly duration: number
   public readonly range: number
@@ -67,6 +69,7 @@ export class AbstractMeleeAttack {
       position,
       target,
       attackType,
+      weaponType = 'sword', // Default to sword
       color,
       duration,
       range = 5, // Default 5 feet (1 square)
@@ -80,6 +83,7 @@ export class AbstractMeleeAttack {
     this.position = position
     this.target = target
     this.attackType = attackType
+    this.weaponType = weaponType
     this.color = color
     this.duration = duration
     this.range = range

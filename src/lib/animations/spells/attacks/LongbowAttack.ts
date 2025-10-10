@@ -8,8 +8,8 @@
  * - Range: 150/600 feet (normal/long)
  *
  * Animation Features:
- * - Arrow projectile with trail
- * - Linear motion with 8 fading trails
+ * - Arrow projectile without trail (small, simple projectile)
+ * - Linear motion
  * - Range limiting (150 feet normal)
  * - Impact flash on hit
  */
@@ -45,7 +45,7 @@ export class LongbowAttack extends AbstractRangedAttack {
       duration: 800, // Medium flight time
       range: longRange ? 600 : 150, // Normal or long range
       size: 8, // Arrow size
-      trailCount: 8, // Fading trail
+      trailCount: 0, // No trail (simple projectile, different from magic spells)
       spin: false, // Arrows don't spin
       metadata: {
         weaponName: 'Longbow',

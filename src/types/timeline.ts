@@ -161,6 +161,7 @@ export type AttackEventData = {
   actualDamage?: number    // Actual damage dealt (after roll)
   properties?: string[]     // Weapon properties (finesse, reach, etc.)
   weaponType?: string      // Specific weapon (longsword, shortbow, etc.)
+  trailCount?: number      // Number of trail circles (0 = no trail, 8 = magic spell)
 
   // Target tracking properties
   targetTokenId?: string    // Token ID to track and follow (like spells)

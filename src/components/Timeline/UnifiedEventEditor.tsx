@@ -358,11 +358,17 @@ const UnifiedEventEditorComponent = ({
         return result
 
       case 'attack':
-        return {
+        // Map action category to attackType ('melee' or 'ranged')
+        // Ranged categories: arrow, bolt, thrown, sling
+        // Melee categories: sword, axe, mace, dagger, spear, etc.
+        const rangedCategories = ['arrow', 'bolt', 'thrown', 'sling']
+        const isRangedAttack = rangedCategories.includes(action.category)
+
+        const attackData = {
           type: 'attack',
           tokenId: selectedToken, // ✅ FIX: Include attacker token ID for position lookup
           weaponName: action.metadata.name || 'Weapon',
-          attackType: action.category, // Use category directly ('melee' or 'ranged')
+          attackType: isRangedAttack ? 'ranged' : 'melee', // Map category to proper attackType
           fromPosition: action.source,
           toPosition: action.target,
           damage: action.damage || '1d8',
@@ -370,11 +376,24 @@ const UnifiedEventEditorComponent = ({
           attackBonus: 5, // Default attack bonus
           range: action.range || 5,
           duration: action.animation.duration || 800,
-          animation: action.animation.type, // Use the animation type from template
+          animation: isRangedAttack ? 'ranged_projectile' : action.animation.type, // For ranged attacks, use 'ranged_projectile'
           color: action.animation.color || '#FFFFFF',
           isCritical: false,
+          trailCount: 0, // Default to 0 trails for weapon attacks (8 for magic spells)
           targetTokenId: finalTargetTokenId || ''
         }
+
+        console.log('[UnifiedEventEditor] 🎯 Attack data created:', {
+          weaponName: attackData.weaponName,
+          category: action.category,
+          isRangedAttack,
+          attackType: attackData.attackType,
+          animation: attackData.animation,
+          trailCount: attackData.trailCount,
+          color: attackData.color
+        })
+
+        return attackData
 
       case 'interaction':
         return {
