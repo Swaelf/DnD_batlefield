@@ -36,16 +36,8 @@
     "orchestrator": {
       "type": "http",
       "url": "http://localhost:${MCP_SERVER_PORT:-8080}/mcp",
-      "alwaysAllow": [
-        "spawn_agent",
-        "complete_task",
-        "list_agents",
-        "execute_plan",
-        "attempt_item_completion",
-        "mark_task"
-      ],
       "headers": {
-        "Agent": "${ORCHESTRATOR_AGENT_ID:-1}"
+        "Authorization": "Bearer ${ORCHESTRATOR_AGENT_ID:-1}"
       }
     }
   }
