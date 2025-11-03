@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useState, useRef, useEffect, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { Stage, Layer, Group, Rect } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
@@ -24,6 +25,7 @@ import { findTokenAtPosition, objectIntersectsRect } from './utils'
 import type { Point } from '@/types/geometry'
 import type { Token } from '@/types/token'
 import type { MapCanvasProps } from './types'
+import { TerrainDrawing } from '@/types'
 
 export const MapCanvas: FC<MapCanvasProps> = memo(({
   width,
@@ -32,6 +34,8 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
   onMouseMove,
   onTransformChange,
   externalTransformVersion,
+  gridVisible: _gridVisible,  // Reserved for future use
+  isViewerMode: _isViewerMode,  // Reserved for future use
 }) => {
   const currentMap = useMapStore(state => state.currentMap)
   const currentTool = useToolStore(state => state.currentTool)
@@ -146,7 +150,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       }
 
       const tokenObject = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         type: 'token' as const,
         position: snapToGrid(position, gridSettings?.size || 50, gridSettings?.snap || false),
         rotation: 0,
@@ -179,7 +183,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       }
 
       const staticObject = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         type: 'shape' as const,
         shapeType: template.type,
         position: objectPosition,
@@ -210,7 +214,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       const sizeProps = template.sizeProperties || {}
 
       const staticEffectObject: any = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         type: 'shape' as const,
         position: snappedPos,
         rotation: template.rotation || 0,
@@ -271,7 +275,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
 
     if (currentTool === 'text') {
       const textObject = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         type: 'text' as const,
         position: snapToGrid(position, gridSettings?.size || 50, gridSettings?.snap || false),
         rotation: 0,
@@ -528,13 +532,22 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
     if (isDrawingTerrainRef.current && (currentTool === 'terrainBrush' || currentTool === 'terrainEraser')) {
       terrainPointsRef.current.push(position.x, position.y)
 
+      // Convert flat array to Point[] for preview rendering
+      const previewPoints: Point[] = []
+      for (let i = 0; i < terrainPointsRef.current.length; i += 2) {
+        previewPoints.push({
+          x: terrainPointsRef.current[i],
+          y: terrainPointsRef.current[i + 1]
+        })
+      }
+
       // Update drawing state to show the path preview
       const toolState = useToolStore.getState()
       toolState.setDrawingState({
         isDrawing: true,
         startPoint: null,
         currentPoint: position,
-        points: [] // Terrain brush uses terrainPointsRef directly, not drawingState.points
+        points: previewPoints // Pass points for preview rendering
       })
     }
 
@@ -596,7 +609,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       if (terrainPointsRef.current.length >= 4) {
         const drawingType: 'erase' | 'brush' = currentTool === 'terrainEraser' ? 'erase' : 'brush'
         const terrainDrawing = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           type: drawingType,
           points: [...terrainPointsRef.current],
           color: toolState.terrainColor,
@@ -605,12 +618,15 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
           timestamp: Date.now()
         }
 
-        mapState.addTerrainDrawing(terrainDrawing)
+        mapState.addTerrainDrawing(terrainDrawing as unknown as TerrainDrawing)
       }
 
       // Reset terrain drawing state
       isDrawingTerrainRef.current = false
       terrainPointsRef.current = []
+
+      // Clear drawing state to hide preview
+      toolState.resetDrawingState()
     }
 
     // Background shape drawing: create TerrainDrawing on mouse up
@@ -629,13 +645,18 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         const distance = Math.sqrt(width * width + height * height)
 
         if (distance >= minSize || currentTool === 'polygon') {
-          const terrainDrawing: any = {
-            id: crypto.randomUUID(),
-            type: currentTool as any,
+          const terrainDrawing: TerrainDrawing = {
+            id: uuidv4(),
+            type: currentTool,
             color: toolState.terrainColor,
             strokeWidth: 3,
             opacity: toolState.terrainOpacity,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            position: { x: 0, y: 0 },
+            width: 0,
+            height: 0,
+            radius: 0,
+            points: [0, 0, 0, 0]
           }
 
           switch (currentTool) {
@@ -707,97 +728,97 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
             forceUpdate(n => n + 1)
             onTransformChange?.()
           }}
-        onMouseDown={(e) => {
-          const stage = e.target.getStage()
-          if (stage) {
-            const pointer = stage.getPointerPosition()
-            if (pointer) {
-              const transform = stage.getAbsoluteTransform().copy().invert()
-              const pos = transform.point(pointer)
-              handleMouseDown(pos)
+          onMouseDown={(e) => {
+            const stage = e.target.getStage()
+            if (stage) {
+              const pointer = stage.getPointerPosition()
+              if (pointer) {
+                const transform = stage.getAbsoluteTransform().copy().invert()
+                const pos = transform.point(pointer)
+                handleMouseDown(pos)
+              }
             }
-          }
-        }}
-        onMouseUp={() => handleMouseUp()}
-        onMouseMove={(e) => {
-          const stage = e.target.getStage()
-          if (stage) {
-            const pointer = stage.getPointerPosition()
-            if (pointer) {
-              const transform = stage.getAbsoluteTransform().copy().invert()
-              const pos = transform.point(pointer)
-              handleMouseMoveWithSelection(pos)
+          }}
+          onMouseUp={() => handleMouseUp()}
+          onMouseMove={(e) => {
+            const stage = e.target.getStage()
+            if (stage) {
+              const pointer = stage.getPointerPosition()
+              if (pointer) {
+                const transform = stage.getAbsoluteTransform().copy().invert()
+                const pos = transform.point(pointer)
+                handleMouseMoveWithSelection(pos)
+              }
             }
-          }
-        }}
-      >
-        {/* Layer 0: Field Color (Static background color) */}
-        <Layer name="field" listening={false}>
-          <Rect
-            x={0}
-            y={0}
+          }}
+        >
+          {/* Layer 0: Field Color (Static background color) */}
+          <Layer name="field" listening={false}>
+            <Rect
+              x={0}
+              y={0}
+              width={width}
+              height={height}
+              fill={currentMap?.terrain?.fieldColor || '#1A1A1A'}
+            />
+          </Layer>
+
+          {/* Layer 1: Terrain (Background drawings) */}
+          <TerrainLayer
+            terrain={currentMap?.terrain}
             width={width}
             height={height}
-            fill={currentMap?.terrain?.fieldColor || '#1A1A1A'}
           />
-        </Layer>
 
-        {/* Layer 1: Terrain (Background drawings) */}
-        <TerrainLayer
-          terrain={currentMap?.terrain}
-          width={width}
-          height={height}
-        />
+          {/* Layer 2: Grid */}
+          <BackgroundLayer
+            gridSettings={gridSettings}
+            stageRef={stageRef || { current: null }}
+            width={width}
+            height={height}
+            updateTrigger={stageTransform}
+          />
 
-        {/* Layer 2: Grid */}
-        <BackgroundLayer
-          gridSettings={gridSettings}
-          stageRef={stageRef || { current: null }}
-          width={width}
-          height={height}
-          updateTrigger={stageTransform}
-        />
+          {/* Layer 2.5: Static Objects (walls, trees, furniture) - 🚀 PERFORMANCE OPTIMIZATION */}
+          {/* Separate layer prevents re-rendering when dynamic objects change */}
+          {/* Expected gain: 22-50% FPS improvement with many static objects */}
+          <StaticObjectsLayer />
 
-        {/* Layer 2.5: Static Objects (walls, trees, furniture) - 🚀 PERFORMANCE OPTIMIZATION */}
-        {/* Separate layer prevents re-rendering when dynamic objects change */}
-        {/* Expected gain: 22-50% FPS improvement with many static objects */}
-        <StaticObjectsLayer />
+          {/* Layer 2.6: Static Effects (persistent auras, zones, areas) - 🚀 PERFORMANCE OPTIMIZATION */}
+          {/* Separate layer for static spell effects that don't animate */}
+          {/* Expected gain: 20-40% FPS improvement when static effects are present */}
+          <StaticEffectsLayer />
 
-        {/* Layer 2.6: Static Effects (persistent auras, zones, areas) - 🚀 PERFORMANCE OPTIMIZATION */}
-        {/* Separate layer for static spell effects that don't animate */}
-        {/* Expected gain: 20-40% FPS improvement when static effects are present */}
-        <StaticEffectsLayer />
+          {/* Layer 3: Content (Dynamic Objects: tokens, spells, animations) */}
+          <Layer name="content">
+            <Group name="objects">
+              <ObjectsLayer
+                onObjectClick={handleObjectClick}
+              />
+            </Group>
+          </Layer>
 
-        {/* Layer 3: Content (Dynamic Objects: tokens, spells, animations) */}
-        <Layer name="content">
-          <Group name="objects">
-            <ObjectsLayer
-              onObjectClick={handleObjectClick}
-            />
-          </Group>
-        </Layer>
-
-        {/* Layer 4: Interactive (Selection + Drawing + Preview) */}
-        <InteractiveLayer
-          currentTool={currentTool}
-          gridSettings={gridSettings}
-          isCreatingEvent={isCreatingEvent}
-          isSelecting={isSelectingRef.current}
-          selectionRect={selectionRect}
-          drawingState={drawingState}
-          tokenTemplate={tokenTemplate}
-          staticObjectTemplate={staticObjectTemplate}
-          staticEffectTemplate={staticEffectTemplate}
-          previewPosition={previewPosition}
-          measurementPoints={measurementPoints}
-          fillColor={fillColor}
-          strokeColor={strokeColor}
-          strokeWidth={strokeWidth}
-          opacity={opacity}
-          terrainColor={terrainColor}
-          terrainOpacity={terrainOpacity}
-          terrainBrushSize={terrainBrushSize}
-        />
+          {/* Layer 4: Interactive (Selection + Drawing + Preview) */}
+          <InteractiveLayer
+            currentTool={currentTool}
+            gridSettings={gridSettings}
+            isCreatingEvent={isCreatingEvent}
+            isSelecting={isSelectingRef.current}
+            selectionRect={selectionRect}
+            drawingState={drawingState}
+            tokenTemplate={tokenTemplate}
+            staticObjectTemplate={staticObjectTemplate}
+            staticEffectTemplate={staticEffectTemplate}
+            previewPosition={previewPosition}
+            measurementPoints={measurementPoints}
+            fillColor={fillColor}
+            strokeColor={strokeColor}
+            strokeWidth={strokeWidth}
+            opacity={opacity}
+            terrainColor={terrainColor}
+            terrainOpacity={terrainOpacity}
+            terrainBrushSize={terrainBrushSize}
+          />
         </Stage>
       </div>
 

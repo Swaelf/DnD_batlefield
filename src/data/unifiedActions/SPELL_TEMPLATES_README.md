@@ -27,6 +27,7 @@ The old `constants/spells.ts` file has been **deleted** as it was not being used
 ### Ice Spells
 - **Ray of Frost** (cantrip) - Ice beam
 - **Cone of Cold** (5th level) - 60ft ice cone
+- **Ice Storm** (4th level) - Multi-burst ice spell with difficult terrain
 
 ### Lightning Spells
 - **Lightning Bolt** (3rd level) - 100ft line
@@ -44,7 +45,7 @@ The old `constants/spells.ts` file has been **deleted** as it was not being used
 ### Other
 - **Darkness** (2nd level) - 15ft radius, 10 rounds
 - **Poison Spray** (cantrip) - 40ft poison cone
-- **Stone Rain** (3rd level) - Multi-burst earth spell
+- **Ice Storm** (4th level) - Multi-burst ice spell with difficult terrain
 - **Thunderwave** (1st level) - Thunder burst
 - **Web** (2nd level) - 20ft area, 10 rounds
 
@@ -58,7 +59,7 @@ Each spell uses one of these animation types:
 | `projectile_burst` | Projectile + explosion | Fireball |
 | `ray` / `beam` | Instant beam | Ray of Frost |
 | `area` | Persistent area effect | Darkness, Web |
-| `burst` | Explosion at target | Thunderwave, Stone Rain |
+| `burst` | Explosion at target | Thunderwave, Ice Storm |
 | `cone` | Cone-shaped wave | Burning Hands, Breath of Dragon |
 | `line` | Linear bolt | Lightning Bolt |
 | `touch` | Melee touch spell | Cure Wounds, Shocking Grasp |

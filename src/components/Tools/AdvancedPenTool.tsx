@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState, useEffect, type FC } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { Group, Line, Circle } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
@@ -274,7 +275,7 @@ export const AdvancedPenTool: FC<AdvancedPenToolProps> = ({
       const linePoints = bezierToPoints(currentPath)
 
       const shapeObject: Shape = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         type: 'shape',
         shapeType: 'line', // Use 'line' for path-based shapes
         position: { x: 0, y: 0 }, // Path coordinates are absolute
@@ -322,7 +323,8 @@ export const AdvancedPenTool: FC<AdvancedPenToolProps> = ({
           break
         case 'Enter':
           if (currentPath.length >= 2) {
-            handleDoubleClick({} as any)
+            // Trigger path completion via keyboard - use empty event object
+            handleDoubleClick({} as Konva.KonvaEventObject<MouseEvent>)
           }
           break
         case 'e':

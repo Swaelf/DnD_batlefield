@@ -260,8 +260,6 @@ export const ModalHeader = forwardRef<HTMLDivElement, ModalHeaderProps>(
   ({ children, className, style }, ref) => {
     const headerStyles: CSSProperties = {
       borderBottom: '1px solid var(--gray700)',
-      marginBottom: '24px',
-      paddingBottom: '16px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -366,7 +364,7 @@ export const ModalCloseButton = forwardRef<HTMLButtonElement, ModalCloseButtonPr
         }}
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M12.207 3.793a1 1 0 0 0-1.414 0L8 6.586 5.207 3.793a1 1 0 0 0-1.414 1.414L6.586 8l-2.793 2.793a1 1 0 1 0 1.414 1.414L8 9.414l2.793 2.793a1 1 0 0 0 1.414-1.414L9.414 8l2.793-2.793a1 1 0 0 0 0-1.414z"/>
+          <path d="M12.207 3.793a1 1 0 0 0-1.414 0L8 6.586 5.207 3.793a1 1 0 0 0-1.414 1.414L6.586 8l-2.793 2.793a1 1 0 1 0 1.414 1.414L8 9.414l2.793 2.793a1 1 0 0 0 1.414-1.414L9.414 8l2.793-2.793a1 1 0 0 0 0-1.414z" />
         </svg>
       </button>
     )

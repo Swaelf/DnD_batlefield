@@ -7,34 +7,36 @@ import type { Point, Rectangle, Circle, Color, TokenSize } from '../types'
 
 // Type guards
 export const isPoint = (value: unknown): value is Point => {
+  if (typeof value !== 'object' || value === null) return false
+  const obj = value as Record<string, unknown>
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    'x' in value &&
-    'y' in value &&
-    typeof (value as any).x === 'number' &&
-    typeof (value as any).y === 'number'
+    'x' in obj &&
+    'y' in obj &&
+    typeof obj.x === 'number' &&
+    typeof obj.y === 'number'
   )
 }
 
 export const isRectangle = (value: unknown): value is Rectangle => {
+  if (!isPoint(value)) return false
+  const obj = value as Record<string, unknown>
   return (
-    isPoint(value) &&
-    'width' in value &&
-    'height' in value &&
-    typeof (value as any).width === 'number' &&
-    typeof (value as any).height === 'number' &&
-    (value as any).width >= 0 &&
-    (value as any).height >= 0
+    'width' in obj &&
+    'height' in obj &&
+    typeof obj.width === 'number' &&
+    typeof obj.height === 'number' &&
+    obj.width >= 0 &&
+    obj.height >= 0
   )
 }
 
 export const isCircle = (value: unknown): value is Circle => {
+  if (!isPoint(value)) return false
+  const obj = value as Record<string, unknown>
   return (
-    isPoint(value) &&
-    'radius' in value &&
-    typeof (value as any).radius === 'number' &&
-    (value as any).radius >= 0
+    'radius' in obj &&
+    typeof obj.radius === 'number' &&
+    obj.radius >= 0
   )
 }
 

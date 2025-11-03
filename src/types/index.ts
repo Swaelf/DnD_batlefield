@@ -10,6 +10,11 @@ export * from './timeline'
 export * from './timelineUnified'
 export * from './spells'
 export * from './unifiedAction'
+export * from './statusEffects'
+
+// Type safety utilities
+export * from './typeGuards'
+export * from './actions'
 
 // Application layer types
 export * from './stores'

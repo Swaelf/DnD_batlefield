@@ -1,20 +1,19 @@
 import type { TestScenario } from './TestScenarios'
 import type { SpellCategory } from '@/types/timeline'
-import { spellTemplates } from '@/data/unifiedActions/spellTemplates'
+import { AnimationRegistry, type RegisteredAnimationName } from '@/lib/animations'
+import { animationToUnifiedAction } from '@/lib/animations/adapters/toUnifiedAction'
 
 /**
- * Dynamically generates test scenarios for ALL spells in spellTemplates.ts
+ * Dynamically generates test scenarios for spell animations
  *
- * Test pattern for each spell (consolidated - 1 test per spell):
- * 1. Add token 1 at (200, 200)
- * 2. Add token 2 at (500, 200)
+ * Test pattern for each spell (SAME AS ATTACKS):
+ * 1. Add token 1 (target) at (200, 200)
+ * 2. Add token 2 (caster) at (500, 200)
  * 3. Move token 1 to (300, 400)
  * 4. Move token 2 to (600, 300)
- * 5. Cast spell from token 2 to token 1 (tracking - follows movement)
- * 6. Execute event
- *
- * This test automatically updates when spells are added/removed from spellTemplates.ts
- * Each spell has exactly ONE test that validates movement tracking.
+ * 5. Token 2 casts spell at token 1 (tracking - follows movement)
+ * 6. Token 2 casts spell at token 1's INITIAL position (static - no tracking)
+ * 7. Execute event
  */
 
 // Map animation types to spell categories for legacy event data
@@ -34,24 +33,73 @@ const getSpellCategory = (animationType: string): SpellCategory => {
   return categoryMap[animationType] || 'projectile'
 }
 
+// Get spell templates from animation library
+const getSpellTemplates = () => {
+  const templates = AnimationRegistry.getAllTemplates()
+    .filter(t => ['projectile', 'burst', 'area', 'ray', 'cone'].includes(t.category))
+
+  const dummyPos = { x: 0, y: 0 }
+  return templates.map(template =>
+    // Template names from registry are guaranteed to be RegisteredAnimationName
+    animationToUnifiedAction(template.name as RegisteredAnimationName, dummyPos, dummyPos)
+  )
+}
+
+// Log spell configurations for debugging
+console.log('[TestAllSpells] 🎯 Spell configurations loaded from AnimationRegistry:',
+  getSpellTemplates().map(s => ({
+    name: s.name,
+    category: s.category,
+    animationType: s.animation.type,
+    color: s.animation.color
+  }))
+)
+
 // Generate a unique test scenario for each spell
 export const generateSpellTestScenarios = (): TestScenario[] => {
+  const spellTemplates = getSpellTemplates()
+
   return spellTemplates.map((spell, index) => {
     const spellName = spell.name
     const spellId = spell.id
     const animationType = spell.animation.type
     const category = getSpellCategory(animationType)
-    const color = spell.animation.color
-    const secondaryColor = spell.animation.secondaryColor
-    const size = spell.animation.size || 15
-    const duration = spell.animation.duration || 1000
-    const coneAngle = spell.animation.coneAngle || 60
-    const persistDuration = spell.animation.persistDuration || 0
-    const persistColor = spell.animation.persistColor
-    const persistOpacity = spell.animation.persistOpacity
-    const particles = spell.animation.particles || false
 
-    // Token positions
+    // Extract ALL animation properties from UnifiedAction
+    const anim = spell.animation
+    const color = anim.color
+    const secondaryColor = anim.secondaryColor
+    const size = anim.size || 15
+    const duration = anim.duration || 1000
+
+    // Projectile properties
+    const projectileSpeed = anim.speed
+    const trailLength = anim.trailLength
+    const trailFade = anim.trailFade
+    const curved = anim.curved
+    const curveHeight = anim.curveHeight
+
+    // Burst properties
+    const burstRadius = anim.burstSize
+    const burstColor = anim.burstColor
+    const burstDuration = anim.burstDuration
+
+    // Cone properties
+    const coneAngle = anim.coneAngle || 60
+
+    // Area properties
+    const opacity = anim.opacity
+
+    // Persistent properties
+    const persistDuration = anim.persistDuration || 0
+    const persistColor = anim.persistColor
+    const persistOpacity = anim.persistOpacity
+    const durationType = anim.durationType
+
+    // Effects
+    const particles = anim.particles || false
+
+    // Token positions (SAME AS ATTACKS)
     const token1Initial = { x: 200, y: 200 }
     const token2Initial = { x: 500, y: 200 }
     const token1Final = { x: 300, y: 400 }
@@ -64,7 +112,7 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
     return {
       id: `spell-movement-tracking-${spellId}`,
       name: `${spellName} + Movement Tracking`,
-      description: `Tests ${spellName} (${animationType}) spell origin tracking after token movement`,
+      description: `Tests ${spellName} (${category}) spell with token movement`,
       category: 'spells',
       steps: [
         // Step 1: Add token 1
@@ -77,7 +125,7 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
               name: `Target (${spellName})`,
               position: token1Initial,
               size: 'medium',
-              color: '#3D82AB',
+              color: '#922610',
               shape: 'circle'
             }
           },
@@ -93,7 +141,7 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
               name: `Caster (${spellName})`,
               position: token2Initial,
               size: 'medium',
-              color: '#10B981',
+              color: '#3D82AB',
               shape: 'circle'
             }
           },
@@ -143,21 +191,73 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
                   // 3. Token 2 casts spell at Token 1 (tracking - follows movement)
                   roundStore.addAction(token2Id, 'spell', {
                     type: 'spell',
-                    targetTokenId: token1Id, // Tracks moving target
                     spellName: spellName,
                     category: category,
                     fromPosition: token2Final,
-                    toPosition: token1Final, // Will track to final position
+                    toPosition: token1Final,
+                    targetTokenId: token1Id, // Track moving target
+                    trackTarget: true,
                     color: color,
                     secondaryColor: secondaryColor,
                     size: size,
                     duration: duration,
+                    // Projectile properties
+                    projectileSpeed: projectileSpeed,
+                    trailLength: trailLength,
+                    trailFade: trailFade,
+                    curved: curved,
+                    curveHeight: curveHeight,
+                    // Burst properties
+                    burstRadius: burstRadius,
+                    burstColor: burstColor,
+                    burstDuration: burstDuration,
+                    // Cone properties
                     coneAngle: coneAngle,
+                    // Area properties
+                    opacity: opacity,
+                    // Persistent properties
                     persistDuration: persistDuration,
                     persistColor: persistColor,
                     persistOpacity: persistOpacity,
-                    particleEffect: particles,
-                    ...(category === 'projectile-burst' && { burstRadius: 30 })
+                    durationType: durationType,
+                    // Effects
+                    particleEffect: particles
+                  }, 1)
+
+                  // 4. Token 2 casts spell at Token 1's INITIAL position (static target)
+                  roundStore.addAction(token2Id, 'spell', {
+                    type: 'spell',
+                    spellName: spellName,
+                    category: category,
+                    fromPosition: token2Final,
+                    toPosition: token1Initial, // Static initial position
+                    // NO targetTokenId - static position
+                    trackTarget: false,
+                    color: color,
+                    secondaryColor: secondaryColor,
+                    size: size,
+                    duration: duration,
+                    // Projectile properties
+                    projectileSpeed: projectileSpeed,
+                    trailLength: trailLength,
+                    trailFade: trailFade,
+                    curved: curved,
+                    curveHeight: curveHeight,
+                    // Burst properties
+                    burstRadius: burstRadius,
+                    burstColor: burstColor,
+                    burstDuration: burstDuration,
+                    // Cone properties
+                    coneAngle: coneAngle,
+                    // Area properties
+                    opacity: opacity,
+                    // Persistent properties
+                    persistDuration: persistDuration,
+                    persistColor: persistColor,
+                    persistOpacity: persistOpacity,
+                    durationType: durationType,
+                    // Effects
+                    particleEffect: particles
                   }, 1)
                 }
               }
@@ -188,7 +288,7 @@ export const generateSpellTestScenarios = (): TestScenario[] => {
         // Step 8: Wait for animations
         {
           type: 'wait',
-          wait: Math.max(3000, duration + 1000), // Wait for spell animation + buffer
+          wait: Math.max(3000, duration + 1500), // Wait for spell animation + buffer
           description: 'Wait for all animations to complete'
         },
         // Step 9: Capture after execution
@@ -233,6 +333,7 @@ export const allSpellTestScenarios = generateSpellTestScenarios()
 
 // Helper to get scenarios by spell category
 export const getSpellTestsByCategory = (category: string): TestScenario[] => {
+  const spellTemplates = getSpellTemplates()
   return spellTemplates
     .filter(spell => spell.category === category)
     .map(spell => {
@@ -248,4 +349,4 @@ export const getSpellTest = (spellId: string): TestScenario | undefined => {
 }
 
 // Export spell count for test runner info
-export const spellTestCount = spellTemplates.length
+export const spellTestCount = getSpellTemplates().length

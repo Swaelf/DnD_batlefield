@@ -3,6 +3,7 @@ import { Circle, Text, Group, Rect, Arc, Image } from 'react-konva';
 import type Konva from 'konva';
 import useImage from 'use-image';
 import type { Token as TokenType, TokenSize } from '@/types/token';
+import { StatusEffectOverlay } from './StatusEffectOverlay';
 
 // Size multipliers for D&D creature sizes (in grid squares)
 const SIZE_MAP: Record<TokenSize, number> = {
@@ -260,7 +261,7 @@ const TokenComponent: FC<TokenProps> = ({
         </Group>
       )}
 
-      {/* Condition markers (optional) */}
+      {/* Condition markers (optional) - Legacy system */}
       {token.conditions && token.conditions.length > 0 && (
         <Group x={-radius + 5} y={-radius + 5}>
           {token.conditions.map((condition, index) => (
@@ -274,6 +275,15 @@ const TokenComponent: FC<TokenProps> = ({
             />
           ))}
         </Group>
+      )}
+
+      {/* Status Effect Overlay - New visual system */}
+      {token.statusEffects && token.statusEffects.length > 0 && (
+        <StatusEffectOverlay
+          statusEffects={token.statusEffects}
+          tokenRadius={radius}
+          tokenId={token.id}
+        />
       )}
     </Group>
   );

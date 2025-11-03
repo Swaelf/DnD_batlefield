@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import type { EventCreationState, Position, ToolType } from '../types'
+import { isMoveAction } from '../types'
 import useTimelineStore from './timelineStore'
 import useMapStore from './mapStore'
 import useToolStore from './toolStore'
@@ -32,7 +33,9 @@ const calculateTokenExpectedPosition = (tokenId: string, currentPreview?: { toPo
       // Apply timeline events
       if (tokenMoveEvents.length > 0) {
         const lastTimelineEvent = tokenMoveEvents[tokenMoveEvents.length - 1]
-        expectedPosition = (lastTimelineEvent.data as any).toPosition || expectedPosition
+        if (isMoveAction(lastTimelineEvent)) {
+          expectedPosition = lastTimelineEvent.data.toPosition || expectedPosition
+        }
       }
     }
   }

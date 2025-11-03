@@ -1,9 +1,14 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
-import type { MapStore } from '../types'
+import type { WritableDraft } from 'immer'
+import type { MapStore, Token } from '../types'
 import type { MapObject, SpellMapObject, AttackEventData } from '../types'
+import { isToken } from '../types'
 import { useHistoryStore } from './historyStore'
 import { useLayerStore } from './layerStore'
+import { getSyncManager } from '../utils/syncManager'
+import { logger } from '../utils/logger'
+import { v4 as uuidv4 } from 'uuid'
 
 // Helper function to save current state to history before modifications
 const saveToHistory = () => {
@@ -42,7 +47,7 @@ const useMapStore = create<MapStore>()(
     spellPreviewEnabled: false, // Action preview disabled by default (spells and movement)
 
     createNewMap: (name) => set((state) => {
-      const mapId = crypto.randomUUID()
+      const mapId = uuidv4()
 
       // Create void token for environmental spells (invisible, used only for event system)
       const voidToken = {
@@ -112,16 +117,23 @@ const useMapStore = create<MapStore>()(
 
       // Migration: Add labelColor to existing tokens that don't have it
       map.objects.forEach((obj) => {
-        if (obj.type === 'token') {
-          const token = obj as any // Token type
-          if (!token.labelColor) {
-            token.labelColor = '#E0E0E0'
+        if (isToken(obj)) {
+          if (!obj.labelColor) {
+            obj.labelColor = '#E0E0E0'
           }
         }
       })
 
       state.currentMap = map
       state.selectedObjects = []
+
+      // Broadcast map update to viewer
+      try {
+        const syncManager = getSyncManager('main')
+        syncManager.broadcastMapUpdate(map)
+      } catch {
+        // Sync manager not initialized or viewer mode - ignore
+      }
     }),
 
     addObject: (object) => {
@@ -130,6 +142,14 @@ const useMapStore = create<MapStore>()(
         if (state.currentMap) {
           const objectWithLayer = assignLayerId(object)
           state.currentMap.objects.push(objectWithLayer)
+
+          // Broadcast object added to viewer
+          try {
+            const syncManager = getSyncManager('main')
+            syncManager.broadcastObjectAdded(objectWithLayer)
+          } catch {
+            // Sync manager not initialized or viewer mode - ignore
+          }
         }
       })
     },
@@ -144,12 +164,22 @@ const useMapStore = create<MapStore>()(
           layer: spell.layer !== undefined ? spell.layer : (spell.type === 'persistent-area' ? 9 : 10),
           isSpellEffect: spell.isSpellEffect !== undefined ? spell.isSpellEffect : true,
           roundCreated: spell.roundCreated,
-          spellDuration: spell.spellDuration
+          spellDuration: spell.spellDuration,
+          durationType: spell.durationType || 'rounds', // Explicitly preserve durationType
+          eventCreated: spell.eventCreated // Explicitly preserve eventCreated for event-based duration
         }
 
         state.currentMap.objects.push(spellObject)
         // Force re-render
         state.mapVersion += 1
+
+        // Broadcast spell effect to viewer
+        try {
+          const syncManager = getSyncManager('main')
+          syncManager.broadcastObjectAdded(spellObject)
+        } catch {
+          // Sync manager not initialized or viewer mode - ignore
+        }
       }
     }),
 
@@ -157,7 +187,7 @@ const useMapStore = create<MapStore>()(
       if (state.currentMap) {
         // Add attack with animation data
         const attackObject: MapObject = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           type: 'attack' as const,
           position: attack.fromPosition,
           rotation: 0,
@@ -205,7 +235,7 @@ const useMapStore = create<MapStore>()(
           for (const selectedId of state.selectedObjects) {
             const originalObject = state.currentMap.objects.find(obj => obj.id === selectedId)
             if (originalObject) {
-              const duplicateId = crypto.randomUUID()
+              const duplicateId = uuidv4()
               const duplicatedObject = {
                 ...originalObject,
                 id: duplicateId,
@@ -233,6 +263,14 @@ const useMapStore = create<MapStore>()(
         if (state.currentMap) {
           state.currentMap.objects = state.currentMap.objects.filter(obj => obj.id !== id)
           state.selectedObjects = state.selectedObjects.filter(selectedId => selectedId !== id)
+
+          // Broadcast object removal to viewer
+          try {
+            const syncManager = getSyncManager('main')
+            syncManager.broadcastObjectRemoved(id)
+          } catch {
+            // Sync manager not initialized or viewer mode - ignore
+          }
         }
       })
     },
@@ -305,6 +343,14 @@ const useMapStore = create<MapStore>()(
             object.position = position
             // Increment version to force re-render
             state.mapVersion += 1
+
+            // Broadcast position update to viewer
+            try {
+              const syncManager = getSyncManager('main')
+              syncManager.broadcastObjectUpdated(id, { position })
+            } catch {
+              // Sync manager not initialized or viewer mode - ignore
+            }
           }
         }
       })
@@ -364,13 +410,13 @@ const useMapStore = create<MapStore>()(
     }),
 
     cleanupExpiredSpells: (currentRound, currentEvent) => set((state) => {
-      console.log('[mapStore.cleanupExpiredSpells] Called with round/event:', currentRound, currentEvent)
+      logger.debug('store', 'cleanupExpiredSpells called', { currentRound, currentEvent })
       if (state.currentMap) {
         state.currentMap.objects = state.currentMap.objects.filter(obj => {
           if (obj.isSpellEffect && obj.spellDuration !== undefined) {
             // Don't remove instant spells (duration 0) - they're handled by animation timeout
             if (obj.spellDuration === 0) {
-              console.log('[mapStore.cleanupExpiredSpells] Keeping instant spell:', obj.id)
+              logger.debug('store', 'Keeping instant spell', obj.id)
               return true  // Keep instant spells, let animation handle removal
             }
 
@@ -383,25 +429,32 @@ const useMapStore = create<MapStore>()(
               // Lasts for N rounds starting from when cast
               const expiresAtRound = obj.roundCreated + obj.spellDuration
               shouldKeep = currentRound < expiresAtRound
-              console.log('[mapStore.cleanupExpiredSpells] Round-based spell:', {
-                id: obj.id,
-                roundCreated: obj.roundCreated,
-                spellDuration: obj.spellDuration,
-                expiresAtRound,
-                currentRound,
-                shouldKeep
-              })
             } else if (durationType === 'events' && obj.eventCreated !== undefined && currentEvent !== undefined) {
-              // Event-based duration (instant area effects like Fireball burn)
-              // Lasts for N events starting from when cast
-              const expiresAtEvent = obj.eventCreated + obj.spellDuration
-              shouldKeep = currentEvent < expiresAtEvent
-              console.log('[mapStore.cleanupExpiredSpells] Event-based spell:', {
+              // Event-based duration (instant area effects like Fireball burn, cone spells)
+              // persistDuration=1 means "lasts for 1 event only" (the creation event)
+              // Cleanup happens DURING event transition, so we see the effect until it's removed
+              const sameRound = obj.roundCreated === currentRound
+
+              // Calculate how many events have elapsed since creation
+              // persistDuration=1 means: "visible for creation event + 1 additional event"
+              // Event 1 created, Event 1: eventsElapsed = 0, keep (creation event)
+              // Event 1 created, Event 2: eventsElapsed = 1, keep (within duration=1)
+              // Event 1 created, Event 3: eventsElapsed = 2, remove (exceeded duration=1)
+              const eventsElapsed = currentEvent - obj.eventCreated
+
+              // Keep while eventsElapsed <= persistDuration
+              // persistDuration=1: created at event 1, visible at events 1-2, removed at event 3
+              shouldKeep = eventsElapsed <= obj.spellDuration && sameRound
+
+              logger.debug('store', 'Event-based spell expiry check', {
                 id: obj.id,
                 eventCreated: obj.eventCreated,
                 spellDuration: obj.spellDuration,
-                expiresAtEvent,
+                eventsElapsed,
                 currentEvent,
+                roundCreated: obj.roundCreated,
+                currentRound,
+                sameRound,
                 shouldKeep
               })
             }
@@ -420,6 +473,128 @@ const useMapStore = create<MapStore>()(
         state.selectedObjects = []
       }
     }),
+
+    // Status Effect Management
+    addStatusEffect: (tokenId, effect) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          const obj = state.currentMap.objects.find(o => o.id === tokenId && o.type === 'token')
+          if (obj && obj.type === 'token') {
+            const token = obj as WritableDraft<Token>
+            if (!token.statusEffects) {
+              token.statusEffects = []
+            }
+            // Check if effect already exists, if so, update it
+            const existingIndex = token.statusEffects.findIndex(e => e.type === effect.type)
+            if (existingIndex >= 0) {
+              token.statusEffects[existingIndex] = effect
+            } else {
+              token.statusEffects.push(effect)
+            }
+            state.mapVersion += 1
+
+            // Broadcast status effect update to viewer
+            try {
+              const syncManager = getSyncManager('main')
+              syncManager.broadcastObjectUpdated(tokenId, { statusEffects: token.statusEffects })
+            } catch {
+              // Sync manager not initialized or viewer mode - ignore
+            }
+          }
+        }
+      })
+    },
+
+    removeStatusEffect: (tokenId, effectType) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          const obj = state.currentMap.objects.find(o => o.id === tokenId && o.type === 'token')
+          if (obj && obj.type === 'token') {
+            const token = obj as WritableDraft<Token>
+            if (token.statusEffects) {
+              token.statusEffects = token.statusEffects.filter(e => e.type !== effectType)
+              state.mapVersion += 1
+
+              // Broadcast status effect update to viewer
+              try {
+                const syncManager = getSyncManager('main')
+                syncManager.broadcastObjectUpdated(tokenId, { statusEffects: token.statusEffects })
+              } catch {
+                // Sync manager not initialized or viewer mode - ignore
+              }
+            }
+          }
+        }
+      })
+    },
+
+    clearStatusEffects: (tokenId) => {
+      saveToHistory()
+      set((state) => {
+        if (state.currentMap) {
+          const obj = state.currentMap.objects.find(o => o.id === tokenId && o.type === 'token')
+          if (obj && obj.type === 'token') {
+            const token = obj as WritableDraft<Token>
+            token.statusEffects = []
+            state.mapVersion += 1
+
+            // Broadcast status effect clear to viewer
+            try {
+              const syncManager = getSyncManager('main')
+              syncManager.broadcastObjectUpdated(tokenId, { statusEffects: [] })
+            } catch {
+              // Sync manager not initialized or viewer mode - ignore
+            }
+          }
+        }
+      })
+    },
+
+    cleanupExpiredStatusEffects: (currentRound) => {
+      set((state) => {
+        if (state.currentMap) {
+          let hasChanges = false
+
+          // Iterate through all tokens
+          state.currentMap.objects.forEach((obj) => {
+            if (obj.type === 'token') {
+              const token = obj as WritableDraft<Token>
+              if (token.statusEffects && token.statusEffects.length > 0) {
+                // Filter out expired effects
+                const activeEffects = token.statusEffects.filter((effect) => {
+                  // If duration is undefined or 0, effect is indefinite
+                  if (!effect.duration || effect.duration === 0) {
+                    return true
+                  }
+
+                  // Calculate when effect was applied (current round - duration)
+                  // We assume effects last for their duration in rounds from when applied
+                  // For simplicity, we'll track this by storing roundApplied in the effect
+                  if (effect.roundApplied !== undefined) {
+                    const expiresAtRound = effect.roundApplied + effect.duration
+                    return currentRound < expiresAtRound
+                  }
+
+                  // If no roundApplied, keep the effect (backward compatibility)
+                  return true
+                })
+
+                if (activeEffects.length !== token.statusEffects.length) {
+                  token.statusEffects = activeEffects
+                  hasChanges = true
+                }
+              }
+            }
+          })
+
+          if (hasChanges) {
+            state.mapVersion += 1
+          }
+        }
+      })
+    },
   }))
 )
 
@@ -429,9 +604,8 @@ export const migrateTokenLabels = () => {
     if (!state.currentMap) return state
 
     const updatedObjects = state.currentMap.objects.map((obj) => {
-      if (obj.type === 'token') {
-        const token = obj as any // Token type
-        if (!token.labelColor) {
+      if (isToken(obj)) {
+        if (!obj.labelColor) {
           return { ...obj, labelColor: '#E0E0E0' }
         }
       }

@@ -1,5 +1,5 @@
 import { type FC, useEffect, useRef, useState } from 'react'
-import { Group, Circle, Ring, RegularPolygon, Line, Star } from 'react-konva'
+import { Group, Circle, Ring, RegularPolygon, Line } from 'react-konva'
 import type { SpellEventData } from '@/types/timeline'
 import type { Position } from '@/types/map'
 import useMapStore from '@/store/mapStore'
@@ -16,7 +16,7 @@ interface TrailPosition {
   progress: number
 }
 
-interface StoneBurst {
+interface IceBurst {
   x: number
   y: number
   startTime: number
@@ -34,11 +34,11 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
   const [progress, setProgress] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
   const [trailPositions, setTrailPositions] = useState<TrailPosition[]>([])
-  const [stoneBursts, setStoneBursts] = useState<StoneBurst[]>([])
+  const [iceBursts, setIceBursts] = useState<IceBurst[]>([])
   const animationFrameRef = useRef<number>(0)
   const startTimeRef = useRef<number>(Date.now())
   // const _lastTrailUpdateRef = useRef<number>(0) // unused
-  const lastStoneSpawnRef = useRef<number>(0)
+  const lastIceSpawnRef = useRef<number>(0)
   const currentMap = useMapStore(state => state.currentMap)
 
   // Get current target position if tracking is enabled
@@ -65,24 +65,24 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
 
       setProgress(currentProgress)
 
-      // Handle Stone Rain multi-burst spawning
-      if (spell.spellName?.toLowerCase() === 'stone rain') {
-        const spawnInterval = 150 // Spawn a new stone every 150ms
-        if (elapsed - lastStoneSpawnRef.current > spawnInterval && stoneBursts.length < 12) {
-          lastStoneSpawnRef.current = elapsed
+      // Handle Ice Storm multi-burst spawning
+      if (spell.spellName?.toLowerCase() === 'ice storm') {
+        const spawnInterval = 800 // Spawn a new ice impact every 800ms (5 bursts over 4 seconds)
+        if (elapsed - lastIceSpawnRef.current > spawnInterval && iceBursts.length < 5) {
+          lastIceSpawnRef.current = elapsed
 
           // Generate random position within the spell area
-          const areaRadius = spell.size || 100
+          const areaRadius = spell.size || 200
           const angle = Math.random() * Math.PI * 2
-          const distance = Math.random() * areaRadius
-          const newStone: StoneBurst = {
+          const distance = Math.sqrt(Math.random()) * areaRadius // sqrt for uniform distribution
+          const newIce: IceBurst = {
             x: getTargetPosition().x + Math.cos(angle) * distance,
             y: getTargetPosition().y + Math.sin(angle) * distance,
             startTime: elapsed,
-            size: 15 + Math.random() * 10 // Vary stone sizes slightly
+            size: 25 // 1 grid cell = 50px diameter, so radius = 25px
           }
 
-          setStoneBursts(prev => [...prev, newStone])
+          setIceBursts(prev => [...prev, newIce])
         }
       }
 
@@ -182,9 +182,9 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
       setProgress(0)
       setIsComplete(false)
       setTrailPositions([])
-      setStoneBursts([])
+      setIceBursts([])
       startTimeRef.current = Date.now()
-      lastStoneSpawnRef.current = 0
+      lastIceSpawnRef.current = 0
     }
   }, [isAnimating])
 
@@ -252,7 +252,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         const angle = Math.atan2(dy, dx)
 
         // Determine projectile style based on spell
-        const isMagicMissile = spell.spellName?.toLowerCase().includes('magic missile')
         const isFireball = spell.spellName?.toLowerCase().includes('fireball')
 
         return (
@@ -306,45 +305,25 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
               opacity={0.3}
             />
 
-            {/* Main projectile body */}
-            {isMagicMissile ? (
-              // Magic missile as a star
-              <Star
-                x={x}
-                y={y}
-                numPoints={4}
-                innerRadius={baseRadius * 0.5}
-                outerRadius={baseRadius}
-                fill={spell.color}
-                opacity={opacity}
-                rotation={progress * 360}
-                shadowColor={spell.color}
-                shadowBlur={baseRadius * 2}
-                shadowOpacity={0.7}
-              />
-            ) : (
-              // Other projectiles as enhanced circles
-              <>
-                <Circle
-                  x={x}
-                  y={y}
-                  radius={baseRadius}
-                  fill={spell.color}
-                  opacity={opacity}
-                  shadowColor={spell.color}
-                  shadowBlur={baseRadius * 2}
-                  shadowOpacity={0.6}
-                />
-                {/* Inner core */}
-                <Circle
-                  x={x}
-                  y={y}
-                  radius={baseRadius * 0.5}
-                  fill="#FFFFFF"
-                  opacity={opacity * 0.8}
-                />
-              </>
-            )}
+            {/* Main projectile body - all projectiles use circle */}
+            <Circle
+              x={x}
+              y={y}
+              radius={baseRadius}
+              fill={spell.color}
+              opacity={opacity}
+              shadowColor={spell.color}
+              shadowBlur={baseRadius * 2}
+              shadowOpacity={0.6}
+            />
+            {/* Inner core */}
+            <Circle
+              x={x}
+              y={y}
+              radius={baseRadius * 0.5}
+              fill="#FFFFFF"
+              opacity={opacity * 0.8}
+            />
 
             {/* Directional energy effect */}
             <RegularPolygon
@@ -512,7 +491,8 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         } else {
           // Phase 2: Burst explosion
           const burstProgress = (progress - projectilePhase) / (1 - projectilePhase)
-          const burstRadius = (spell.burstRadius || baseRadius * 2) * (1 + burstProgress * 2)
+          const maxBurstRadius = spell.burstRadius || baseRadius * 2
+          const burstRadius = maxBurstRadius * (0.3 + burstProgress * 0.7) // Expand from 30% to 100%
           const burstOpacity = (1 - burstProgress) * 0.8
 
           return (
@@ -549,8 +529,11 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         }
 
       case 'burst':
-        // Expanding burst
-        const burstRadius = baseRadius * (1 + progress * 3)
+        // Expanding burst - use burstRadius (from event data) if available, otherwise use size
+        const maxBurstRadius = spell.burstRadius || spell.size || baseRadius
+        const burstRadius = maxBurstRadius * (0.3 + progress * 0.7) // Start at 30%, expand to 100%
+        const burstOpacityValue = spell.opacity !== undefined ? spell.opacity : opacity
+
         return (
           <>
             <Circle
@@ -558,7 +541,7 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
               y={getTargetPosition().y}
               radius={burstRadius}
               fill={spell.color}
-              opacity={opacity * 0.3}
+              opacity={burstOpacityValue * 0.3}
             />
             <Ring
               x={getTargetPosition().x}
@@ -566,13 +549,96 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
               innerRadius={burstRadius * 0.7}
               outerRadius={burstRadius}
               fill={spell.color}
-              opacity={opacity}
+              opacity={burstOpacityValue}
             />
           </>
         )
 
       case 'area':
-        // Fade-in area effect that transitions to persistent
+        // Check for Ice Storm - special multi-burst rendering
+        if (spell.spellName?.toLowerCase() === 'ice storm') {
+          const areaRadius = spell.size || 200
+          const elapsed = Date.now() - startTimeRef.current
+
+          return (
+            <>
+              {/* Area indicator - subtle circle showing the affected zone */}
+              <Circle
+                x={getTargetPosition().x}
+                y={getTargetPosition().y}
+                radius={areaRadius}
+                stroke="#87CEEB"
+                strokeWidth={2}
+                opacity={0.3}
+                fill="#87CEEB"
+                fillOpacity={0.1}
+              />
+
+              {/* Render each ice burst */}
+              {iceBursts.map((ice, index) => {
+                const iceAge = elapsed - ice.startTime
+                const iceDuration = 500 // Each ice impact lasts 500ms
+                const iceProgress = Math.min(iceAge / iceDuration, 1)
+
+                if (iceProgress >= 1) return null // Ice animation complete
+
+                // Expanding burst for each ice impact
+                const burstRadius = ice.size * (1 + iceProgress * 2)
+                const burstOpacity = (1 - iceProgress) * 0.8
+
+                return (
+                  <Group key={index}>
+                    {/* Impact burst */}
+                    <Circle
+                      x={ice.x}
+                      y={ice.y}
+                      radius={burstRadius}
+                      fill="#87CEEB"
+                      opacity={burstOpacity * 0.4}
+                    />
+
+                    {/* Inner impact ring */}
+                    <Ring
+                      x={ice.x}
+                      y={ice.y}
+                      innerRadius={burstRadius * 0.5}
+                      outerRadius={burstRadius}
+                      fill="#ADD8E6"
+                      opacity={burstOpacity * 0.6}
+                    />
+
+                    {/* Central ice impact */}
+                    <Circle
+                      x={ice.x}
+                      y={ice.y}
+                      radius={ice.size * 0.5}
+                      fill="#F0F8FF"
+                      opacity={burstOpacity}
+                    />
+
+                    {/* Ice shard particles */}
+                    {[0, 1, 2, 3].map(i => {
+                      const angle = (i * Math.PI) / 2
+                      const particleDistance = burstRadius * 1.2
+                      return (
+                        <Circle
+                          key={i}
+                          x={ice.x + Math.cos(angle) * particleDistance}
+                          y={ice.y + Math.sin(angle) * particleDistance}
+                          radius={3}
+                          fill="#E0F4FF"
+                          opacity={burstOpacity * 0.5}
+                        />
+                      )
+                    })}
+                  </Group>
+                )
+              })}
+            </>
+          )
+        }
+
+        // Standard area spell rendering (Darkness, Web, etc.)
         const areaOpacity = progress * 0.6
         const isDarkness = spell.spellName?.toLowerCase().includes('darkness')
         const effectRadius = spell.size || baseRadius * 2
@@ -730,116 +796,130 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         )
 
       case 'cone':
-        // Cone spell effect - expanding arc animation with fire particles
-        const PIXELS_PER_FOOT = 8
-        const coneLength = (spell.size || 30) * PIXELS_PER_FOOT
+        // Cone spell effect - circular sector (pie slice) centered at source
+        // Size is already in pixels from the spell data - use it directly
+        const coneLength = spell.size || 100
         const coneAngle = (spell.coneAngle || 60) * (Math.PI / 180)
-        const expansionProgress = Math.min(progress * 1.3, 1)
+        const expansionProgress = Math.min(progress * 1.5, 1) // Faster expansion
 
-        // Calculate cone direction
+        // Calculate cone direction from source to target
         const coneDx = getTargetPosition().x - spell.fromPosition.x
         const coneDy = getTargetPosition().y - spell.fromPosition.y
         const coneDirection = Math.atan2(coneDy, coneDx)
 
-        // Calculate cone edges
+        // Calculate cone sector angles (source is center, range is radius)
         const leftAngle = coneDirection - coneAngle / 2
 
-        const coneOpacity = progress < 0.8 ? 0.7 : (1 - progress) * 3.5
+        // Current radius based on expansion
+        const currentRadius = coneLength * expansionProgress
+
+        // Opacity fades at the end of animation
+        const coneOpacity = progress < 0.85 ? 0.65 : (1 - progress) * 4.3
+
+        // Build circular sector points (pie slice)
+        const arcSegments = 30
+        const sectorPoints: number[] = [
+          spell.fromPosition.x, // Start at source (sector center)
+          spell.fromPosition.y
+        ]
+
+        // Add arc points from left to right angle
+        for (let i = 0; i <= arcSegments; i++) {
+          const angle = leftAngle + (coneAngle * i / arcSegments)
+          sectorPoints.push(
+            spell.fromPosition.x + Math.cos(angle) * currentRadius,
+            spell.fromPosition.y + Math.sin(angle) * currentRadius
+          )
+        }
+
+        // Close the sector back to center
+        sectorPoints.push(spell.fromPosition.x, spell.fromPosition.y)
 
         return (
           <>
-            {/* Expanding fire arc waves */}
-            {[0, 0.1, 0.2, 0.3].map((waveOffset, index) => {
-              const wavePos = expansionProgress - waveOffset
-              if (wavePos <= 0 || wavePos > 1) return null
+            {/* Main filled sector (pie slice) */}
+            <Line
+              points={sectorPoints}
+              closed={true}
+              fill={spell.color}
+              opacity={coneOpacity * 0.5}
+              shadowColor={spell.color}
+              shadowBlur={20}
+              shadowOpacity={0.6}
+            />
 
-              const currentRadius = coneLength * wavePos
-              const trailLength = 0.2 // Longer fading tail for fire effect
-              const trailStart = Math.max(0, wavePos - trailLength)
+            {/* Sector border for definition */}
+            <Line
+              points={sectorPoints}
+              closed={true}
+              stroke={spell.secondaryColor || spell.color}
+              strokeWidth={2}
+              opacity={coneOpacity * 0.8}
+              shadowColor={spell.secondaryColor || spell.color}
+              shadowBlur={10}
+            />
 
-              // Create arc segment
-              const arcSegments = 25
-              const arcPoints: number[] = []
+            {/* Expanding wave effect at the arc edge */}
+            {[0, 0.15, 0.3].map((waveOffset, index) => {
+              const waveProgress = expansionProgress - waveOffset
+              if (waveProgress <= 0 || waveProgress > 1) return null
 
+              const waveRadius = coneLength * waveProgress
+              const waveOpacity = (1 - waveOffset / 0.3) * coneOpacity
+
+              // Arc points for wave
+              const wavePoints: number[] = []
               for (let i = 0; i <= arcSegments; i++) {
                 const angle = leftAngle + (coneAngle * i / arcSegments)
-                arcPoints.push(
-                  spell.fromPosition.x + Math.cos(angle) * currentRadius,
-                  spell.fromPosition.y + Math.sin(angle) * currentRadius
+                wavePoints.push(
+                  spell.fromPosition.x + Math.cos(angle) * waveRadius,
+                  spell.fromPosition.y + Math.sin(angle) * waveRadius
                 )
               }
 
-              const waveIntensity = Math.pow(1 - waveOffset / 0.3, 1.8)
-              const fadeOpacity = (1 - waveOffset / 0.3) * waveIntensity
-
               return (
-                <Group key={index}>
-                  {/* Main fire arc - bright orange/yellow */}
-                  <Line
-                    points={arcPoints}
-                    stroke={index === 0 ? '#FFD700' : spell.secondaryColor || '#FF6B00'}
-                    strokeWidth={8 * waveIntensity}
-                    opacity={fadeOpacity * coneOpacity * 0.9}
-                    lineCap="round"
-                    lineJoin="round"
-                    shadowColor={'#FFD700'}
-                    shadowBlur={25 * waveIntensity}
-                  />
-
-                  {/* Fire trail - darker red */}
-                  {trailStart > 0 && (
-                    <Line
-                      points={arcPoints.map((_val, i) => {
-                        const isX = i % 2 === 0
-                        const segmentIndex = Math.floor(i / 2)
-                        const angle = leftAngle + (coneAngle * segmentIndex / arcSegments)
-                        const trailDist = coneLength * trailStart
-                        return isX
-                          ? spell.fromPosition.x + Math.cos(angle) * trailDist
-                          : spell.fromPosition.y + Math.sin(angle) * trailDist
-                      })}
-                      stroke={spell.color}
-                      strokeWidth={5 * waveIntensity}
-                      opacity={fadeOpacity * coneOpacity * 0.5}
-                      lineCap="round"
-                      lineJoin="round"
-                      shadowColor={spell.color}
-                      shadowBlur={15 * waveIntensity}
-                    />
-                  )}
-                </Group>
+                <Line
+                  key={index}
+                  points={wavePoints}
+                  stroke={index === 0 ? '#FFD700' : spell.secondaryColor || spell.color}
+                  strokeWidth={4}
+                  opacity={waveOpacity * 0.8}
+                  lineCap="round"
+                  shadowColor={spell.color}
+                  shadowBlur={15}
+                />
               )
             })}
 
-            {/* Fire particles - ember-like particles throughout cone */}
+            {/* Particle effects within the cone */}
             {spell.particleEffect && (
               <>
-                {[...Array(30)].map((_, i) => {
-                  // Random position within cone, following expansion
+                {[...Array(25)].map((_, i) => {
+                  // Random position within the cone sector
                   const angleVariation = (Math.random() - 0.5) * coneAngle
                   const particleAngle = coneDirection + angleVariation
                   const baseDistance = Math.random()
-                  const particleDistance = coneLength * expansionProgress * baseDistance
+                  const particleDistance = currentRadius * baseDistance
 
                   const particleX = spell.fromPosition.x + Math.cos(particleAngle) * particleDistance
                   const particleY = spell.fromPosition.y + Math.sin(particleAngle) * particleDistance
 
-                  // Particles flicker and fade based on distance and time
+                  // Particles flicker based on distance and time
                   const flickerOffset = (i * 0.1) % 1
                   const flickerValue = Math.sin((progress + flickerOffset) * Math.PI * 4) * 0.3 + 0.7
-                  const distanceFade = 1 - (baseDistance * 0.4)
-                  const particleOpacity = Math.max(0, (1 - progress) * distanceFade * flickerValue)
+                  const distanceFade = 1 - (baseDistance * 0.3)
+                  const particleOpacity = Math.max(0, (1 - progress) * distanceFade * flickerValue * coneOpacity)
 
-                  // Fire colors: yellow core, orange mid, red outer
+                  // Varied particle colors based on spell
                   const particleColor = i % 4 === 0
                     ? '#FFFF00'  // Bright yellow
                     : i % 4 === 1
-                    ? '#FFD700'  // Gold
+                    ? spell.secondaryColor || '#FFD700'  // Secondary or gold
                     : i % 4 === 2
-                    ? '#FF8C00'  // Dark orange
-                    : '#FF4500'  // Red-orange
+                    ? spell.color  // Primary spell color
+                    : '#FFFFFF'  // White
 
-                  const particleSize = (3 + Math.random() * 5) * (1 - baseDistance * 0.3)
+                  const particleSize = (2 + Math.random() * 4) * (1 - baseDistance * 0.2)
 
                   return (
                     <Circle
@@ -848,10 +928,10 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
                       y={particleY}
                       radius={particleSize}
                       fill={particleColor}
-                      opacity={particleOpacity * 0.9}
+                      opacity={particleOpacity}
                       shadowColor={particleColor}
-                      shadowBlur={8}
-                      shadowOpacity={0.8}
+                      shadowBlur={6}
+                      shadowOpacity={0.7}
                     />
                   )
                 })}
@@ -861,88 +941,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         )
 
       default:
-        // Check for Stone Rain spell
-        if (spell.spellName?.toLowerCase() === 'stone rain') {
-          const areaRadius = spell.size || 100
-          const elapsed = Date.now() - startTimeRef.current
-
-          return (
-            <>
-              {/* Area indicator - subtle circle showing the affected zone */}
-              <Circle
-                x={getTargetPosition().x}
-                y={getTargetPosition().y}
-                radius={areaRadius}
-                stroke="#8B7355"
-                strokeWidth={2}
-                opacity={0.3}
-                fill="#8B7355"
-                fillOpacity={0.1}
-              />
-
-              {/* Render each stone burst */}
-              {stoneBursts.map((stone, index) => {
-                const stoneAge = elapsed - stone.startTime
-                const stoneDuration = 500 // Each stone impact lasts 500ms
-                const stoneProgress = Math.min(stoneAge / stoneDuration, 1)
-
-                if (stoneProgress >= 1) return null // Stone animation complete
-
-                // Expanding burst for each stone
-                const burstRadius = stone.size * (1 + stoneProgress * 2)
-                const burstOpacity = (1 - stoneProgress) * 0.8
-
-                return (
-                  <Group key={index}>
-                    {/* Impact burst */}
-                    <Circle
-                      x={stone.x}
-                      y={stone.y}
-                      radius={burstRadius}
-                      fill="#8B7355"
-                      opacity={burstOpacity * 0.4}
-                    />
-
-                    {/* Inner impact ring */}
-                    <Ring
-                      x={stone.x}
-                      y={stone.y}
-                      innerRadius={burstRadius * 0.5}
-                      outerRadius={burstRadius}
-                      fill="#696969"
-                      opacity={burstOpacity * 0.6}
-                    />
-
-                    {/* Central stone impact */}
-                    <Circle
-                      x={stone.x}
-                      y={stone.y}
-                      radius={stone.size * 0.5}
-                      fill="#4B4B4B"
-                      opacity={burstOpacity}
-                    />
-
-                    {/* Debris particles */}
-                    {[0, 1, 2, 3].map(i => {
-                      const angle = (i * Math.PI) / 2
-                      const particleDistance = burstRadius * 1.2
-                      return (
-                        <Circle
-                          key={i}
-                          x={stone.x + Math.cos(angle) * particleDistance}
-                          y={stone.y + Math.sin(angle) * particleDistance}
-                          radius={3}
-                          fill="#8B7355"
-                          opacity={burstOpacity * 0.5}
-                        />
-                      )
-                    })}
-                  </Group>
-                )
-              })}
-            </>
-          )
-        }
         return null
     }
   }

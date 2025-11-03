@@ -31,25 +31,18 @@ import { StatusBar } from './components/StatusBar/StatusBar'
 const HelpDialog = lazy(() => import('./components/HelpDialog/HelpDialog').then(m => ({ default: m.HelpDialog })))
 const CombatTracker = lazy(() => import('./components/Timeline/CombatTracker').then(m => ({ default: m.CombatTracker })))
 const TestingPanel = lazy(() => import('./testing/TestingPanel').then(m => ({ default: m.TestingPanel })))
-import { Save, HelpCircle, Bug, Users, UserPlus, Activity, Accessibility, ZoomIn, ZoomOut, Maximize2, Grid3x3 } from '@/utils/optimizedIcons'
+import { Save, HelpCircle, Bug, Users, UserPlus, Activity, Accessibility, ZoomIn, ZoomOut, Maximize2, Grid3x3, Monitor } from '@/utils/optimizedIcons'
 import { Box, Text } from '@/components/ui'
 import { Button } from '@/components/primitives'
 import { vars } from '@/styles/theme.css'
 import { ContextMenuManager } from '@/components/ContextMenu/ContextMenuManager'
 import { initializePerformanceOptimizations } from '@/utils/performanceOptimizations'
 import { NavigationPad, EnvironmentToken } from '@/components/Navigation'
+import { ViewerMode } from '@/components/ViewerMode'
+import { getSyncManager, destroySyncManager } from '@/utils/syncManager'
 
-// Debug utilities available but not auto-imported to prevent startup animations
-// These can be manually imported in TestingPanel or browser console if needed:
-// - @/testing/DebugPersistentAreas
-// - @/testing/QuickTestPersistence
-// - @/testing/SpellPersistenceTests
-// - @/testing/DetailedDebugCleanup
-// - @/testing/FinalPersistenceTest
-// - @/testing/RunAndDiagnose
-// - @/testing/SimulateSpellCasting
-// - @/testing/TestFireballSpecific
-// - @/testing/VerifyCleanupCall
+// Test system available via TestingPanel component
+// Use the TestingPanel UI to run comprehensive test suites
 import * as styles from './App.css'
 
 function App() {
@@ -67,6 +60,28 @@ function App() {
   const [showSessionCreator, setShowSessionCreator] = useState(false)
   const [showPerformance, setShowPerformance] = useState(false)
   const [showAccessibility, setShowAccessibility] = useState(false)
+  const [viewerModeEnabled, setViewerModeEnabled] = useState(() => {
+    const saved = localStorage.getItem('app.viewerModeEnabled')
+    return saved !== null ? JSON.parse(saved) : true
+  })
+
+  // Persist viewer mode enabled state
+  useEffect(() => {
+    localStorage.setItem('app.viewerModeEnabled', JSON.stringify(viewerModeEnabled))
+  }, [viewerModeEnabled])
+
+  // Function to open viewer mode in new tab
+  const openViewerMode = () => {
+    // Open viewer in new window/tab
+    const viewerWindow = window.open(
+      `${window.location.origin}${window.location.pathname}#/viewer`,
+      '_blank',
+      'width=1280,height=720'
+    )
+    if (!viewerWindow) {
+      alert('Please allow popups to open Viewer Mode')
+    }
+  }
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [canvasTransformVersion, setCanvasTransformVersion] = useState(0)
@@ -74,6 +89,23 @@ function App() {
   // Collaboration state
   const { currentSession, isHost, connectedUsers, connectionStatus } = useCollaborationStore()
   const isCollaborating = currentSession && connectionStatus === 'connected'
+
+  // Initialize sync manager for main mode (only if viewer mode enabled)
+  useEffect(() => {
+    if (!viewerModeEnabled) {
+      // Destroy existing sync manager if disabled
+      destroySyncManager('main')
+      return
+    }
+
+    // Initialize SyncManager in main mode
+    getSyncManager('main')
+
+    return () => {
+      // Cleanup on unmount
+      destroySyncManager('main')
+    }
+  }, [viewerModeEnabled])
 
   // Performance and accessibility
   // 🚀 OPTIMIZATION: Only monitor performance when dashboard is actually open
@@ -387,10 +419,38 @@ function App() {
             <Bug size={16} />
           </Button>
 
+          {/* Viewer Mode Buttons */}
+          <Box display="flex" alignItems="center" gap={1}>
+            <Button
+              onClick={openViewerMode}
+              variant="ghost"
+              size="icon"
+              title="Open Viewer Mode (Screen Share)"
+              style={{ color: viewerModeEnabled ? vars.colors.success : vars.colors.gray400 }}
+            >
+              <Monitor size={16} />
+            </Button>
+            <Button
+              onClick={() => setViewerModeEnabled(!viewerModeEnabled)}
+              variant="ghost"
+              size="icon"
+              title={viewerModeEnabled ? "Disable Viewer Mode Sync" : "Enable Viewer Mode Sync"}
+              style={{
+                color: viewerModeEnabled ? vars.colors.success : vars.colors.error,
+                fontSize: '10px',
+                padding: '2px 6px',
+                minWidth: 'auto'
+              }}
+            >
+              {viewerModeEnabled ? '●' : '○'}
+            </Button>
+          </Box>
+
           {/* Help Button */}
           <Button
             onClick={() => setShowHelp(true)}
-            {...({ variant: "ghost", size: "icon" } as any)}
+            variant="ghost"
+            size="icon"
             title="Keyboard Shortcuts (?)"
           >
             <HelpCircle size={16} />
@@ -541,6 +601,14 @@ function App() {
 }
 
 const AppWithContextMenu = () => {
+  // Check if we're in viewer mode
+  const isViewerMode = window.location.pathname === '/viewer' || window.location.hash === '#/viewer'
+
+  // Render viewer mode if detected (before any React hooks in App component)
+  if (isViewerMode) {
+    return <ViewerMode />
+  }
+
   return (
     <ContextMenuManager>
       <App />

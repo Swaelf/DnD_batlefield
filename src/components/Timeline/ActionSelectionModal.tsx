@@ -7,10 +7,10 @@ import { Button } from '@/components/primitives/ButtonVE'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import type { UnifiedAction } from '@/types/unifiedAction'
-import { spellTemplates } from '@/data/unifiedActions/spellTemplates'
-import { attackTemplates } from '@/data/unifiedActions/attackTemplates'
+import { AnimationRegistry, type RegisteredAnimationName } from '@/lib/animations'
+import { animationToUnifiedAction } from '@/lib/animations/adapters/toUnifiedAction'
 import { interactionTemplates } from '@/data/unifiedActions/interactionTemplates'
-import { moveTemplates } from '@/data/unifiedActions/moveTemplates'
+import { hasNumberProperty } from '@/types'
 
 type ActionSelectionModalProps = {
   isOpen: boolean
@@ -47,13 +47,31 @@ export const ActionSelectionModal = ({
     }
   }, [isOpen, pauseAnimations, resumeAnimations])
 
-  // Combine all action templates
+  // Get all action templates - combining animation library with interactions
   const allActions = useMemo(() => {
+    // Get all animation templates from library
+    const animationTemplates = AnimationRegistry.getAllTemplates()
+
+    // Convert to UnifiedAction format using adapter
+    // Use dummy positions (0, 0) - will be set when action is actually used
+    const dummyPosition = { x: 0, y: 0 }
+    const animationActions: UnifiedAction[] = animationTemplates.map(template => {
+      try {
+        return animationToUnifiedAction(
+          template.name as RegisteredAnimationName,
+          dummyPosition,
+          dummyPosition
+        )
+      } catch (error) {
+        console.error(`Failed to convert animation template ${template.name}:`, error)
+        return null
+      }
+    }).filter((action): action is UnifiedAction => action !== null)
+
+    // Add interaction templates (not in animation library yet)
     return [
-      ...Object.values(spellTemplates),
-      ...Object.values(attackTemplates),
-      ...Object.values(interactionTemplates),
-      ...Object.values(moveTemplates)
+      ...animationActions,
+      ...Object.values(interactionTemplates)
     ]
   }, [])
 
@@ -148,7 +166,7 @@ export const ActionSelectionModal = ({
         {/* Header */}
         <Box
           style={{
-            padding: '20px 24px',
+            padding: '16px 24px',
             borderBottom: '1px solid #374151',
             display: 'flex',
             justifyContent: 'space-between',
@@ -180,7 +198,7 @@ export const ActionSelectionModal = ({
         {/* Search and Filters */}
         <Box
           style={{
-            padding: '20px 24px',
+            padding: '16px 24px',
             borderBottom: '1px solid #374151',
             backgroundColor: '#1A1A1A'
           }}
@@ -220,15 +238,18 @@ export const ActionSelectionModal = ({
                 key={category.key}
                 onClick={() => setSelectedCategory(category.key)}
                 variant={selectedCategory === category.key ? 'primary' : 'outline'}
-                size="sm"
+                size="md"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: '6px',
+                  padding: '8px 16px',
                   backgroundColor: selectedCategory === category.key ? '#C9AD6A' : '#374151',
                   color: selectedCategory === category.key ? '#000000' : '#D1D5DB',
                   border: selectedCategory === category.key ? '1px solid #C9AD6A' : '1px solid #4B5563',
-                  borderRadius: '6px'
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: selectedCategory === category.key ? '600' : '400'
                 }}
               >
                 {category.icon}
@@ -243,7 +264,7 @@ export const ActionSelectionModal = ({
           style={{
             flex: 1,
             overflow: 'auto',
-            padding: '20px 24px',
+            padding: '16px 24px',
             backgroundColor: '#111827',
             minHeight: '400px'
           }}
@@ -318,7 +339,7 @@ export const ActionSelectionModal = ({
 
                   {/* Action Metadata */}
                   <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                    {(action.metadata as any)?.level && (
+                    {hasNumberProperty(action.metadata, 'level') && (
                       <Box
                         style={{
                           padding: '2px 8px',
@@ -328,7 +349,7 @@ export const ActionSelectionModal = ({
                         }}
                       >
                         <Text size="xs" style={{ color: '#D1D5DB' }}>
-                          Level {(action.metadata as any).level}
+                          Level {action.metadata.level}
                         </Text>
                       </Box>
                     )}
@@ -348,9 +369,9 @@ export const ActionSelectionModal = ({
                       </Box>
                     )}
 
-                    {(action.metadata as any)?.range && (
+                    {action.metadata?.range && (
                       <Text size="xs" style={{ color: '#6B7280' }}>
-                        Range: {(action.metadata as any).range}
+                        Range: {action.metadata.range}
                       </Text>
                     )}
                   </Box>

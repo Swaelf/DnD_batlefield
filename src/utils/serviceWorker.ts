@@ -1,6 +1,16 @@
 // Service Worker Registration and Management
 // PWA functionality for MapMaker
 
+// Background Sync API types (experimental browser feature)
+interface SyncManager {
+  register(tag: string): Promise<void>
+  getTags(): Promise<string[]>
+}
+
+interface ServiceWorkerRegistrationWithSync extends ServiceWorkerRegistration {
+  sync?: SyncManager
+}
+
 interface ServiceWorkerConfig {
   onSuccess?: (registration: ServiceWorkerRegistration) => void
   onUpdate?: (registration: ServiceWorkerRegistration) => void
@@ -196,13 +206,14 @@ class ServiceWorkerManager {
 
   // Background sync
   async registerBackgroundSync(tag: string): Promise<void> {
-    if (!this.swRegistration || !('sync' in this.swRegistration)) {
+    const regWithSync = this.swRegistration as ServiceWorkerRegistrationWithSync
+    if (!regWithSync || !regWithSync.sync) {
       console.warn('[SW] Background sync not supported')
       return
     }
 
     try {
-      await (this.swRegistration.sync as any).register(tag)
+      await regWithSync.sync.register(tag)
     } catch (error) {
       console.error(`[SW] Background sync registration failed: ${tag}`, error)
     }
@@ -232,7 +243,7 @@ class ServiceWorkerManager {
         applicationServerKey: this.urlBase64ToUint8Array(
           // Replace with your VAPID public key
           'BIsDCw7Z2Xjz_5oOzZbUFcv8z7X2aJ8Jx_1QqZ8oOzZbUFcv8z7X2aJ8Jx_1QqZ8oOzZbUFcv8z7X2aJ8Jx_1QqZ8o'
-        )
+        ) as BufferSource
       })
 
       return subscription
@@ -288,7 +299,11 @@ class ServiceWorkerManager {
     const padding = '='.repeat((4 - base64String.length % 4) % 4)
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
     const rawData = window.atob(base64)
-    return Uint8Array.from(rawData, char => char.charCodeAt(0))
+    const outputArray = new Uint8Array(rawData.length)
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i)
+    }
+    return outputArray
   }
 
   // Install prompt handling

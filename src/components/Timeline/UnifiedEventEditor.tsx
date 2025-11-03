@@ -11,6 +11,7 @@ import type { UnifiedAction } from '@/types/unifiedAction'
 // ActionId is just a string identifier
 type ActionId = string
 import { createUnifiedRoundEvent } from '@/types/timelineUnified'
+import { nanoid } from 'nanoid'
 import { Box, Text, Button } from '@/components/primitives'
 import { Modal } from '@/components/ui/Modal'
 import { ActionSelectionModal } from './ActionSelectionModal'
@@ -282,10 +283,30 @@ const UnifiedEventEditorComponent = ({
 
   // Helper to convert unified action to legacy event data
   const convertActionToLegacyData = (action: UnifiedAction, finalTargetTokenId?: string): any => {
+    console.log('[UnifiedEventEditor] Converting action:', {
+      name: action.metadata.name,
+      type: action.type,
+      category: action.category,
+      animationType: action.animation.type,
+      curved: action.animation.curved,
+      burstSize: action.animation.burstSize
+    })
+
     switch (action.type) {
       case 'spell':
-        // Map unified animation types to legacy spell categories
-        const legacyCategory = action.animation.type === 'projectile_burst' ? 'projectile-burst' : action.animation.type
+        // Use action.category directly for cone spells, otherwise use animation.type
+        // Cone spells have action.category = 'cone' but animation.type might be 'projectile'
+        const isConespell = action.category === 'cone'
+        const legacyCategory = isConespell ? 'cone' : (action.animation.type === 'projectile_burst' ? 'projectile-burst' : action.animation.type)
+        console.log('[UnifiedEventEditor] Spell conversion:', {
+          actionCategory: action.category,
+          animationType: action.animation.type,
+          isConespell,
+          legacyCategory,
+          burstSize: action.animation.burstSize,
+          persistDuration: action.animation.persistDuration,
+          durationType: action.animation.durationType
+        })
         const result = {
           type: 'spell',
           tokenId: selectedToken, // ✅ FIX: Include caster token ID for position lookup
@@ -297,16 +318,18 @@ const UnifiedEventEditorComponent = ({
           secondaryColor: '#FFAA00', // Default yellow-orange for flame cores
           size: action.animation.size || 20,
           duration: action.animation.duration || 1000,
-          // Pass through enhanced animation properties for projectile_burst
+          // Pass through enhanced animation properties for projectile_burst and burst spells only
           projectileSpeed: action.animation.speed || 500,
           trailLength: action.animation.trailLength || 8,
           trailFade: action.animation.trailFade || 0.8,
-          burstRadius: action.animation.burstSize || 80, // Map burstSize to burstRadius for ProjectileSpell compatibility
+          // Set burstRadius if burstSize is defined (handles both projectile-burst category and projectiles with burst effects)
+          burstRadius: action.animation.burstSize || ((legacyCategory === 'burst' || legacyCategory === 'projectile-burst') ? 80 : undefined),
           burstDuration: action.animation.burstDuration || 600,
           burstColor: action.animation.burstColor || action.animation.color,
           persistDuration: action.animation.persistDuration || 0,
           persistColor: action.animation.persistColor || action.animation.color,
           persistOpacity: action.animation.persistOpacity || 0.4,
+          durationType: action.animation.durationType || 'rounds', // Pass through durationType
           // Cone spell properties
           coneAngle: action.animation.coneAngle || 60,
           particleEffect: action.animation.particles || false,
@@ -316,16 +339,36 @@ const UnifiedEventEditorComponent = ({
           curveDirection: action.animation.curveDirection || 'auto',
           // Target tracking properties - only enable if we have a target token
           trackTarget: !!(finalTargetTokenId && action.animation.trackTarget),
-          targetTokenId: finalTargetTokenId || ''
+          targetTokenId: finalTargetTokenId || '',
+          // Unique ID for trajectory variation (important for curved projectiles like Magic Missile)
+          id: nanoid(),
+          // Status effect to apply on spell completion
+          statusEffect: action.statusEffect ? {
+            type: action.statusEffect.type,
+            duration: action.statusEffect.duration || 1,
+            intensity: action.statusEffect.intensity || 1
+          } : undefined
         }
+        console.log('[UnifiedEventEditor] 🎯 Final spell data:', {
+          category: result.category,
+          burstRadius: result.burstRadius,
+          persistDuration: result.persistDuration,
+          durationType: result.durationType
+        })
         return result
 
       case 'attack':
-        return {
+        // Map action category to attackType ('melee' or 'ranged')
+        // Ranged categories: arrow, bolt, thrown, sling
+        // Melee categories: sword, axe, mace, dagger, spear, etc.
+        const rangedCategories = ['arrow', 'bolt', 'thrown', 'sling']
+        const isRangedAttack = rangedCategories.includes(action.category)
+
+        const attackData = {
           type: 'attack',
           tokenId: selectedToken, // ✅ FIX: Include attacker token ID for position lookup
           weaponName: action.metadata.name || 'Weapon',
-          attackType: action.category, // Use category directly ('melee' or 'ranged')
+          attackType: isRangedAttack ? 'ranged' : 'melee', // Map category to proper attackType
           fromPosition: action.source,
           toPosition: action.target,
           damage: action.damage || '1d8',
@@ -333,11 +376,24 @@ const UnifiedEventEditorComponent = ({
           attackBonus: 5, // Default attack bonus
           range: action.range || 5,
           duration: action.animation.duration || 800,
-          animation: action.animation.type, // Use the animation type from template
+          animation: isRangedAttack ? 'ranged_projectile' : action.animation.type, // For ranged attacks, use 'ranged_projectile'
           color: action.animation.color || '#FFFFFF',
           isCritical: false,
+          trailCount: 0, // Default to 0 trails for weapon attacks (8 for magic spells)
           targetTokenId: finalTargetTokenId || ''
         }
+
+        console.log('[UnifiedEventEditor] 🎯 Attack data created:', {
+          weaponName: attackData.weaponName,
+          category: action.category,
+          isRangedAttack,
+          attackType: attackData.attackType,
+          animation: attackData.animation,
+          trailCount: attackData.trailCount,
+          color: attackData.color
+        })
+
+        return attackData
 
       case 'interaction':
         return {

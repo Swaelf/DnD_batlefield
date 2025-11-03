@@ -191,7 +191,7 @@ export const MultiSelectTool: FC<MultiSelectToolProps> = ({
         handleMouseMove({
           target: stageRef.current,
           currentTarget: stageRef.current
-        } as any)
+        } as Konva.KonvaEventObject<MouseEvent>)
       }
     }
 

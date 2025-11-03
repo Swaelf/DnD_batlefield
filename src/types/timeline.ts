@@ -1,5 +1,6 @@
 import type Konva from 'konva'
 import type { Position } from './map'
+import type { StatusEffectType } from './statusEffects'
 
 // Timeline and event management types - Round-based system
 export type Timeline = {
@@ -110,6 +111,7 @@ export type SpellEventData = {
   persistDuration?: number  // Spell duration (rounds for continuous spells, events for post-effects)
   durationType?: 'rounds' | 'events'  // How to interpret persistDuration (default: 'rounds')
   particleEffect?: boolean  // Enable particle effects
+  opacity?: number          // Animation opacity (0-1, default: 1)
 
   // Enhanced animation properties for projectile_burst and other complex spells
   trailLength?: number      // Number of trail segments
@@ -131,6 +133,13 @@ export type SpellEventData = {
   // Target tracking properties
   targetTokenId?: string    // Token ID to track and follow
   trackTarget?: boolean     // Enable dynamic target tracking
+
+  // Status effect application
+  statusEffect?: {          // Status effect to apply on spell completion
+    type: StatusEffectType
+    duration?: number       // Duration in rounds
+    intensity?: number      // Effect intensity (0-1)
+  }
 }
 
 // Attack event data for weapon attacks
@@ -152,6 +161,7 @@ export type AttackEventData = {
   actualDamage?: number    // Actual damage dealt (after roll)
   properties?: string[]     // Weapon properties (finesse, reach, etc.)
   weaponType?: string      // Specific weapon (longsword, shortbow, etc.)
+  trailCount?: number      // Number of trail circles (0 = no trail, 8 = magic spell)
 
   // Target tracking properties
   targetTokenId?: string    // Token ID to track and follow (like spells)

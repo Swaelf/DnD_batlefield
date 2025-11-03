@@ -70,6 +70,16 @@ MapMaker/
 │   │       ├── hooks/         # React hooks for animation control
 │   │       ├── utils/         # EASING functions, math utilities, object pooling
 │   │       └── types/         # Complete TypeScript definitions (21 primitive types)
+│   ├── lib/                # Reusable libraries and utilities
+│   │   └── animation-effects/ # Animation primitives library (57 files, ~10k lines)
+│   │       ├── primitives/    # Motion (Move, Rotate, Scale) and effect primitives
+│   │       ├── motion/        # Motion path generators (Linear, Curved, Orbit, etc.)
+│   │       ├── composers/     # Sequential, Parallel, Conditional composition
+│   │       ├── projectiles/   # Abstract projectile system + 11 D&D presets
+│   │       ├── registry/      # Template registry and factory pattern
+│   │       ├── hooks/         # React hooks for animation control
+│   │       ├── utils/         # EASING functions, math utilities, object pooling
+│   │       └── types/         # Complete TypeScript definitions (21 primitive types)
 │   ├── constants/          # Application constants and configurations
 │   │   ├── index.ts        # Barrel exports for all constants
 │   │   ├── sequences.ts    # Action sequencing constants and templates
@@ -339,7 +349,7 @@ The **Action Sequencing System** provides advanced D&D combat coordination throu
 
 ### 🔧 Recent Fixes & Optimizations
 
-**October 2025 - Animation System Refactoring**:
+**October 2025 - Animation System Refactoring & Fixes**:
 - **🚀 Animation Primitives Library**: Complete refactoring of animation system with composable primitives
   - **Library Created**: `src/lib/animation-effects/` with 57 files (~10k lines)
   - **Core Primitives**: 5 motion primitives (Move, Rotate, Scale, Color, Fade) + 5 effect primitives (Trail, Glow, Pulse, Flash, Particles)
@@ -354,12 +364,50 @@ The **Action Sequencing System** provides advanced D&D combat coordination throu
   - **Backward Compatibility**: 100% compatible with existing UnifiedAction system
   - **Documentation**: Complete API reference, usage examples, and migration guides in `.notes/animation-refactoring-complete.md`
 
+**October 2025 - Projectile Animation System Rewrite**:
+- **🎯 Unified Animation Approach**: Replaced AbstractProjectile-based system with proven UnifiedProjectile pattern
+  - **requestAnimationFrame**: Smooth 60fps animation instead of Konva.Animation
+  - **React State Management**: useState for progress tracking instead of Konva Tween
+  - **Direct Rendering**: Konva shapes (Circle, Group) rendered directly without wrapper components
+  - **Trail System**: Position history array with fading effect for smooth visual trails
+  - **Motion Generators**: createLinearMotion stored in refs for stable references
+  - **Weapon Range Limiting**: D&D 5e authentic ranges (Longbow: 120ft/24 cells, Sling: 60ft/12 cells, Thrown Dagger: 30ft/6 cells)
+- **Files Updated**:
+  - `ProjectileAnimation.tsx`: Complete rewrite using UnifiedProjectile pattern (178 lines)
+  - `AttackRenderer.tsx`: Ranged attacks now use RAF-based animation (785 lines total)
+  - Both components share identical animation approach for consistency
+- **Benefits**:
+  - Stable references prevent animation restart bugs
+  - Predictable lifecycle with proper useEffect cleanup
+  - Visual consistency with spell projectiles
+  - Smooth animations that reach targets correctly
+  - No more "stuck animation" emergency cleanups
+
 **October 2025 - Canvas Performance Optimization**:
 - **🚀 Canvas Performance Overhaul**: Achieved 300-400% FPS improvement with many objects
   - **Phase 1** (990d95f): Granular store subscriptions, memoized calculations (82% impact)
   - **Phase 2** (203f1c7): Viewport culling, static object caching, smooth hover (18% impact)
   - **Results**: 500 objects at 45-55fps (previously 5-10fps), 100 objects at 55-60fps (previously 20-30fps)
   - **Documentation**: `.notes/performance-analysis-many-objects.md`, `.notes/optimization-summary-oct-2025.md`
+
+**October 2025 - Static Layer Optimization**:
+- **🚀 Static Layer Separation**: Dedicated Konva layers for unchanging objects
+  - **StaticObjectsLayer**: Trees, walls, furniture (22-50% FPS improvement)
+    - WeakMap caching for efficient static object detection
+    - `listening={false}` eliminates event processing overhead
+    - Version-based memoization prevents unnecessary re-renders
+    - Stable selectors prevent reference changes
+  - **StaticEffectsLayer**: Persistent spell effects, auras, zones (20-40% FPS improvement)
+    - Same optimization pattern as StaticObjectsLayer
+    - Proper separation from dynamic spell animations
+    - Metadata-based detection (isStatic, isStaticEffect)
+  - **5-Layer Canvas Architecture**: Field Color → Terrain → Grid → Content → Interactive
+    - Static layers render <1/sec instead of 60/sec
+    - Dynamic content in ObjectsLayer for smooth animations
+    - Progressive loading for large object counts (>20 objects)
+  - **Testing**: Comprehensive performance tests with 25+ static objects and spell animations
+  - **Type Safety**: Extended Shape type with staticEffectData, zero `any` types
+  - **Files**: `StaticObjectsLayer.tsx` (130 lines), `StaticEffectsLayer.tsx` (108 lines)
 
 **October 2025 - Static Layer Optimization**:
 - **🚀 Static Layer Separation**: Dedicated Konva layers for unchanging objects
@@ -407,6 +455,19 @@ The **Action Sequencing System** provides advanced D&D combat coordination throu
   - **All functionality preserved** with improved organization and maintainability
 
 ### ✅ Latest Achievements (October 2025)
+
+**🎨 Universal Animation Library** (October 2025):
+- **Phase 1 & 2 Complete**: Production-ready animation system with 3,150+ lines
+- **Type System**: Comprehensive 536-line type definitions for 7 animation categories
+- **Utilities**: 11 easing functions, 8 motion path generators, type guards
+- **4 Base Abstractions**: AbstractProjectile, AbstractBurst, AbstractAreaEffect, AbstractRay
+- **Spell Implementations**: Fireball (4 variants), Magic Missile (multi-target volley)
+- **Features**: RAF-based 60fps, lifecycle hooks, trail/glow effects, multi-phase animations
+- **Architecture**: Universal system for spells, attacks, movement, environmental effects
+- **Location**: `src/lib/animations/` with full documentation and examples
+- **Next**: Phase 3 - Spell Library MVP (Thunderwave, Darkness, Ray of Frost)
+
+
 - **TypeScript Error Resolution**: All TypeScript errors fixed - 100% type safety maintained (0 errors)
   - Fixed MapCanvas.tsx unused imports and Token type references
   - Fixed ObjectsLayer.tsx unused variables and stageRef type compatibility

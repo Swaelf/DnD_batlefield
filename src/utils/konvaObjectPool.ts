@@ -85,9 +85,12 @@ class ObjectPool<T> {
     this.pool = this.pool.filter(p => {
       if (!p.isInUse && (now - p.lastUsed) > maxAge) {
         // Destroy Konva object if it has destroy method
-        const obj = p.object as any
-        if (obj && typeof obj.destroy === 'function') {
-          obj.destroy()
+        const obj = p.object as unknown
+        if (obj && typeof obj === 'object' && 'destroy' in obj) {
+          const destroyable = obj as { destroy: () => void }
+          if (typeof destroyable.destroy === 'function') {
+            destroyable.destroy()
+          }
         }
         return false
       }

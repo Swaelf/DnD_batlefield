@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { v4 as uuidv4 } from 'uuid'
 import { immer } from 'zustand/middleware/immer'
 
 export interface LayerEffect {
@@ -483,7 +484,7 @@ export const useLayerStore = create<LayerStore>()(
 
         const newEffect: LayerEffect = {
           ...effect,
-          id: crypto.randomUUID()
+          id: uuidv4()
         }
 
         if (!layer.effects) {

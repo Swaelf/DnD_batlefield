@@ -17,19 +17,32 @@ export type SpellTemplate = Omit<UnifiedAction, 'id' | 'timestamp' | 'source' | 
 export const fireballTemplate: SpellTemplate = {
   templateId: 'fireball',
   name: 'Fireball',
-  description: 'A classic fireball spell that explodes in a 20-foot radius',
+  description: 'A bright streak flashes to a point within range then blossoms into an explosion of flame (20-foot radius, 8d6 fire damage)',
   type: 'spell',
   category: 'fire',
   tags: ["spell","magic"],
   animation: {
-    type: 'projectile',
+    type: 'projectile_burst',
     duration: 800,
-    color: '#FF4500',
-    size: 15,
+    color: '#FF6B35',
+    size: 20,
+    speed: 500, // Projectile speed
+    range: 120, // Maximum range: 24 grid cells = 120 feet
+    trail: true,
+    glow: true,
+    pulse: true,
+    curved: false, // Fireball flies straight
+    burstSize: 200, // 4 grid cells radius = 200px (50px per cell)
+    burstColor: '#FF4500',
+    burstDuration: 600,
+    persistDuration: 1, // Persist for 1 event (burning ground)
+    durationType: 'events', // Event-based duration
+    persistColor: '#FF4500',
+    persistOpacity: 0.6,
     customParams: {
-      trailLength: 5,
-      trailColor: '#FFA500',
-      explosionSize: 150,
+      trailLength: 8,
+      trailColor: '#FF4500',
+      explosionSize: 200,
       explosionDuration: 600
     }
   },
@@ -38,10 +51,9 @@ export const fireballTemplate: SpellTemplate = {
     areaOfEffect: {
       type: 'circle',
       center: { x: 0, y: 0 }, // Will be set at cast time
-      radius: 100 // 20ft radius in grid units
+      radius: 200 // 20ft radius = 4 grid cells = 200px
     },
-    highlightColor: '#FF6600',
-    persistDuration: 1000
+    highlightColor: '#FF6600'
   },
   metadata: {
     name: 'Fireball',
@@ -61,19 +73,29 @@ export const fireballTemplate: SpellTemplate = {
  * Magic Missile - Auto-hit projectile spell
  * 1st level evocation spell
  * Creates 3 darts that hit targets
+ * Updated: Uses projectile_burst with curved motion
  */
 export const magicMissileTemplate: SpellTemplate = {
   templateId: 'magic-missile',
   name: 'Magic Missile',
   description: 'Auto-hit projectiles that never miss their target',
   type: 'spell',
-  category: 'force',
+  category: 'magic_missile',
   tags: ["spell","magic"],
   animation: {
-    type: 'projectile',
+    type: 'projectile_burst',
     duration: 600,
     color: '#9400D3',
     size: 8,
+    trail: true,
+    glow: true,
+    pulse: true,
+    curved: true, // Magic Missile curves to target
+    curveHeight: 60,
+    curveDirection: 'auto',
+    burstSize: 32, // Smaller burst than fireball (size * 4)
+    burstColor: '#BA55D3',
+    burstDuration: 400,
     customParams: {
       projectileCount: 3,
       staggerDelay: 100,
@@ -201,13 +223,19 @@ export const coneOfColdTemplate: SpellTemplate = {
   name: 'Cone of Cold',
   description: 'A cone of freezing air that deals cold damage',
   type: 'spell',
-  category: 'ice',
+  category: 'cone',
   tags: ["spell","magic"],
   animation: {
-    type: 'area',
+    type: 'projectile',
     duration: 1000,
     color: '#87CEEB',
-    size: 150,
+    size: 60, // Range in feet
+    coneAngle: 60, // 60-degree cone
+    persistDuration: 2, // Linger for 2 events (icy ground)
+    durationType: 'events',
+    persistColor: '#B0E0E6',
+    persistOpacity: 0.5,
+    particles: true,
     customParams: {
       particleType: 'snow',
       fadeIn: 200,
@@ -251,13 +279,19 @@ export const burningHandsTemplate: SpellTemplate = {
   name: 'Burning Hands',
   description: 'Flames spring from your hands in a 15-foot cone',
   type: 'spell',
-  category: 'fire',
+  category: 'cone',
   tags: ["spell","magic"],
   animation: {
-    type: 'area',
+    type: 'projectile',
     duration: 800,
     color: '#FF8C00',
-    size: 75,
+    size: 15, // Range in feet
+    coneAngle: 15, // 15-degree cone spread
+    persistDuration: 1, // Linger for 1 event (burning ground)
+    durationType: 'events',
+    persistColor: '#FF4500',
+    persistOpacity: 0.6,
+    particles: true,
     customParams: {
       waveEffect: true,
       particleType: 'flame',
@@ -287,6 +321,117 @@ export const burningHandsTemplate: SpellTemplate = {
   },
   duration: 800,
   level: 1,
+  school: 'evocation'
+}
+
+/**
+ * Poison Spray - Poison cone cantrip
+ * Cantrip (0 level) conjuration spell
+ * 10ft cone
+ */
+export const poisonSprayTemplate: SpellTemplate = {
+  templateId: 'poison-spray',
+  name: 'Poison Spray',
+  description: 'You extend your hand toward a creature and project a puff of noxious gas',
+  type: 'spell',
+  category: 'cone',
+  tags: ["spell","magic","cantrip"],
+  animation: {
+    type: 'projectile',
+    duration: 600,
+    color: '#9ACD32',
+    size: 10, // Range in feet
+    coneAngle: 15, // 15-degree cone spread
+    persistDuration: 1, // Linger for 1 event (poisonous cloud)
+    durationType: 'events',
+    persistColor: '#7CFC00',
+    persistOpacity: 0.5,
+    particles: true,
+    customParams: {
+      particleType: 'gas',
+      fadeIn: 100,
+      fadeOut: 200,
+      opacity: 0.8
+    }
+  },
+  effects: {
+    affectedTargets: [],
+    areaOfEffect: {
+      type: 'cone',
+      origin: { x: 0, y: 0 },
+      direction: 0,
+      angle: 15,
+      range: 50 // 10ft in grid units
+    },
+    highlightColor: '#9ACD32',
+    persistDuration: 400
+  },
+  metadata: {
+    name: 'Poison Spray',
+    description: '1d12 poison damage in a 10-foot cone',
+    rollResult: {
+      total: 7,
+      rolls: [7],
+      modifier: 0
+    }
+  },
+  duration: 600,
+  level: 0,
+  school: 'conjuration'
+}
+
+/**
+ * Breath Weapon - Dragonborn racial ability
+ * Racial feature
+ * 15ft cone
+ */
+export const breathWeaponTemplate: SpellTemplate = {
+  templateId: 'breath-weapon',
+  name: 'Breath Weapon',
+  description: 'You exhale destructive energy in a cone',
+  type: 'spell',
+  category: 'cone',
+  tags: ["spell","racial"],
+  animation: {
+    type: 'projectile',
+    duration: 700,
+    color: '#FF6B35',
+    size: 15, // Range in feet
+    coneAngle: 30, // 30-degree cone spread
+    persistDuration: 1, // Linger for 1 event
+    durationType: 'events',
+    persistColor: '#FF4500',
+    persistOpacity: 0.5,
+    particles: true,
+    customParams: {
+      particleType: 'energy',
+      intensity: 0.9,
+      glowRadius: 15
+    }
+  },
+  effects: {
+    affectedTargets: [],
+    areaOfEffect: {
+      type: 'cone',
+      origin: { x: 0, y: 0 },
+      direction: 0,
+      angle: 30,
+      range: 75 // 15ft in grid units
+    },
+    highlightColor: '#FF6B35',
+    persistDuration: 500
+  },
+  metadata: {
+    name: 'Breath Weapon',
+    description: '2d6 elemental damage in a 15-foot cone',
+    rollResult: {
+      total: 7,
+      rolls: [3, 4],
+      modifier: 0
+    }
+  },
+  duration: 700,
+  level: 0,
   school: 'evocation'
 }
 
@@ -347,7 +492,9 @@ export function getAllSpellTemplates(): SpellTemplate[] {
     lightningBoltTemplate,
     healingWordTemplate,
     coneOfColdTemplate,
-    burningHandsTemplate
+    burningHandsTemplate,
+    poisonSprayTemplate,
+    breathWeaponTemplate
   ]
 }
 

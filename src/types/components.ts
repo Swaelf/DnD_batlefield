@@ -21,6 +21,8 @@ export type MapCanvasProps = {
   stageRef?: MutableRefObject<Konva.Stage | null>
   onMouseMove?: (position: Position) => void
   onZoomChange?: (zoom: number) => void
+  gridVisible?: boolean
+  isViewerMode?: boolean
 }
 
 export type GridLayerProps = {

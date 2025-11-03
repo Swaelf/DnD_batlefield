@@ -239,4 +239,10 @@ export type MapStore = {
   addTerrainDrawing: (drawing: import('./map').TerrainDrawing) => void
   removeTerrainDrawing: (id: string) => void
   clearTerrainDrawings: () => void
+
+  // Status Effect actions
+  addStatusEffect: (tokenId: string, effect: import('./statusEffects').StatusEffect) => void
+  removeStatusEffect: (tokenId: string, effectType: import('./statusEffects').StatusEffectType) => void
+  clearStatusEffects: (tokenId: string) => void
+  cleanupExpiredStatusEffects: (currentRound: number) => void
 }

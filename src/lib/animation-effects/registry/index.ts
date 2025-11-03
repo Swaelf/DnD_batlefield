@@ -24,3 +24,12 @@ export { getRegisteredTemplateCount, logRegistryStats } from './templates';
 // Effect Factory (Task 12)
 export { EffectFactory } from './EffectFactory';
 export type { AnimationParams, ValidationResult } from './EffectFactory';
+
+// Status Effect Presets
+export {
+  getStatusEffectAnimation,
+  getAllStatusEffectTypes,
+  hasParticleEffects,
+  getEffectComplexity,
+} from './StatusEffectPresets';
+export type { StatusEffectAnimationConfig } from './StatusEffectPresets';

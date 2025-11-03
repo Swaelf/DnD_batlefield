@@ -1,4 +1,6 @@
 import type { TestScenario } from './TestScenarios'
+import { AnimationRegistry } from '@/lib/animations'
+import { animationToUnifiedAction } from '@/lib/animations/adapters/toUnifiedAction'
 
 /**
  * Dynamically generates test scenarios for attack animations
@@ -13,96 +15,53 @@ import type { TestScenario } from './TestScenarios'
  * 7. Execute event
  */
 
-// Attack configurations for testing - matches attackTemplates.ts exactly
-const attackConfigs = [
-  // ===== MELEE ATTACKS =====
+// Get attack templates from animation library
+const getAttackTemplates = () => {
+  // Get only attack templates by name
+  const attackNames = ['Longsword', 'Rapier', 'Warhammer', 'Longbow', 'Thrown Dagger', 'Sling']
+  const templates = AnimationRegistry.getAllTemplates()
+    .filter(t => attackNames.includes(t.name))
 
-  // Slashing - Longsword
-  {
-    id: 'longsword-slash',
-    name: 'Longsword (Slashing)',
-    weaponName: 'Longsword',
-    attackType: 'melee' as const,
-    damageType: 'slashing',
-    damage: '1d8+3',
-    animation: 'melee_slash',
-    color: '#C0C0C0',
-    duration: 600,
-    range: 5
-  },
+  const dummyPos = { x: 0, y: 0 }
+  return templates.map(template => {
+    const action = animationToUnifiedAction(template.name, dummyPos, dummyPos)
 
-  // Piercing - Rapier
-  {
-    id: 'rapier-pierce',
-    name: 'Rapier (Piercing)',
-    weaponName: 'Rapier',
-    attackType: 'melee' as const,
-    damageType: 'piercing',
-    damage: '1d8+2',
-    animation: 'melee_thrust',
-    color: '#B0B0B0',
-    duration: 500,
-    range: 5
-  },
+    // Determine if ranged or melee based on category (weaponType)
+    // Ranged categories: arrow, bolt, thrown, sling
+    // Melee categories: sword, axe, mace, dagger, spear, etc.
+    const rangedCategories = ['arrow', 'bolt', 'thrown', 'sling']
+    const isRanged = rangedCategories.includes(action.category)
 
-  // Bludgeoning - Warhammer
-  {
-    id: 'warhammer-bludgeon',
-    name: 'Warhammer (Bludgeoning)',
-    weaponName: 'Warhammer',
-    attackType: 'melee' as const,
-    damageType: 'bludgeoning',
-    damage: '1d8+3',
-    animation: 'melee_swing',
-    color: '#8B7355',
-    duration: 700,
-    range: 5
-  },
+    return {
+      id: action.id,
+      name: action.name,
+      weaponName: action.name,
+      attackType: (isRanged ? 'ranged' : 'melee') as 'melee' | 'ranged',
+      damageType: action.damageType || 'slashing',
+      damage: action.damage || '1d8',
+      animation: action.animation.type,
+      color: action.animation.color,
+      duration: action.animation.duration,
+      range: action.range || 5,
+      // Store category for debugging
+      category: action.category
+    }
+  })
+}
 
-  // ===== RANGED ATTACKS =====
+// Attack configurations from animation library
+const attackConfigs = getAttackTemplates()
 
-  // Piercing - Longbow
-  {
-    id: 'longbow-pierce',
-    name: 'Longbow (Piercing)',
-    weaponName: 'Longbow',
-    attackType: 'ranged' as const,
-    damageType: 'piercing',
-    damage: '1d8+3',
-    animation: 'projectile',
-    color: '#8B4513',
-    duration: 800,
-    range: 150
-  },
-
-  // Piercing - Thrown Dagger
-  {
-    id: 'thrown-dagger',
-    name: 'Thrown Dagger (Piercing)',
-    weaponName: 'Dagger (Thrown)',
-    attackType: 'ranged' as const,
-    damageType: 'piercing',
-    damage: '1d4+2',
-    animation: 'projectile',
-    color: '#C0C0C0',
-    duration: 500,
-    range: 20
-  },
-
-  // Bludgeoning - Sling
-  {
-    id: 'sling-bludgeon',
-    name: 'Sling (Bludgeoning)',
-    weaponName: 'Sling',
-    attackType: 'ranged' as const,
-    damageType: 'bludgeoning',
-    damage: '1d4+2',
-    animation: 'projectile',
-    color: '#696969',
-    duration: 600,
-    range: 30
-  }
-]
+// Log attack configurations for debugging
+console.log('[TestAllAttacks] 🎯 Attack configurations loaded from AnimationRegistry:',
+  attackConfigs.map(a => ({
+    name: a.name,
+    category: a.category,
+    attackType: a.attackType,
+    animation: a.animation,
+    color: a.color
+  }))
+)
 
 // Generate a unique test scenario for each attack type
 export const generateAttackTestScenarios = (): TestScenario[] => {

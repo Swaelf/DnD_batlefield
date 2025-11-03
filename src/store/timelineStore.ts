@@ -2,9 +2,12 @@ import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import type { TimelineStore } from '../types'
 import type { TimelineAction, Position } from '../types'
+import { isToken, hasStringArrayProperty, hasStringProperty } from '../types'
+import { isSpellAction, isAttackAction, isMoveAction } from '../types'
 import useMapStore from './mapStore'
 import useEventCreationStore from './eventCreationStore'
 import useBattleLogStore from './battleLogStore'
+import { v4 as uuidv4 } from 'uuid'
 
 const useTimelineStore = create<TimelineStore>()(
   immer((set, get) => ({
@@ -26,35 +29,35 @@ const useTimelineStore = create<TimelineStore>()(
         state.currentRound = 1
         state.currentEvent = 1
 
-      if (!state.timeline) {
-        state.timeline = {
-          id: crypto.randomUUID(),
-          mapId,
-          currentRound: 1,
-          currentEvent: 1,
-          rounds: [{
-            id: crypto.randomUUID(),
-            number: 1,
-            name: 'Round 1',
-            events: [{
-              id: crypto.randomUUID(),
-              roundNumber: 1,
+        if (!state.timeline) {
+          state.timeline = {
+            id: uuidv4(),
+            mapId,
+            currentRound: 1,
+            currentEvent: 1,
+            rounds: [{
+              id: uuidv4(),
               number: 1,
-              timestamp: Date.now(),
-              actions: [],
-              executed: false
+              name: 'Round 1',
+              events: [{
+                id: uuidv4(),
+                roundNumber: 1,
+                number: 1,
+                timestamp: Date.now(),
+                actions: [],
+                executed: false
+              }],
+              allActions: [],
+              executed: false,
+              timestamp: Date.now()
             }],
-            allActions: [],
-            executed: false,
-            timestamp: Date.now()
-          }],
-          isActive: true,
-          history: []
+            isActive: true,
+            history: []
+          }
+        } else {
+          state.timeline.isActive = true
         }
-      } else {
-        state.timeline.isActive = true
-      }
-    })
+      })
     },
 
     endCombat: () => {
@@ -77,7 +80,9 @@ const useTimelineStore = create<TimelineStore>()(
 
     nextEvent: async () => {
       const { timeline, currentRound, currentEvent } = get()
-      if (!timeline || !timeline.isActive) return
+      if (!timeline || !timeline.isActive) {
+        return
+      }
 
       // Clean up any lingering event creation state before advancing
       const eventCreationStore = useEventCreationStore.getState()
@@ -87,7 +92,9 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Get current round data
       const round = timeline.rounds.find(r => r.number === currentRound)
-      if (!round) return
+      if (!round) {
+        return
+      }
 
       // Check if the current event exists and needs execution
       const currentEventData = round.events.find(e => e.number === currentEvent)
@@ -126,7 +133,7 @@ const useTimelineStore = create<TimelineStore>()(
           let nextEvent = currentRoundData.events.find(e => e.number === nextEventNumber)
           if (!nextEvent) {
             nextEvent = {
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               roundNumber: currentRound,
               number: nextEventNumber,
               timestamp: Date.now(),
@@ -146,9 +153,10 @@ const useTimelineStore = create<TimelineStore>()(
         state.timeline!.currentEvent = nextEventNumber
       })
 
-      // Clean up expired spell effects when advancing events
+      // Clean up expired spell effects and status effects when advancing events
       const { currentRound: newRound, currentEvent: newEvent } = get()
       useMapStore.getState().cleanupExpiredSpells(newRound, newEvent)
+      useMapStore.getState().cleanupExpiredStatusEffects(newRound)
     },
 
     previousEvent: () => {
@@ -215,9 +223,10 @@ const useTimelineStore = create<TimelineStore>()(
         }
       }
 
-      // Clean up spell effects when navigating to previous event
+      // Clean up spell effects and status effects when navigating to previous event
       const { currentRound: newRound, currentEvent: newEvent } = get()
       useMapStore.getState().cleanupExpiredSpells(newRound, newEvent)
+      useMapStore.getState().cleanupExpiredStatusEffects(newRound)
     },
 
     goToEvent: (eventNumber) => {
@@ -241,7 +250,7 @@ const useTimelineStore = create<TimelineStore>()(
           const eventExists = currentRoundData.events.find(e => e.number === eventNumber)
           if (!eventExists) {
             currentRoundData.events.push({
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               roundNumber: currentRound,
               number: eventNumber,
               timestamp: Date.now(),
@@ -254,9 +263,10 @@ const useTimelineStore = create<TimelineStore>()(
         }
       })
 
-      // Clean up spell effects when jumping to a specific event
+      // Clean up spell effects and status effects when jumping to a specific event
       const { currentRound: newRound } = get()
       useMapStore.getState().cleanupExpiredSpells(newRound, eventNumber)
+      useMapStore.getState().cleanupExpiredStatusEffects(newRound)
     },
 
     addAction: (tokenId, type, data, eventNumber) => set((state) => {
@@ -264,10 +274,11 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Validate event type against token's allowedEvents
       const token = useMapStore.getState().currentMap?.objects.find(obj => obj.id === tokenId)
-      if (token && token.type === 'token' && 'allowedEvents' in token) {
-        const allowedEvents = (token as any).allowedEvents as string[] | undefined
-        if (allowedEvents && !allowedEvents.includes(type)) {
-          console.warn(`Event type '${type}' not allowed for token '${tokenId}' (${(token as any).name}). Allowed: ${allowedEvents.join(', ')}`)
+      if (token && isToken(token) && hasStringArrayProperty(token, 'allowedEvents')) {
+        const allowedEvents = token.allowedEvents
+        if (allowedEvents && allowedEvents.length > 0 && !allowedEvents.includes(type as 'move' | 'spell' | 'appear' | 'disappear')) {
+          const tokenName = hasStringProperty(token, 'name') ? token.name : tokenId
+          console.warn(`Event type '${type}' not allowed for token '${tokenId}' (${tokenName}). Allowed: ${allowedEvents.join(', ')}`)
           return
         }
       }
@@ -284,7 +295,7 @@ const useTimelineStore = create<TimelineStore>()(
       if (!event) {
         // Create the event if it doesn't exist
         event = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           roundNumber: currentRound,
           number: targetEvent,
           timestamp: Date.now(),
@@ -296,7 +307,7 @@ const useTimelineStore = create<TimelineStore>()(
       }
 
       const newAction: TimelineAction = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         eventNumber: targetEvent,
         tokenId,
         type,
@@ -384,213 +395,250 @@ const useTimelineStore = create<TimelineStore>()(
         await new Promise<void>((resolve) => {
           const executeActionAsync = async () => {
             switch (action.type) {
-            case 'spell': {
-              // Create proper SpellMapObject for spell
-              const spellData = action.data as any
-
-              // ✅ FIX: Get actual current positions of caster and target tokens
-              // This ensures spells use the token's current position after any previous movements
-              let actualFromPosition = spellData.fromPosition
-              let actualToPosition = spellData.toPosition
-
-              console.log('🔮 Spell execution - original positions:', {
-                from: spellData.fromPosition,
-                to: spellData.toPosition,
-                tokenId: spellData.tokenId,
-                targetTokenId: spellData.targetTokenId
-              })
-
-              // Look up caster token's current position
-              if (spellData.tokenId) {
-                const casterToken = mapStore.currentMap?.objects.find(obj => obj.id === spellData.tokenId)
-                if (casterToken) {
-                  actualFromPosition = casterToken.position
-                  console.log(`✅ Caster token ${spellData.tokenId} current position:`, casterToken.position)
-                } else {
-                  console.warn(`⚠️ Caster token ${spellData.tokenId} not found!`)
+              case 'spell': {
+                // Create proper SpellMapObject for spell
+                if (!isSpellAction(action)) {
+                  console.error('Expected spell action but got:', action.type)
+                  resolve()
+                  break
                 }
-              }
 
-              // Look up target token's current position (if targeting a token)
-              if (spellData.targetTokenId) {
-                const targetToken = mapStore.currentMap?.objects.find(obj => obj.id === spellData.targetTokenId)
-                if (targetToken) {
-                  actualToPosition = targetToken.position
-                  console.log(`✅ Target token ${spellData.targetTokenId} current position:`, targetToken.position)
-                } else {
-                  console.warn(`⚠️ Target token ${spellData.targetTokenId} not found!`)
-                }
-              }
+                const spellData = action.data
 
-              console.log('🎯 Spell will use positions:', {
-                from: actualFromPosition,
-                to: actualToPosition
-              })
+                // ✅ FIX: Get actual current positions of caster and target tokens
+                // This ensures spells use the token's current position after any previous movements
+                let actualFromPosition = spellData.fromPosition
+                let actualToPosition = spellData.toPosition
 
-              // Create spell with actual current positions
-              const updatedSpellData = {
-                ...spellData,
-                fromPosition: actualFromPosition,
-                toPosition: actualToPosition
-              }
-
-              const spellObject = {
-                id: `spell-${Date.now()}-${Math.random()}`,
-                type: 'spell' as const,
-                position: actualToPosition || actualFromPosition || { x: 0, y: 0 }, // Use target position for persistent effects
-                rotation: 0,
-                layer: 10,
-                isSpellEffect: true,
-                roundCreated: get().currentRound,
-                eventCreated: get().currentEvent,
-                spellDuration: updatedSpellData.persistDuration || 0, // Use persistDuration, not animation duration
-                durationType: updatedSpellData.durationType || 'rounds', // Respect spell's durationType
-                spellData: updatedSpellData
-              }
-              mapStore.addSpellEffect(spellObject)
-
-              // Add battle log entry
-              const casterToken = spellData.tokenId ? mapStore.currentMap?.objects.find(obj => obj.id === spellData.tokenId) : null
-              useBattleLogStore.getState().addEntry({
-                roundNumber: get().currentRound,
-                eventNumber: eventNumber,
-                type: 'spell',
-                tokenId: spellData.tokenId,
-                tokenName: casterToken?.name || 'Unknown',
-                message: `Cast ${spellData.spellName || 'spell'}`,
-                severity: 'normal',
-                details: {
-                  spell: spellData.spellName,
-                  target: updatedSpellData.targetTokenId ? 'Token' : 'Position'
-                }
-              })
-
-              // Wait for spell animation duration
-              setTimeout(resolve, updatedSpellData.duration || 1000)
-              break
-            }
-            case 'attack': {
-              const attackData = action.data as any
-
-              // ✅ FIX: Get actual current positions of attacker and target tokens
-              let actualFromPosition = attackData.fromPosition
-              let actualToPosition = attackData.toPosition
-
-              // Look up attacker token's current position
-              if (action.tokenId) {
-                const attackerToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
-                if (attackerToken) {
-                  actualFromPosition = attackerToken.position
-                }
-              }
-
-              // Look up target token's current position (if targeting a token)
-              if (attackData.targetTokenId) {
-                const targetToken = mapStore.currentMap?.objects.find(obj => obj.id === attackData.targetTokenId)
-                if (targetToken) {
-                  actualToPosition = targetToken.position
-                }
-              }
-
-              // Create attack with actual current positions
-              const updatedAttackData = {
-                ...attackData,
-                fromPosition: actualFromPosition,
-                toPosition: actualToPosition
-              }
-
-              mapStore.addAttackEffect(updatedAttackData)
-
-              // Add battle log entry
-              const attackerToken = action.tokenId ? mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId) : null
-              const targetToken = attackData.targetTokenId ? mapStore.currentMap?.objects.find(obj => obj.id === attackData.targetTokenId) : null
-              useBattleLogStore.getState().addEntry({
-                roundNumber: get().currentRound,
-                eventNumber: eventNumber,
-                type: 'action',
-                tokenId: action.tokenId,
-                tokenName: attackerToken?.name || 'Unknown',
-                message: `${attackData.weaponName || 'Attack'} ${targetToken ? `on ${targetToken.name}` : 'at position'}`,
-                severity: 'normal',
-                details: {
-                  attack: attackData.weaponName,
-                  target: targetToken?.name || 'Position'
-                }
-              })
-
-              // Wait for attack animation duration
-              setTimeout(resolve, updatedAttackData.duration || 1000)
-              break
-            }
-            case 'move': {
-              // Handle token movement animation
-              const moveData = action.data as any
-              if (moveData.fromPosition && moveData.toPosition) {
-                // Start smooth animation using animationStore
-                const animationStoreModule = await import('./animationStore')
-                const animationStore = animationStoreModule.default.getState()
-                animationStore.startAnimation(action.tokenId, moveData.fromPosition, moveData.toPosition)
-
-                // Create animation loop
-                const duration = moveData.duration || 1000 // Default 1 second
-                const startTime = Date.now()
-
-                const animate = () => {
-                  // Check if animations are paused
-                  if (animationStore.isPaused) {
-                    requestAnimationFrame(animate)
-                    return
-                  }
-
-                  const elapsed = Date.now() - startTime
-                  const progress = Math.min(elapsed / duration, 1)
-
-                  // Update animation progress
-                  animationStore.updateProgress(action.tokenId, progress)
-
-                  // Calculate current position
-                  const currentX = moveData.fromPosition.x + (moveData.toPosition.x - moveData.fromPosition.x) * progress
-                  const currentY = moveData.fromPosition.y + (moveData.toPosition.y - moveData.fromPosition.y) * progress
-
-                  // Update token position in map
-                  mapStore.updateObjectPosition(action.tokenId, { x: currentX, y: currentY })
-
-                  if (progress < 1) {
-                    requestAnimationFrame(animate)
+                // Look up caster token's current position
+                if (action.tokenId) {
+                  const casterToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
+                  if (casterToken) {
+                    actualFromPosition = casterToken.position
                   } else {
-                    // Animation complete
-                    animationStore.endAnimation(action.tokenId)
-
-                    // Add battle log entry after movement completes
-                    const movedToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
-                    useBattleLogStore.getState().addEntry({
-                      roundNumber: get().currentRound,
-                      eventNumber: eventNumber,
-                      type: 'movement',
-                      tokenId: action.tokenId,
-                      tokenName: movedToken?.name || 'Unknown',
-                      message: `Moved to new position`,
-                      severity: 'low',
-                      details: {
-                        from: moveData.fromPosition,
-                        to: moveData.toPosition
-                      }
-                    })
-
-                    resolve() // Resolve the promise when animation is done
+                    console.warn(`⚠️ Caster token ${action.tokenId} not found!`)
                   }
                 }
 
-                requestAnimationFrame(animate)
-              } else {
-                resolve() // No animation needed
+                // Look up target token's current position (if targeting a token)
+                if (spellData.targetTokenId) {
+                  const targetToken = mapStore.currentMap?.objects.find(obj => obj.id === spellData.targetTokenId)
+                  if (targetToken) {
+                    actualToPosition = targetToken.position
+                  } else {
+                    console.warn(`⚠️ Target token ${spellData.targetTokenId} not found!`)
+                  }
+                }
+
+                // Create spell with actual current positions
+                const updatedSpellData = {
+                  ...spellData,
+                  fromPosition: actualFromPosition,
+                  toPosition: actualToPosition
+                }
+
+                const spellObject = {
+                  id: `spell-${Date.now()}-${Math.random()}`,
+                  type: 'spell' as const,
+                  position: actualToPosition || actualFromPosition || { x: 0, y: 0 }, // Use target position for persistent effects
+                  rotation: 0,
+                  layer: 10,
+                  isSpellEffect: true,
+                  roundCreated: get().currentRound,
+                  eventCreated: get().currentEvent,
+                  spellDuration: updatedSpellData.persistDuration || 0, // Use persistDuration, not animation duration
+                  durationType: updatedSpellData.durationType || 'rounds', // Respect spell's durationType
+                  spellData: updatedSpellData
+                }
+
+                mapStore.addSpellEffect(spellObject)
+
+                // Add battle log entry
+                const casterToken = action.tokenId ? mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId) : null
+                useBattleLogStore.getState().addEntry({
+                  roundNumber: get().currentRound,
+                  eventNumber: eventNumber,
+                  type: 'spell',
+                  tokenId: action.tokenId,
+                  tokenName: casterToken?.name || 'Unknown',
+                  message: `Cast ${spellData.spellName || 'spell'}`,
+                  severity: 'normal',
+                  details: {
+                    spell: spellData.spellName,
+                    target: updatedSpellData.targetTokenId ? 'Token' : 'Position'
+                  }
+                })
+
+                // Wait for spell animation duration
+                // For projectile-burst spells, need to wait for projectile travel + burst animation
+                // For persistent area spells, use a short delay just to show the initial animation
+                // For instant spells (projectiles, bursts), use the full animation duration
+                const isPersistent = updatedSpellData.persistDuration && updatedSpellData.persistDuration > 0
+                const hasBurst = updatedSpellData.burstRadius && updatedSpellData.burstDuration
+
+                let waitTime: number
+                if (hasBurst) {
+                  // Projectile-burst spells need full duration + burst duration
+                  waitTime = (updatedSpellData.duration || 1000) + (updatedSpellData.burstDuration || 600)
+                } else if (isPersistent) {
+                  // Area spells with persistence only need initial fade-in
+                  waitTime = 500
+                } else {
+                  // Regular projectiles use their duration
+                  waitTime = updatedSpellData.duration || 1000
+                }
+
+                setTimeout(resolve, waitTime)
+                break
               }
-              break
-            }
-            default:
-              // For other action types, resolve immediately
-              resolve()
-              break
+              case 'attack': {
+                if (!isAttackAction(action)) {
+                  console.error('Expected attack action but got:', action.type)
+                  resolve()
+                  break
+                }
+
+                const attackData = action.data
+
+                // ✅ FIX: Get actual current positions of attacker and target tokens
+                let actualFromPosition = attackData.fromPosition
+                let actualToPosition = attackData.toPosition
+
+                // Look up attacker token's current position
+                if (action.tokenId) {
+                  const attackerToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
+                  if (attackerToken) {
+                    actualFromPosition = attackerToken.position
+                  }
+                }
+
+                // Look up target token's current position (if targeting a token)
+                if (attackData.targetTokenId) {
+                  const targetToken = mapStore.currentMap?.objects.find(obj => obj.id === attackData.targetTokenId)
+                  if (targetToken) {
+                    actualToPosition = targetToken.position
+                  }
+                }
+
+                // Create attack with actual current positions
+                const updatedAttackData = {
+                  ...attackData,
+                  fromPosition: actualFromPosition,
+                  toPosition: actualToPosition
+                }
+
+                mapStore.addAttackEffect(updatedAttackData)
+
+                // Add battle log entry
+                const attackerToken = action.tokenId ? mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId) : null
+                const targetToken = attackData.targetTokenId ? mapStore.currentMap?.objects.find(obj => obj.id === attackData.targetTokenId) : null
+                useBattleLogStore.getState().addEntry({
+                  roundNumber: get().currentRound,
+                  eventNumber: eventNumber,
+                  type: 'action',
+                  tokenId: action.tokenId,
+                  tokenName: attackerToken?.name || 'Unknown',
+                  message: `${attackData.weaponName || 'Attack'} ${targetToken ? `on ${targetToken.name}` : 'at position'}`,
+                  severity: 'normal',
+                  details: {
+                    attack: attackData.weaponName,
+                    target: targetToken?.name || 'Position'
+                  }
+                })
+
+                // Wait for attack animation duration
+                setTimeout(resolve, updatedAttackData.duration || 1000)
+                break
+              }
+              case 'move': {
+                // Handle token movement animation
+                if (!isMoveAction(action)) {
+                  console.error('Expected move action but got:', action.type)
+                  resolve()
+                  break
+                }
+
+                const moveData = action.data
+
+                // ✅ FIX: Get token's actual current position for chain movements
+                // This ensures movements chain correctly: initial → point1 → point2
+                let actualFromPosition = moveData.fromPosition
+                const actualToPosition = moveData.toPosition
+
+                if (action.tokenId) {
+                  const movingToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
+                  if (movingToken) {
+                    // Use token's current position as the starting point
+                    actualFromPosition = movingToken.position
+                  }
+                }
+
+                if (actualFromPosition && actualToPosition) {
+                  // Start smooth animation using animationStore
+                  const animationStoreModule = await import('./animationStore')
+                  const animationStore = animationStoreModule.default.getState()
+                  animationStore.startAnimation(action.tokenId, actualFromPosition, actualToPosition)
+
+                  // Create animation loop
+                  const duration = moveData.duration || 1000 // Default 1 second
+                  const startTime = Date.now()
+
+                  const animate = () => {
+                    // Check if animations are paused
+                    if (animationStore.isPaused) {
+                      requestAnimationFrame(animate)
+                      return
+                    }
+
+                    const elapsed = Date.now() - startTime
+                    const progress = Math.min(elapsed / duration, 1)
+
+                    // Update animation progress
+                    animationStore.updateProgress(action.tokenId, progress)
+
+                    // Calculate current position using actual positions
+                    const currentX = actualFromPosition.x + (actualToPosition.x - actualFromPosition.x) * progress
+                    const currentY = actualFromPosition.y + (actualToPosition.y - actualFromPosition.y) * progress
+
+                    // Update token position in map
+                    mapStore.updateObjectPosition(action.tokenId, { x: currentX, y: currentY })
+
+                    if (progress < 1) {
+                      requestAnimationFrame(animate)
+                    } else {
+                      // Animation complete
+                      animationStore.endAnimation(action.tokenId)
+
+                      // Add battle log entry after movement completes
+                      const movedToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
+                      useBattleLogStore.getState().addEntry({
+                        roundNumber: get().currentRound,
+                        eventNumber: eventNumber,
+                        type: 'movement',
+                        tokenId: action.tokenId,
+                        tokenName: movedToken?.name || 'Unknown',
+                        message: `Moved to new position`,
+                        severity: 'low',
+                        details: {
+                          from: actualFromPosition,
+                          to: actualToPosition
+                        }
+                      })
+
+                      resolve() // Resolve the promise when animation is done
+                    }
+                  }
+
+                  requestAnimationFrame(animate)
+                } else {
+                  resolve() // No animation needed
+                }
+                break
+              }
+              default:
+                // For other action types, resolve immediately
+                resolve()
+                break
             }
           }
 
@@ -652,11 +700,11 @@ const useTimelineStore = create<TimelineStore>()(
         // Create new round
         const newRoundNumber = activeRound + 1
         const newRound = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           number: newRoundNumber,
           name: `Round ${newRoundNumber}`,
           events: [{
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             roundNumber: newRoundNumber,
             number: 1,
             timestamp: Date.now(),
@@ -675,16 +723,32 @@ const useTimelineStore = create<TimelineStore>()(
         state.timeline!.currentEvent = 1
       })
 
-      // Remove post effects (durationType='events') from previous round
+      // Remove EXPIRED post effects (durationType='events') from previous round
       const mapStore = useMapStore.getState()
+      const currentEvent = get().currentEvent // Get current event count
+
       if (mapStore.currentMap) {
-        const postEffects = mapStore.currentMap.objects.filter(obj =>
-          obj.isSpellEffect && obj.durationType === 'events'
-        )
-        postEffects.forEach(effect => {
+        const expiredEffects = mapStore.currentMap.objects.filter(obj => {
+          if (!obj.isSpellEffect || obj.durationType !== 'events') return false
+
+          // Check if effect has expired based on event count
+          // persistDuration=1 means: visible at creation event + 1 additional event
+          // Created at event N, should be removed when eventsElapsed > persistDuration
+          if (obj.eventCreated !== undefined && obj.spellDuration !== undefined) {
+            // Calculate how many events have elapsed since creation
+            // Event 1 created, now event 1 = 0 elapsed (keep - creation event)
+            // Event 1 created, now event 2 = 1 elapsed (keep - within duration=1)
+            // Event 1 created, now event 3 = 2 elapsed (remove - exceeded duration)
+            const eventsElapsed = currentEvent - obj.eventCreated
+            return eventsElapsed > obj.spellDuration // Remove when > duration
+          }
+
+          return false // Keep if no duration info
+        })
+
+        expiredEffects.forEach(effect => {
           mapStore.deleteObject(effect.id)
         })
-        console.log(`🧹 Removed ${postEffects.length} post effects from Round ${activeRound}`)
       }
 
       // Add battle log entry for round ending
@@ -696,9 +760,10 @@ const useTimelineStore = create<TimelineStore>()(
         severity: 'high'
       })
 
-      // Clean up expired spells based on rounds
+      // Clean up expired spells and status effects based on rounds
       const state = get()
       useMapStore.getState().cleanupExpiredSpells(state.currentRound, state.currentEvent)
+      useMapStore.getState().cleanupExpiredStatusEffects(state.currentRound)
     },
 
     nextRound: async () => {
@@ -840,8 +905,6 @@ const useTimelineStore = create<TimelineStore>()(
           spellEffectsToRemove.forEach(id => {
             mapStore.deleteObject(id)
           })
-
-          console.log(`🔙 Restored Round ${previousRoundNumber}: ${Object.keys(snapshot.tokenPositions).length} tokens, removed ${spellEffectsToRemove.length} spell effects`)
         }
       }
     },

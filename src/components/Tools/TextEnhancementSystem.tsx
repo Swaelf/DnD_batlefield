@@ -1,4 +1,5 @@
 import { useCallback, useState, useRef, type FC, type ChangeEvent } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { Group, Text as KonvaText, Rect } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'
@@ -187,7 +188,7 @@ export const TextEnhancementSystem: FC<TextEnhancementSystemProps> = ({
     if (!currentText.trim()) return
 
     const textObject: EnhancedTextObject = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       type: 'text',
       text: currentText,
       position: textPosition,

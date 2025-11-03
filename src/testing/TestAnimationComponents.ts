@@ -1,5 +1,13 @@
 import type { TestScenario } from './TestScenarios'
-import type { Position } from '@/types/map'
+import type { Position, MapObject } from '@/types/map'
+
+// Helper types for accessing type-specific properties on MapObject
+type WithSpellData = {
+  spellData?: {
+    spellName?: string
+    [key: string]: unknown
+  }
+}
 
 /**
  * Animation Component Tests
@@ -587,9 +595,13 @@ export const multiProjectileAnimationTest: TestScenario = {
         params: {
           check: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            const missiles = mapStore.currentMap?.objects.filter(obj =>
-              obj.type === 'spell' && (obj as any).spellData?.spellName?.includes('Magic Missile')
-            ) || []
+            const missiles = mapStore.currentMap?.objects.filter(obj => {
+              if (obj.type === 'spell') {
+                const spellObj = obj as MapObject & WithSpellData
+                return spellObj.spellData?.spellName?.includes('Magic Missile')
+              }
+              return false
+            }) || []
             return missiles.length === 0
           }
         },

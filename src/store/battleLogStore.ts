@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { v4 as uuidv4 } from 'uuid'
 import { immer } from 'zustand/middleware/immer'
 import type { BattleLogStore } from '../types/stores'
 import type { BattleLogEntry, BattleLogFilter } from '../types/timeline'
@@ -12,7 +13,7 @@ const useBattleLogStore = create<BattleLogStore>()(
     addEntry: (entryData) => {
       const entry: BattleLogEntry = {
         ...entryData,
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         timestamp: Date.now()
       }
 

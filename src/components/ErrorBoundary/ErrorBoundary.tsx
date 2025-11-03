@@ -4,6 +4,26 @@ import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
 import { AlertTriangle, RefreshCw, Copy, Bug, Home } from '@/utils/optimizedIcons'
 
+// Extend Window interface for debug stores
+declare global {
+  interface Window {
+    __mapStore?: {
+      getState?: () => {
+        currentMap?: {
+          objects?: unknown[]
+          width?: number
+          height?: number
+        }
+      }
+    }
+    __toolStore?: {
+      getState?: () => {
+        currentTool?: string
+      }
+    }
+  }
+}
+
 interface ErrorBoundaryState {
   hasError: boolean
   error: Error | null
@@ -123,8 +143,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   private getMapData() {
     try {
       // Try to get map data from stores
-      const mapStore = (window as any).__mapStore?.getState?.()
-      const toolStore = (window as any).__toolStore?.getState?.()
+      const mapStore = window.__mapStore?.getState?.()
+      const toolStore = window.__toolStore?.getState?.()
 
       return {
         objectCount: mapStore?.currentMap?.objects?.length,

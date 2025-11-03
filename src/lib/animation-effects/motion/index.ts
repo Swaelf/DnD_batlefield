@@ -13,6 +13,7 @@ export type { CurvedMotionConfig, ArcDirection } from './CurvedMotion';
 export type { OrbitMotionConfig } from './OrbitMotion';
 export type { BounceMotionConfig } from './BounceMotion';
 export type { WaveConfig, WaveType } from './WaveMotion';
+export type { MagicMissileCurveConfig } from './MagicMissileCurve';
 
 // ============================================================================
 // Linear Motion
@@ -71,3 +72,12 @@ export {
   createDampedWave,
   generateWavePath, // Legacy
 } from './WaveMotion';
+
+// ============================================================================
+// Magic Missile Curve
+// ============================================================================
+
+export {
+  createMagicMissileCurve,
+  seedFromSpellId,
+} from './MagicMissileCurve';

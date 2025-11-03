@@ -1,4 +1,5 @@
 import type { Point } from './geometry'
+import type { StatusEffect } from './statusEffects'
 
 // Core unified action type
 export type UnifiedAction = {
@@ -24,6 +25,7 @@ export type UnifiedAction = {
   damageType?: string // type of damage (fire, cold, piercing, etc.)
   spellLevel?: number // D&D spell level (0-9)
   castingTime?: string // D&D casting time (e.g., "1 action", "1 bonus action")
+  statusEffect?: StatusEffect // Status effect applied to targets
 }
 
 // Animation configuration
@@ -32,9 +34,11 @@ export type AnimationConfig = {
   duration: number
   color: string
   size?: number
+  range?: number // Range in feet for ranged attacks/spells (for animation limiting)
   customParams?: Record<string, any>
   startDelay?: number
   easing?: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' | 'ease-in' | 'ease-out' | 'ease-in-out'
+  durationType?: 'rounds' | 'events' // Duration measured in combat rounds or events
 
   // Projectile properties
   speed?: number
@@ -107,12 +111,17 @@ export type ActionEffects = {
 export type ActionMetadata = {
   name: string
   description?: string
+  range?: number // Range in feet for ranged attacks/spells (for validation and display)
   rollResult?: RollResult
   actionResult?: 'hit' | 'miss' | 'critical' | 'save' | 'fail'
   damage?: number
   conditions?: string[] // applied conditions
   sourceName?: string
   targetNames?: string[]
+  // Animation library integration
+  useAnimationLibrary?: boolean // Whether to use the new animation library
+  animationLibrarySpell?: string // Name of the animation library spell to use
+  libraryConfig?: Record<string, unknown> // Configuration for the animation library spell
 }
 
 // Area shape definitions for area effects

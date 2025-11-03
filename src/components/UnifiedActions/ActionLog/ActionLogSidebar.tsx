@@ -68,7 +68,7 @@ const ActionLogSidebarComponent: FC<ActionLogSidebarProps> = ({
   // Filtered and sorted action history
   const filteredActions = useMemo(() => {
     // Create filter object based on filterType string
-    const filter: ActionFilter = filterType === 'all' ? {} : { types: [filterType as any] }
+    const filter: ActionFilter = filterType === 'all' ? {} : { types: [filterType as 'spell' | 'attack' | 'interaction' | 'move'] }
     const filtered = getFilteredHistory(filter, searchTerm)
 
     // Sort actions

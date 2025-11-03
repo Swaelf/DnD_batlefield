@@ -5,6 +5,7 @@
 
 import { useMemo, useState, useCallback } from 'react'
 import type { MapObject } from '@/types'
+import { hasStringProperty, hasNumberProperty } from '@/types'
 
 interface VirtualMapObjectsOptions {
   searchQuery?: string
@@ -55,7 +56,7 @@ export function useVirtualMapObjects(
     if (enableSearch && searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       result = result.filter(obj => {
-        const name = (obj as any).name?.toLowerCase() || ''
+        const name = hasStringProperty(obj, 'name') ? obj.name.toLowerCase() : ''
         const type = obj.type.toLowerCase()
         const id = obj.id.toLowerCase()
 
@@ -72,8 +73,8 @@ export function useVirtualMapObjects(
 
       switch (sortBy) {
         case 'name':
-          valueA = (a as any).name || a.id
-          valueB = (b as any).name || b.id
+          valueA = hasStringProperty(a, 'name') ? a.name : a.id
+          valueB = hasStringProperty(b, 'name') ? b.name : b.id
           break
         case 'type':
           valueA = a.type
@@ -84,8 +85,8 @@ export function useVirtualMapObjects(
           valueB = b.layer
           break
         case 'created':
-          valueA = (a as any).created || 0
-          valueB = (b as any).created || 0
+          valueA = hasNumberProperty(a, 'created') ? a.created : 0
+          valueB = hasNumberProperty(b, 'created') ? b.created : 0
           break
         default:
           valueA = a.id

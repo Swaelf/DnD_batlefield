@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, type FC, type ReactNode, type ChangeEvent, type MouseEvent } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -165,7 +166,7 @@ export const LayerEffectsManager: FC<LayerEffectsManagerProps> = ({
     if (!layer) return
 
     const newEffect: LayerEffect = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       type: effectTemplate.id,
       enabled: true,
       settings: effectTemplate.defaultSettings

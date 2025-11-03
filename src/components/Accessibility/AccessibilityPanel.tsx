@@ -14,6 +14,8 @@ import {
   Info
 } from '@/utils/optimizedIcons'
 
+type FontSize = 'small' | 'medium' | 'large' | 'extra-large'
+
 interface AccessibilityPanelProps {
   isOpen: boolean
   onClose: () => void
@@ -200,7 +202,7 @@ export const AccessibilityPanel: FC<AccessibilityPanelProps> = ({
               </Box>
               <Select
                 value={preferences.fontSize}
-                onValueChange={(value) => updatePreference('fontSize', value as any)}
+                onValueChange={(value) => updatePreference('fontSize', value as FontSize)}
               >
                 <option value="small">Small</option>
                 <option value="medium">Medium</option>

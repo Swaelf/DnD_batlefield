@@ -199,6 +199,11 @@ export {
   logRegistryStats,
   // Factory (Task 12)
   EffectFactory,
+  // Status Effect Presets
+  getStatusEffectAnimation,
+  getAllStatusEffectTypes,
+  hasParticleEffects,
+  getEffectComplexity,
 } from './registry';
 
 export type {
@@ -207,6 +212,7 @@ export type {
   SearchCriteria,
   AnimationParams,
   ValidationResult,
+  StatusEffectAnimationConfig,
 } from './registry';
 
 // ============================================================================

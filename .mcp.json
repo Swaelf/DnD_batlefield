@@ -1,0 +1,44 @@
+{
+  "mcpServers": {
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "alwaysAllow": [
+        "create_entities",
+        "create_relations",
+        "add_observations",
+        "delete_entities",
+        "delete_observations",
+        "delete_relations",
+        "read_graph",
+        "search_nodes",
+        "open_nodes"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": "/app/memory.json"
+      }
+    },
+    "sequential-thinking": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "orchestrator": {
+      "type": "http",
+      "url": "http://localhost:${MCP_SERVER_PORT:-8080}/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ORCHESTRATOR_AGENT_ID:-1}"
+      }
+    }
+  }
+}

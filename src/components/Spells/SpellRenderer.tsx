@@ -1,7 +1,8 @@
 import { type FC, memo } from 'react'
 import { Group } from 'react-konva'
 import type { SpellEventData } from '@/types/timeline'
-import { AbstractProjectile, AbstractBurst, AbstractArea, AbstractRay } from './primitives'
+import { AbstractBurst, AbstractArea, AbstractRay } from './primitives'
+import { UnifiedProjectile } from './UnifiedProjectile'
 import { SimpleSpellComponent } from './SimpleSpellComponent'
 
 interface SpellRendererProps {
@@ -37,9 +38,12 @@ export const SpellRenderer: FC<SpellRendererProps> = memo(({
   // O(1) category-based rendering
   switch (spell.category) {
     case 'projectile':
+    case 'projectile-burst':
+      // Use UnifiedProjectile for all projectiles (with or without burst)
+      // Handles motion generators, trails, and multi-phase animations
       return (
         <Group listening={false}>
-          <AbstractProjectile {...commonProps} />
+          <UnifiedProjectile {...commonProps} />
         </Group>
       )
 
@@ -65,7 +69,6 @@ export const SpellRenderer: FC<SpellRendererProps> = memo(({
       )
 
     // Fall back to SimpleSpellComponent for complex spells
-    case 'projectile-burst':
     case 'cone':
     default:
       return <SimpleSpellComponent {...commonProps} />
