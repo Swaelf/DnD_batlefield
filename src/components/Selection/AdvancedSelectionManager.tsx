@@ -26,6 +26,7 @@ import {
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
 import type { MapObject } from '@/types'
+import { isStaticObject, isStaticEffectObject } from '@/types/typeGuards'
 
 // Extended type for grouped objects
 type GroupedMapObject = MapObject & {
@@ -272,8 +273,8 @@ export const AdvancedSelectionManager: FC<AdvancedSelectionManagerProps> = ({
 
   // Check if single static object is selected
   const singleStaticObject = selectedObjects.length === 1 &&
-    selectedObjectData[0]?.type === 'shape' &&
-    ((selectedObjectData[0] as any).metadata?.isStatic || (selectedObjectData[0] as any).metadata?.isStaticEffect)
+    selectedObjectData[0] &&
+    (isStaticObject(selectedObjectData[0]) || isStaticEffectObject(selectedObjectData[0]))
       ? selectedObjectData[0] : null
 
   return (
@@ -635,7 +636,7 @@ export const AdvancedSelectionManager: FC<AdvancedSelectionManagerProps> = ({
               Static Object Properties
             </Text>
             <StaticObjectPropertiesEditor
-              staticObject={singleStaticObject as any}
+              staticObject={singleStaticObject}
               onUpdate={(updates) => updateObject(singleStaticObject.id, updates)}
             />
           </Box>

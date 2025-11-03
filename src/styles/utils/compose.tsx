@@ -99,8 +99,16 @@ export function createStylableComponent<T extends keyof React.JSX.IntrinsicEleme
   }
 }
 
+// Style group type helpers
+type StyleGroupBase = {
+  base?: Sprinkles
+  variants?: Record<string, Sprinkles>
+  sizes?: Record<string, Sprinkles>
+  [key: string]: Sprinkles | Record<string, Sprinkles> | undefined
+}
+
 // Common style combinations
-export const styleGroups = {
+export const styleGroups: Record<string, StyleGroupBase> = {
   // Button-like styles
   button: {
     base: {
@@ -210,17 +218,17 @@ export function applyStyleGroup(
   size?: string,
   additionalProps?: Sprinkles
 ): Sprinkles {
-  const styleGroup = styleGroups[group] as any
-  const baseStyles = styleGroup.base
+  const styleGroup = styleGroups[group]
+  const baseStyles = styleGroup.base || {}
 
-  let variantStyles = {}
-  if (variant && 'variants' in styleGroups[group]) {
-    variantStyles = (styleGroups[group] as any).variants[variant] || {}
+  let variantStyles: Sprinkles = {}
+  if (variant && styleGroup.variants) {
+    variantStyles = styleGroup.variants[variant] || {}
   }
 
-  let sizeStyles = {}
-  if (size && 'sizes' in styleGroups[group]) {
-    sizeStyles = (styleGroups[group] as any).sizes[size] || {}
+  let sizeStyles: Sprinkles = {}
+  if (size && styleGroup.sizes) {
+    sizeStyles = styleGroup.sizes[size] || {}
   }
 
   return {

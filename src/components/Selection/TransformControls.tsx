@@ -3,6 +3,7 @@ import { Group, Rect, Circle, Line, Arc } from 'react-konva'
 import type Konva from 'konva'
 import type { Point } from '@/types/geometry'
 import type { MapObject } from '@/types/map'
+import { isToken, isShape, isText, hasNumberProperty, hasStringProperty } from '@/types'
 
 // Extended type for objects with points (polygons, paths, etc.)
 type ShapeWithPoints = MapObject & {
@@ -58,7 +59,7 @@ export const TransformControls: FC<TransformControlsProps> = ({
 
       switch (obj.type) {
         case 'token':
-          const tokenSize = (obj as any).size || 'medium'
+          const tokenSize = isToken(obj) && hasStringProperty(obj, 'size') ? obj.size : 'medium'
           const sizeMap = { tiny: 25, small: 50, medium: 50, large: 100, huge: 150, gargantuan: 200 }
           const size = sizeMap[tokenSize as keyof typeof sizeMap] || 50
           objBounds = {
@@ -71,14 +72,16 @@ export const TransformControls: FC<TransformControlsProps> = ({
 
         case 'shape':
           if (obj.shapeType === 'rectangle') {
+            const width = isShape(obj) && hasNumberProperty(obj, 'width') ? obj.width : 0
+            const height = isShape(obj) && hasNumberProperty(obj, 'height') ? obj.height : 0
             objBounds = {
               x: obj.position.x,
               y: obj.position.y,
-              width: (obj as any).width || 0,
-              height: (obj as any).height || 0
+              width,
+              height
             }
           } else if (obj.shapeType === 'circle') {
-            const radius = (obj as any).radius || 25
+            const radius = isShape(obj) && hasNumberProperty(obj, 'radius') ? obj.radius : 25
             objBounds = {
               x: obj.position.x - radius,
               y: obj.position.y - radius,
@@ -102,8 +105,9 @@ export const TransformControls: FC<TransformControlsProps> = ({
           break
 
         case 'text':
-          const fontSize = (obj as any).fontSize || 16
-          const textLength = ((obj as any).text || '').length
+          const fontSize = isText(obj) && hasNumberProperty(obj, 'fontSize') ? obj.fontSize : 16
+          const textContent = isText(obj) && hasStringProperty(obj, 'text') ? obj.text : ''
+          const textLength = textContent.length
           objBounds = {
             x: obj.position.x,
             y: obj.position.y,

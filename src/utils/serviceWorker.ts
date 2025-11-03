@@ -1,6 +1,16 @@
 // Service Worker Registration and Management
 // PWA functionality for MapMaker
 
+// Background Sync API types (experimental browser feature)
+interface SyncManager {
+  register(tag: string): Promise<void>
+  getTags(): Promise<string[]>
+}
+
+interface ServiceWorkerRegistrationWithSync extends ServiceWorkerRegistration {
+  sync?: SyncManager
+}
+
 interface ServiceWorkerConfig {
   onSuccess?: (registration: ServiceWorkerRegistration) => void
   onUpdate?: (registration: ServiceWorkerRegistration) => void
@@ -196,13 +206,14 @@ class ServiceWorkerManager {
 
   // Background sync
   async registerBackgroundSync(tag: string): Promise<void> {
-    if (!this.swRegistration || !('sync' in this.swRegistration)) {
+    const regWithSync = this.swRegistration as ServiceWorkerRegistrationWithSync
+    if (!regWithSync || !regWithSync.sync) {
       console.warn('[SW] Background sync not supported')
       return
     }
 
     try {
-      await (this.swRegistration.sync as any).register(tag)
+      await regWithSync.sync.register(tag)
     } catch (error) {
       console.error(`[SW] Background sync registration failed: ${tag}`, error)
     }

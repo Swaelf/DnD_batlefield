@@ -19,6 +19,15 @@ interface PerformanceHistory {
   minFPS: number
 }
 
+// Chrome-specific Performance API with memory
+interface PerformanceWithMemory extends Performance {
+  memory: {
+    usedJSHeapSize: number
+    jsHeapSizeLimit: number
+    totalJSHeapSize: number
+  }
+}
+
 export const usePerformanceMonitor = (enabled: boolean = true) => {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null)
   const [history, setHistory] = useState<PerformanceHistory>({
@@ -64,7 +73,7 @@ export const usePerformanceMonitor = (enabled: boolean = true) => {
   const getMemoryUsage = useCallback((): number => {
     if ('memory' in performance) {
       // Chrome specific API
-      const memory = (performance as any).memory as { usedJSHeapSize: number }
+      const memory = (performance as PerformanceWithMemory).memory
       return Math.round(memory.usedJSHeapSize / 1024 / 1024) // MB
     }
     return 0

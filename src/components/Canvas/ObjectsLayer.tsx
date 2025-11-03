@@ -18,6 +18,7 @@ import { SpellRenderer } from '../Spells/SpellRenderer'
 import { StaticObjectRenderer } from '../StaticObject/StaticObjectRenderer'
 import { TreeRenderer } from './TreeRenderer'
 import { isToken, isShape, isText, isSpell, isAttack, isPersistentArea } from './objectUtils'
+import { hasObjectMetadata } from '@/types/typeGuards'
 import { ProgressiveLoader } from '@/utils/progressiveLoader'
 
 // Track completed spell animations to prevent duplicate persistent areas
@@ -977,7 +978,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         hiddenByLayers: objects.length - (staticCount + dynamicObjects.length),
         tokens: objects.filter(obj => obj.type === 'token').length,
         shapes: objects.filter(obj => obj.type === 'shape').length,
-        trees: objects.filter(obj => (obj as any).metadata?.templateId === 'tree').length,
+        trees: objects.filter(obj => hasObjectMetadata(obj) && obj.metadata.templateId === 'tree').length,
         attacks: objects.filter(obj => obj.type === 'attack').length,
         spells: objects.filter(obj => obj.type === 'spell').length,
       }

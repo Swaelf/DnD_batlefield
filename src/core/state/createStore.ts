@@ -35,7 +35,8 @@ export function createStore<T extends object>(
     StoreWithActions<T>
   > = (set, get, api) => {
     const state = storeCreator(
-      (fn) => set((state) => fn(state as any)),
+      // Cast needed: Immer middleware expects mutable state, but our StoreCreator uses immutable pattern
+      (fn) => set((state) => fn(state as T)),
       () => get(),
       api as StoreApi<T>
     )
@@ -46,7 +47,7 @@ export function createStore<T extends object>(
       ...storeState,
       reset: () => {
         const freshState = storeCreator(
-          (fn) => set((state) => fn(state as any)),
+          (fn) => set((state) => fn(state as T)),
           () => get(),
           api as StoreApi<T>
         )
@@ -61,8 +62,13 @@ export function createStore<T extends object>(
     } as StoreWithActions<T>
   }
 
+  // Type assertion needed: Zustand's middleware composition types don't infer correctly
+  // when combining immer + subscribeWithSelector. The runtime behavior is correct.
+  // See: https://github.com/pmndrs/zustand/issues/980
+  type ComposedMiddleware = typeof subscribeWithSelector extends (s: infer S) => infer R ? R : never
+
   return create<StoreWithActions<T>>()(
-    subscribeWithSelector(immer(stateCreator as any)) as any
+    subscribeWithSelector(immer(stateCreator)) as ComposedMiddleware
   ) as unknown as StoreApi<StoreWithActions<T>>
 }
 

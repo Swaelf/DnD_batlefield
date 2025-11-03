@@ -180,10 +180,17 @@ function mapCategoryToActionType(category: string): UnifiedAction['type'] {
   }
 }
 
+// Type for animation instances with optional nested animation property
+type AnimationInstance = {
+  getAnimation?: () => Record<string, unknown>
+  animation?: Record<string, unknown>
+  [key: string]: unknown
+}
+
 /**
  * Build animation config from template and instance
  */
-function buildAnimationConfig(template: any, instance: any): AnimationConfig {
+function buildAnimationConfig(template: any, instance: AnimationInstance): AnimationConfig {
   const category = template.category as string
 
   // Map category to animation type
@@ -209,7 +216,7 @@ function buildAnimationConfig(template: any, instance: any): AnimationConfig {
       // Try to get animation data using getAnimation() method or direct access
       const projectileAnim = typeof instance.getAnimation === 'function'
         ? instance.getAnimation()
-        : ((instance as any).animation || instance)
+        : (instance.animation || instance)
 
       // Extract range from instance or animation data (can be 'range' or 'maxRange')
       if (instance.range) config.range = instance.range
@@ -246,7 +253,7 @@ function buildAnimationConfig(template: any, instance: any): AnimationConfig {
 
     case 'area':
       // Access animation properties from the instance's animation object
-      const areaAnim = (instance as any).animation || instance
+      const areaAnim = instance.animation || instance
       config.persistent = (areaAnim.persistDuration || 0) > 0
       config.persistDuration = areaAnim.persistDuration || 0
       config.durationType = areaAnim.durationType || 'rounds'
@@ -267,7 +274,7 @@ function buildAnimationConfig(template: any, instance: any): AnimationConfig {
       // Cone spells use projectile animation type but need special handling
       const coneAnim = typeof instance.getAnimation === 'function'
         ? instance.getAnimation()
-        : ((instance as any).animation || instance)
+        : (instance.animation || instance)
 
       config.type = 'projectile' // Cone spells render as projectile type
       config.coneAngle = coneAnim.coneAngle || template.defaults.coneAngle || 60

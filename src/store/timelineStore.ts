@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import type { TimelineStore } from '../types'
 import type { TimelineAction, Position } from '../types'
+import { isToken, hasStringArrayProperty, hasStringProperty } from '../types'
+import { isSpellAction, isAttackAction, isMoveAction } from '../types'
 import useMapStore from './mapStore'
 import useEventCreationStore from './eventCreationStore'
 import useBattleLogStore from './battleLogStore'
@@ -272,10 +274,11 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Validate event type against token's allowedEvents
       const token = useMapStore.getState().currentMap?.objects.find(obj => obj.id === tokenId)
-      if (token && token.type === 'token' && 'allowedEvents' in token) {
-        const allowedEvents = (token as any).allowedEvents as string[] | undefined
-        if (allowedEvents && !allowedEvents.includes(type)) {
-          console.warn(`Event type '${type}' not allowed for token '${tokenId}' (${(token as any).name}). Allowed: ${allowedEvents.join(', ')}`)
+      if (token && isToken(token) && hasStringArrayProperty(token, 'allowedEvents')) {
+        const allowedEvents = token.allowedEvents
+        if (allowedEvents && allowedEvents.length > 0 && !allowedEvents.includes(type as 'move' | 'spell' | 'appear' | 'disappear')) {
+          const tokenName = hasStringProperty(token, 'name') ? token.name : tokenId
+          console.warn(`Event type '${type}' not allowed for token '${tokenId}' (${tokenName}). Allowed: ${allowedEvents.join(', ')}`)
           return
         }
       }
@@ -394,7 +397,13 @@ const useTimelineStore = create<TimelineStore>()(
             switch (action.type) {
             case 'spell': {
               // Create proper SpellMapObject for spell
-              const spellData = action.data as any
+              if (!isSpellAction(action)) {
+                console.error('Expected spell action but got:', action.type)
+                resolve()
+                break
+              }
+
+              const spellData = action.data
 
               // ✅ FIX: Get actual current positions of caster and target tokens
               // This ensures spells use the token's current position after any previous movements
@@ -404,18 +413,18 @@ const useTimelineStore = create<TimelineStore>()(
               console.log('🔮 Spell execution - original positions:', {
                 from: spellData.fromPosition,
                 to: spellData.toPosition,
-                tokenId: spellData.tokenId,
+                casterTokenId: action.tokenId,
                 targetTokenId: spellData.targetTokenId
               })
 
               // Look up caster token's current position
-              if (spellData.tokenId) {
-                const casterToken = mapStore.currentMap?.objects.find(obj => obj.id === spellData.tokenId)
+              if (action.tokenId) {
+                const casterToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
                 if (casterToken) {
                   actualFromPosition = casterToken.position
-                  console.log(`✅ Caster token ${spellData.tokenId} current position:`, casterToken.position)
+                  console.log(`✅ Caster token ${action.tokenId} current position:`, casterToken.position)
                 } else {
-                  console.warn(`⚠️ Caster token ${spellData.tokenId} not found!`)
+                  console.warn(`⚠️ Caster token ${action.tokenId} not found!`)
                 }
               }
 
@@ -459,12 +468,12 @@ const useTimelineStore = create<TimelineStore>()(
               mapStore.addSpellEffect(spellObject)
 
               // Add battle log entry
-              const casterToken = spellData.tokenId ? mapStore.currentMap?.objects.find(obj => obj.id === spellData.tokenId) : null
+              const casterToken = action.tokenId ? mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId) : null
               useBattleLogStore.getState().addEntry({
                 roundNumber: get().currentRound,
                 eventNumber: eventNumber,
                 type: 'spell',
-                tokenId: spellData.tokenId,
+                tokenId: action.tokenId,
                 tokenName: casterToken?.name || 'Unknown',
                 message: `Cast ${spellData.spellName || 'spell'}`,
                 severity: 'normal',
@@ -497,7 +506,13 @@ const useTimelineStore = create<TimelineStore>()(
               break
             }
             case 'attack': {
-              const attackData = action.data as any
+              if (!isAttackAction(action)) {
+                console.error('Expected attack action but got:', action.type)
+                resolve()
+                break
+              }
+
+              const attackData = action.data
 
               // ✅ FIX: Get actual current positions of attacker and target tokens
               let actualFromPosition = attackData.fromPosition
@@ -551,7 +566,13 @@ const useTimelineStore = create<TimelineStore>()(
             }
             case 'move': {
               // Handle token movement animation
-              const moveData = action.data as any
+              if (!isMoveAction(action)) {
+                console.error('Expected move action but got:', action.type)
+                resolve()
+                break
+              }
+
+              const moveData = action.data
 
               // ✅ FIX: Get token's actual current position for chain movements
               // This ensures movements chain correctly: initial → point1 → point2

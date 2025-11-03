@@ -10,6 +10,7 @@ import type { UnifiedAction } from '@/types/unifiedAction'
 import { AnimationRegistry, type RegisteredAnimationName } from '@/lib/animations'
 import { animationToUnifiedAction } from '@/lib/animations/adapters/toUnifiedAction'
 import { interactionTemplates } from '@/data/unifiedActions/interactionTemplates'
+import { hasNumberProperty } from '@/types'
 
 type ActionSelectionModalProps = {
   isOpen: boolean
@@ -335,7 +336,7 @@ export const ActionSelectionModal = ({
 
                   {/* Action Metadata */}
                   <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                    {(action.metadata as any)?.level && (
+                    {hasNumberProperty(action.metadata, 'level') && (
                       <Box
                         style={{
                           padding: '2px 8px',
@@ -345,7 +346,7 @@ export const ActionSelectionModal = ({
                         }}
                       >
                         <Text size="xs" style={{ color: '#D1D5DB' }}>
-                          Level {(action.metadata as any).level}
+                          Level {action.metadata.level}
                         </Text>
                       </Box>
                     )}
@@ -365,9 +366,9 @@ export const ActionSelectionModal = ({
                       </Box>
                     )}
 
-                    {(action.metadata as any)?.range && (
+                    {action.metadata?.range && (
                       <Text size="xs" style={{ color: '#6B7280' }}>
-                        Range: {(action.metadata as any).range}
+                        Range: {action.metadata.range}
                       </Text>
                     )}
                   </Box>

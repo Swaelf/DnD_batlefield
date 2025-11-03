@@ -323,7 +323,8 @@ export const AdvancedPenTool: FC<AdvancedPenToolProps> = ({
           break
         case 'Enter':
           if (currentPath.length >= 2) {
-            handleDoubleClick({} as any)
+            // Trigger path completion via keyboard - use empty event object
+            handleDoubleClick({} as Konva.KonvaEventObject<MouseEvent>)
           }
           break
         case 'e':

@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer'
 import type { WritableDraft } from 'immer'
 import type { MapStore, Token } from '../types'
 import type { MapObject, SpellMapObject, AttackEventData } from '../types'
+import { isToken } from '../types'
 import { useHistoryStore } from './historyStore'
 import { useLayerStore } from './layerStore'
 import { getSyncManager } from '../utils/syncManager'
@@ -116,10 +117,9 @@ const useMapStore = create<MapStore>()(
 
       // Migration: Add labelColor to existing tokens that don't have it
       map.objects.forEach((obj) => {
-        if (obj.type === 'token') {
-          const token = obj as any // Token type
-          if (!token.labelColor) {
-            token.labelColor = '#E0E0E0'
+        if (isToken(obj)) {
+          if (!obj.labelColor) {
+            obj.labelColor = '#E0E0E0'
           }
         }
       })
@@ -620,9 +620,8 @@ export const migrateTokenLabels = () => {
     if (!state.currentMap) return state
 
     const updatedObjects = state.currentMap.objects.map((obj) => {
-      if (obj.type === 'token') {
-        const token = obj as any // Token type
-        if (!token.labelColor) {
+      if (isToken(obj)) {
+        if (!obj.labelColor) {
           return { ...obj, labelColor: '#E0E0E0' }
         }
       }

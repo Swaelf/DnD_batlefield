@@ -370,7 +370,7 @@ const TokenLibrary = () => {
     }
 
     setTool('token')
-    setTokenTemplate(template as any)
+    setTokenTemplate(template)
 
     // Reset form
     setCustomName('')

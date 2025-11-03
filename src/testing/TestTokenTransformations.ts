@@ -1,5 +1,5 @@
 import type { TestScenario } from './TestScenarios'
-import type { Token } from '@/types/token'
+import type { Token, MapObject } from '@/types'
 
 /**
  * Token Transformation Tests
@@ -206,7 +206,7 @@ export const tokenSizeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            mapStore.updateObject('size-test-token', { size: 'small' })
+            mapStore.updateObject('size-test-token', { size: 'small' } as Partial<MapObject>)
           }
         }
       },
@@ -239,7 +239,7 @@ export const tokenSizeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            mapStore.updateObject('size-test-token', { size: 'medium' })
+            mapStore.updateObject('size-test-token', { size: 'medium' } as Partial<MapObject>)
           }
         }
       },
@@ -257,7 +257,7 @@ export const tokenSizeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            mapStore.updateObject('size-test-token', { size: 'large' })
+            mapStore.updateObject('size-test-token', { size: 'large' } as Partial<MapObject>)
           }
         }
       },
@@ -290,7 +290,7 @@ export const tokenSizeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            mapStore.updateObject('size-test-token', { size: 'huge' })
+            mapStore.updateObject('size-test-token', { size: 'huge' } as Partial<MapObject>)
           }
         }
       },
@@ -323,7 +323,7 @@ export const tokenSizeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            mapStore.updateObject('size-test-token', { size: 'gargantuan' })
+            mapStore.updateObject('size-test-token', { size: 'gargantuan' } as Partial<MapObject>)
           }
         }
       },
@@ -505,7 +505,7 @@ export const tokenShapeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            mapStore.updateObject('shape-test-token', { shape: 'square' })
+            mapStore.updateObject('shape-test-token', { shape: 'square' } as Partial<MapObject>)
           }
         }
       },
@@ -538,7 +538,7 @@ export const tokenShapeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            mapStore.updateObject('shape-test-token', { shape: 'circle' })
+            mapStore.updateObject('shape-test-token', { shape: 'circle' } as Partial<MapObject>)
           }
         }
       },

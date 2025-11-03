@@ -3,6 +3,26 @@
  * Provides runtime performance monitoring and optimization helpers
  */
 
+// Chrome Performance API Memory extension
+interface PerformanceMemory {
+  usedJSHeapSize: number
+  totalJSHeapSize: number
+  jsHeapSizeLimit: number
+}
+
+interface PerformanceWithMemory extends Performance {
+  memory?: PerformanceMemory
+}
+
+// Global window extension for performance utilities
+interface WindowWithPerformanceUtils extends Window {
+  __PERFORMANCE_UTILS__?: {
+    fpsCounter: FPSCounter
+    getMemoryUsage: typeof getMemoryUsage
+    performanceMark: typeof performanceMark
+  }
+}
+
 // Intersection Observer for lazy loading optimization
 export const createIntersectionObserver = (
   callback: (entries: IntersectionObserverEntry[]) => void,
@@ -51,8 +71,9 @@ export const getMemoryUsage = (): {
   total: number
   percentage: number
 } => {
-  if ('memory' in performance) {
-    const memory = (performance as any).memory
+  const perfWithMemory = performance as PerformanceWithMemory
+  if (perfWithMemory.memory) {
+    const memory = perfWithMemory.memory
     return {
       used: Math.round(memory.usedJSHeapSize / 1024 / 1024), // MB
       total: Math.round(memory.totalJSHeapSize / 1024 / 1024), // MB
@@ -229,7 +250,8 @@ export const initializePerformanceOptimizations = () => {
 
   // Initialize global performance monitoring
   if (typeof window !== 'undefined') {
-    ;(window as any).__PERFORMANCE_UTILS__ = {
+    const winWithPerf = window as WindowWithPerformanceUtils
+    winWithPerf.__PERFORMANCE_UTILS__ = {
       fpsCounter: new FPSCounter(),
       getMemoryUsage,
       performanceMark,

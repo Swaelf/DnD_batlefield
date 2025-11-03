@@ -432,7 +432,8 @@ function App() {
           <Box display="flex" alignItems="center" gap={1}>
             <Button
               onClick={openViewerMode}
-              {...({ variant: "ghost", size: "icon" } as any)}
+              variant="ghost"
+              size="icon"
               title="Open Viewer Mode (Screen Share)"
               style={{ color: viewerModeEnabled ? vars.colors.success : vars.colors.gray400 }}
             >
@@ -440,7 +441,8 @@ function App() {
             </Button>
             <Button
               onClick={() => setViewerModeEnabled(!viewerModeEnabled)}
-              {...({ variant: "ghost", size: "icon" } as any)}
+              variant="ghost"
+              size="icon"
               title={viewerModeEnabled ? "Disable Viewer Mode Sync" : "Enable Viewer Mode Sync"}
               style={{
                 color: viewerModeEnabled ? vars.colors.success : vars.colors.error,
@@ -456,7 +458,8 @@ function App() {
           {/* Help Button */}
           <Button
             onClick={() => setShowHelp(true)}
-            {...({ variant: "ghost", size: "icon" } as any)}
+            variant="ghost"
+            size="icon"
             title="Keyboard Shortcuts (?)"
           >
             <HelpCircle size={16} />

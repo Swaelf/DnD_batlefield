@@ -7,6 +7,16 @@
 
 type LogCategory = 'sync' | 'animation' | 'store' | 'canvas' | 'general'
 
+// Global window extension for logger debugging utilities
+interface WindowWithLogger extends Window {
+  __logger?: {
+    enable: typeof enableLogCategory
+    disable: typeof disableLogCategory
+    enableAll: typeof enableAllLogs
+    disableAll: typeof disableAllLogs
+  }
+}
+
 const isDevelopment = import.meta.env.DEV
 
 // Enable/disable specific categories in development
@@ -75,7 +85,8 @@ export function disableAllLogs(): void {
 
 // Expose to window for debugging in browser console
 if (typeof window !== 'undefined') {
-  (window as any).__logger = {
+  const winWithLogger = window as WindowWithLogger
+  winWithLogger.__logger = {
     enable: enableLogCategory,
     disable: disableLogCategory,
     enableAll: enableAllLogs,

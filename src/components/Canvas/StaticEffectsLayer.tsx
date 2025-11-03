@@ -5,6 +5,14 @@ import useMapStore from '@/store/mapStore'
 import { StaticEffectRenderer } from '../StaticEffect/StaticEffectRenderer'
 import { isShape } from './objectUtils'
 
+// Extended Shape type with static effect data
+type ShapeWithStaticEffect = Shape & {
+  staticEffectData?: {
+    template: unknown
+    [key: string]: unknown
+  }
+}
+
 // ✅ CACHE: WeakMap for static effect detection
 const staticEffectCache = new WeakMap<Shape, boolean>()
 
@@ -64,7 +72,7 @@ export const StaticEffectsLayer = memo(() => {
   // ✅ PERFORMANCE: Render static effects with StaticEffectRenderer
   const renderStaticEffect = useCallback((shape: Shape) => {
     // Static effects use the staticEffectData property
-    const effectData = (shape as any).staticEffectData
+    const effectData = (shape as ShapeWithStaticEffect).staticEffectData
 
     if (!effectData || !effectData.template) {
       return null
