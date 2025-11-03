@@ -43,7 +43,7 @@ export function createMagicMissileCurve(
   to: Point,
   config: MagicMissileCurveConfig = {}
 ): MotionPathGenerator {
-  const baseHeight = config.baseHeight ?? 50
+  // Note: baseHeight from config reserved for future trajectory height variations
   const seed = config.seed ?? Math.random()
 
   // Calculate direction vector
@@ -56,9 +56,7 @@ export function createMagicMissileCurve(
   const perpY = length > 0 ? dx / length : 0
 
   // Generate random variations from seed
-  // Use multiple seed values for different aspects
-  const seed1 = (seed * 7919) % 1  // Prime number for better distribution
-  const seed2 = (seed * 6971) % 1
+  // Note: seed1, seed2 reserved for future trajectory variations
   const seed3 = (seed * 5879) % 1
   const seed4 = (seed * 5381) % 1
 
@@ -67,7 +65,7 @@ export function createMagicMissileCurve(
 
   // Always use sine wave with 2 zero points (S-curve trajectory type)
   // This creates: sin(progress * 2π) which has zero at start (0%) and end (100%)
-  const trajectoryType = 1
+  const trajectoryType: number = 1  // Type as number to allow switch cases
 
   // Random direction: positive (up/right) or negative (down/left)
   // Use seed3 to ensure consistent direction for this specific missile (seed-based randomness)

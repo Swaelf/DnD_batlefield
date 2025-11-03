@@ -1,5 +1,4 @@
 /**
-import { v4 as uuidv4 } from 'uuid'
  * MapCanvas - Consolidated Canvas Component
  *
  * Consolidates all LegacyMapCanvasAdapter functionality using optimized 3-layer architecture.
@@ -7,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
  */
 
 import { useCallback, useState, useRef, useEffect, memo, type FC, type MouseEvent as ReactMouseEvent } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { Stage, Layer, Group, Rect } from 'react-konva'
 import type Konva from 'konva'
 import useMapStore from '@store/mapStore'

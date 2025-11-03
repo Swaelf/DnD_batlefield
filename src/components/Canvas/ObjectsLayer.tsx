@@ -588,9 +588,12 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       return null
     }
 
+    // Type narrowing: spellData is guaranteed to exist after the null check
+    const spellData = spell.spellData
+
     // Check if this spell has completed its animation
     const hasCompletedAnimation = completedSpellAnimations.has(spell.id)
-    const hasPersistDuration = (spell.spellData?.persistDuration || 0) > 0
+    const hasPersistDuration = (spellData.persistDuration || 0) > 0
 
     // If animation completed and has persist duration, render as persistent area
     if (hasCompletedAnimation && hasPersistDuration) {
@@ -601,16 +604,16 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         rotation: 0,
         layer: spell.layer,
         persistentAreaData: {
-          position: spell.spellData.toPosition || spell.position,
-          radius: spell.spellData.burstRadius || spell.spellData.size || 60,
-          color: spell.spellData.persistColor || spell.spellData.color || '#FF4500',
-          opacity: spell.spellData.persistOpacity || 0.6,
-          spellName: spell.spellData.spellName || 'Persistent Effect',
+          position: spellData.toPosition || spell.position,
+          radius: spellData.burstRadius || spellData.size || 60,
+          color: spellData.persistColor || spellData.color || '#FF4500',
+          opacity: spellData.persistOpacity || 0.6,
+          spellName: spellData.spellName || 'Persistent Effect',
           roundCreated: spell.roundCreated,
-          shape: spell.spellData.category === 'cone' ? 'cone' : 'circle',
-          fromPosition: spell.spellData.fromPosition,
-          toPosition: spell.spellData.toPosition,
-          coneAngle: spell.spellData.coneAngle || 60
+          shape: spellData.category === 'cone' ? 'cone' : 'circle',
+          fromPosition: spellData.fromPosition,
+          toPosition: spellData.toPosition,
+          coneAngle: spellData.coneAngle || 60
         }
       })
     }
@@ -624,16 +627,16 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       completedSpellAnimations.add(spell.id)
 
       // Apply status effects to tokens in area of effect (if spell has statusEffect property)
-      if (spell.spellData?.statusEffect) {
+      if (spellData.statusEffect) {
         const PIXELS_PER_FOOT = 8
 
         // For cone spells, use fromPosition as origin and size as range
-        const isCone = spell.spellData.category === 'cone'
+        const isCone = spellData.category === 'cone'
         const effectRadius = isCone
-          ? (spell.spellData.size || 30) * PIXELS_PER_FOOT // Convert feet to pixels
-          : (spell.spellData.burstRadius || spell.spellData.size || 60)
+          ? (spellData.size || 30) * PIXELS_PER_FOOT // Convert feet to pixels
+          : (spellData.burstRadius || spellData.size || 60)
 
-        const originPosition = isCone ? spell.spellData.fromPosition : spell.spellData.toPosition
+        const originPosition = isCone ? spellData.fromPosition : spellData.toPosition
 
         // Find all tokens within the spell's area of effect
         const affectedTokens = objects.filter(obj => {
@@ -645,10 +648,10 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           const distance = Math.sqrt(dx * dx + dy * dy)
 
           // For cone spells, also check if token is within the cone angle
-          if (isCone && spell.spellData) {
-            const coneAngle = (spell.spellData.coneAngle || 60) * (Math.PI / 180)
-            const targetDx = spell.spellData.toPosition.x - spell.spellData.fromPosition.x
-            const targetDy = spell.spellData.toPosition.y - spell.spellData.fromPosition.y
+          if (isCone && spellData) {
+            const coneAngle = (spellData.coneAngle || 60) * (Math.PI / 180)
+            const targetDx = spellData.toPosition.x - spellData.fromPosition.x
+            const targetDy = spellData.toPosition.y - spellData.fromPosition.y
             const coneDirection = Math.atan2(targetDy, targetDx)
 
             const tokenAngle = Math.atan2(dy, dx)
@@ -670,10 +673,10 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
 
         affectedTokens.forEach(token => {
           const statusEffect = {
-            type: spell.spellData!.statusEffect!.type,
-            intensity: spell.spellData!.statusEffect!.intensity || 1,
+            type: spellData!.statusEffect!.type,
+            intensity: spellData!.statusEffect!.intensity || 1,
             roundApplied: currentRound,
-            duration: spell.spellData!.statusEffect!.duration || 1
+            duration: spellData!.statusEffect!.duration || 1
           }
 
           addStatusEffect(token.id, statusEffect)
@@ -681,14 +684,14 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       }
 
       // For spells with persist duration, create a persistent area
-      const persistDuration = spell.spellData?.persistDuration || 0
+      const persistDuration = spellData.persistDuration || 0
 
       console.log('[ObjectsLayer] Persistent area check:', {
-        spellName: spell.spellData?.spellName,
+        spellName: spellData.spellName,
         persistDuration,
-        durationType: spell.spellData?.durationType,
-        category: spell.spellData?.category,
-        spellSize: spell.spellData?.size,
+        durationType: spellData.durationType,
+        category: spellData.category,
+        spellSize: spellData.size,
         hasEventData: !!spell.eventCreated
       })
 
@@ -701,13 +704,13 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       }
 
       // Only delete if NO persistence
-      if (false && persistDuration > 0 && (spell.spellData?.category === 'area' || spell.spellData?.category === 'projectile-burst' || spell.spellData?.category === 'cone' || (spell.spellData?.category === 'projectile' && spell.spellData?.burstRadius))) {
+      if (false && persistDuration > 0 && (spellData.category === 'area' || spellData.category === 'projectile-burst' || spellData.category === 'cone' || (spellData.category === 'projectile' && spellData.burstRadius))) {
         // Determine position for persistent area - use current target position if tracking enabled
-        let persistentPosition = spell.spellData.toPosition
-        if (spell.spellData.trackTarget && spell.spellData.targetTokenId) {
+        let persistentPosition = spellData.toPosition
+        if (spellData.trackTarget && spellData.targetTokenId) {
           // Get current token position for tracking spells
           const targetToken = objects.find(obj =>
-            obj.id === spell.spellData?.targetTokenId && obj.type === 'token'
+            obj.id === spellData.targetTokenId && obj.type === 'token'
           )
           if (targetToken) {
             persistentPosition = targetToken.position
@@ -720,12 +723,12 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         // Use durationType from spell data if provided, otherwise default based on category
         // Continuous spells (area, ray) typically use rounds
         // Instant burst effects (projectile-burst, cone with durationType='events') use events
-        const durationType: 'rounds' | 'events' = spell.spellData.durationType || 'rounds'
+        const durationType: 'rounds' | 'events' = spellData.durationType || 'rounds'
 
         // Calculate radius for persistent area
-        const persistentRadius = spell.spellData.category === 'cone'
-          ? spell.spellData.size
-          : (spell.spellData.burstRadius || spell.spellData.size || 60)
+        const persistentRadius = spellData.category === 'cone'
+          ? spellData.size
+          : (spellData.burstRadius || spellData.size || 60)
 
         const persistentAreaObject = {
           id: `persistent-area-${Date.now()}-${Math.random()}`,
@@ -737,18 +740,18 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
             position: persistentPosition,
             // For cone spells, use size (in feet). For burst spells, use burstRadius (in pixels)
             radius: persistentRadius,
-            color: spell.spellData.persistColor || spell.spellData.color || '#3D3D2E',
-            opacity: spell.spellData.persistOpacity || 0.8,
-            spellName: spell.spellData.spellName || 'Area Effect',
+            color: spellData.persistColor || spellData.color || '#3D3D2E',
+            opacity: spellData.persistOpacity || 0.8,
+            spellName: spellData.spellName || 'Area Effect',
             roundCreated: currentRound,
             // Store token tracking information for persistent areas
-            trackTarget: spell.spellData.trackTarget || false,
-            targetTokenId: spell.spellData.targetTokenId || null,
+            trackTarget: spellData.trackTarget || false,
+            targetTokenId: spellData.targetTokenId || null,
             // Cone-specific properties
-            shape: spell.spellData.category === 'cone' ? 'cone' : 'circle',
-            fromPosition: spell.spellData.fromPosition,
-            toPosition: spell.spellData.toPosition,
-            coneAngle: spell.spellData.coneAngle || 60
+            shape: spellData.category === 'cone' ? 'cone' : 'circle',
+            fromPosition: spellData.fromPosition,
+            toPosition: spellData.toPosition,
+            coneAngle: spellData.coneAngle || 60
           },
           roundCreated: currentRound,
           eventCreated: currentEvent,
@@ -758,14 +761,14 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
         }
 
         console.log('[ObjectsLayer] Creating persistent area:', {
-          spellName: spell.spellData.spellName,
+          spellName: spellData.spellName,
           currentEvent,
           persistDuration,
           expiresAt: currentEvent + persistDuration,
           durationType,
           shape: persistentAreaObject.persistentAreaData.shape,
           persistentRadius,
-          spellSize: spell.spellData.size
+          spellSize: spellData.size
         })
 
         // Add persistent area to map using addSpellEffect to ensure it's tracked properly
@@ -792,7 +795,7 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
     return (
       <SpellRenderer
         key={spell.id}
-        spell={spell.spellData}
+        spell={spellData}
         isAnimating={true}
         onAnimationComplete={handleAnimationComplete}
       />
