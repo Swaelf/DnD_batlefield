@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { App } from './App'
 import { TooltipProvider } from '@/components/ui'
-import { AppErrorBoundary } from '@/components/ErrorBoundary/ErrorBoundary'
+import { AppErrorBoundary } from '@/components/ErrorBoundary'
 import swManager from '@/utils/serviceWorker'
 
 // Import Vanilla Extract styles

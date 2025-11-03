@@ -1,7 +1,7 @@
 import { useMemo, type FC, type ReactNode } from 'react'
 import useMapStore from '@store/mapStore'
 import { useContextMenu } from '@hooks/useContextMenu'
-import { ContextMenu, createObjectContextMenu, createCanvasContextMenu } from './ContextMenu'
+import { ContextMenu, createObjectContextMenu, createCanvasContextMenu } from '.'
 
 interface ContextMenuManagerProps {
   children: ReactNode

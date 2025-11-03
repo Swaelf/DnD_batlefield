@@ -346,6 +346,15 @@ The **Action Sequencing System** provides advanced D&D combat coordination throu
   - Full undo/redo support via history integration for field color and terrain drawings
   - Performance optimized: `listening={false}` on static layers, ref-based point collection during drag
   - Commits: 4e94c51 (Phase 1 Field Color), 323c74b (Phase 2 Toolbar Categories), 447ba9e (Phase 3 Terrain Layer), 44c37c1, bc5c322, b7fdd27 (Phase 4 Terrain Tools)
+- **Component File Refactoring (November 2025)**: Complete restructuring to single-component-per-file architecture
+  - 25 multi-component files refactored into organized directory structures (26th file BoxVE.tsx kept as exception)
+  - All components split from 2-24 exports per file to single-component files
+  - 100% backward compatibility maintained via comprehensive barrel exports
+  - Zero functional changes - purely structural refactoring
+  - Files refactored: Primitives (TextVE, ButtonVE), UI Components (Panel, Modal, Input, Loading, Popover, Menu, Select, Tooltip, Badge, etc.), Feature Components (Timeline/styled, TokenLibrary, EffectPropertiesPanel, ErrorBoundary, ContextMenu, GridControls, AdvancedSelectionTool, EnhancedExportSystem, CanvasControls, VirtualScrollList)
+  - All 400+ existing import statements continue working unchanged
+  - Improved tree-shaking, IDE performance, and developer experience
+  - Exception: BoxVE.tsx remains single file (polymorphic component with 76 importers, no logical sub-components)
 
 ### 🔧 Recent Fixes & Optimizations
 
