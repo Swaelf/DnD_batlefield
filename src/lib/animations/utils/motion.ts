@@ -5,14 +5,8 @@
  * Each generator returns a function that takes progress (0-1) and returns position.
  */
 
-import type { Point, MotionPath, MotionType } from '../types'
+import type { Point, MotionPath, MotionPathGenerator } from '../types'
 import { applyEasing } from './easing'
-
-/**
- * Motion path generator function type
- * Takes progress (0-1) and returns current position
- */
-export type MotionPathGenerator = (progress: number) => Point
 
 /**
  * Create a linear motion path (straight line)
@@ -209,9 +203,9 @@ export const createHomingMotion = (
   getTargetPosition: () => Point,
   speed: number = 500
 ): MotionPathGenerator => {
-  let currentPosition = { ...start }
+  const currentPosition = { ...start }
 
-  return (progress: number): Point => {
+  return (_progress: number): Point => {
     const target = getTargetPosition()
     const dx = target.x - currentPosition.x
     const dy = target.y - currentPosition.y

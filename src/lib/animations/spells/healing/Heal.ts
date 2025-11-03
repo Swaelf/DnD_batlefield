@@ -50,7 +50,7 @@ export class Heal extends AbstractBurst {
       name: 'Heal',
       position,
       shape: 'star', // Star shape for radiant healing
-      maxRadius: size * powerMultiplier,
+      radius: size * powerMultiplier,
       duration: 1000, // Longer for major healing
       color,
       opacity: 0.8,

@@ -52,7 +52,7 @@ export class ShockingGrasp extends AbstractBurst {
       name: 'Shocking Grasp',
       position,
       shape: 'circle',
-      maxRadius: size * powerMultiplier * advantageMultiplier,
+      radius: size * powerMultiplier * advantageMultiplier,
       duration: 400, // Very fast touch
       color,
       opacity: 0.9,

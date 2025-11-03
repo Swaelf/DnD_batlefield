@@ -50,7 +50,7 @@ export class CureWounds extends AbstractBurst {
       name: 'Cure Wounds',
       position,
       shape: 'circle',
-      maxRadius: size * powerMultiplier,
+      radius: size * powerMultiplier,
       duration: 800, // Gentle, not instant
       color,
       opacity: 0.7,

@@ -40,7 +40,7 @@ export const statusEffectTests: TestScenario[] = [
         {
           type: 'action' as const,
           action: {
-            type: 'addToken',
+            type: 'addToken' as const,
             params: {
               id: `test-token-${effectType}`,
               name: 'Test Token',
@@ -55,7 +55,7 @@ export const statusEffectTests: TestScenario[] = [
         {
           type: 'action' as const,
           action: {
-            type: 'custom',
+            type: 'custom' as const,
             params: {
               execute: () => {
                 const mapStore = useMapStore.getState()
@@ -89,7 +89,7 @@ export const statusEffectTests: TestScenario[] = [
         {
           type: 'assert' as const,
           assert: {
-            type: 'custom',
+            type: 'custom' as const,
             params: {
               validate: () => {
                 const mapStore = useMapStore.getState()
@@ -125,9 +125,9 @@ export const statusEffectTests: TestScenario[] = [
     category: 'animations',
     steps: [
       {
-        type: 'action',
+        type: 'action' as const,
         action: {
-          type: 'addToken',
+          type: 'addToken' as const,
           params: {
             id: 'test-token-stacking',
             name: 'Multi-Effect Token',
@@ -140,9 +140,9 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Add test token',
       },
       {
-        type: 'action',
+        type: 'action' as const,
         action: {
-          type: 'custom',
+          type: 'custom' as const,
           params: {
             execute: () => {
               const mapStore = useMapStore.getState()
@@ -166,21 +166,21 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Apply multiple effects (flaming, poisoned, stunned)',
       },
       {
-        type: 'wait',
+        type: 'wait' as const,
         wait: 3000,
         description: 'Wait for animations to run',
       },
       {
-        type: 'capture',
+        type: 'capture' as const,
         capture: {
           name: 'status-effects-stacking',
         },
         description: 'Capture stacked effects visual',
       },
       {
-        type: 'assert',
+        type: 'assert' as const,
         assert: {
-          type: 'custom',
+          type: 'custom' as const,
           params: {
             validate: () => {
               const mapStore = useMapStore.getState()
@@ -214,7 +214,7 @@ export const statusEffectTests: TestScenario[] = [
     category: 'timeline',
     steps: [
       {
-        type: 'action',
+        type: 'action' as const,
         action: {
           type: 'startCombat',
           params: {},
@@ -222,7 +222,7 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Start combat',
       },
       {
-        type: 'action',
+        type: 'action' as const,
         action: {
           type: 'addToken',
           params: {
@@ -237,9 +237,9 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Add test token',
       },
       {
-        type: 'action',
+        type: 'action' as const,
         action: {
-          type: 'custom',
+          type: 'custom' as const,
           params: {
             execute: () => {
               const mapStore = useMapStore.getState()
@@ -260,14 +260,14 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Apply chilled effect (2 rounds)',
       },
       {
-        type: 'wait',
+        type: 'wait' as const,
         wait: 1000,
         description: 'Wait a moment',
       },
       {
-        type: 'assert',
+        type: 'assert' as const,
         assert: {
-          type: 'custom',
+          type: 'custom' as const,
           params: {
             validate: () => {
               const mapStore = useMapStore.getState()
@@ -285,7 +285,7 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Verify effect is active initially',
       },
       {
-        type: 'action',
+        type: 'action' as const,
         action: {
           type: 'nextRound',
           params: {},
@@ -293,14 +293,14 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Advance to round 2',
       },
       {
-        type: 'wait',
+        type: 'wait' as const,
         wait: 500,
         description: 'Wait for cleanup',
       },
       {
-        type: 'assert',
+        type: 'assert' as const,
         assert: {
-          type: 'custom',
+          type: 'custom' as const,
           params: {
             validate: () => {
               const mapStore = useMapStore.getState()
@@ -318,7 +318,7 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Verify effect still active in round 2',
       },
       {
-        type: 'action',
+        type: 'action' as const,
         action: {
           type: 'nextRound',
           params: {},
@@ -326,14 +326,14 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Advance to round 3',
       },
       {
-        type: 'wait',
+        type: 'wait' as const,
         wait: 500,
         description: 'Wait for cleanup',
       },
       {
-        type: 'assert',
+        type: 'assert' as const,
         assert: {
-          type: 'custom',
+          type: 'custom' as const,
           params: {
             validate: () => {
               const mapStore = useMapStore.getState()
@@ -368,7 +368,7 @@ export const statusEffectTests: TestScenario[] = [
     category: 'animations',
     steps: [
       {
-        type: 'action',
+        type: 'action' as const,
         action: {
           type: 'addToken',
           params: {
@@ -383,7 +383,7 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Add token for low intensity',
       },
       {
-        type: 'action',
+        type: 'action' as const,
         action: {
           type: 'addToken',
           params: {
@@ -398,9 +398,9 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Add token for high intensity',
       },
       {
-        type: 'action',
+        type: 'action' as const,
         action: {
-          type: 'custom',
+          type: 'custom' as const,
           params: {
             execute: () => {
               const mapStore = useMapStore.getState()
@@ -430,12 +430,12 @@ export const statusEffectTests: TestScenario[] = [
         description: 'Apply flaming effects with different intensities',
       },
       {
-        type: 'wait',
+        type: 'wait' as const,
         wait: 2000,
         description: 'Wait for animations',
       },
       {
-        type: 'capture',
+        type: 'capture' as const,
         capture: {
           name: 'status-effects-intensity',
         },

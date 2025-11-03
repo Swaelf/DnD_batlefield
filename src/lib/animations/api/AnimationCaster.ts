@@ -79,25 +79,26 @@ class AnimationCasterClass {
         throw new Error(`Failed to create animation: ${name}`)
       }
 
-      // Add lifecycle callbacks
+      // Add lifecycle callbacks by wrapping the animation
       const originalAnimation = animation.getAnimation()
+      const originalOnStart = originalAnimation.onStart
+      const originalOnUpdate = originalAnimation.onUpdate
+      const originalOnComplete = originalAnimation.onComplete
 
-      animation['animation'] = {
-        ...originalAnimation,
-        onStart: () => {
-          originalAnimation.onStart?.()
-          onStart?.()
-        },
-        onUpdate: (progress: number) => {
-          originalAnimation.onUpdate?.(progress)
-          onUpdate?.(progress)
-        },
-        onComplete: () => {
-          originalAnimation.onComplete?.()
-          onComplete?.()
-          if (autoCleanup) {
-            this.activeAnimations.delete(animation)
-          }
+      // Override callbacks through the animation object
+      originalAnimation.onStart = () => {
+        originalOnStart?.()
+        onStart?.()
+      }
+      originalAnimation.onUpdate = (progress: number) => {
+        originalOnUpdate?.(progress)
+        onUpdate?.(progress)
+      }
+      originalAnimation.onComplete = () => {
+        originalOnComplete?.()
+        onComplete?.()
+        if (autoCleanup) {
+          this.activeAnimations.delete(animation)
         }
       }
 
@@ -110,7 +111,7 @@ class AnimationCasterClass {
       }
 
       // Play animation and wait for completion
-      return new Promise<void>((resolve, reject) => {
+      return new Promise<void>((resolve) => {
         const checkComplete = () => {
           if (!animation.isAnimating()) {
             resolve()
@@ -150,25 +151,26 @@ class AnimationCasterClass {
       autoCleanup = true
     } = options
 
-    // Add lifecycle callbacks
+    // Add lifecycle callbacks by wrapping the animation
     const originalAnimation = animation.getAnimation()
+    const originalOnStart = originalAnimation.onStart
+    const originalOnUpdate = originalAnimation.onUpdate
+    const originalOnComplete = originalAnimation.onComplete
 
-    animation['animation'] = {
-      ...originalAnimation,
-      onStart: () => {
-        originalAnimation.onStart?.()
-        onStart?.()
-      },
-      onUpdate: (progress: number) => {
-        originalAnimation.onUpdate?.(progress)
-        onUpdate?.(progress)
-      },
-      onComplete: () => {
-        originalAnimation.onComplete?.()
-        onComplete?.()
-        if (autoCleanup) {
-          this.activeAnimations.delete(animation)
-        }
+    // Override callbacks through the animation object
+    originalAnimation.onStart = () => {
+      originalOnStart?.()
+      onStart?.()
+    }
+    originalAnimation.onUpdate = (progress: number) => {
+      originalOnUpdate?.(progress)
+      onUpdate?.(progress)
+    }
+    originalAnimation.onComplete = () => {
+      originalOnComplete?.()
+      onComplete?.()
+      if (autoCleanup) {
+        this.activeAnimations.delete(animation)
       }
     }
 
@@ -278,7 +280,7 @@ class AnimationCasterClass {
     this.animationQueue.push(() => this.cast(name, config, options))
 
     if (!this.isProcessingQueue) {
-      this.processQueue()
+      void this.processQueue()
     }
   }
 

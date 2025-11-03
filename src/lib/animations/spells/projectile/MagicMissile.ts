@@ -175,12 +175,12 @@ export class MagicMissile extends AbstractProjectile {
   /**
    * Override position calculation to use sine wave motion
    */
-  getCurrentPosition(progress: number): Point {
+  getCurrentPosition(): Point {
     if (this.sineWaveGenerator) {
-      return this.sineWaveGenerator(progress)
+      return this.sineWaveGenerator(this.currentProgress)
     }
     // Fallback to default linear motion
-    return super.getCurrentPosition(progress)
+    return super.getCurrentPosition()
   }
 
   /**

@@ -50,7 +50,7 @@ export class Bless extends AbstractBurst {
       name: 'Bless',
       position,
       shape: 'circle',
-      maxRadius: size * powerMultiplier,
+      radius: size * powerMultiplier,
       duration: 600, // Quick blessing application
       color,
       opacity: 0.6, // Semi-transparent holy light

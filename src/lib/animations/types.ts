@@ -46,6 +46,7 @@ export type AnimationCategory =
   | 'area'          // Persistent ground effects (fog, darkness)
   | 'cone'          // Cone-shaped area effects (burning hands, poison spray)
   | 'ray'           // Beam-like effects (ray of frost, laser)
+  | 'attack'        // Physical attacks (melee and ranged weapons)
   | 'movement'      // Token/object movement
   | 'environmental' // Weather, lighting, ambient effects
   | 'status'        // Status effect visuals (poison, burning)
@@ -94,6 +95,9 @@ export type MotionPath = {
   radius?: number           // For orbit/spiral
   rotations?: number        // For spiral
 }
+
+// Function type that generates positions along a motion path
+export type MotionPathGenerator = (progress: number) => Point
 
 // =============================================================================
 // VISUAL EFFECTS
@@ -377,6 +381,34 @@ export type EnvironmentalAnimation = BaseAnimation & {
 }
 
 // =============================================================================
+// ATTACK ANIMATIONS
+// =============================================================================
+
+export type AttackAnimation = BaseAnimation & {
+  category: 'attack'
+
+  // Attack type
+  attackType?: 'melee' | 'ranged'
+  weaponType?: string       // Optional weapon type (sword, arrow, etc.)
+
+  // Motion (for ranged attacks)
+  fromPosition?: Point
+  toPosition?: Point
+  motionPath?: MotionPath
+
+  // Range (for D&D ranges)
+  range?: number            // Maximum distance in feet
+
+  // Damage data
+  damage?: string           // Damage dice (e.g., "1d8+3")
+  damageType?: string       // Damage type (slashing, piercing, etc.)
+
+  // Impact effect
+  impactEffect?: BurstConfig
+  onImpact?: (position: Point) => void
+}
+
+// =============================================================================
 // STATUS EFFECT ANIMATIONS
 // =============================================================================
 
@@ -425,6 +457,7 @@ export type Animation =
   | AreaAnimation
   | ConeAnimation
   | RayAnimation
+  | AttackAnimation
   | MovementAnimation
   | EnvironmentalAnimation
   | StatusAnimation

@@ -44,7 +44,6 @@ export class LightningBolt extends AbstractRay {
     } = config
 
     // Scale with spell level
-    const levelMultiplier = 1 + (spellLevel - 3) * 0.1
     const powerMultiplier = power === 'empowered' ? 1.3 : 1
     const finalWidth = width * powerMultiplier
 

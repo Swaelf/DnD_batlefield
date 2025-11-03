@@ -97,7 +97,7 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
       motionGeneratorRef.current = createMotionGenerator()
       startTimeRef.current = Date.now() // Reset start time when spell changes
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [spell.id]) // Only recreate when spell ID changes (new spell)
 
   useEffect(() => {
@@ -161,7 +161,7 @@ export const UnifiedProjectile: FC<UnifiedProjectileProps> = ({
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [isAnimating, isComplete, spell.duration, onAnimationComplete]) // Only use primitives to prevent restarts
 
   // Reset when animation should restart

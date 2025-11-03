@@ -16,7 +16,7 @@
 import type { Point } from '../types'
 import { AnimationFactory, type AnimationInstance } from '../registry/AnimationFactory'
 import type { RegisteredAnimationName } from '../registry/AnimationRegistry'
-import { animationCaster, type CastOptions } from './AnimationCaster'
+import { animationCaster } from './AnimationCaster'
 
 /**
  * Timeline event for animation execution

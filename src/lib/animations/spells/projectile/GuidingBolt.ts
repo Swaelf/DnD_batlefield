@@ -61,6 +61,9 @@ export class GuidingBolt extends AbstractProjectile {
       // Motion path
       motionPath: {
         type: curved ? 'curved' : 'linear',
+        startPosition: fromPosition,
+        endPosition: toPosition,
+        duration: 0, // Will be calculated from speed
         curveHeight: curved ? 40 : undefined,
         easing: 'easeOut'
       },

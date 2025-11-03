@@ -191,19 +191,19 @@ export const interpolatePoint = (
  * Create a custom easing function from control points (cubic bezier)
  */
 export const createCubicBezierEasing = (
-  x1: number,
+  _x1: number,
   y1: number,
-  x2: number,
+  _x2: number,
   y2: number
 ): ((t: number) => number) => {
   // Simplified cubic bezier calculation
   // For production, use a more accurate implementation
+  // Note: x1 and x2 are not used in this simplified version
   return (t: number): number => {
     const t2 = t * t
     const t3 = t2 * t
     const mt = 1 - t
     const mt2 = mt * mt
-    const mt3 = mt2 * mt
 
     return 3 * mt2 * t * y1 + 3 * mt * t2 * y2 + t3
   }

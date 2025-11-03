@@ -58,8 +58,9 @@ export function animationToUnifiedAction(
 
   // For attacks, use weaponType from instance metadata as category (arrow, bolt, thrown, sword, etc.)
   // For other animations, use template category
-  const categoryValue = template.category === 'attack' && animationInstance.weaponType
-    ? animationInstance.weaponType
+  const instanceWithWeapon = animationInstance as { weaponType?: string }
+  const categoryValue = template.category === 'attack' && instanceWithWeapon.weaponType
+    ? instanceWithWeapon.weaponType
     : template.category
 
   return {
