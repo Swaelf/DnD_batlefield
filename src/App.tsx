@@ -41,17 +41,8 @@ import { NavigationPad, EnvironmentToken } from '@/components/Navigation'
 import { ViewerMode } from '@/components/ViewerMode'
 import { getSyncManager, destroySyncManager } from '@/utils/syncManager'
 
-// Debug utilities available but not auto-imported to prevent startup animations
-// These can be manually imported in TestingPanel or browser console if needed:
-// - @/testing/DebugPersistentAreas
-// - @/testing/QuickTestPersistence
-// - @/testing/SpellPersistenceTests
-// - @/testing/DetailedDebugCleanup
-// - @/testing/FinalPersistenceTest
-// - @/testing/RunAndDiagnose
-// - @/testing/SimulateSpellCasting
-// - @/testing/TestFireballSpecific
-// - @/testing/VerifyCleanupCall
+// Test system available via TestingPanel component
+// Use the TestingPanel UI to run comprehensive test suites
 import * as styles from './App.css'
 
 function App() {

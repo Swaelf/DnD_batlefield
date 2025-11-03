@@ -164,7 +164,9 @@ const useMapStore = create<MapStore>()(
           layer: spell.layer !== undefined ? spell.layer : (spell.type === 'persistent-area' ? 9 : 10),
           isSpellEffect: spell.isSpellEffect !== undefined ? spell.isSpellEffect : true,
           roundCreated: spell.roundCreated,
-          spellDuration: spell.spellDuration
+          spellDuration: spell.spellDuration,
+          durationType: spell.durationType || 'rounds', // Explicitly preserve durationType
+          eventCreated: spell.eventCreated // Explicitly preserve eventCreated for event-based duration
         }
 
         state.currentMap.objects.push(spellObject)
@@ -427,14 +429,6 @@ const useMapStore = create<MapStore>()(
               // Lasts for N rounds starting from when cast
               const expiresAtRound = obj.roundCreated + obj.spellDuration
               shouldKeep = currentRound < expiresAtRound
-              logger.debug('store', 'Round-based spell expiry check', {
-                id: obj.id,
-                roundCreated: obj.roundCreated,
-                spellDuration: obj.spellDuration,
-                expiresAtRound,
-                currentRound,
-                shouldKeep
-              })
             } else if (durationType === 'events' && obj.eventCreated !== undefined && currentEvent !== undefined) {
               // Event-based duration (instant area effects like Fireball burn, cone spells)
               // persistDuration=1 means "lasts for 1 event only" (the creation event)

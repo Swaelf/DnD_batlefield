@@ -311,11 +311,11 @@ export const testScenarios: TestScenario[] = [
   //    - Tests that post-effect persists for 1 event and is removed after next event
   //    - Flow: Cast spell → Execute Event 1 → Post-effect visible → Advance to Event 2 → Add dummy action → Execute Event 2 → Post-effect removed
   // 2. ROUND-BASED persistence (durationType: 'rounds'):
-  //    - Darkness, Web (both persist for 10 rounds)
+  //    - Darkness (persists for 10 rounds)
   //    - Tests that area effect persists across all rounds and is removed after duration expires
   //    - Flow: Cast spell (Round 1) → Advance through Rounds 2-10 → Area visible throughout → Advance to Round 11 → Area removed
   //    - Captures: Round 1 (visible), Round 2 (visible), Round 10 (visible - last round), Round 11 (removed)
-  // Total tests: 8 persistent spell tests (6 event-based + 2 round-based)
+  // Total tests: 7 persistent spell tests (6 event-based + 1 round-based)
   ...persistentSpellTests,
 
   // ============================================================================

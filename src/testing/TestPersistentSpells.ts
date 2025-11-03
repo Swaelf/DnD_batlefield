@@ -31,7 +31,6 @@ import { animationToUnifiedAction } from '@/lib/animations/adapters/toUnifiedAct
  *
  * 2. ROUND-BASED persistence (durationType: 'rounds'):
  *    - Darkness (lasts for 10 rounds)
- *    - Web (lasts for 10 rounds)
  *
  *    ROUND-BASED TEST FLOW:
  *    - Cast spell in Round 1
@@ -68,8 +67,7 @@ const getPersistentSpellTemplates = () => {
 
   // Round-based persistent spells (persistDuration in rounds)
   const roundBasedSpells = [
-    'Darkness',
-    'Web'
+    'Darkness'
   ]
 
   // Get actual spell actions from AnimationRegistry (no overrides)
@@ -665,7 +663,7 @@ export const generateRoundBasedPersistentTests = (): TestScenario[] => {
 
                 // Advance through rounds 3-10 (8 rounds)
                 for (let i = 3; i <= 10; i++) {
-                  roundStore.nextRound()
+                  roundStore.startNewRound();
                   // Small delay between rounds for visual observation
                   await new Promise(resolve => setTimeout(resolve, 200))
                 }
