@@ -1,6 +1,12 @@
 import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
 
+// Window extension for test utilities
+interface WindowWithTestUtils extends Window {
+  runAndDiagnose?: typeof runAndDiagnose
+  diagnose?: typeof runAndDiagnose
+}
+
 /**
  * Run tests and diagnose the persistence issue
  */
@@ -241,6 +247,7 @@ export async function runAndDiagnose() {
 
 // Make available in console
 if (typeof window !== 'undefined') {
-  (window as any).runAndDiagnose = runAndDiagnose
-  (window as any).diagnose = runAndDiagnose
+  const win = window as WindowWithTestUtils
+  win.runAndDiagnose = runAndDiagnose
+  win.diagnose = runAndDiagnose
 }

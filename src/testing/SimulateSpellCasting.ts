@@ -1,5 +1,12 @@
 import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
+
+// Window extension for test utilities
+interface WindowWithTestUtils extends Window {
+  simulateSpellCasting?: typeof simulateSpellCasting
+  testCleanupFunction?: typeof testCleanupFunction
+  simulate?: typeof simulateSpellCasting
+}
 import type { SpellEventData } from '@/types/timeline'
 
 /**
@@ -268,7 +275,8 @@ export function testCleanupFunction() {
 
 // Make available in console
 if (typeof window !== 'undefined') {
-  (window as any).simulateSpellCasting = simulateSpellCasting
-  (window as any).testCleanupFunction = testCleanupFunction
-  (window as any).simulate = simulateSpellCasting
+  const win = window as WindowWithTestUtils
+  win.simulateSpellCasting = simulateSpellCasting
+  win.testCleanupFunction = testCleanupFunction
+  win.simulate = simulateSpellCasting
 }

@@ -1,4 +1,5 @@
 import type { TestScenario } from './TestScenarios'
+import type { Shape } from '@/types'
 
 /**
  * Static Layer Performance Tests
@@ -638,7 +639,7 @@ export const staticObjectsPerformanceTest: TestScenario = {
             // Count static objects
             const staticObjects = allObjects.filter(obj => {
               if (obj.type !== 'shape') return false
-              const shape = obj as any
+              const shape = obj as Shape
               const isStatic = shape.metadata?.isStatic === true
               const isStaticEffect = shape.metadata?.isStaticEffect === true
               if (isStatic) {
@@ -768,7 +769,7 @@ export const staticEffectsPerformanceTest: TestScenario = {
                 },
                 color: '#FFD700'
               }
-            } as any)
+            } as Shape)
           }
         }
       },
@@ -811,7 +812,7 @@ export const staticEffectsPerformanceTest: TestScenario = {
                 },
                 color: '#FFFFFF'
               }
-            } as any)
+            } as Shape)
           }
         }
       },
@@ -854,7 +855,7 @@ export const staticEffectsPerformanceTest: TestScenario = {
                 },
                 color: '#B0C4DE'
               }
-            } as any)
+            } as Shape)
           }
         }
       },
@@ -898,7 +899,7 @@ export const staticEffectsPerformanceTest: TestScenario = {
                 },
                 color: '#FF4500'
               }
-            } as any)
+            } as Shape)
           }
         }
       },
@@ -941,7 +942,7 @@ export const staticEffectsPerformanceTest: TestScenario = {
                 },
                 color: '#556B2F'
               }
-            } as any)
+            } as Shape)
           }
         }
       },
@@ -1136,7 +1137,7 @@ export const staticEffectsPerformanceTest: TestScenario = {
             const mapStore = (await import('@/store/mapStore')).default.getState()
             const staticEffects = mapStore.currentMap?.objects.filter(obj => {
               if (obj.type !== 'shape') return false
-              const shape = obj as any
+              const shape = obj as Shape
               return shape.metadata?.isStaticEffect === true
             }) || []
             // Should have 5 static effects

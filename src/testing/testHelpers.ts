@@ -7,6 +7,14 @@
 
 import type { MapObject } from '@/types/map'
 
+// Helper types for accessing type-specific properties on MapObject
+type WithPersistentAreaData = {
+  persistentAreaData?: {
+    spellName?: string
+    [key: string]: unknown
+  }
+}
+
 /**
  * Advances to the next round in the timeline
  * Ends the current round and creates a new one
@@ -50,10 +58,13 @@ export async function hasPersistentAreaSpell(spellName: string): Promise<boolean
   const mapStore = (await import('@/store/mapStore')).default.getState()
   const allObjects = mapStore.currentMap?.objects || []
 
-  const persistentAreas = allObjects.filter(obj =>
-    obj.type === 'persistent-area' &&
-    (obj as any).persistentAreaData?.spellName === spellName
-  )
+  const persistentAreas = allObjects.filter(obj => {
+    if (obj.type === 'persistent-area') {
+      const areaObj = obj as MapObject & WithPersistentAreaData
+      return areaObj.persistentAreaData?.spellName === spellName
+    }
+    return false
+  })
 
   return persistentAreas.length > 0
 }
@@ -64,10 +75,13 @@ export async function hasPersistentAreaSpell(spellName: string): Promise<boolean
  */
 export async function countPersistentAreaSpells(spellName: string): Promise<number> {
   const mapStore = (await import('@/store/mapStore')).default.getState()
-  const persistentAreas = mapStore.currentMap?.objects.filter(obj =>
-    obj.type === 'persistent-area' &&
-    (obj as any).persistentAreaData?.spellName === spellName
-  ) || []
+  const persistentAreas = mapStore.currentMap?.objects.filter(obj => {
+    if (obj.type === 'persistent-area') {
+      const areaObj = obj as MapObject & WithPersistentAreaData
+      return areaObj.persistentAreaData?.spellName === spellName
+    }
+    return false
+  }) || []
   return persistentAreas.length
 }
 

@@ -5,7 +5,24 @@ import useTimelineStore from '@/store/timelineStore'
 import useToolStore from '@/store/toolStore'
 import type { Token } from '@/types/token'
 import type { SpellEventData } from '@/types/timeline'
+import type { MapObject } from '@/types'
 import { nanoid } from 'nanoid'
+
+// Helper types for accessing type-specific properties on MapObject
+type WithSpellData = {
+  spellData?: {
+    spellName?: string
+    fromPosition?: { x: number; y: number }
+    [key: string]: unknown
+  }
+}
+
+type WithPersistentAreaData = {
+  persistentAreaData?: {
+    spellName?: string
+    [key: string]: unknown
+  }
+}
 
 export interface TestResult {
   scenarioId: string
@@ -330,12 +347,14 @@ export class TestRunner {
           // Check both 'spell' type (during animation) and 'persistent-area' type (after animation)
           const spellActive = mapStore.currentMap?.objects.some(obj => {
             // Check spell objects (during animation)
-            if (obj.type === 'spell' && (obj as any).spellData?.spellName === assertion.params.spellName) {
-              return true
+            if (obj.type === 'spell') {
+              const spellObj = obj as MapObject & WithSpellData
+              return spellObj.spellData?.spellName === assertion.params.spellName
             }
             // Check persistent-area objects (after animation completes with persistDuration > 0)
-            if (obj.type === 'persistent-area' && (obj as any).persistentAreaData?.spellName === assertion.params.spellName) {
-              return true
+            if (obj.type === 'persistent-area') {
+              const persistentObj = obj as MapObject & WithPersistentAreaData
+              return persistentObj.persistentAreaData?.spellName === assertion.params.spellName
             }
             return false
           })
@@ -346,13 +365,17 @@ export class TestRunner {
               obj.type === 'spell' || obj.type === 'persistent-area'
             ) || []
             console.log(`🔍 [spellActive] Looking for "${assertion.params.spellName}", found ${allSpells.length} spell/persistent objects:`,
-              allSpells.map(obj => ({
-                id: obj.id,
-                type: obj.type,
-                spellName: obj.type === 'spell'
-                  ? (obj as any).spellData?.spellName
-                  : (obj as any).persistentAreaData?.spellName
-              }))
+              allSpells.map(obj => {
+                const spellObj = obj as MapObject & WithSpellData
+                const persistentObj = obj as MapObject & WithPersistentAreaData
+                return {
+                  id: obj.id,
+                  type: obj.type,
+                  spellName: obj.type === 'spell'
+                    ? spellObj.spellData?.spellName
+                    : persistentObj.persistentAreaData?.spellName
+                }
+              })
             )
 
             return {
@@ -365,7 +388,13 @@ export class TestRunner {
         case 'spellOriginPosition':
           // Validate that a spell's fromPosition matches expected value
           const spell = mapStore.currentMap?.objects.find(
-            obj => obj.type === 'spell' && (obj as any).spellData?.spellName === assertion.params.spellName
+            obj => {
+              if (obj.type === 'spell') {
+                const mapObj = obj as MapObject & WithSpellData
+                return mapObj.spellData?.spellName === assertion.params.spellName
+              }
+              return false
+            }
           )
           if (!spell) {
             return {
@@ -373,7 +402,8 @@ export class TestRunner {
               error: `Spell ${assertion.params.spellName} not found`
             }
           }
-          const spellFromPos = (spell as any).spellData?.fromPosition
+          const spellObj = spell as MapObject & WithSpellData
+          const spellFromPos = spellObj.spellData?.fromPosition
           if (!spellFromPos) {
             return {
               success: false,
@@ -453,9 +483,9 @@ export class TestRunner {
     return this.results
   }
 
-  async runCategory(category: string): Promise<TestResult[]> {
+  async runCategory(category: TestScenario['category']): Promise<TestResult[]> {
     const { getScenariosByCategory } = await import('./TestScenarios')
-    const scenarios = getScenariosByCategory(category as any)
+    const scenarios = getScenariosByCategory(category)
 
     for (const scenario of scenarios) {
       await this.runScenario(scenario)

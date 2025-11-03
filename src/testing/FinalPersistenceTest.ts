@@ -1,6 +1,14 @@
 import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
 
+// Window extension for test utilities
+interface WindowWithTestUtils extends Window {
+  runFinalPersistenceTest?: typeof runFinalPersistenceTest
+  quickSpellTest?: typeof quickSpellTest
+  testPersistence?: typeof runFinalPersistenceTest
+  testSpell?: typeof quickSpellTest
+}
+
 /**
  * Final comprehensive test for spell persistence cleanup
  */
@@ -118,7 +126,7 @@ export async function runFinalPersistenceTest() {
 
     console.log(`\n  Round ${test.round}:`)
     Object.entries(actual).forEach(([name, exists]) => {
-      const expected = (test.expected as any)[name]
+      const expected = (test.expected as Record<string, unknown>)[name]
       const icon = exists === expected ? '✅' : '❌'
       console.log(`    ${icon} ${name}: ${exists ? 'exists' : 'removed'} (expected: ${expected ? 'exists' : 'removed'})`)
     })
@@ -226,10 +234,11 @@ export async function quickSpellTest(spellName: string, duration: number) {
 
 // Make available in console
 if (typeof window !== 'undefined') {
-  (window as any).runFinalPersistenceTest = runFinalPersistenceTest
-  (window as any).quickSpellTest = quickSpellTest
+  const win = window as WindowWithTestUtils
+  win.runFinalPersistenceTest = runFinalPersistenceTest
+  win.quickSpellTest = quickSpellTest
 
   // Convenience shortcuts
-  (window as any).testPersistence = runFinalPersistenceTest
-  (window as any).testSpell = quickSpellTest
+  win.testPersistence = runFinalPersistenceTest
+  win.testSpell = quickSpellTest
 }

@@ -1,6 +1,13 @@
 import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
 
+// Window extension for test utilities
+interface WindowWithTestUtils extends Window {
+  verifyCleanupCall?: typeof verifyCleanupCall
+  checkStoreImport?: typeof checkStoreImport
+  verifyCleanup?: typeof verifyCleanupCall
+}
+
 /**
  * Verify that cleanup is actually being called when rounds advance
  */
@@ -160,7 +167,8 @@ export function checkStoreImport() {
 
 // Make available in console
 if (typeof window !== 'undefined') {
-  (window as any).verifyCleanupCall = verifyCleanupCall
-  (window as any).checkStoreImport = checkStoreImport
-  (window as any).verifyCleanup = verifyCleanupCall
+  const win = window as WindowWithTestUtils
+  win.verifyCleanupCall = verifyCleanupCall
+  win.checkStoreImport = checkStoreImport
+  win.verifyCleanup = verifyCleanupCall
 }

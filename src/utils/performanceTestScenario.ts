@@ -336,7 +336,11 @@ export class ScreenshotCapture {
     try {
       // Use html2canvas if available, otherwise use canvas API
       if (typeof window !== 'undefined' && 'html2canvas' in window) {
-        const canvas = await (window as any).html2canvas(element)
+        // html2canvas is loaded via CDN script tag
+        interface WindowWithHtml2Canvas extends Window {
+          html2canvas: (element: HTMLElement) => Promise<HTMLCanvasElement>
+        }
+        const canvas = await (window as WindowWithHtml2Canvas).html2canvas(element)
         return canvas.toDataURL('image/png')
       }
 

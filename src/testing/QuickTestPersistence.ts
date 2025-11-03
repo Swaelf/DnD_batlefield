@@ -1,6 +1,11 @@
 import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
 
+// Window extension for test utilities
+interface WindowWithTestUtils extends Window {
+  quickTestPersistence?: typeof quickTestPersistence
+}
+
 /**
  * Quick test to verify persistent area cleanup is working
  */
@@ -118,7 +123,8 @@ export async function quickTestPersistence() {
 
 // Make available in console
 if (typeof window !== 'undefined') {
-  (window as any).quickTestPersistence = quickTestPersistence
+  const win = window as WindowWithTestUtils
+  win.quickTestPersistence = quickTestPersistence
 }
 
 // Export for use in other tests

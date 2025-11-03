@@ -2,6 +2,13 @@ import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
 import type { SpellEventData } from '@/types/timeline'
 
+// Window extension for test utilities
+interface WindowWithTestUtils extends Window {
+  spellTests?: typeof spellTests
+  runSpellTests?: () => void
+  debugSpellAreas?: () => void
+}
+
 interface TestResult {
   testName: string
   passed: boolean
@@ -665,7 +672,8 @@ export const spellTests = new SpellPersistenceTests()
 
 // Make available in console for debugging
 if (typeof window !== 'undefined') {
-  (window as any).spellTests = spellTests
-  (window as any).runSpellTests = () => spellTests.runAll()
-  (window as any).debugSpellAreas = () => spellTests.debugCurrentAreas()
+  const win = window as WindowWithTestUtils
+  win.spellTests = spellTests
+  win.runSpellTests = () => spellTests.runAll()
+  win.debugSpellAreas = () => spellTests.debugCurrentAreas()
 }

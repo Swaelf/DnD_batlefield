@@ -1,6 +1,12 @@
 import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
 
+// Window extension for test utilities
+interface WindowWithTestUtils extends Window {
+  debugPersistentAreas?: typeof debugPersistentAreas
+  testFireballCleanup?: typeof testFireballCleanup
+}
+
 /**
  * Debug utility for persistent area cleanup issues
  */
@@ -77,7 +83,8 @@ export function debugPersistentAreas() {
 
 // Make it available in window for console access
 if (typeof window !== 'undefined') {
-  (window as any).debugPersistentAreas = debugPersistentAreas
+  const win = window as WindowWithTestUtils
+  win.debugPersistentAreas = debugPersistentAreas
 }
 
 export function testFireballCleanup() {
@@ -142,5 +149,6 @@ export function testFireballCleanup() {
 
 // Make test function available in console
 if (typeof window !== 'undefined') {
-  (window as any).testFireballCleanup = testFireballCleanup
+  const win = window as WindowWithTestUtils
+  win.testFireballCleanup = testFireballCleanup
 }

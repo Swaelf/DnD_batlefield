@@ -1,6 +1,13 @@
 import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
 
+// Window extension for test utilities
+interface WindowWithTestUtils extends Window {
+  testFireballBurnArea?: typeof testFireballBurnArea
+  testCleanupCondition?: typeof testCleanupCondition
+  testFireball?: typeof testFireballBurnArea
+}
+
 /**
  * Test specifically for Fireball's persistent burn area issue
  */
@@ -193,7 +200,8 @@ export function testCleanupCondition() {
 
 // Make available in console
 if (typeof window !== 'undefined') {
-  (window as any).testFireballBurnArea = testFireballBurnArea
-  (window as any).testCleanupCondition = testCleanupCondition
-  (window as any).testFireball = testFireballBurnArea
+  const win = window as WindowWithTestUtils
+  win.testFireballBurnArea = testFireballBurnArea
+  win.testCleanupCondition = testCleanupCondition
+  win.testFireball = testFireballBurnArea
 }

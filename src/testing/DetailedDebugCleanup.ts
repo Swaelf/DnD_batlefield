@@ -1,6 +1,12 @@
 import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
 
+// Window extension for test utilities
+interface WindowWithTestUtils extends Window {
+  detailedDebugCleanup?: typeof detailedDebugCleanup
+  testCreateAndCleanup?: typeof testCreateAndCleanup
+}
+
 /**
  * Detailed debug for spell persistence cleanup issue
  */
@@ -244,6 +250,7 @@ export function testCreateAndCleanup() {
 
 // Make available in console
 if (typeof window !== 'undefined') {
-  (window as any).detailedDebugCleanup = detailedDebugCleanup
-  (window as any).testCreateAndCleanup = testCreateAndCleanup
+  const win = window as WindowWithTestUtils
+  win.detailedDebugCleanup = detailedDebugCleanup
+  win.testCreateAndCleanup = testCreateAndCleanup
 }

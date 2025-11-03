@@ -81,15 +81,15 @@ export class VisualAssertions {
   }
 
   // Check if animation is running
-  assertAnimationActive(elementId: string): boolean {
-    if (!this.stage) return false
+  assertAnimationActive(elementId: string): Promise<boolean> {
+    if (!this.stage) return Promise.resolve(false)
 
     const element = this.stage.findOne(`#${elementId}`)
-    if (!element) return false
+    if (!element) return Promise.resolve(false)
 
     // Check if element has active tweens or animations
     const layer = element.getLayer()
-    if (!layer) return false
+    if (!layer) return Promise.resolve(false)
 
     // Konva doesn't expose animation state directly, so we check for changes
     const initialPos = element.position()
@@ -100,7 +100,7 @@ export class VisualAssertions {
         const moved = initialPos.x !== newPos.x || initialPos.y !== newPos.y
         resolve(moved)
       }, 100)
-    }) as any
+    })
   }
 
   // Check element color/fill
@@ -180,7 +180,12 @@ export class VisualAssertions {
     // Check for selection indicators (stroke, transformer, etc)
     const hasStroke = element.stroke() !== null && element.strokeWidth() > 0
     const transformer = this.stage.findOne('Transformer')
-    const isAttached = transformer ? (transformer as any).nodes && (transformer as any).nodes().includes(element) : false
+    // Konva Transformer has nodes() method that returns attached shapes
+    interface KonvaTransformer extends Konva.Node {
+      nodes?: () => Konva.Node[]
+    }
+    const konvaTransformer = transformer ? (transformer as unknown as KonvaTransformer) : null
+    const isAttached = konvaTransformer && konvaTransformer.nodes ? konvaTransformer.nodes().includes(element) : false
 
     return hasStroke || isAttached
   }

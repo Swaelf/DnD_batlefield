@@ -1,6 +1,6 @@
 import type { TestScenario } from './TestScenarios'
 import type { SpellCategory } from '@/types/timeline'
-import { AnimationRegistry } from '@/lib/animations'
+import { AnimationRegistry, type RegisteredAnimationName } from '@/lib/animations'
 import { animationToUnifiedAction } from '@/lib/animations/adapters/toUnifiedAction'
 
 /**
@@ -40,7 +40,8 @@ const getSpellTemplates = () => {
 
   const dummyPos = { x: 0, y: 0 }
   return templates.map(template =>
-    animationToUnifiedAction(template.name as any, dummyPos, dummyPos)
+    // Template names from registry are guaranteed to be RegisteredAnimationName
+    animationToUnifiedAction(template.name as RegisteredAnimationName, dummyPos, dummyPos)
   )
 }
 
