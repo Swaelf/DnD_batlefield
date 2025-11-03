@@ -166,7 +166,7 @@ export const ActionSelectionModal = ({
         {/* Header */}
         <Box
           style={{
-            padding: '20px 24px',
+            padding: '16px 24px',
             borderBottom: '1px solid #374151',
             display: 'flex',
             justifyContent: 'space-between',
@@ -198,7 +198,7 @@ export const ActionSelectionModal = ({
         {/* Search and Filters */}
         <Box
           style={{
-            padding: '20px 24px',
+            padding: '16px 24px',
             borderBottom: '1px solid #374151',
             backgroundColor: '#1A1A1A'
           }}
@@ -238,15 +238,18 @@ export const ActionSelectionModal = ({
                 key={category.key}
                 onClick={() => setSelectedCategory(category.key)}
                 variant={selectedCategory === category.key ? 'primary' : 'outline'}
-                size="sm"
+                size="md"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: '6px',
+                  padding: '8px 16px',
                   backgroundColor: selectedCategory === category.key ? '#C9AD6A' : '#374151',
                   color: selectedCategory === category.key ? '#000000' : '#D1D5DB',
                   border: selectedCategory === category.key ? '1px solid #C9AD6A' : '1px solid #4B5563',
-                  borderRadius: '6px'
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: selectedCategory === category.key ? '600' : '400'
                 }}
               >
                 {category.icon}
@@ -261,7 +264,7 @@ export const ActionSelectionModal = ({
           style={{
             flex: 1,
             overflow: 'auto',
-            padding: '20px 24px',
+            padding: '16px 24px',
             backgroundColor: '#111827',
             minHeight: '400px'
           }}
