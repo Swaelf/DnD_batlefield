@@ -206,11 +206,7 @@ export const tokenSizeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            const token = mapStore.currentMap?.objects.find(obj => obj.id === 'size-test-token') as Token | undefined
-            if (token) {
-              Object.assign(token, { size: 'small' })
-              mapStore.updateObject('size-test-token', {})
-            }
+            mapStore.updateObject('size-test-token', { size: 'small' })
           }
         }
       },
@@ -243,11 +239,7 @@ export const tokenSizeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            const token = mapStore.currentMap?.objects.find(obj => obj.id === 'size-test-token') as Token | undefined
-            if (token) {
-              Object.assign(token, { size: 'medium' })
-              mapStore.updateObject('size-test-token', {})
-            }
+            mapStore.updateObject('size-test-token', { size: 'medium' })
           }
         }
       },
@@ -265,11 +257,7 @@ export const tokenSizeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            const token = mapStore.currentMap?.objects.find(obj => obj.id === 'size-test-token') as Token | undefined
-            if (token) {
-              Object.assign(token, { size: 'large' })
-              mapStore.updateObject('size-test-token', {})
-            }
+            mapStore.updateObject('size-test-token', { size: 'large' })
           }
         }
       },
@@ -302,11 +290,7 @@ export const tokenSizeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            const token = mapStore.currentMap?.objects.find(obj => obj.id === 'size-test-token') as Token | undefined
-            if (token) {
-              Object.assign(token, { size: 'huge' })
-              mapStore.updateObject('size-test-token', {})
-            }
+            mapStore.updateObject('size-test-token', { size: 'huge' })
           }
         }
       },
@@ -339,11 +323,7 @@ export const tokenSizeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            const token = mapStore.currentMap?.objects.find(obj => obj.id === 'size-test-token') as Token | undefined
-            if (token) {
-              Object.assign(token, { size: 'gargantuan' })
-              mapStore.updateObject('size-test-token', {})
-            }
+            mapStore.updateObject('size-test-token', { size: 'gargantuan' })
           }
         }
       },
@@ -525,11 +505,7 @@ export const tokenShapeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            const token = mapStore.currentMap?.objects.find(obj => obj.id === 'shape-test-token') as Token | undefined
-            if (token) {
-              Object.assign(token, { shape: 'square' })
-              mapStore.updateObject('shape-test-token', {})
-            }
+            mapStore.updateObject('shape-test-token', { shape: 'square' })
           }
         }
       },
@@ -562,11 +538,7 @@ export const tokenShapeTest: TestScenario = {
         params: {
           execute: async () => {
             const mapStore = (await import('@/store/mapStore')).default.getState()
-            const token = mapStore.currentMap?.objects.find(obj => obj.id === 'shape-test-token') as Token | undefined
-            if (token) {
-              Object.assign(token, { shape: 'circle' })
-              mapStore.updateObject('shape-test-token', {})
-            }
+            mapStore.updateObject('shape-test-token', { shape: 'circle' })
           }
         }
       },

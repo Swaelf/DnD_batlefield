@@ -267,9 +267,15 @@ export const generateEventBasedPersistentTests = (): TestScenario[] => {
             params: {
               check: async () => {
                 const mapStore = (await import('@/store/mapStore')).default.getState()
-                // Check if there are any active spell effects (post-effects are stored as spell objects with spellDuration)
+                // Check if there are any active spell effects (post-effects can have various duration properties)
                 const allSpells = mapStore.currentMap?.objects.filter((obj: any) => obj.type === 'spell') || []
-                const postEffects = allSpells.filter((obj: any) => obj.spellDuration && obj.spellDuration > 0)
+                const postEffects = allSpells.filter((obj: any) =>
+                  (obj.spellDuration && obj.spellDuration > 0) ||
+                  (obj.persistDuration && obj.persistDuration > 0) ||
+                  (obj.duration && obj.duration > 0) ||
+                  obj.persistent ||
+                  obj.isStatic
+                )
 
                 console.log(`[Persistent Test] 🔍 Spell objects after Event 1:`, {
                   total: allSpells.length,
@@ -277,6 +283,10 @@ export const generateEventBasedPersistentTests = (): TestScenario[] => {
                   details: allSpells.map((obj: any) => ({
                     id: obj.id,
                     spellDuration: obj.spellDuration,
+                    persistDuration: obj.persistDuration,
+                    duration: obj.duration,
+                    persistent: obj.persistent,
+                    isStatic: obj.isStatic,
                     durationType: obj.durationType,
                     roundCreated: obj.roundCreated,
                     eventCreated: obj.eventCreated
@@ -362,7 +372,13 @@ export const generateEventBasedPersistentTests = (): TestScenario[] => {
               check: async () => {
                 const mapStore = (await import('@/store/mapStore')).default.getState()
                 const postEffects = mapStore.currentMap?.objects.filter((obj: any) =>
-                  obj.type === 'spell' && obj.spellDuration && obj.spellDuration > 0
+                  obj.type === 'spell' && (
+                    (obj.spellDuration && obj.spellDuration > 0) ||
+                    (obj.persistDuration && obj.persistDuration > 0) ||
+                    (obj.duration && obj.duration > 0) ||
+                    obj.persistent ||
+                    obj.isStatic
+                  )
                 ) || []
                 console.log(`[Persistent Test] 🔍 Post-effects at Event 2:`, postEffects.length)
                 return postEffects.length > 0
@@ -444,9 +460,15 @@ export const generateEventBasedPersistentTests = (): TestScenario[] => {
             params: {
               check: async () => {
                 const mapStore = (await import('@/store/mapStore')).default.getState()
-                // Check if there are NO active spell effects with spellDuration
+                // Check if there are NO active spell effects with any duration properties
                 const postEffects = mapStore.currentMap?.objects.filter((obj: any) =>
-                  obj.type === 'spell' && obj.spellDuration && obj.spellDuration > 0
+                  obj.type === 'spell' && (
+                    (obj.spellDuration && obj.spellDuration > 0) ||
+                    (obj.persistDuration && obj.persistDuration > 0) ||
+                    (obj.duration && obj.duration > 0) ||
+                    obj.persistent ||
+                    obj.isStatic
+                  )
                 ) || []
                 console.log(`[Persistent Test] 🔍 Post-effects after Event 3:`, postEffects.length)
                 return postEffects.length === 0
@@ -592,9 +614,15 @@ export const generateRoundBasedPersistentTests = (): TestScenario[] => {
             params: {
               check: async () => {
                 const mapStore = (await import('@/store/mapStore')).default.getState()
-                // Check for active area effects
+                // Check for active area effects (can have various duration properties)
                 const areaEffects = mapStore.currentMap?.objects.filter((obj: any) =>
-                  obj.type === 'spell' && obj.spellDuration && obj.spellDuration > 0
+                  obj.type === 'spell' && (
+                    (obj.spellDuration && obj.spellDuration > 0) ||
+                    (obj.persistDuration && obj.persistDuration > 0) ||
+                    (obj.duration && obj.duration > 0) ||
+                    obj.persistent ||
+                    obj.isStatic
+                  )
                 ) || []
                 console.log(`[Persistent Test] Area effects in Round 1:`, areaEffects.length)
                 return areaEffects.length > 0
@@ -667,7 +695,13 @@ export const generateRoundBasedPersistentTests = (): TestScenario[] => {
               check: async () => {
                 const mapStore = (await import('@/store/mapStore')).default.getState()
                 const areaEffects = mapStore.currentMap?.objects.filter((obj: any) =>
-                  obj.type === 'spell' && obj.spellDuration && obj.spellDuration > 0
+                  obj.type === 'spell' && (
+                    (obj.spellDuration && obj.spellDuration > 0) ||
+                    (obj.persistDuration && obj.persistDuration > 0) ||
+                    (obj.duration && obj.duration > 0) ||
+                    obj.persistent ||
+                    obj.isStatic
+                  )
                 ) || []
                 console.log(`[Persistent Test] Area effects in Round 10:`, areaEffects.length)
                 return areaEffects.length > 0
@@ -706,9 +740,15 @@ export const generateRoundBasedPersistentTests = (): TestScenario[] => {
             params: {
               check: async () => {
                 const mapStore = (await import('@/store/mapStore')).default.getState()
-                // Check that NO area effects remain
+                // Check that NO area effects remain (check all possible duration properties)
                 const areaEffects = mapStore.currentMap?.objects.filter((obj: any) =>
-                  obj.type === 'spell' && obj.spellDuration && obj.spellDuration > 0
+                  obj.type === 'spell' && (
+                    (obj.spellDuration && obj.spellDuration > 0) ||
+                    (obj.persistDuration && obj.persistDuration > 0) ||
+                    (obj.duration && obj.duration > 0) ||
+                    obj.persistent ||
+                    obj.isStatic
+                  )
                 ) || []
                 console.log(`[Persistent Test] Area effects in Round 11:`, areaEffects.length)
                 return areaEffects.length === 0
