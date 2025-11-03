@@ -267,8 +267,8 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           isSelected={isSelected}
           isDraggable={isDraggable && !hasActivePath}
           onSelect={(id, e) => handleObjectClick(id, e)}
-          onDragStart={() => {}}
-          onDragMove={() => {}}
+          onDragStart={() => { }}
+          onDragMove={() => { }}
           onDragEnd={(e) => handleObjectDragEnd(obj.id, e)}
           onContextMenu={(e) => handleObjectRightClick(obj.id, e)}
         />

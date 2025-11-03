@@ -89,8 +89,8 @@ export const StaticEffectsLayer = memo(() => {
           color: effectData.color || shape.fill || '#FFFFFF',
           opacity: shape.opacity || 1
         }}
-        onSelect={() => {}}  // No selection handling - layer has listening={false}
-        onRemove={() => {}}  // No removal handling
+        onSelect={() => { }}  // No selection handling - layer has listening={false}
+        onRemove={() => { }}  // No removal handling
       />
     )
   }, [])

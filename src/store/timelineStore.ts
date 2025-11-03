@@ -218,6 +218,8 @@ const useTimelineStore = create<TimelineStore>()(
           spellEffectsToRemove.forEach(id => {
             mapStore.deleteObject(id)
           })
+
+          console.log(`⏮️ Returned to Event ${previousEventNumber}: Restored ${Object.keys(snapshot.tokenPositions).length} token positions, removed ${spellEffectsToRemove.length} spell effects`)
         }
       }
 
