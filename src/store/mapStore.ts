@@ -7,6 +7,7 @@ import { useHistoryStore } from './historyStore'
 import { useLayerStore } from './layerStore'
 import { getSyncManager } from '../utils/syncManager'
 import { logger } from '../utils/logger'
+import { v4 as uuidv4 } from 'uuid'
 
 // Helper function to save current state to history before modifications
 const saveToHistory = () => {
@@ -45,7 +46,7 @@ const useMapStore = create<MapStore>()(
     spellPreviewEnabled: false, // Action preview disabled by default (spells and movement)
 
     createNewMap: (name) => set((state) => {
-      const mapId = crypto.randomUUID()
+      const mapId = uuidv4()
 
       // Create void token for environmental spells (invisible, used only for event system)
       const voidToken = {
@@ -184,7 +185,7 @@ const useMapStore = create<MapStore>()(
       if (state.currentMap) {
         // Add attack with animation data
         const attackObject: MapObject = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           type: 'attack' as const,
           position: attack.fromPosition,
           rotation: 0,
@@ -232,7 +233,7 @@ const useMapStore = create<MapStore>()(
           for (const selectedId of state.selectedObjects) {
             const originalObject = state.currentMap.objects.find(obj => obj.id === selectedId)
             if (originalObject) {
-              const duplicateId = crypto.randomUUID()
+              const duplicateId = uuidv4()
               const duplicatedObject = {
                 ...originalObject,
                 id: duplicateId,

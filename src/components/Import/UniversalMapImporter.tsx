@@ -1,4 +1,5 @@
 import { useCallback, useState, useRef, type ReactNode, type ChangeEvent } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import useMapStore from '@store/mapStore'
 import type { BattleMap, MapObject, Shape } from '@/types'
 
@@ -164,7 +165,7 @@ export const UniversalMapImporter = ({
       if (page.graphics) {
         page.graphics.forEach((graphic: any) => {
           const obj: ImportedMapObject = {
-            id: importOptions.preserveIds ? graphic._id : crypto.randomUUID(),
+            id: importOptions.preserveIds ? graphic._id : uuidv4(),
             type: graphic._type === 'image' ? 'token' : 'shape',
             position: {
               x: parseFloat(graphic.left) || 0,
@@ -219,7 +220,7 @@ export const UniversalMapImporter = ({
       if (scene.tokens) {
         scene.tokens.forEach((token: any) => {
           const obj: ImportedMapObject = {
-            id: importOptions.preserveIds ? token._id : crypto.randomUUID(),
+            id: importOptions.preserveIds ? token._id : uuidv4(),
             type: 'token',
             position: {
               x: token.x || 0,
@@ -242,7 +243,7 @@ export const UniversalMapImporter = ({
       if (scene.drawings) {
         scene.drawings.forEach((drawing: any) => {
           const obj: Shape = {
-            id: importOptions.preserveIds ? drawing._id : crypto.randomUUID(),
+            id: importOptions.preserveIds ? drawing._id : uuidv4(),
             type: 'shape',
             shapeType: drawing.type || 'line',
             position: {
@@ -330,7 +331,7 @@ export const UniversalMapImporter = ({
             const dataUrl = e.target?.result as string
 
             const backgroundObj: ImportedMapObject = {
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               type: 'tile',
               position: { x: 0, y: 0 },
               image: dataUrl,
@@ -456,7 +457,7 @@ export const UniversalMapImporter = ({
 
     const imported = importResults.imported
     const newMap: BattleMap = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       name: imported.name,
       width: imported.width,
       height: imported.height,

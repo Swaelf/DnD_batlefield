@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { v4 as uuidv4 } from 'uuid'
 import { immer } from 'zustand/middleware/immer'
 
 export type UserRole = 'gm' | 'player' | 'observer'
@@ -287,8 +288,8 @@ export const useCollaborationStore = create<CollaborationStore>()(
 
   // Session Management
   createSession: async (mapId: string, settings: Partial<CollaborationSession['settings']>) => {
-    const sessionId = crypto.randomUUID()
-    const userId = crypto.randomUUID()
+    const sessionId = uuidv4()
+    const userId = uuidv4()
 
     const session: CollaborationSession = {
       id: sessionId,
@@ -331,7 +332,7 @@ export const useCollaborationStore = create<CollaborationStore>()(
   },
 
   joinSession: async (sessionId: string, userInfo: Partial<CollaborativeUser>) => {
-    await get().connect(sessionId, userInfo.id || crypto.randomUUID())
+    await get().connect(sessionId, userInfo.id || uuidv4())
   },
 
   leaveSession: () => {
@@ -374,7 +375,7 @@ export const useCollaborationStore = create<CollaborationStore>()(
   submitOperation: (operation: Omit<CollaborationOperation, 'id' | 'timestamp' | 'acknowledged'>) => {
     const fullOperation: CollaborationOperation = {
       ...operation,
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       timestamp: new Date(),
       acknowledged: false
     }
@@ -458,7 +459,7 @@ export const useCollaborationStore = create<CollaborationStore>()(
     if (!currentUser) return
 
     const chatMessage: ChatMessage = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       userId: currentUser.id,
       userName: currentUser.name,
       message,
@@ -484,7 +485,7 @@ export const useCollaborationStore = create<CollaborationStore>()(
     if (!currentUser) return
 
     const diceMessage: ChatMessage = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       userId: currentUser.id,
       userName: currentUser.name,
       message: `rolled ${formula}`,

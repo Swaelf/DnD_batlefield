@@ -5,6 +5,7 @@ import type { TimelineAction, Position } from '../types'
 import useMapStore from './mapStore'
 import useEventCreationStore from './eventCreationStore'
 import useBattleLogStore from './battleLogStore'
+import { v4 as uuidv4 } from 'uuid'
 
 const useTimelineStore = create<TimelineStore>()(
   immer((set, get) => ({
@@ -28,16 +29,16 @@ const useTimelineStore = create<TimelineStore>()(
 
       if (!state.timeline) {
         state.timeline = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           mapId,
           currentRound: 1,
           currentEvent: 1,
           rounds: [{
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             number: 1,
             name: 'Round 1',
             events: [{
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               roundNumber: 1,
               number: 1,
               timestamp: Date.now(),
@@ -130,7 +131,7 @@ const useTimelineStore = create<TimelineStore>()(
           let nextEvent = currentRoundData.events.find(e => e.number === nextEventNumber)
           if (!nextEvent) {
             nextEvent = {
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               roundNumber: currentRound,
               number: nextEventNumber,
               timestamp: Date.now(),
@@ -247,7 +248,7 @@ const useTimelineStore = create<TimelineStore>()(
           const eventExists = currentRoundData.events.find(e => e.number === eventNumber)
           if (!eventExists) {
             currentRoundData.events.push({
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               roundNumber: currentRound,
               number: eventNumber,
               timestamp: Date.now(),
@@ -291,7 +292,7 @@ const useTimelineStore = create<TimelineStore>()(
       if (!event) {
         // Create the event if it doesn't exist
         event = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           roundNumber: currentRound,
           number: targetEvent,
           timestamp: Date.now(),
@@ -303,7 +304,7 @@ const useTimelineStore = create<TimelineStore>()(
       }
 
       const newAction: TimelineAction = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         eventNumber: targetEvent,
         tokenId,
         type,
@@ -693,11 +694,11 @@ const useTimelineStore = create<TimelineStore>()(
         // Create new round
         const newRoundNumber = activeRound + 1
         const newRound = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           number: newRoundNumber,
           name: `Round ${newRoundNumber}`,
           events: [{
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             roundNumber: newRoundNumber,
             number: 1,
             timestamp: Date.now(),

@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type FC, type ReactNode, type ChangeEvent } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import useMapStore from '@store/mapStore'
 import useToolStore from '@store/toolStore'
 import type { Point, Shape } from '@/types'
@@ -287,7 +288,7 @@ export const ProfessionalShapeLibrary: FC<ProfessionalShapeLibraryProps> = ({
     }
 
     const shapeObject: Shape = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       type: 'shape',
       shapeType: mappedShapeType,
       position: centerPos,

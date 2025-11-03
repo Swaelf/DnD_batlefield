@@ -1,4 +1,5 @@
 import { useCallback, type RefObject } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import type Konva from 'konva'
 import type { Position, Shape } from '@/types/map'
 import { snapToGrid } from '@/utils/grid'
@@ -285,7 +286,7 @@ export const useToolHandlers = ({
         // Place token immediately using template if available
         if (tokenTemplate) {
           const token = {
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             type: 'token' as const,
             position: snappedPos,
             rotation: 0,
@@ -305,7 +306,7 @@ export const useToolHandlers = ({
         } else {
           // Fallback if no template
           const token = {
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             type: 'token' as const,
             position: snappedPos,
             rotation: 0,
@@ -347,7 +348,7 @@ export const useToolHandlers = ({
           // Circles already use center position in Konva, so no offset needed
 
           const newObject: Shape = {
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             type: 'shape' as const,
             shapeType: staticObjectTemplate.shape,
             position: objectPosition,
@@ -374,7 +375,7 @@ export const useToolHandlers = ({
         // Place static effect using template
         if (staticEffectTemplate) {
           const newObject: Partial<Shape> = {
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             type: 'shape' as const,
             position: snappedPos,
             rotation: 0,
@@ -576,7 +577,7 @@ export const useToolHandlers = ({
 
       case 'rectangle':
         newObject = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           type: 'shape',
           shapeType: 'rectangle',
           position: {
@@ -601,7 +602,7 @@ export const useToolHandlers = ({
           Math.pow(currentPoint.y - startPoint.y, 2)
         )
         newObject = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           type: 'shape',
           shapeType: 'circle',
           position: startPoint,
@@ -618,7 +619,7 @@ export const useToolHandlers = ({
         break
       case 'line':
         newObject = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           type: 'shape',
           shapeType: 'line',
           position: { x: 0, y: 0 }, // Line uses points array instead
@@ -644,7 +645,7 @@ export const useToolHandlers = ({
             flatPoints.push(point.x, point.y)
           })
           newObject = {
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             type: 'shape',
             shapeType: 'polygon',
             position: { x: 0, y: 0 }, // Polygon uses points array

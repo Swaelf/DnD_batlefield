@@ -1,4 +1,5 @@
 import type { BattleMap, MapObject, Shape, Text, Token, Point } from '@/types'
+import { v4 as uuidv4 } from 'uuid'
 
 // Universal VTT format interfaces
 export interface UniversalVTTMap {
@@ -393,7 +394,7 @@ export class CrossPlatformExchange {
       })
 
     const page: Roll20Page = {
-      _id: crypto.randomUUID(),
+      _id: uuidv4(),
       name: map.name,
       width: map.width,
       height: map.height,
@@ -469,7 +470,7 @@ export class CrossPlatformExchange {
       })
 
     return {
-      _id: crypto.randomUUID(),
+      _id: uuidv4(),
       name: map.name,
       width: map.width,
       height: map.height,
@@ -562,7 +563,7 @@ export class CrossPlatformExchange {
     })
 
     return {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       name: uvtt.name,
       width: uvtt.resolution.map_size.width,
       height: uvtt.resolution.map_size.height,
@@ -658,7 +659,7 @@ export class CrossPlatformExchange {
     }
 
     return {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       name: page.name,
       width: page.width,
       height: page.height,
@@ -734,7 +735,7 @@ export class CrossPlatformExchange {
     })
 
     return {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       name: foundry.name,
       width: foundry.width,
       height: foundry.height,

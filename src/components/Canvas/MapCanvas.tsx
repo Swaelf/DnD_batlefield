@@ -1,4 +1,5 @@
 /**
+import { v4 as uuidv4 } from 'uuid'
  * MapCanvas - Consolidated Canvas Component
  *
  * Consolidates all LegacyMapCanvasAdapter functionality using optimized 3-layer architecture.
@@ -148,7 +149,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       }
 
       const tokenObject = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         type: 'token' as const,
         position: snapToGrid(position, gridSettings?.size || 50, gridSettings?.snap || false),
         rotation: 0,
@@ -181,7 +182,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       }
 
       const staticObject = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         type: 'shape' as const,
         shapeType: template.type,
         position: objectPosition,
@@ -212,7 +213,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       const sizeProps = template.sizeProperties || {}
 
       const staticEffectObject: any = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         type: 'shape' as const,
         position: snappedPos,
         rotation: template.rotation || 0,
@@ -273,7 +274,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
 
     if (currentTool === 'text') {
       const textObject = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         type: 'text' as const,
         position: snapToGrid(position, gridSettings?.size || 50, gridSettings?.snap || false),
         rotation: 0,
@@ -607,7 +608,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
       if (terrainPointsRef.current.length >= 4) {
         const drawingType: 'erase' | 'brush' = currentTool === 'terrainEraser' ? 'erase' : 'brush'
         const terrainDrawing = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           type: drawingType,
           points: [...terrainPointsRef.current],
           color: toolState.terrainColor,
@@ -644,7 +645,7 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
 
         if (distance >= minSize || currentTool === 'polygon') {
           const terrainDrawing: any = {
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             type: currentTool as any,
             color: toolState.terrainColor,
             strokeWidth: 3,

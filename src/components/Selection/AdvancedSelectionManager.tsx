@@ -1,4 +1,5 @@
 import { type FC, useCallback, useMemo, useState, useEffect } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { Box } from '@/components/primitives/BoxVE'
 import { Text } from '@/components/primitives/TextVE'
 import { Button } from '@/components/primitives/ButtonVE'
@@ -116,7 +117,7 @@ export const AdvancedSelectionManager: FC<AdvancedSelectionManagerProps> = ({
 
     // Create group object
     const groupObject: GroupedMapObject = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       type: 'shape',
       position: { x: bounds.left, y: bounds.top },
       layer: Math.max(...selectedObjectData.map(obj => obj.layer || 0)),
@@ -180,7 +181,7 @@ export const AdvancedSelectionManager: FC<AdvancedSelectionManagerProps> = ({
 
     const newObjects = copiedObjects.map(obj => ({
       ...obj,
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       position: {
         x: obj.position.x + 20, // Offset pasted objects
         y: obj.position.y + 20
