@@ -67,14 +67,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
 
       // Handle Ice Storm multi-burst spawning
       if (spell.spellName?.toLowerCase() === 'ice storm') {
-        console.log('[Ice Storm] Animation loop:', {
-          elapsed,
-          category: spell.category,
-          spellName: spell.spellName,
-          currentBurstCount: iceBursts.length,
-          areaSize: spell.size
-        })
-
         const spawnInterval = 800 // Spawn a new ice impact every 800ms (5 bursts over 4 seconds)
         if (elapsed - lastIceSpawnRef.current > spawnInterval && iceBursts.length < 5) {
           lastIceSpawnRef.current = elapsed
@@ -90,7 +82,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
             size: 25 // 1 grid cell = 50px diameter, so radius = 25px
           }
 
-          console.log('[Ice Storm] Spawning burst:', newIce)
           setIceBursts(prev => [...prev, newIce])
         }
       }
@@ -543,18 +534,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         const burstRadius = maxBurstRadius * (0.3 + progress * 0.7) // Start at 30%, expand to 100%
         const burstOpacityValue = spell.opacity !== undefined ? spell.opacity : opacity
 
-        // Debug logging
-        if (progress === 0) {
-          console.log('[SimpleSpellComponent] Burst spell:', {
-            spellName: spell.spellName,
-            burstRadius: spell.burstRadius,
-            size: spell.size,
-            baseRadius,
-            maxBurstRadius,
-            finalBurstRadius: maxBurstRadius
-          })
-        }
-
         return (
           <>
             <Circle
@@ -580,14 +559,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         if (spell.spellName?.toLowerCase() === 'ice storm') {
           const areaRadius = spell.size || 200
           const elapsed = Date.now() - startTimeRef.current
-
-          console.log('[Ice Storm] Rendering:', {
-            spellName: spell.spellName,
-            category: spell.category,
-            burstCount: iceBursts.length,
-            elapsed,
-            areaRadius
-          })
 
           return (
             <>
@@ -826,16 +797,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
 
       case 'cone':
         // Cone spell effect - circular sector (pie slice) centered at source
-        if (progress === 0) {
-          console.log('[Cone Spell]', {
-            spellName: spell.spellName,
-            category: spell.category,
-            size: spell.size,
-            coneAngle: spell.coneAngle,
-            fromPosition: spell.fromPosition,
-            toPosition: spell.toPosition
-          })
-        }
         // Size is already in pixels from the spell data - use it directly
         const coneLength = spell.size || 100
         const coneAngle = (spell.coneAngle || 60) * (Math.PI / 180)

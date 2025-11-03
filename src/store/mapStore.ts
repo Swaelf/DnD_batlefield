@@ -452,16 +452,6 @@ const useMapStore = create<MapStore>()(
               // persistDuration=1: created at event 1, visible at events 1-2, removed at event 3
               shouldKeep = eventsElapsed <= obj.spellDuration && sameRound
 
-              console.log('[Cleanup] Event-based spell check:', {
-                spellId: obj.id,
-                eventCreated: obj.eventCreated,
-                currentEvent,
-                eventsElapsed,
-                spellDuration: obj.spellDuration,
-                sameRound,
-                shouldKeep
-              })
-
               logger.debug('store', 'Event-based spell expiry check', {
                 id: obj.id,
                 eventCreated: obj.eventCreated,

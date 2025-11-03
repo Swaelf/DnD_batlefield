@@ -218,8 +218,6 @@ const useTimelineStore = create<TimelineStore>()(
           spellEffectsToRemove.forEach(id => {
             mapStore.deleteObject(id)
           })
-
-          console.log(`⏮️ Returned to Event ${previousEventNumber}: Restored ${Object.keys(snapshot.tokenPositions).length} token positions, removed ${spellEffectsToRemove.length} spell effects`)
         }
       }
 
@@ -410,19 +408,11 @@ const useTimelineStore = create<TimelineStore>()(
               let actualFromPosition = spellData.fromPosition
               let actualToPosition = spellData.toPosition
 
-              console.log('🔮 Spell execution - original positions:', {
-                from: spellData.fromPosition,
-                to: spellData.toPosition,
-                casterTokenId: action.tokenId,
-                targetTokenId: spellData.targetTokenId
-              })
-
               // Look up caster token's current position
               if (action.tokenId) {
                 const casterToken = mapStore.currentMap?.objects.find(obj => obj.id === action.tokenId)
                 if (casterToken) {
                   actualFromPosition = casterToken.position
-                  console.log(`✅ Caster token ${action.tokenId} current position:`, casterToken.position)
                 } else {
                   console.warn(`⚠️ Caster token ${action.tokenId} not found!`)
                 }
@@ -433,16 +423,10 @@ const useTimelineStore = create<TimelineStore>()(
                 const targetToken = mapStore.currentMap?.objects.find(obj => obj.id === spellData.targetTokenId)
                 if (targetToken) {
                   actualToPosition = targetToken.position
-                  console.log(`✅ Target token ${spellData.targetTokenId} current position:`, targetToken.position)
                 } else {
                   console.warn(`⚠️ Target token ${spellData.targetTokenId} not found!`)
                 }
               }
-
-              console.log('🎯 Spell will use positions:', {
-                from: actualFromPosition,
-                to: actualToPosition
-              })
 
               // Create spell with actual current positions
               const updatedSpellData = {
@@ -584,7 +568,6 @@ const useTimelineStore = create<TimelineStore>()(
                 if (movingToken) {
                   // Use token's current position as the starting point
                   actualFromPosition = movingToken.position
-                  console.log(`🏃 Token ${action.tokenId} moving from current position:`, movingToken.position, 'to:', actualToPosition)
                 }
               }
 
@@ -764,7 +747,6 @@ const useTimelineStore = create<TimelineStore>()(
         expiredEffects.forEach(effect => {
           mapStore.deleteObject(effect.id)
         })
-        console.log(`🧹 Removed ${expiredEffects.length} expired post effects from Round ${activeRound}`)
       }
 
       // Add battle log entry for round ending
@@ -921,8 +903,6 @@ const useTimelineStore = create<TimelineStore>()(
           spellEffectsToRemove.forEach(id => {
             mapStore.deleteObject(id)
           })
-
-          console.log(`🔙 Restored Round ${previousRoundNumber}: ${Object.keys(snapshot.tokenPositions).length} tokens, removed ${spellEffectsToRemove.length} spell effects`)
         }
       }
     },

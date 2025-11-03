@@ -687,20 +687,10 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
       // For spells with persist duration, create a persistent area
       const persistDuration = spellData.persistDuration || 0
 
-      console.log('[ObjectsLayer] Persistent area check:', {
-        spellName: spellData.spellName,
-        persistDuration,
-        durationType: spellData.durationType,
-        category: spellData.category,
-        spellSize: spellData.size,
-        hasEventData: !!spell.eventCreated
-      })
-
       // Don't create duplicate persistent areas or delete spell objects with persistence
       // The spell object will render as a persistent area after animation completes
       if (persistDuration > 0) {
         // Spell has persistence - DON'T delete it, let cleanup logic handle it based on events
-        console.log('[ObjectsLayer] Spell has persistDuration, keeping object for persistent rendering')
         return
       }
 
@@ -760,17 +750,6 @@ export const ObjectsLayer: FC<ObjectsLayerProps> = memo(({
           durationType: durationType,
           isSpellEffect: true as const // Mark as spell effect for cleanup
         }
-
-        console.log('[ObjectsLayer] Creating persistent area:', {
-          spellName: spellData.spellName,
-          currentEvent,
-          persistDuration,
-          expiresAt: currentEvent + persistDuration,
-          durationType,
-          shape: persistentAreaObject.persistentAreaData.shape,
-          persistentRadius,
-          spellSize: spellData.size
-        })
 
         // Add persistent area to map using addSpellEffect to ensure it's tracked properly
         const addSpellEffect = useMapStore.getState().addSpellEffect
