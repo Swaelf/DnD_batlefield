@@ -66,7 +66,7 @@ As of now, **20 spells** are automatically tested:
 ### Other (8)
 - Darkness
 - Poison Spray
-- Stone Rain
+- Ice Storm
 - Thunderwave
 - Web
 - (and others...)

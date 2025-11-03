@@ -16,7 +16,7 @@ interface TrailPosition {
   progress: number
 }
 
-interface StoneBurst {
+interface IceBurst {
   x: number
   y: number
   startTime: number
@@ -34,11 +34,11 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
   const [progress, setProgress] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
   const [trailPositions, setTrailPositions] = useState<TrailPosition[]>([])
-  const [stoneBursts, setStoneBursts] = useState<StoneBurst[]>([])
+  const [iceBursts, setIceBursts] = useState<IceBurst[]>([])
   const animationFrameRef = useRef<number>(0)
   const startTimeRef = useRef<number>(Date.now())
   // const _lastTrailUpdateRef = useRef<number>(0) // unused
-  const lastStoneSpawnRef = useRef<number>(0)
+  const lastIceSpawnRef = useRef<number>(0)
   const currentMap = useMapStore(state => state.currentMap)
 
   // Get current target position if tracking is enabled
@@ -65,24 +65,33 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
 
       setProgress(currentProgress)
 
-      // Handle Stone Rain multi-burst spawning
-      if (spell.spellName?.toLowerCase() === 'stone rain') {
-        const spawnInterval = 150 // Spawn a new stone every 150ms
-        if (elapsed - lastStoneSpawnRef.current > spawnInterval && stoneBursts.length < 12) {
-          lastStoneSpawnRef.current = elapsed
+      // Handle Ice Storm multi-burst spawning
+      if (spell.spellName?.toLowerCase() === 'ice storm') {
+        console.log('[Ice Storm] Animation loop:', {
+          elapsed,
+          category: spell.category,
+          spellName: spell.spellName,
+          currentBurstCount: iceBursts.length,
+          areaSize: spell.size
+        })
+
+        const spawnInterval = 800 // Spawn a new ice impact every 800ms (5 bursts over 4 seconds)
+        if (elapsed - lastIceSpawnRef.current > spawnInterval && iceBursts.length < 5) {
+          lastIceSpawnRef.current = elapsed
 
           // Generate random position within the spell area
-          const areaRadius = spell.size || 100
+          const areaRadius = spell.size || 200
           const angle = Math.random() * Math.PI * 2
-          const distance = Math.random() * areaRadius
-          const newStone: StoneBurst = {
+          const distance = Math.sqrt(Math.random()) * areaRadius // sqrt for uniform distribution
+          const newIce: IceBurst = {
             x: getTargetPosition().x + Math.cos(angle) * distance,
             y: getTargetPosition().y + Math.sin(angle) * distance,
             startTime: elapsed,
-            size: 15 + Math.random() * 10 // Vary stone sizes slightly
+            size: 25 // 1 grid cell = 50px diameter, so radius = 25px
           }
 
-          setStoneBursts(prev => [...prev, newStone])
+          console.log('[Ice Storm] Spawning burst:', newIce)
+          setIceBursts(prev => [...prev, newIce])
         }
       }
 
@@ -182,9 +191,9 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
       setProgress(0)
       setIsComplete(false)
       setTrailPositions([])
-      setStoneBursts([])
+      setIceBursts([])
       startTimeRef.current = Date.now()
-      lastStoneSpawnRef.current = 0
+      lastIceSpawnRef.current = 0
     }
   }, [isAnimating])
 
@@ -567,7 +576,98 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         )
 
       case 'area':
-        // Fade-in area effect that transitions to persistent
+        // Check for Ice Storm - special multi-burst rendering
+        if (spell.spellName?.toLowerCase() === 'ice storm') {
+          const areaRadius = spell.size || 200
+          const elapsed = Date.now() - startTimeRef.current
+
+          console.log('[Ice Storm] Rendering:', {
+            spellName: spell.spellName,
+            category: spell.category,
+            burstCount: iceBursts.length,
+            elapsed,
+            areaRadius
+          })
+
+          return (
+            <>
+              {/* Area indicator - subtle circle showing the affected zone */}
+              <Circle
+                x={getTargetPosition().x}
+                y={getTargetPosition().y}
+                radius={areaRadius}
+                stroke="#87CEEB"
+                strokeWidth={2}
+                opacity={0.3}
+                fill="#87CEEB"
+                fillOpacity={0.1}
+              />
+
+              {/* Render each ice burst */}
+              {iceBursts.map((ice, index) => {
+                const iceAge = elapsed - ice.startTime
+                const iceDuration = 500 // Each ice impact lasts 500ms
+                const iceProgress = Math.min(iceAge / iceDuration, 1)
+
+                if (iceProgress >= 1) return null // Ice animation complete
+
+                // Expanding burst for each ice impact
+                const burstRadius = ice.size * (1 + iceProgress * 2)
+                const burstOpacity = (1 - iceProgress) * 0.8
+
+                return (
+                  <Group key={index}>
+                    {/* Impact burst */}
+                    <Circle
+                      x={ice.x}
+                      y={ice.y}
+                      radius={burstRadius}
+                      fill="#87CEEB"
+                      opacity={burstOpacity * 0.4}
+                    />
+
+                    {/* Inner impact ring */}
+                    <Ring
+                      x={ice.x}
+                      y={ice.y}
+                      innerRadius={burstRadius * 0.5}
+                      outerRadius={burstRadius}
+                      fill="#ADD8E6"
+                      opacity={burstOpacity * 0.6}
+                    />
+
+                    {/* Central ice impact */}
+                    <Circle
+                      x={ice.x}
+                      y={ice.y}
+                      radius={ice.size * 0.5}
+                      fill="#F0F8FF"
+                      opacity={burstOpacity}
+                    />
+
+                    {/* Ice shard particles */}
+                    {[0, 1, 2, 3].map(i => {
+                      const angle = (i * Math.PI) / 2
+                      const particleDistance = burstRadius * 1.2
+                      return (
+                        <Circle
+                          key={i}
+                          x={ice.x + Math.cos(angle) * particleDistance}
+                          y={ice.y + Math.sin(angle) * particleDistance}
+                          radius={3}
+                          fill="#E0F4FF"
+                          opacity={burstOpacity * 0.5}
+                        />
+                      )
+                    })}
+                  </Group>
+                )
+              })}
+            </>
+          )
+        }
+
+        // Standard area spell rendering (Darkness, Web, etc.)
         const areaOpacity = progress * 0.6
         const isDarkness = spell.spellName?.toLowerCase().includes('darkness')
         const effectRadius = spell.size || baseRadius * 2
@@ -880,88 +980,6 @@ export const SimpleSpellComponent: FC<SimpleSpellComponentProps> = ({
         )
 
       default:
-        // Check for Stone Rain spell
-        if (spell.spellName?.toLowerCase() === 'stone rain') {
-          const areaRadius = spell.size || 100
-          const elapsed = Date.now() - startTimeRef.current
-
-          return (
-            <>
-              {/* Area indicator - subtle circle showing the affected zone */}
-              <Circle
-                x={getTargetPosition().x}
-                y={getTargetPosition().y}
-                radius={areaRadius}
-                stroke="#8B7355"
-                strokeWidth={2}
-                opacity={0.3}
-                fill="#8B7355"
-                fillOpacity={0.1}
-              />
-
-              {/* Render each stone burst */}
-              {stoneBursts.map((stone, index) => {
-                const stoneAge = elapsed - stone.startTime
-                const stoneDuration = 500 // Each stone impact lasts 500ms
-                const stoneProgress = Math.min(stoneAge / stoneDuration, 1)
-
-                if (stoneProgress >= 1) return null // Stone animation complete
-
-                // Expanding burst for each stone
-                const burstRadius = stone.size * (1 + stoneProgress * 2)
-                const burstOpacity = (1 - stoneProgress) * 0.8
-
-                return (
-                  <Group key={index}>
-                    {/* Impact burst */}
-                    <Circle
-                      x={stone.x}
-                      y={stone.y}
-                      radius={burstRadius}
-                      fill="#8B7355"
-                      opacity={burstOpacity * 0.4}
-                    />
-
-                    {/* Inner impact ring */}
-                    <Ring
-                      x={stone.x}
-                      y={stone.y}
-                      innerRadius={burstRadius * 0.5}
-                      outerRadius={burstRadius}
-                      fill="#696969"
-                      opacity={burstOpacity * 0.6}
-                    />
-
-                    {/* Central stone impact */}
-                    <Circle
-                      x={stone.x}
-                      y={stone.y}
-                      radius={stone.size * 0.5}
-                      fill="#4B4B4B"
-                      opacity={burstOpacity}
-                    />
-
-                    {/* Debris particles */}
-                    {[0, 1, 2, 3].map(i => {
-                      const angle = (i * Math.PI) / 2
-                      const particleDistance = burstRadius * 1.2
-                      return (
-                        <Circle
-                          key={i}
-                          x={stone.x + Math.cos(angle) * particleDistance}
-                          y={stone.y + Math.sin(angle) * particleDistance}
-                          radius={3}
-                          fill="#8B7355"
-                          opacity={burstOpacity * 0.5}
-                        />
-                      )
-                    })}
-                  </Group>
-                )
-              })}
-            </>
-          )
-        }
         return null
     }
   }

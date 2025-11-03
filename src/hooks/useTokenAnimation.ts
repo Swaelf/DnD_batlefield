@@ -236,9 +236,9 @@ export function useTokenAnimation(stageRef: MutableRefObject<Konva.Stage | null>
         } else if (spellData.category === 'area') {
           // For area spells, use the duration from the spell data (expanding animation only)
           animDuration = spellData.duration || 800 // Default expanding animation duration
-        } else if (spellData.spellName?.toLowerCase() === 'stone rain') {
-          // Stone rain has its own special multi-burst animation
-          animDuration = 2000 // Total duration for all stone impacts
+        } else if (spellData.spellName?.toLowerCase() === 'ice storm') {
+          // Ice Storm has its own special multi-burst animation
+          animDuration = 4100 // Total duration for all ice impacts (18 impacts * 200ms + 500ms)
         }
 
         const persistDuration = (spellData.persistDuration || 0) // Already in milliseconds

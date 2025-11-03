@@ -19,7 +19,7 @@ import { GuidingBolt, type GuidingBoltConfig } from '../spells/projectile/Guidin
 import { Thunderwave, type ThunderwaveConfig } from '../spells/burst/Thunderwave'
 import { Darkness, type DarknessConfig } from '../spells/area/Darkness'
 import { Web, type WebConfig } from '../spells/area/Web'
-import { StoneRain, type StoneRainConfig } from '../spells/area/StoneRain'
+import { IceStorm, type IceStormConfig } from '../spells/area/IceStorm'
 import { RayOfFrost, type RayOfFrostConfig } from '../spells/ray/RayOfFrost'
 import { EldritchBlast, type EldritchBlastConfig } from '../spells/ray/EldritchBlast'
 import { BurningHands, type BurningHandsConfig } from '../spells/cone/BurningHands'
@@ -189,22 +189,22 @@ class AnimationRegistryClass {
       factory: ((config: WebConfig) => new Web(config)) as (config: unknown) => unknown
     })
 
-    this.register('Stone Rain', {
-      name: 'Stone Rain',
+    this.register('Ice Storm', {
+      name: 'Ice Storm',
       category: 'area',
-      description: 'A barrage of stones rains down in a large area, striking multiple locations with small impacts.',
+      description: 'A hail of rock-hard ice pounds to the ground in a 20-ft radius cylinder, creating difficult terrain.',
       defaults: {
         category: 'area',
-        name: 'Stone Rain',
-        duration: 2000, // Animation shows stones falling
-        color: '#8B7355',
-        size: 100,
-        persistDuration: 1, // Rubble lasts for 1 event (difficult terrain)
+        name: 'Ice Storm',
+        duration: 4100, // 5 bursts * 800ms + 500ms (last burst animation)
+        color: '#87CEEB', // Light blue
+        size: 200, // 20-ft radius = 4 grid cells (50px per cell)
+        persistDuration: 1, // Ice terrain lasts for 1 event (difficult terrain)
         durationType: 'events',
-        persistColor: '#696969',
-        persistOpacity: 0.5
+        persistColor: '#87CEEB',
+        persistOpacity: 0.3
       },
-      factory: ((config: StoneRainConfig) => new StoneRain(config)) as (config: unknown) => unknown
+      factory: ((config: IceStormConfig) => new IceStorm(config)) as (config: unknown) => unknown
     })
 
     // Ray spells
@@ -944,7 +944,7 @@ export type RegisteredAnimationName =
   | 'Thunderwave'
   | 'Darkness'
   | 'Web'
-  | 'Stone Rain'
+  | 'Ice Storm'
   | 'Ray of Frost'
   | 'Eldritch Blast'
   | 'Burning Hands'
@@ -998,7 +998,7 @@ export const SpellTemplates = {
   // Area effects
   darkness: (position: Point) => new Darkness({ position }),
   web: (position: Point) => new Web({ position }),
-  stoneRain: (position: Point) => new StoneRain({ position }),
+  iceStorm: (position: Point) => new IceStorm({ position }),
 
   // Rays
   rayOfFrost: (from: Point, to: Point) => new RayOfFrost({ fromPosition: from, toPosition: to }),

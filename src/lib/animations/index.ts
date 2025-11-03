@@ -69,8 +69,8 @@ export { Darkness } from './spells/area/Darkness'
 export type { DarknessConfig } from './spells/area/Darkness'
 export { Web } from './spells/area/Web'
 export type { WebConfig } from './spells/area/Web'
-export { StoneRain } from './spells/area/StoneRain'
-export type { StoneRainConfig } from './spells/area/StoneRain'
+export { IceStorm } from './spells/area/IceStorm'
+export type { IceStormConfig } from './spells/area/IceStorm'
 
 // Spell implementations - Ray
 export { RayOfFrost } from './spells/ray/RayOfFrost'

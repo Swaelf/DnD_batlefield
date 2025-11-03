@@ -12,7 +12,7 @@ import { animationToUnifiedAction } from '@/lib/animations/adapters/toUnifiedAct
  *    - Poison Spray (poisonous cloud persists for 1 event)
  *    - Cone of Cold (icy ground persists for 1 event)
  *    - Breath Weapon (elemental energy persists for 1 event)
- *    - Stone Rain (rubble persists for 1 event)
+ *    - Ice Storm (icy rubble persists for 1 event)
  *
  *    EVENT-BASED TEST FLOW (persistDuration=1 means visible at Events 1-2):
  *    - Cast spell and execute Event 1
@@ -63,7 +63,7 @@ const getPersistentSpellTemplates = () => {
     'Poison Spray',
     'Cone of Cold',
     'Breath Weapon',
-    'Stone Rain'
+    'Ice Storm'
   ]
 
   // Round-based persistent spells (persistDuration in rounds)

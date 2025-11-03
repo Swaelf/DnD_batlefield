@@ -307,7 +307,7 @@ export const testScenarios: TestScenario[] = [
   // These tests verify persistent spell effects (burning ground, area effects, etc.)
   // Two categories:
   // 1. EVENT-BASED persistence (durationType: 'events'):
-  //    - Fireball, Burning Hands, Poison Spray, Cone of Cold, Breath Weapon, Stone Rain
+  //    - Fireball, Burning Hands, Poison Spray, Cone of Cold, Breath Weapon, Ice Storm
   //    - Tests that post-effect persists for 1 event and is removed after next event
   //    - Flow: Cast spell → Execute Event 1 → Post-effect visible → Advance to Event 2 → Add dummy action → Execute Event 2 → Post-effect removed
   // 2. ROUND-BASED persistence (durationType: 'rounds'):
