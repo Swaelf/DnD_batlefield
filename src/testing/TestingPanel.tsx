@@ -69,7 +69,7 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({ stage, isOpen, onClo
         testResults = await testRunnerRef.current.runAll()
       } else {
         // Run category
-        testResults = await testRunnerRef.current.runCategory(selectedCategory)
+        testResults = await testRunnerRef.current.runCategory(selectedCategory as 'movement' | 'tokens' | 'selection' | 'timeline' | 'spells' | 'attacks' | 'animations' | 'visual')
       }
 
       // Detect bugs

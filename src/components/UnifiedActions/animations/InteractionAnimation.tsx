@@ -12,7 +12,7 @@ type InteractionAnimationProps = {
 
 const InteractionAnimationComponent = ({ action, onComplete }: InteractionAnimationProps) => {
   const groupRef = useRef<Konva.Group>(null)
-  const iconRef = useRef<Konva.Node>(null)
+  const iconRef = useRef<Konva.Shape | Konva.Group | null>(null)
   const pulseRef = useRef<Konva.Circle>(null)
   const rafRef = useRef<number>(0)
   const startTimeRef = useRef(Date.now())
@@ -110,7 +110,9 @@ const InteractionAnimationComponent = ({ action, onComplete }: InteractionAnimat
 
       case 'trap':
         if (progress < 0.2) {
-          icon.fill(progress % 0.1 < 0.05 ? 'red' : params.color)
+          if (icon instanceof Konva.Shape) {
+            icon.fill(progress % 0.1 < 0.05 ? 'red' : params.color)
+          }
           icon.opacity(1)
         } else if (progress < 0.5) {
           const triggerProgress = EASING.easeOut((progress - 0.2) / 0.3)
@@ -173,7 +175,7 @@ const InteractionAnimationComponent = ({ action, onComplete }: InteractionAnimat
         // Door icon (rectangle)
         return (
           <Rect
-            ref={iconRef}
+            ref={iconRef as React.RefObject<Konva.Rect>}
             x={-size / 2}
             y={-size}
             width={size}
@@ -189,7 +191,7 @@ const InteractionAnimationComponent = ({ action, onComplete }: InteractionAnimat
       case 'switch':
         // Lever icon (vertical line with circle)
         return (
-          <Group ref={iconRef}>
+          <Group ref={iconRef as React.RefObject<Konva.Group>}>
             <Line
               points={[0, -size, 0, size]}
               stroke={color}
@@ -208,7 +210,7 @@ const InteractionAnimationComponent = ({ action, onComplete }: InteractionAnimat
       case 'container':
         // Chest icon (rectangle with lid)
         return (
-          <Group ref={iconRef}>
+          <Group ref={iconRef as React.RefObject<Konva.Group>}>
             <Rect
               x={-size * 0.7}
               y={-size * 0.5}
@@ -232,7 +234,7 @@ const InteractionAnimationComponent = ({ action, onComplete }: InteractionAnimat
         // Trap icon (warning triangle)
         return (
           <RegularPolygon
-            ref={iconRef}
+            ref={iconRef as React.RefObject<Konva.RegularPolygon>}
             sides={3}
             radius={size}
             fill={color}
@@ -246,7 +248,7 @@ const InteractionAnimationComponent = ({ action, onComplete }: InteractionAnimat
         // Button icon (circle)
         return (
           <Circle
-            ref={iconRef}
+            ref={iconRef as React.RefObject<Konva.Circle>}
             radius={size * 0.6}
             fill={color}
             stroke="gray"
@@ -258,7 +260,7 @@ const InteractionAnimationComponent = ({ action, onComplete }: InteractionAnimat
         // Generic interaction icon (gear)
         return (
           <RegularPolygon
-            ref={iconRef}
+            ref={iconRef as React.RefObject<Konva.RegularPolygon>}
             sides={8}
             radius={size}
             fill={color}

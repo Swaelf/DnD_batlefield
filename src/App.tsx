@@ -20,7 +20,7 @@ const ConflictResolutionSystem = lazy(() => import('./components/Collaboration/C
 const CollaborationSessionCreator = lazy(() => import('./components/Collaboration/CollaborationSessionCreator').then(m => ({ default: m.CollaborationSessionCreator })))
 const PerformanceDashboard = lazy(() => import('./components/Performance/PerformanceDashboard').then(m => ({ default: m.PerformanceDashboard })))
 const AccessibilityPanel = lazy(() => import('./components/Accessibility/AccessibilityPanel').then(m => ({ default: m.AccessibilityPanel })))
-import { FeatureErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
+import { FeatureErrorBoundary } from './components/ErrorBoundary'
 import { usePerformanceMonitor } from './hooks/usePerformanceMonitor'
 import { useAccessibility } from './hooks/useAccessibility'
 import useCollaborationStore from '@store/collaborationStore'

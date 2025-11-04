@@ -13,7 +13,7 @@ import { ShapeStylePanel } from './ShapeStylePanel'
 import { MapSettingsPanel } from './MapSettingsPanel'
 import { MultiSelectProperties } from './MultiSelectProperties'
 import { StatusEffectsPanel } from './StatusEffectsPanel'
-import { ComponentErrorBoundary } from '../ErrorBoundary/ErrorBoundary'
+import { ComponentErrorBoundary } from '../ErrorBoundary'
 import {
   Panel,
   PanelHeader,

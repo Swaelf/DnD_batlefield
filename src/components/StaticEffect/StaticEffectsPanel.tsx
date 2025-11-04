@@ -11,8 +11,8 @@ import {
   Text,
   Button
 } from '@/components/ui'
-import { EffectPropertiesPanel } from '@/components/ui/EffectPropertiesPanel'
-import type { EffectProperties } from '@/components/ui/EffectPropertiesPanel'
+import { EffectPropertiesPanel } from '@/components/Properties/EffectPropertiesPanel'
+import type { EffectProperties } from '@/components/Properties/EffectPropertiesPanel'
 import { staticEffectTemplates, staticEffectCategories } from './constants.tsx'
 import type { StaticEffectTemplate } from './types'
 import * as styles from './StaticEffectsPanel.css'

@@ -6,7 +6,7 @@ import {
   NavControls,
   NavButton,
   NextRoundButton
-} from './CombatTracker.styled.tsx'
+} from './styled'
 
 type RoundCounterProps = {
   currentRound: number

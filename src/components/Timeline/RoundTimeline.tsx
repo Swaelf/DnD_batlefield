@@ -9,7 +9,7 @@ import {
   StatCard,
   StatLabel,
   StatValue
-} from './CombatTracker.styled.tsx'
+} from './styled'
 
 type RoundTimelineProps = {
   timeline: Timeline | null

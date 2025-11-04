@@ -11,7 +11,7 @@ import {
   SpeedLabel,
   SpeedInput,
   SpeedValue
-} from './CombatTracker.styled.tsx'
+} from './styled'
 
 type CombatControlsProps = {
   eventCount: number

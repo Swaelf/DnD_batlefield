@@ -1,6 +1,6 @@
 import { type FC, useState, useEffect } from 'react'
 import type { Shape } from '@/types'
-import { EffectPropertiesPanel, type EffectProperties } from '@/components/ui/EffectPropertiesPanel'
+import { EffectPropertiesPanel, type EffectProperties } from '@/components/Properties/EffectPropertiesPanel'
 
 type StaticObjectPropertiesEditorProps = {
   staticObject: Shape

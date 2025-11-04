@@ -11,7 +11,7 @@ export * from './Grid'
 // Form components
 export * from './Input'
 export * from './Select'
-export { Checkbox } from './Checkbox'
+export * from './Checkbox'
 
 // Overlay components
 export * from './Modal'
@@ -21,8 +21,8 @@ export * from './Menu'
 
 // Typography & Display components
 export { Kbd } from './Kbd'
-export { Avatar } from './Avatar'
-export { Badge } from './Badge'
+export * from './Avatar'
+export * from './Badge'
 
 // Components to be added in future phases:
 // export { Slider } from './Slider'

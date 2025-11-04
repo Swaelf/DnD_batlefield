@@ -39,7 +39,7 @@ export function animationToUnifiedAction(
     toPosition: targetPos,
     position: sourcePos, // For status effects
     target: targetPos
-  })
+  }) as AnimationInstance
 
   // Map category to UnifiedAction type
   const actionType = mapCategoryToActionType(template.category)
@@ -207,7 +207,7 @@ function buildAnimationConfig(template: any, instance: AnimationInstance): Anima
   // Add category-specific properties
   switch (category) {
     case 'projectile':
-      config.speed = instance.speed || 500
+      config.speed = (instance.speed as number) || 500
       config.trail = true
       config.trailLength = 8
       config.trailFade = 0.8
@@ -216,29 +216,29 @@ function buildAnimationConfig(template: any, instance: AnimationInstance): Anima
       // Try to get animation data using getAnimation() method or direct access
       const projectileAnim = typeof instance.getAnimation === 'function'
         ? instance.getAnimation()
-        : (instance.animation || instance)
+        : (instance.animation || instance) as Record<string, any>
 
       // Extract range from instance or animation data (can be 'range' or 'maxRange')
-      if (instance.range) config.range = instance.range
-      if (projectileAnim.maxRange) config.range = projectileAnim.maxRange
+      if (instance.range) config.range = instance.range as number
+      if (projectileAnim.maxRange) config.range = projectileAnim.maxRange as number
 
       // Extract curved flag from motion path configuration
       if (projectileAnim.motionPath?.type === 'curved') {
         config.curved = true
-        config.curveHeight = projectileAnim.motionPath.curveHeight
-        config.curveDirection = projectileAnim.motionPath.curveDirection
+        config.curveHeight = projectileAnim.motionPath.curveHeight as number
+        config.curveDirection = projectileAnim.motionPath.curveDirection as 'up' | 'down'
       }
 
       if (projectileAnim.impactEffect) {
-        const impact = projectileAnim.impactEffect
-        config.burstSize = impact.radius || impact.size
-        config.burstDuration = impact.duration || 600
-        config.burstColor = impact.color
+        const impact = projectileAnim.impactEffect as Record<string, any>
+        config.burstSize = (impact.radius || impact.size) as number
+        config.burstDuration = (impact.duration || 600) as number
+        config.burstColor = impact.color as string
       }
 
       // Handle persistent effects (burning ground, etc.)
       if (projectileAnim.metadata?.persistDuration) {
-        config.persistDuration = projectileAnim.metadata.persistDuration
+        config.persistDuration = projectileAnim.metadata.persistDuration as number
         config.durationType = 'events' // Projectile bursts use event-based duration
         config.persistent = true
         config.persistColor = config.burstColor || config.color
@@ -253,21 +253,21 @@ function buildAnimationConfig(template: any, instance: AnimationInstance): Anima
 
     case 'area':
       // Access animation properties from the instance's animation object
-      const areaAnim = instance.animation || instance
-      config.persistent = (areaAnim.persistDuration || 0) > 0
-      config.persistDuration = areaAnim.persistDuration || 0
-      config.durationType = areaAnim.durationType || 'rounds'
-      config.opacity = areaAnim.opacity || 0.6
+      const areaAnim = (instance.animation || instance) as Record<string, any>
+      config.persistent = ((areaAnim.persistDuration as number) || 0) > 0
+      config.persistDuration = (areaAnim.persistDuration as number) || 0
+      config.durationType = (areaAnim.durationType as 'rounds' | 'events') || 'rounds'
+      config.opacity = (areaAnim.opacity as number) || 0.6
       // Use actual size from animation instance, not template defaults
       if (areaAnim.size) {
-        config.size = areaAnim.size
+        config.size = areaAnim.size as number
       }
       break
 
     case 'ray':
       config.instant = true
       config.glow = true
-      if (instance.range) config.range = instance.range
+      if (instance.range) config.range = instance.range as number
       break
 
     case 'cone':
@@ -307,33 +307,33 @@ function buildAnimationConfig(template: any, instance: AnimationInstance): Anima
     case 'attack':
       // Determine if melee or ranged based on weaponType
       const rangedWeaponTypes = ['arrow', 'bolt', 'thrown', 'sling']
-      const isRanged = rangedWeaponTypes.includes(instance.weaponType)
+      const isRanged = rangedWeaponTypes.includes(instance.weaponType as string)
 
       if (isRanged) {
         // Ranged attack
         config.type = 'projectile'
         config.speed = 600
         config.trail = true
-        config.spin = instance.spin || false
-        if (instance.range) config.range = instance.range
+        config.spin = (instance.spin as boolean) || false
+        if (instance.range) config.range = instance.range as number
       } else {
         // Melee attack - use attackType to determine animation
-        config.type = mapMeleeTypeToAnimation(instance.attackType || 'slash')
-        config.range = instance.range || 5
+        config.type = mapMeleeTypeToAnimation((instance.attackType as string) || 'slash')
+        config.range = (instance.range as number) || 5
         config.impact = true
       }
       break
 
     case 'movement':
       config.type = 'interaction' // Movement uses interaction animation
-      config.easing = instance.easing || 'linear'
-      config.duration = instance.duration
+      config.easing = (instance.easing as AnimationConfig['easing']) || 'linear'
+      config.duration = instance.duration as number
       break
 
     case 'status':
       config.type = 'area' // Status effects rendered as area
       config.persistent = true
-      config.opacity = instance.opacity || 0.7
+      config.opacity = (instance.opacity as number) || 0.7
       config.pulse = instance.animationType === 'pulse'
       config.particles = instance.animationType === 'particles'
       break
@@ -341,7 +341,7 @@ function buildAnimationConfig(template: any, instance: AnimationInstance): Anima
 
   // Add secondary color if available
   if (instance.secondaryColor) {
-    config.secondaryColor = instance.secondaryColor
+    config.secondaryColor = instance.secondaryColor as string
   }
 
   return config

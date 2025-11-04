@@ -13,7 +13,7 @@ import {
   CombatBar,
   ExpandedSection,
   NavButton
-} from './CombatTracker.styled.tsx'
+} from './styled'
 
 const CombatTrackerComponent: FC = () => {
   const [isExpanded, setIsExpanded] = useState(false)
