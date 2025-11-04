@@ -65,11 +65,9 @@ export function createStore<T extends object>(
   // Type assertion needed: Zustand's middleware composition types don't infer correctly
   // when combining immer + subscribeWithSelector. The runtime behavior is correct.
   // See: https://github.com/pmndrs/zustand/issues/980
-  type ComposedMiddleware = typeof subscribeWithSelector extends (s: infer S) => infer R ? R : never
-
   return create<StoreWithActions<T>>()(
-    subscribeWithSelector(immer(stateCreator)) as ComposedMiddleware
-  ) as unknown as StoreApi<StoreWithActions<T>>
+    immer(subscribeWithSelector(stateCreator as any)) as any
+  ) as StoreApi<StoreWithActions<T>>
 }
 
 /**

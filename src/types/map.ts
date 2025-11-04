@@ -93,12 +93,14 @@ export type Text = MapObject & {
 }
 
 import type { GridSettings } from './grid'
-import { ToolType } from './tools'
+
+// Terrain drawing types (separate from ToolType to keep data format simple)
+export type TerrainDrawingType = 'brush' | 'fill' | 'erase' | 'rectangle' | 'circle' | 'line' | 'polygon'
 
 // Terrain drawing data for background layer
 export type TerrainDrawing = {
   id: string
-  type: ToolType // 'brush' | 'fill' | 'erase' | 'rectangle' | 'circle' | 'line' | 'polygon'
+  type: TerrainDrawingType
   points?: number[]                       // For brush strokes, lines, and polygons
   fillArea?: { x: number; y: number }     // For fill bucket
   // Shape properties

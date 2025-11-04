@@ -55,26 +55,6 @@ export const MultiSelectTool: FC<MultiSelectToolProps> = ({
     }
   }, [isActive, selectionMode])
 
-  // Handle mouse move - update selection area
-  const handleMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (!isActive || !isSelecting) return
-
-    const stage = e.target.getStage()
-    if (!stage) return
-
-    const pointer = stage.getPointerPosition()
-    if (!pointer) return
-
-    const transform = stage.getAbsoluteTransform().copy().invert()
-    const pos = transform.point(pointer)
-
-    setCurrentPoint(pos)
-
-    if (selectionMode === 'lasso') {
-      setLassoPoints(prev => [...prev, pos])
-    }
-  }, [isActive, isSelecting, selectionMode])
-
   // Handle mouse up - complete selection
   const handleMouseUp = useCallback(() => {
     if (!isActive || !isSelecting) return
@@ -187,11 +167,19 @@ export const MultiSelectTool: FC<MultiSelectToolProps> = ({
     if (!isActive) return
 
     const handleGlobalMouseMove = (_e: MouseEvent) => {
-      if (stageRef.current) {
-        handleMouseMove({
-          target: stageRef.current,
-          currentTarget: stageRef.current
-        } as Konva.KonvaEventObject<MouseEvent>)
+      if (stageRef.current && isSelecting) {
+        const stage = stageRef.current
+        const pointer = stage.getPointerPosition()
+        if (!pointer) return
+
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const pos = transform.point(pointer)
+
+        setCurrentPoint(pos)
+
+        if (selectionMode === 'lasso') {
+          setLassoPoints(prev => [...prev, pos])
+        }
       }
     }
 
@@ -208,7 +196,7 @@ export const MultiSelectTool: FC<MultiSelectToolProps> = ({
       document.removeEventListener('mousemove', handleGlobalMouseMove)
       document.removeEventListener('mouseup', handleGlobalMouseUp)
     }
-  }, [isActive, isSelecting, handleMouseMove, handleMouseUp])
+  }, [isActive, isSelecting, selectionMode, handleMouseUp])
 
   if (!isActive || !isSelecting || !startPoint || !currentPoint) {
     return null

@@ -46,8 +46,6 @@ if (process.env.NODE_ENV === 'development') {
       }
       runTimelineNavigationTest?: () => void
       runRoundReplayTest?: () => void
-      runTimelineNavigationTest?: () => void
-      runRoundReplayTest?: () => void
     }
     if (globalWindow.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
       globalWindow.__REACT_DEVTOOLS_GLOBAL_HOOK__.isDisabled = false

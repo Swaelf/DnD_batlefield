@@ -25,7 +25,7 @@ import { findTokenAtPosition, objectIntersectsRect } from './utils'
 import type { Point } from '@/types/geometry'
 import type { Token } from '@/types/token'
 import type { MapCanvasProps } from './types'
-import { TerrainDrawing } from '@/types'
+import type { TerrainDrawing, TerrainDrawingType, ToolType } from '@/types'
 
 export const MapCanvas: FC<MapCanvasProps> = memo(({
   width,
@@ -645,9 +645,17 @@ export const MapCanvas: FC<MapCanvasProps> = memo(({
         const distance = Math.sqrt(width * width + height * height)
 
         if (distance >= minSize || currentTool === 'polygon') {
+          // Map ToolType to TerrainDrawingType
+          const getTerrainDrawingType = (tool: ToolType): TerrainDrawingType => {
+            if (tool === 'terrainBrush') return 'brush'
+            if (tool === 'terrainFill') return 'fill'
+            if (tool === 'terrainEraser') return 'erase'
+            return tool as TerrainDrawingType
+          }
+
           const terrainDrawing: TerrainDrawing = {
             id: uuidv4(),
-            type: currentTool,
+            type: getTerrainDrawingType(currentTool),
             color: toolState.terrainColor,
             strokeWidth: 3,
             opacity: toolState.terrainOpacity,

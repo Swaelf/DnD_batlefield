@@ -122,9 +122,9 @@ export const styleGroups: Record<string, StyleGroupBase> = {
     },
 
     sizes: {
-      sm: { padding: '2', fontSize: 'sm' as const },
-      md: { padding: '3', fontSize: 'md' as const },
-      lg: { padding: '4', fontSize: 'lg' as const },
+      sm: { padding: 2, fontSize: 'sm' as const },
+      md: { padding: 3, fontSize: 'md' as const },
+      lg: { padding: 4, fontSize: 'lg' as const },
     },
 
     variants: {
@@ -160,9 +160,9 @@ export const styleGroups: Record<string, StyleGroupBase> = {
     },
 
     sizes: {
-      sm: { padding: '2', fontSize: 'sm' as const },
-      md: { padding: '3', fontSize: 'md' as const },
-      lg: { padding: '4', fontSize: 'lg' as const },
+      sm: { padding: 2, fontSize: 'sm' as const },
+      md: { padding: 3, fontSize: 'md' as const },
+      lg: { padding: 4, fontSize: 'lg' as const },
     },
   },
 
@@ -177,9 +177,9 @@ export const styleGroups: Record<string, StyleGroupBase> = {
     },
 
     padding: {
-      sm: { padding: '3' },
-      md: { padding: '4' },
-      lg: { padding: '6' },
+      sm: { padding: 3 },
+      md: { padding: 4 },
+      lg: { padding: 6 },
     },
   },
 
