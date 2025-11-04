@@ -1,4 +1,5 @@
 import type { TestScenario, TestStep, TestAction, TestAssertion } from './TestScenarios'
+import { testScenarios, getScenariosByCategory } from './TestScenarios'
 import type { CanvasCapture, Screenshot, StateSnapshot } from './CanvasCapture'
 import useMapStore from '@/store/mapStore'
 import useTimelineStore from '@/store/timelineStore'
@@ -474,8 +475,6 @@ export class TestRunner {
   }
 
   async runAll(): Promise<TestResult[]> {
-    const { testScenarios } = await import('./TestScenarios')
-
     for (const scenario of testScenarios) {
       await this.runScenario(scenario)
     }
@@ -484,7 +483,6 @@ export class TestRunner {
   }
 
   async runCategory(category: TestScenario['category']): Promise<TestResult[]> {
-    const { getScenariosByCategory } = await import('./TestScenarios')
     const scenarios = getScenariosByCategory(category)
 
     for (const scenario of scenarios) {

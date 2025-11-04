@@ -5,6 +5,7 @@ import type { TimelineAction, Position } from '../types'
 import { isToken, hasStringArrayProperty, hasStringProperty } from '../types'
 import { isSpellAction, isAttackAction, isMoveAction } from '../types'
 import useMapStore from './mapStore'
+import useAnimationStore from './animationStore'
 import useEventCreationStore from './eventCreationStore'
 import useBattleLogStore from './battleLogStore'
 import { v4 as uuidv4 } from 'uuid'
@@ -362,7 +363,7 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Save snapshot before executing event (for undo/navigation)
       if (!event.snapshot) {
-        const mapStore = (await import('./mapStore')).default.getState()
+        const mapStore = useMapStore.getState()
         const tokenPositions: Record<string, Position> = {}
         const spellEffects: string[] = []
 
@@ -388,8 +389,8 @@ const useTimelineStore = create<TimelineStore>()(
 
       // Execute each action sequentially, waiting for each animation to complete
       for (const action of event.actions) {
-        // Get mapStore methods - we'll need to import this properly
-        const mapStore = (await import('./mapStore')).default.getState()
+        // Get mapStore methods
+        const mapStore = useMapStore.getState()
 
         // Create a promise for each action that resolves when animation completes
         await new Promise<void>((resolve) => {
@@ -575,8 +576,7 @@ const useTimelineStore = create<TimelineStore>()(
 
                 if (actualFromPosition && actualToPosition) {
                   // Start smooth animation using animationStore
-                  const animationStoreModule = await import('./animationStore')
-                  const animationStore = animationStoreModule.default.getState()
+                  const animationStore = useAnimationStore.getState()
                   animationStore.startAnimation(action.tokenId, actualFromPosition, actualToPosition)
 
                   // Create animation loop
